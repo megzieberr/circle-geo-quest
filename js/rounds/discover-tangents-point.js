@@ -82,6 +82,6 @@ export const round = {
         { en: "However you move A, the two tangent lengths are always the same — equal.", af: "Hoe jy A ook al beweeg, die twee raaklyn-lengtes is altyd dieselfde — gelyk." },
       ],
       reason: "tansCommonPt",
-      note: { en: "Two tangents from the same external point are equal in length (AF = AC). Reason: <i>tans from common pt</i>.", af: "Twee raaklyne vanuit dieselfde buitepunt is gelyk in lengte (AF = AC). Rede: <i>raaklyne vanuit gemeensk. punt</i>." } },
+      note: { en: "Two tangents from the same external point are equal in length (AF = AC). Reason: <i>tans from same pt</i>.", af: "Twee raaklyne vanuit dieselfde buitepunt is gelyk in lengte (AF = AC). Rede: <i>raaklyne vanuit dieselfde punt</i>." } },
   ],
 };

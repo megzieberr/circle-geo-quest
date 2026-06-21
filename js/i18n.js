@@ -190,9 +190,10 @@ export const REASONS = {
   tanRadiusConv: { en: "converse tan ⊥ radius",    af: "omgekeerde raaklyn ⊥ radius" },
   tanChordConv:  { en: "converse tan-chord",       af: "omgekeerde raaklyn-koord" },
   semiCircle:    { en: "∠ in semi-circle",         af: "∠ in semi sirkel" },
-  tansCommonPt:  { en: "tans from common pt",      af: "raaklyne vanuit gemeensk. punt" },
+  tansCommonPt:  { en: "tans from same pt",        af: "raaklyne vanuit dieselfde punt" },
   sameSeg:       { en: "∠s in same seg",           af: "∠e in dieselfde segment" },
-  isosBase:      { en: "base ∠s of isos Δ",        af: "∠e teenoor gelyke sye" },
+  isosBase:      { en: "∠s opp equal sides",       af: "∠e teenoor gelyke sye" },
+  sidesOppAngles:{ en: "sides opp equal ∠s",       af: "sye teenoor gelyke ∠e" },
   centreDouble:  { en: "∠ at centre = 2 × ∠ at circumference", af: "middelpuntshoek = 2 × omtrekshoek" },
   centrePerpChord:{ en: "line from centre ⊥ to chord", af: "lyn vanuit mdpt ⊥ op koord" },
   centreMidChord:{ en: "line from centre to midpt of chord", af: "lyn vanuit mdpt na mdpt van koord" },
@@ -273,12 +274,15 @@ for (const k in REASONS) LEGACY[REASONS[k].en] = REASONS[k];
 // a few compound / variant phrases used in the imported data:
 LEGACY["∠ sum of △"] = REASONS.triSum;
 LEGACY["∠s on a str line"] = REASONS.straightLine;
+// imported (data-tanchord) phrases must still resolve after the reasons above were renamed:
+LEGACY["base ∠s of isos Δ"] = REASONS.isosBase;          // → "∠s opp equal sides"
+LEGACY["tans from common pt"] = REASONS.tansCommonPt;     // → "tans from same pt"
 LEGACY["tans from common pt; base ∠s of isos △"] = {
-  en: "tans from common pt; base ∠s of isos Δ",
-  af: "raaklyne vanuit gemeensk. punt; ∠e teenoor gelyke sye",
+  en: "tans from same pt; ∠s opp equal sides",
+  af: "raaklyne vanuit dieselfde punt; ∠e teenoor gelyke sye",
 };
 LEGACY["base ∠s of isos △ (TA = TB)"] = {
-  en: "base ∠s of isos Δ (TA = TB)",
+  en: "∠s opp equal sides (TA = TB)",
   af: "∠e teenoor gelyke sye (TA = TB)",
 };
 LEGACY["tan-chord theorem (chord TS at T)"] = {
