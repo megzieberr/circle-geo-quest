@@ -72,5 +72,28 @@ export const round = {
         angles: [ { at: "T", legs: ["O", "A"], t: "70°", o: { v: 70 } }, { at: "T", legs: ["A", "tg+"], t: "x", o: { v: 20, r: 40 } } ] },
       options: [ { text: "20°", correct: true }, { text: "70°" }, { text: "90°" }, { text: "110°" } ],
       answer: { en: "∠OTU = 90°, so x = 90° − 70° = 20°.", af: "∠OTU = 90°, dus x = 90° − 70° = 20°." }, explainReason: "tanRadius" },
+
+    // ---- relocated from Round 10 (tan-chord): a diameter is a radius, so these
+    // use tan ⊥ diameter — the same theorem, met here for the first time. ----
+    { id: "r9q11", type: "calc-mc", accent: AC,
+      prompt: { en: "STU is a tangent at T and TD is a diameter. Calculate x, with reasons.", af: "STU is 'n raaklyn by T en TD is 'n middellyn. Bereken x, met redes." },
+      diagram: { O: true, pts: { T: 270, D: 90, A: 140 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "D"], ["T", "A"], ["D", "A"]],
+        angles: [ { at: "T", legs: ["tg-", "A"], t: "65°", o: { v: 65 } }, { at: "T", legs: ["A", "D"], t: "x", o: { v: 25 } } ] },
+      options: [ { text: "x = 25°", correct: true }, { text: "x = 65°" }, { text: "x = 155°" }, { text: "x = 35°" } ],
+      answer: { en: "∠STD = 90° (tan ⊥ diameter), so x = 90° − 65° = 25°.", af: "∠STD = 90° (raaklyn ⊥ middellyn), dus x = 90° − 65° = 25°." }, explainReason: "tanDiameter" },
+
+    { id: "r9q12", type: "calc-mc", accent: AC,
+      prompt: { en: "STU is a tangent at T and TD is a diameter. Calculate x, with reasons.", af: "STU is 'n raaklyn by T en TD is 'n middellyn. Bereken x, met redes." },
+      diagram: { O: true, pts: { T: 270, D: 90, A: 326 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "D"], ["T", "A"], ["D", "A"]],
+        angles: [ { at: "T", legs: ["tg+", "A"], t: "28°", o: { v: 28 } }, { at: "T", legs: ["A", "D"], t: "x", o: { v: 62 } } ] },
+      options: [ { text: "x = 62°", correct: true }, { text: "x = 28°" }, { text: "x = 118°" }, { text: "x = 152°" } ],
+      answer: { en: "∠UTD = 90° (tan ⊥ diameter), so x = 90° − 28° = 62°.", af: "∠UTD = 90° (raaklyn ⊥ middellyn), dus x = 90° − 28° = 62°." }, explainReason: "tanDiameter" },
+
+    { id: "r9q13", type: "calc-mc", accent: AC,
+      prompt: { en: "STU is a tangent at T and TA is a diameter. Calculate the value of x.", af: "STU is 'n raaklyn by T en TA is 'n middellyn. Bereken die waarde van x." },
+      diagram: { O: true, pts: { T: 270, A: 90, P: 170 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "A"], ["P", "T"], ["P", "A"]],
+        angles: [ { at: "T", legs: ["tg+", "A"], t: "", o: { v: 90, mark: 1 } }, { at: "P", legs: ["T", "A"], t: "3x", o: { v: 90 } } ] },
+      options: [ { text: "x = 30°", correct: true }, { text: "x = 90°" }, { text: "x = 45°" }, { text: "x = 60°" } ],
+      answer: { en: "∠UTA = 90° (tan ⊥ diameter); the angle in the alternate segment 3x = 90° (tan-chord), so x = 30°.", af: "∠UTA = 90° (raaklyn ⊥ middellyn); die hoek in die oorstaande segment 3x = 90° (raaklyn-koord), dus x = 30°." }, explainReason: "tanDiameter" },
   ],
 };

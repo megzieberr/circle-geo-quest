@@ -44,6 +44,10 @@ SECTIONS.forEach((sec, si) => {
   sec.oefeninge.forEach((ex, oi) => {
     const m = ex.antw.match(/^([a-z])\s*=\s*(\d+)°$/);
     if (!m) return;                      // skip multi-answer / proof exercises
+    // Round 10 is the PURE tan-chord round. Skip exercises that rely on
+    // "tan ⊥ diameter" — that theorem is taught later (Round 9, Tangent ⊥
+    // radius), where these diameter questions are relocated instead.
+    if (ex.opl && ex.opl.some(step => /⊥/.test(step[1] || ""))) return;
     const letter = m[1], v = +m[2];
     const correct = `${letter} = ${v}°`;
     const opts = [{ text: correct, correct: true }, ...distractors(letter, v).map(t => ({ text: t }))];
