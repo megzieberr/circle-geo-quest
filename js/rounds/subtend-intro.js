@@ -22,6 +22,7 @@ const angArc = (V, U, W, cls, r = 24) => {
 };
 
 const A = P(200), B = P(340);                 // the chord
+const O = [cx, cy];                           // the centre
 const P1 = P(90), P2 = P(48), P3 = P(133);    // three points on the same arc
 const circ = `<circle class="cs-circle cs-draw" cx="${cx}" cy="${cy}" r="${R}" pathLength="1"/>`;
 
@@ -59,5 +60,12 @@ export const round = {
         ln(A, P2, "cs-arm-faint") + ln(B, P2, "cs-arm-faint") + angArc(P2, A, B, "cs-ang-faint") +
         ln(A, P3, "cs-arm-faint") + ln(B, P3, "cs-arm-faint") + angArc(P3, A, B, "cs-ang-faint") +
         dot(P1, "") + dot(P2, "") + dot(P3, "") },
+
+    { caption: { en: "The chord can also reach the <b>centre O</b>. Here chord AB subtends <b>∠AOB</b> at the centre — the same chord, now making an angle at the middle of the circle.", af: "Die koord kan ook die <b>middelpunt O</b> bereik. Hier onderspan koord AB <b>∠AOB</b> by die middelpunt — dieselfde koord, maar nou maak dit 'n hoek by die middel van die sirkel." },
+      anim: "draw", persist: false,
+      frag: ln(A, B, "cs-hl") +
+        ln(O, A, "cs-arm cs-draw") + ln(O, B, "cs-arm cs-draw") +
+        angArc(O, A, B, "cs-ang cs-draw", 26) +
+        dot(O, "O", 8, -10) + dot(A, "A", -14, 5) + dot(B, "B", 9, 5) },
   ],
 };
