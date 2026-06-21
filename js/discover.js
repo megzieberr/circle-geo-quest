@@ -30,7 +30,8 @@ import { el, clear, mount } from "./ui.js";
 import { mountInteractive } from "./interactive.js";
 import { renderDiagram } from "./engine.js";
 
-const HINT_AFTER = 3;   // wrong tries before the game steps in
+const HINT_AFTER = 3;     // wrong tries before the game steps in with a hint
+const REVEAL_AFTER = 5;   // wrong tries before the game just shows the answer (never stuck)
 
 export function renderDiscover(app, host, params) {
   const round = ROUND_BY_ID[params.roundId];
@@ -145,6 +146,7 @@ function mountPanel(host, panel, accent, onDone) {
   // ---- gated tasks: blank & choice ----
   cont.hidden = true;
   let wrong = 0;
+  let revealAnswer = null;   // set by each gated type below; shows the answer after REVEAL_AFTER misses
   const hintBox = el("div", "dp-hint"); hintBox.hidden = true;
   const feedback = el("div", "dp-feedback"); feedback.hidden = true;
 
@@ -161,11 +163,23 @@ function mountPanel(host, panel, accent, onDone) {
         hintBox.innerHTML = `<span class="dp-hint-tag">💡 ${t("hint")}</span> ${tx(hints[idx])}`;
       }
     }
+    // never leave a learner stuck: after enough misses, just show the answer
+    if (wrong >= REVEAL_AFTER && revealAnswer) revealAnswer();
   }
   function onRight() {
     feedback.hidden = false;
     feedback.className = "dp-feedback good";
     feedback.textContent = "✓ " + t("youGotIt");
+    if (panel.note || panel.reason) body.appendChild(noteBlock(panel));
+    cont.hidden = false;
+    cont.textContent = t("continue");
+    cont.focus();
+  }
+  // shown when the game gives the answer after REVEAL_AFTER misses
+  function showRevealed() {
+    feedback.hidden = false;
+    feedback.className = "dp-feedback revealed";
+    feedback.textContent = "💡 " + t("hereIsAnswer");
     if (panel.note || panel.reason) body.appendChild(noteBlock(panel));
     cont.hidden = false;
     cont.textContent = t("continue");
@@ -186,6 +200,13 @@ function mountPanel(host, panel, accent, onDone) {
       if (fill.correct()) { locked = true; fill.lock(true); check.disabled = true; check.hidden = true; onRight(); }
       else { fill.flagWrong(); onWrong(); }
     });
+    revealAnswer = () => {
+      if (locked) return;
+      locked = true;
+      fill.revealCorrect();
+      check.disabled = true; check.hidden = true;
+      showRevealed();
+    };
   }
 
   else if (panel.type === "choice") {
@@ -203,6 +224,12 @@ function mountPanel(host, panel, accent, onDone) {
     body.appendChild(opts);
     body.appendChild(hintBox);
     body.appendChild(feedback);
+    revealAnswer = () => {
+      if (locked) return;
+      locked = true;
+      [...opts.children].forEach((b, i) => { b.disabled = true; if (panel.options[i].correct) b.classList.add("is-correct"); });
+      showRevealed();
+    };
   }
 
   cont.addEventListener("click", advance);
@@ -306,5 +333,16 @@ function mountBlanks(host, sentence, onFill) {
     correct: () => slots.every(isRight),
     flagWrong: () => slots.forEach(s => { if (!isRight(s)) s.node.classList.add("wrong"); }),
     lock: () => { locked = true; slots.forEach(s => s.node.classList.add("done")); active = null; input.replaceChildren(); },
+    // fill every blank with its correct answer (used when the game gives up and shows it)
+    revealCorrect: () => {
+      slots.forEach(s => {
+        const ans = s.def.answer;
+        const label = s.def.kind === "num" ? undefined : (s.def.kind === "reason" ? reasonText(ans) : wordText(ans));
+        setValue(s, ans, label);
+        s.node.classList.remove("wrong");
+        s.node.classList.add("done", "revealed");
+      });
+      locked = true; active = null; input.replaceChildren();
+    },
   };
 }

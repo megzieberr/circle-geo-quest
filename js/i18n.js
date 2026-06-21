@@ -129,6 +129,7 @@ const UI = {
   continue:       { en: "Continue", af: "Gaan voort" },
   notQuiteTry:    { en: "Not quite — try again.", af: "Nie heeltemal nie — probeer weer." },
   notQuiteThink:  { en: "Not quite. Use the diagram and the hint below.", af: "Nie heeltemal nie. Gebruik die diagram en die wenk hieronder." },
+  hereIsAnswer:   { en: "Here's the answer — read it through so it makes sense, then carry on. You'll get the next one!", af: "Hier is die antwoord — lees dit deur sodat dit sin maak, en gaan dan voort. Jy kry die volgende een reg!" },
   hint:           { en: "Hint", af: "Wenk" },
   youGotIt:       { en: "You've got it!", af: "Jy het dit!" },
   tapBlank:       { en: "Tap a blank above, then choose your answer.", af: "Klik op 'n oop spasie hierbo, kies dan jou antwoord." },
@@ -217,7 +218,7 @@ export const PARTS = {
 export const REASONS = {
   tanChord:      { en: "tan-chord theorem",        af: "raaklyn-koord-stelling" },
   straightLine:  { en: "∠s on a str line",         af: "∠e op 'n reguitlyn" },
-  triSum:        { en: "int angles of triangle",   af: "som van ∠e in Δ" },
+  triSum:        { en: "int angles of triangle",   af: "binnehoeke van Δ" },
   tanRadius:     { en: "tan ⊥ radius",             af: "raaklyn ⊥ radius" },
   tanDiameter:   { en: "tan ⊥ diameter",           af: "raaklyn ⊥ middellyn" },
   // converses — used to PROVE a line is a tangent

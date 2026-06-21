@@ -52,7 +52,8 @@ export const round = {
         { en: ".", af: "." },
       ],
       hints: [
-        { en: "A straight line is a straight angle. How many degrees is a straight angle?", af: "'n Reguitlyn is 'n gestrekte hoek. Hoeveel grade is 'n gestrekte hoek?" },
+        { en: "A, O and B lie in one straight line. Picture standing at O and turning from facing A all the way round to facing B — that's a half-turn.", af: "A, O en B lê in een reguitlyn. Stel jou voor jy staan by O en draai van A af heelpad om na B toe — dis 'n halwe draai." },
+        { en: "A full turn all the way around is 360°. A straight line is exactly half of a full turn.", af: "'n Volle draai heelpad rondom is 360°. 'n Reguitlyn is presies die helfte van 'n volle draai." },
       ],
       note: { en: "A straight line is 180°, so ∠AOB = 180°.", af: "'n Reguitlyn is 180°, dus ∠AOB = 180°." } },
 

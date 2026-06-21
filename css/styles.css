@@ -328,6 +328,8 @@ svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display
 .dp-feedback{margin:8px 0; padding:9px 13px; border-radius:11px; font-weight:700; border:2px solid var(--ink);}
 .dp-feedback.good{background:#e8f8f1; border-color:#0ea271; color:#0a6b4c;}
 .dp-feedback.bad{background:#fdeef4; border-color:#e64980; color:#9c1f52;}
+.dp-feedback.revealed{background:#fff8e6; border-color:#e0a500; color:#8a5a00;}
+.dp-slot.revealed{background:#fff8e6; border-color:#e0a500; color:#8a5a00;}
 .dp-note{margin:12px 0 4px; padding:12px 15px; border:2px solid var(--ink); border-radius:13px; background:#fbfaf5; box-shadow:var(--shadow-sm);}
 .dp-reason{margin-bottom:6px;}
 .dp-reason-tag{font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:800; margin-right:4px;}
