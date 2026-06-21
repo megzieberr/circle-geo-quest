@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagram review</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@0,400;0,600;0,700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: "Instrument Sans", sans-serif; background:#fffdf8; color:#252a4a; padding:16px; }
+  h2 { margin:18px 0 8px; font-size:1.1rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .card { border:2px solid #ccd; border-radius:12px; padding:8px; background:#fff; }
+  .card.bad { border-color:#e64980; box-shadow:0 0 0 2px #e6498033; }
+  .cap { font-size:.78rem; font-weight:700; margin-top:4px; }
+  .issue { font-size:.72rem; color:#e64980; }
+  svg.diag { width:100%; height:auto; }
+  svg.diag .ln{stroke:#2b2f4a; stroke-width:2.2; stroke-linecap:round;}
+  svg.diag .sirkel{stroke:#2b2f4a; stroke-width:2.4; fill:none;}
+  svg.diag .al{font:700 13.5px "Instrument Sans",sans-serif; text-anchor:middle; dominant-baseline:middle; paint-order:stroke; stroke:#fff; stroke-width:4.5px;}
+  svg.diag .pl{font:700 13px "Instrument Sans",sans-serif; fill:#2b2f4a; text-anchor:middle; dominant-baseline:middle; paint-order:stroke; stroke:#fff; stroke-width:4px;}
+  #summary { position:sticky; top:0; background:#fffdf8; padding:8px 0; font-weight:700; border-bottom:2px solid #252a4a; }
+</style>
+</head>
+<body>
+<div id="summary">Running…</div>
+<div id="out"></div>
+<script type="module">
+const __b = '?v=' + Date.now();
+const { renderDiagram, computeGeometry, pol } = await import("./js/engine.js" + __b);
+const __files = ['round01-parts','round02-centre-chord','round03-centre-circumference','round04-semicircle','round05-same-segment','round06-equal-chords','round07-cyclic-opposite','round08-cyclic-exterior','round09-tangent-radius','round10-tanchord','round11-tangents-point','round12-boss'];
+const ROUNDS = [];
+for (const f of __files) ROUNDS.push((await import("./js/rounds/" + f + ".js" + __b)).round);
+
+function distSeg(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay, L2 = dx*dx + dy*dy;
+  let t = L2 ? ((px-ax)*dx + (py-ay)*dy)/L2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  const cx = ax + t*dx, cy = ay + t*dy;
+  return Math.hypot(px-cx, py-cy);
+}
+function oPos(cx, cy, segs, pts) {
+  let best = pol(cx, cy, 14, 35), bestScore = -1;
+  for (let deg = 0; deg < 360; deg += 8) {
+    const [x, y] = pol(cx, cy, 14, deg);
+    let score = 1e9;
+    segs.forEach(s => score = Math.min(score, distSeg(x, y, ...s)));
+    pts.forEach(p => score = Math.min(score, Math.hypot(x - p.x, y - p.y)));
+    if (score > bestScore) { bestScore = score; best = [x, y]; }
+  }
+  return { x: best[0], y: best[1] };
+}
+
+function analyse(d) {
+  const g = computeGeometry(d);
+  const segs = [];
+  g.chordSegs.forEach(c => segs.push([c.p1.x,c.p1.y,c.p2.x,c.p2.y]));
+  g.tangentLines.forEach(t => segs.push([t.e1.x,t.e1.y,t.e2.x,t.e2.y]));
+  g.extTangents.forEach(s => segs.push([s.p1.x,s.p1.y,s.p2.x,s.p2.y]));
+
+  // labels: {x,y,text} — build point + angle labels first, then place O against them
+  const labels = [];
+  for (const k in g.pts) {
+    const p = g.pts[k];
+    if (p.centre) continue;
+    let lx, ly;
+    if (p.circ) [lx,ly] = pol(g.cx,g.cy,g.R+14,p.deg);
+    else { const dir = Math.atan2(-(p.y-g.cy),p.x-g.cx)*180/Math.PI; [lx,ly]=pol(p.x,p.y,14,dir); }
+    labels.push({ x:lx, y:ly, text:k });
+  }
+  (d.angles||[]).forEach((a,i) => { if (a.t) { const L = g.angles[i].label; labels.push({ x:L.x, y:L.y, text:a.t }); } });
+  if (g.O) { const o = oPos(g.cx, g.cy, segs, labels); labels.unshift({ ...o, text:"O" }); }
+
+  const issues = [];
+  // O label on a line?
+  if (g.O) {
+    const o = labels.find(l => l.text === "O");
+    let mind = 1e9;
+    segs.forEach(s => { mind = Math.min(mind, distSeg(o.x,o.y,...s)); });
+    if (mind < 10) issues.push("O on line (" + Math.round(mind) + ")");
+  }
+  // label collisions
+  for (let i=0;i<labels.length;i++) for (let j=i+1;j<labels.length;j++) {
+    const dd = Math.hypot(labels[i].x-labels[j].x, labels[i].y-labels[j].y);
+    if (dd < 15) issues.push(`"${labels[i].text}"↔"${labels[j].text}" (${Math.round(dd)})`);
+  }
+  // angle label very close to its vertex (ambiguous)
+  (d.angles||[]).forEach((a,i) => { if (a.t) { const ga=g.angles[i]; const dd=Math.hypot(ga.label.x-ga.vertex.x, ga.label.y-ga.vertex.y); if (dd<20) issues.push(`"${a.t}" near vertex (${Math.round(dd)})`); } });
+  return { g, issues, labelTexts: (d.angles||[]).map(a=>a.t).filter(Boolean) };
+}
+
+const out = document.getElementById("out");
+let total=0, bad=0, allIssues=[];
+ROUNDS.forEach(r => {
+  const h = document.createElement("h2"); h.textContent = `${r.id} — ${r.title.en}`; out.appendChild(h);
+  const grid = document.createElement("div"); grid.className="grid"; out.appendChild(grid);
+  r.questions.forEach(q => {
+    if (!q.diagram) return;
+    total++;
+    const { issues, labelTexts } = analyse(q.diagram);
+    const card = document.createElement("div"); card.className = "card" + (issues.length?" bad":"");
+    card.innerHTML = renderDiagram(q.diagram, q.accent) +
+      `<div class="cap">${q.id} · ${q.type} · [${labelTexts.join(" | ")}]</div>` +
+      (issues.length?`<div class="issue">${issues.join("; ")}</div>`:"");
+    grid.appendChild(card);
+    if (issues.length){ bad++; allIssues.push(`${r.id}/${q.id}: ${issues.join("; ")}`); }
+  });
+});
+document.getElementById("summary").textContent = `${total} diagrams · ${bad} with issues`;
+window.__ISSUES__ = allIssues;
+console.log("ISSUES", JSON.stringify(allIssues, null, 1));
+</script>
+</body>
+</html>

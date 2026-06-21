@@ -1,0 +1,3 @@
+# Normalize line endings: store LF in the repo, check out LF everywhere.
+# Keeps diffs clean across Windows/Mac/Linux and Netlify's Linux build.
+* text=auto eol=lf

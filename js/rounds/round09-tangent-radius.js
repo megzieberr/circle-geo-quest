@@ -1,0 +1,76 @@
+/* Round 9 — A tangent is perpendicular to the radius at the point of contact.
+   Confirm / tap the 90° angle, pick the "tan ⊥ radius" reason. */
+const AC = "#4263eb";
+
+const D_BASE = { O: true, pts: { T: 270 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["O", "T"]],
+  angles: [{ at: "T", legs: ["tg+", "O"], t: "", o: { v: 90, mark: 1 } }] };
+
+export const round = {
+  id: "r9", n: 9, accent: AC,
+  title: { en: "Tangent ⊥ radius", af: "Raaklyn ⊥ radius" },
+  blurb: { en: "A tangent meets the radius at 90°.", af: "’n Raaklyn ontmoet die radius teen 90°." },
+  reasonCode: "tanRadius",
+  questionsPerPlay: 10,
+  questions: [
+    { id: "r9q1", type: "yesno", accent: AC,
+      prompt: { en: "OT is a radius and STU is a tangent at T. Is ∠OTU = 90°?", af: "OT is 'n radius en STU is 'n raaklyn by T. Is ∠OTU = 90°?" },
+      diagram: D_BASE, yes: true,
+      answer: { en: "Yes — a tangent is perpendicular to the radius at the point of contact.", af: "Ja — 'n raaklyn is loodreg op die radius by die raakpunt." }, explainReason: "tanRadius" },
+
+    { id: "r9q2", type: "tap", accent: AC,
+      prompt: { en: "STU is a tangent at T. Tap the line that is perpendicular to the tangent.", af: "STU is 'n raaklyn by T. Klik op die lyn wat loodreg op die raaklyn is." },
+      diagram: { O: true, pts: { T: 270, A: 35 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["O", "T"], ["T", "A"]] },
+      tap: { targets: [ { id: "radius", kind: "radius", from: "O", to: "T" }, { id: "tan", kind: "tangentLine", at: "T" }, { id: "chord", kind: "chord", a: "T", b: "A" } ], correctId: "radius" },
+      answer: { en: "The radius OT ⊥ the tangent at T.", af: "Die radius OT ⊥ die raaklyn by T." }, explainReason: "tanRadius" },
+
+    { id: "r9q3", type: "reason", accent: AC,
+      prompt: { en: "Which reason justifies ∠OTU = 90°?", af: "Watter rede regverdig ∠OTU = 90°?" },
+      diagram: D_BASE,
+      options: [ { code: "tanRadius", correct: true }, { code: "semiCircle" }, { code: "tanChord" }, { code: "centrePerpChord" } ],
+      answer: { en: "tan ⊥ radius.", af: "raaklyn ⊥ radius." }, explainReason: "tanRadius" },
+
+    { id: "r9q4", type: "calc-mc", accent: AC,
+      prompt: { en: "STU is a tangent at T and OT a radius. If ∠OTA = 60°, find x = ∠ATU.", af: "STU is 'n raaklyn by T en OT 'n radius. As ∠OTA = 60°, bereken x = ∠ATU." },
+      diagram: { O: true, pts: { T: 270, A: 330 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["O", "T"], ["T", "A"]],
+        angles: [ { at: "T", legs: ["O", "A"], t: "60°", o: { v: 60 } }, { at: "T", legs: ["A", "tg+"], t: "x", o: { v: 30 } } ] },
+      options: [ { text: "30°", correct: true }, { text: "60°" }, { text: "90°" }, { text: "120°" } ],
+      answer: { en: "∠OTU = 90°, so x = 90° − 60° = 30°.", af: "∠OTU = 90°, dus x = 90° − 60° = 30°." }, explainReason: "tanRadius" },
+
+    { id: "r9q5", type: "yesno", accent: AC,
+      prompt: { en: "Does a tangent always make a 90° angle with the radius drawn to the point of contact?", af: "Maak 'n raaklyn altyd 'n 90°-hoek met die radius na die raakpunt?" },
+      diagram: D_BASE, yes: true,
+      answer: { en: "Yes — always 90° (tan ⊥ radius).", af: "Ja — altyd 90° (raaklyn ⊥ radius)." }, explainReason: "tanRadius" },
+
+    { id: "r9q6", type: "tap", accent: AC,
+      prompt: { en: "Tap the right angle between the tangent and the radius.", af: "Klik op die regte hoek tussen die raaklyn en die radius." },
+      diagram: { O: true, pts: { T: 200 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["O", "T"]],
+        angles: [ { at: "T", legs: ["tg+", "O"], t: "", o: { v: 90, mark: 1 } } ] },
+      tap: { targets: [ { id: "ra", kind: "angle", angleIndex: 0 } ], correctId: "ra" },
+      answer: { en: "90° — tan ⊥ radius at the point of contact.", af: "90° — raaklyn ⊥ radius by die raakpunt." }, explainReason: "tanRadius" },
+
+    { id: "r9q7", type: "calc-mc", accent: AC,
+      prompt: { en: "STU is a tangent at T and ∠ATU = 25°, with A on the circle. Find ∠OTA (O the centre).", af: "STU is 'n raaklyn by T en ∠ATU = 25°, met A op die sirkel. Bereken ∠OTA (O die middelpunt)." },
+      diagram: { O: true, pts: { T: 270, A: 320 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["O", "T"], ["T", "A"]],
+        angles: [ { at: "T", legs: ["A", "tg+"], t: "25°", o: { v: 25, r: 38 } }, { at: "T", legs: ["O", "A"], t: "x", o: { v: 65 } } ] },
+      options: [ { text: "65°", correct: true }, { text: "25°" }, { text: "90°" }, { text: "115°" } ],
+      answer: { en: "∠OTU = 90°, so ∠OTA = 90° − 25° = 65°.", af: "∠OTU = 90°, dus ∠OTA = 90° − 25° = 65°." }, explainReason: "tanRadius" },
+
+    { id: "r9q8", type: "reason", accent: AC,
+      prompt: { en: "OT is a radius and STU is a tangent at T. Which reason gives ∠OTS = 90°?", af: "OT is 'n radius en STU is 'n raaklyn by T. Watter rede gee ∠OTS = 90°?" },
+      diagram: D_BASE,
+      options: [ { code: "tanRadius", correct: true }, { code: "tanChord" }, { code: "semiCircle" }, { code: "centreMidChord" } ],
+      answer: { en: "tan ⊥ radius.", af: "raaklyn ⊥ radius." }, explainReason: "tanRadius" },
+
+    { id: "r9q9", type: "yesno", accent: AC,
+      prompt: { en: "Is a tangent perpendicular to the radius drawn to the point of contact?", af: "Is 'n raaklyn loodreg op die radius na die raakpunt?" },
+      diagram: D_BASE, yes: true,
+      answer: { en: "Yes — tan ⊥ radius.", af: "Ja — raaklyn ⊥ radius." }, explainReason: "tanRadius" },
+
+    { id: "r9q10", type: "calc-mc", accent: AC,
+      prompt: { en: "STU is a tangent at T and OT a radius. If ∠OTA = 70°, find x = ∠ATU.", af: "STU is 'n raaklyn by T en OT 'n radius. As ∠OTA = 70°, bereken x = ∠ATU." },
+      diagram: { O: true, pts: { T: 270, A: 310 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["O", "T"], ["T", "A"]],
+        angles: [ { at: "T", legs: ["O", "A"], t: "70°", o: { v: 70 } }, { at: "T", legs: ["A", "tg+"], t: "x", o: { v: 20, r: 40 } } ] },
+      options: [ { text: "20°", correct: true }, { text: "70°" }, { text: "90°" }, { text: "110°" } ],
+      answer: { en: "∠OTU = 90°, so x = 90° − 70° = 20°.", af: "∠OTU = 90°, dus x = 90° − 70° = 20°." }, explainReason: "tanRadius" },
+  ],
+};

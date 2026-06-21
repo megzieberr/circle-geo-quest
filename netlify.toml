@@ -1,0 +1,24 @@
+# Circle Quest — static site, no build step.
+[build]
+  publish = "."
+  command = ""
+
+# Long-cache the fonts/JS but always revalidate HTML so updates show immediately.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Never serve the SQL setup files (they contain the class list / setup notes),
+# even if the folder is included in the deploy.
+[[redirects]]
+  from = "/supabase/*"
+  to = "/404.html"
+  status = 404
+  force = true
+

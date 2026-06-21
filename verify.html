@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagram verification — Circle Quest</title>
+<style>
+  body { font-family: ui-monospace, "SF Mono", Consolas, monospace; background: #fffdf8; color: #252a4a; padding: 20px; line-height: 1.5; }
+  h1 { font-size: 1.2rem; }
+  .ok { color: #0ea271; } .bad { color: #e64980; font-weight: 700; }
+  .row { padding: 2px 0; border-bottom: 1px dashed rgba(0,0,0,.08); }
+  #summary { font-size: 1.1rem; font-weight: 700; margin: 12px 0; padding: 10px; border: 2px solid #252a4a; border-radius: 10px; }
+  svg.diag { width: 220px; height: auto; border: 1px solid #ddd; margin: 4px; vertical-align: top; }
+  svg.diag .ln { stroke: #2b2f4a; stroke-width: 2.2; stroke-linecap: round; }
+  svg.diag .sirkel { stroke: #2b2f4a; stroke-width: 2.4; fill: none; }
+  svg.diag .al { font: 700 13.5px sans-serif; text-anchor: middle; dominant-baseline: middle; paint-order: stroke; stroke: #fff; stroke-width: 4.5px; }
+  svg.diag .pl { font: 700 13px sans-serif; fill: #2b2f4a; text-anchor: middle; dominant-baseline: middle; paint-order: stroke; stroke: #fff; stroke-width: 4px; }
+  details { margin: 8px 0; }
+</style>
+</head>
+<body>
+<h1>Diagram verification — every marked angle vs its true value</h1>
+<div id="summary">Running…</div>
+<div id="fails"></div>
+<details><summary>Show all diagrams (visual spot-check)</summary><div id="gallery"></div></details>
+
+<script type="module">
+import { verifyDiagram, renderDiagram } from "./js/engine.js";
+import { ROUNDS } from "./js/rounds/index.js";
+import { SECTIONS } from "./js/rounds/data-tanchord.js";
+
+let diagrams = 0, angles = 0, fails = [];
+const failBox = document.getElementById("fails");
+const gallery = document.getElementById("gallery");
+
+function check(label, d, accent) {
+  if (!d) return;
+  diagrams++;
+  const res = verifyDiagram(d);
+  res.forEach(r => {
+    angles++;
+    if (!r.ok) fails.push({ label, ...r });
+  });
+  // gallery thumbnail
+  const wrap = document.createElement("span");
+  wrap.title = label;
+  wrap.innerHTML = renderDiagram(d, accent || "#4263eb");
+  gallery.appendChild(wrap);
+}
+
+// app rounds
+ROUNDS.forEach(r => {
+  r.questions.forEach(q => check(`${r.id} ${q.id}`, q.diagram, q.accent));
+});
+// raw source data (sanity check that the engine port matches the original)
+SECTIONS.forEach((sec, si) => {
+  check(`src ${sec.id} mini`, sec.mini, sec.hex);
+  sec.oefeninge.forEach((ex, oi) => check(`src ${sec.id} ex${oi + 1}`, ex.d, sec.hex));
+});
+
+const summary = document.getElementById("summary");
+if (fails.length === 0) {
+  summary.innerHTML = `<span class="ok">✓ ALL TO SCALE — ${diagrams} diagrams, ${angles} angles checked, 0 mismatches.</span>`;
+} else {
+  summary.innerHTML = `<span class="bad">✗ ${fails.length} mismatch(es) across ${diagrams} diagrams (${angles} angles).</span>`;
+  fails.forEach(f => {
+    const div = document.createElement("div");
+    div.className = "row bad";
+    div.textContent = `${f.label}: angle "${f.t || "(unlabelled)"}" at ${f.at} — drawn ${f.drawn}°, declared v=${f.v}° (Δ ${f.diff}°)`;
+    failBox.appendChild(div);
+  });
+}
+// expose for headless reading
+window.__VERIFY__ = { diagrams, angles, fails };
+console.log("VERIFY", JSON.stringify(window.__VERIFY__));
+</script>
+</body>
+</html>

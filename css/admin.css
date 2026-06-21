@@ -1,0 +1,46 @@
+/* Admin dashboard styles (extends styles.css). */
+.admin-wrap{max-width:1100px; margin:0 auto; padding:20px 16px 60px;}
+.admin-login{max-width:420px; margin:8vh auto 0; text-align:left;}
+.admin-login h1{font-size:1.8rem;}
+.badge-backend{display:inline-block; background:var(--ink); color:#fff; border-radius:99px; padding:1px 8px; font-size:.7rem; font-weight:800; vertical-align:middle; margin-left:6px;}
+
+.admin-head{display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap; margin-bottom:16px;}
+.admin-head h1{font-size:1.7rem;}
+.admin-tools{display:flex; gap:8px; flex-wrap:wrap;}
+
+.admin-summary{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px;}
+.asum{background:#fff; border:2px solid var(--ink); border-radius:14px; padding:10px 18px; box-shadow:var(--shadow-sm);}
+.asum b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.6rem; line-height:1;}
+.asum span{font-size:.72rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em;}
+.asum.warn{background:#fff6e9; border-color:#f76707;}
+.asum.warn b{color:#c25a00;}
+
+.table-wrap{overflow-x:auto; border:2px solid var(--ink); border-radius:var(--radius); background:#fff; box-shadow:var(--shadow);}
+.admin-table{width:100%; border-collapse:collapse; font-size:.9rem; min-width:760px;}
+.admin-table th{position:sticky; top:0; background:var(--ink); color:#fff; text-align:left; padding:10px 12px; font-size:.78rem; letter-spacing:.03em;}
+.admin-table td{padding:9px 12px; border-top:1px solid rgba(37,42,74,.10); vertical-align:middle;}
+.admin-table tr:hover td{background:rgba(66,99,235,.05);}
+.admin-table tr.stale td{background:rgba(247,103,7,.06);}
+.admin-table td.num{font-variant-numeric:tabular-nums; font-weight:700; text-align:right;}
+.admin-table td.name{font-weight:700; white-space:nowrap;}
+.admin-table td.pw code{background:rgba(37,42,74,.07); border:1px dashed rgba(37,42,74,.3); border-radius:6px; padding:1px 7px; font-size:.85rem;}
+.admin-table td.flag{color:#c25a00; font-weight:700; white-space:nowrap;}
+.dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:#f76707; margin-left:4px; vertical-align:middle;}
+
+/* round chips wrap into a compact grid (not one long row) so the name + actions
+   stay together and you never have to scroll far right to reach Remove. */
+.chips{padding-top:8px; padding-bottom:8px;}
+.rgrid{display:grid; grid-template-columns:repeat(14, 20px); gap:3px; width:max-content;}
+.rchip{display:grid; place-items:center; width:20px; height:20px; border-radius:6px; font-size:.66rem; font-weight:800;
+  color:#fff; background:#c9ccda;}
+@media (max-width:680px){ .rgrid{grid-template-columns:repeat(10, 20px);} }
+.rchip.ok{background:#0ea271;}
+.rchip.try{background:#f7a93b; color:#3a2a00;}
+.rchip.none{background:#e7e8ef; color:#9aa;}
+
+.rowacts{white-space:nowrap; text-align:right;}
+.mini-btn{cursor:pointer; font:700 .72rem "Instrument Sans",sans-serif; border:1.5px solid var(--ink);
+  border-radius:99px; background:#fff; padding:3px 9px; margin-left:4px;}
+.mini-btn:hover{background:var(--ink); color:#fff;}
+.mini-btn.danger{border-color:#e64980; color:#e64980;}
+.mini-btn.danger:hover{background:#e64980; color:#fff;}
