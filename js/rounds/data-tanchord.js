@@ -106,7 +106,7 @@ oefeninge:[
  opl:[["3x − 12° = x + 40°","tan-chord theorem"],["2x = 52°",""],["x = 26°",""]], antw:"x = 26°"},
 {vraag:"STU is a tangent at T. Calculate the value of x, with reasons.", d:{pts:{T:270, A:38, B:142}, tang:[{at:"T",lab:["S","U"]}], chords:[["T","A"],["T","B"],["A","B"]], angles:[{at:"T",legs:["tg+","A"],t:"64°",o:{v:64}},{at:"A",legs:["T","B"],t:"2x",o:{v:64}},{at:"T",legs:["A","B"],t:"x + 20°",o:{v:52}}]},
  opl:[["∠ABT = 64°","tan-chord theorem"],["64° + 2x + (x + 20°) = 180°","∠ sum of △"],["3x = 96°",""],["x = 32°",""]], antw:"x = 32°"},
-{vraag:"STU is a tangent at T. Calculate the value of x.", d:{pts:{T:270, A:20, B:220}, tang:[{at:"T",lab:["S","U"]}], chords:[["T","A"],["T","B"],["A","B"]], angles:[{at:"T",legs:["tg+","A"],t:"x + 25°",o:{v:55}},{at:"T",legs:["A","B"],t:"100°",o:{v:100}},{at:"T",legs:["B","tg-"],t:"2x − 35°",o:{v:25}}]},
+{vraag:"STU is a tangent at T. Calculate the value of x.", d:{pts:{T:270, A:20, B:220}, tang:[{at:"T",lab:["S","U"]}], chords:[["T","A"],["T","B"],["A","B"]], angles:[{at:"T",legs:["tg+","A"],t:"x + 25°",o:{v:55}},{at:"T",legs:["A","B"],t:"100°",o:{v:100}},{at:"T",legs:["B","tg-"],t:"2x − 35°",o:{v:25,r:116}}]},
  opl:[["(x + 25°) + 100° + (2x − 35°) = 180°","∠s on a str line"],["3x + 90° = 180°",""],["x = 30°",""]], antw:"x = 30°"},
 {vraag:"STU is a tangent at T. Calculate the value of x.", d:{pts:{T:270, A:34, P:150}, tang:[{at:"T",lab:["S","U"]}], chords:[["T","A"],["P","T"],["P","A"]], angles:[{at:"T",legs:["tg+","A"],t:"2x + 16°",o:{v:62}},{at:"P",legs:["T","A"],t:"4x − 30°",o:{v:62}}]},
  opl:[["4x − 30° = 2x + 16°","tan-chord theorem"],["2x = 46°",""],["x = 23°",""]], antw:"x = 23°"},
