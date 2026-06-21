@@ -545,7 +545,7 @@ export const ADVENTURES = [
       { s: "∠PBA = 55°", r: "cyclicOpp" },
     ],
     badLine: 2,
-    fix: { en: "The value 55° is correct, but the reason is wrong. ∠PBA = 180° − 90° − 35° comes from the angle sum of △APB, so the reason is “int angles of triangle”, not “opp ∠s of cyclic quad”.", af: "Die waarde 55° is reg, maar die rede is verkeerd. ∠PBA = 180° − 90° − 35° kom van die hoeksom van △APB, dus is die rede “binnehoeke van Δ”, nie “teenoorst. ∠e van kvh” nie." },
+    fix: { en: "The value 55° is correct, but the reason is wrong. ∠PBA = 180° − 90° − 35° comes from the angle sum of △APB, so the reason is “int ∠s of Δ”, not “opp ∠s of cyclic quad”.", af: "Die waarde 55° is reg, maar die rede is verkeerd. ∠PBA = 180° − 90° − 35° kom van die hoeksom van △APB, dus is die rede “binne-∠e van Δ”, nie “teenoorst. ∠e van kvh” nie." },
   },
 ];
 
