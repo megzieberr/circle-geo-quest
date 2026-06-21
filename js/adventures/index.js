@@ -167,6 +167,64 @@ const D11 = {
   ],
 };
 
+/* ALG_SEMI — SOLVE FOR x (semicircle). ∠APB = 90°, ∠PAB = 2x, ∠PBA = x.
+   2x + x + 90 = 180 → x = 30, so ∠PAB = 60°. */
+const ALG_SEMI = {
+  O: true,
+  pts: { A: 180, B: 0, P: 120 },
+  chords: [["A", "B"], ["A", "P"], ["B", "P"]],
+  angles: [
+    { at: "P", legs: ["A", "B"], t: "", o: { v: 90, mark: true } },
+    { at: "A", legs: ["P", "B"], t: "2x", o: { v: 60 } },
+    { at: "B", legs: ["P", "A"], t: "x", o: { v: 30 } },
+  ],
+};
+
+/* ALG_TC — SOLVE FOR x (tangent–chord). The tangent–chord angle = 2x and the
+   angle in the alternate segment = (x + 25). tan-chord makes them equal:
+   2x = x + 25 → x = 25, so both angles = 50°. */
+const ALG_TC = {
+  O: true,
+  pts: { T: 270, B: 10, P: 160 },
+  tang: [{ at: "T" }],
+  chords: [["T", "B"], ["P", "T"], ["P", "B"]],
+  angles: [
+    { at: "T", legs: ["tg+", "B"], t: "2x", o: { v: 50 } },
+    { at: "P", legs: ["T", "B"], t: "x+25", o: { v: 50 } },
+  ],
+};
+
+/* PROOF_LC — line from centre ⊥ chord (congruent triangles). OB ⊥ AC at B;
+   radii OA, OC drawn. A general figure for the bisection proof. */
+const PROOF_LC = {
+  O: true,
+  pts: { A: 205, C: 335 },
+  mid: [{ name: "B", of: ["A", "C"] }],
+  chords: [["A", "C"], ["O", "B"], ["O", "A"], ["O", "C"]],
+  angles: [{ at: "B", legs: ["O", "A"], t: "", o: { v: 90, mark: true } }],
+};
+
+/* PROOF_AC — angle at centre = 2× circumference. P on the circle, PO produced to
+   T (diameter), radii OQ, OS. General figure for the isosceles + exterior-angle proof. */
+const PROOF_AC = {
+  O: true,
+  pts: { P: 90, Q: 215, S: 325, T: 270 },
+  chords: [["P", "Q"], ["P", "S"], ["O", "Q"], ["O", "S"], ["P", "T"]],
+};
+
+/* PROOF_TAN — tangents from a point equal (congruent triangles). PA, PB tangents
+   at A, B; radii OA, OB and OP drawn; right angles at the contacts (tan ⊥ radius). */
+const PROOF_TAN = {
+  O: true,
+  pts: { A: 35, B: 325 },
+  ext: [{ name: "P", t: ["A", "B"] }],
+  chords: [["O", "A"], ["O", "B"], ["O", "P"]],
+  angles: [
+    { at: "A", legs: ["O", "P"], t: "", o: { v: 90, mark: true } },
+    { at: "B", legs: ["O", "P"], t: "", o: { v: 90, mark: true } },
+  ],
+};
+
 export const ADVENTURES = [
   {
     id: "adv-centre-values", type: "values", accent: ACCENTS[3],
@@ -382,6 +440,112 @@ export const ADVENTURES = [
     ],
     badLine: 1,
     fix: { en: "∠TPS is wrong. In △PTS the three angles add to 180°, so ∠TPS = 180° − 64° − 64° = 52°, not 64°.", af: "∠TPS is verkeerd. In △PTS tel die drie hoeke op tot 180°, dus ∠TPS = 180° − 64° − 64° = 52°, nie 64°." },
+  },
+
+  /* ===== NEW TYPE: complete the proof (supply each missing reason) ===== */
+  {
+    id: "adv-proof-linecentre", type: "proofgap", accent: ACCENTS[3],
+    title: { en: "Complete the Proof: Line from the Centre", af: "Voltooi die Bewys: Lyn vanaf die Middelpunt" },
+    blurb: { en: "Fill in each missing reason of the proof.", af: "Vul elke ontbrekende rede van die bewys in." },
+    given: { en: "O is the centre and OB ⊥ chord AC. Prove that OB bisects AC (AB = BC).", af: "O is die middelpunt en OB ⊥ koord AC. Bewys dat OB die koord AC halveer (AB = BC)." },
+    diagram: PROOF_LC,
+    bank: ["radii", "commonSide", "given", "rhs", "congTri", "pythagoras"],
+    lines: [
+      { s: "Construction: join OA and OC", r: "construction" },
+      { s: "In △OAB and △OCB:" },
+      { s: "OA = OC", r: "radii", gap: true },
+      { s: "OB = OB", r: "commonSide", gap: true },
+      { s: "∠OBA = ∠OBC = 90°", r: "given" },
+      { s: "∴ △OAB ≡ △OCB", r: "rhs", gap: true },
+      { s: "∴ AB = BC", r: "congTri", gap: true },
+    ],
+  },
+  {
+    id: "adv-proof-anglecentre", type: "proofgap", accent: ACCENTS[1],
+    title: { en: "Complete the Proof: Angle at the Centre", af: "Voltooi die Bewys: Hoek by die Middelpunt" },
+    blurb: { en: "Fill in each missing reason of the proof.", af: "Vul elke ontbrekende rede van die bewys in." },
+    given: { en: "O is the centre and PO is produced to T. Prove that ∠QOS = 2 × ∠QPS.", af: "O is die middelpunt en PO is verleng na T. Bewys dat ∠QOS = 2 × ∠QPS." },
+    diagram: PROOF_AC,
+    bank: ["radii", "isosBase", "triExt", "given", "construction", "congTri"],
+    lines: [
+      { s: "Let ∠QPO = x and ∠SPO = y" },
+      { s: "OP = OQ", r: "radii", gap: true },
+      { s: "∴ ∠OQP = x", r: "isosBase", gap: true },
+      { s: "∠QOT = x + x = 2x", r: "triExt", gap: true },
+      { s: "Similarly ∠SOT = 2y", r: "triExt" },
+      { s: "∴ ∠QOS = 2x + 2y = 2(x + y) = 2 × ∠QPS" },
+    ],
+  },
+  {
+    id: "adv-proof-tangents", type: "proofgap", accent: ACCENTS[0],
+    title: { en: "Complete the Proof: Tangents from a Point", af: "Voltooi die Bewys: Raaklyne vanuit 'n Punt" },
+    blurb: { en: "Fill in each missing reason of the proof.", af: "Vul elke ontbrekende rede van die bewys in." },
+    given: { en: "PA and PB are tangents to the circle (centre O) at A and B. Prove that PA = PB.", af: "PA en PB is raaklyne aan die sirkel (middelpunt O) by A en B. Bewys dat PA = PB." },
+    diagram: PROOF_TAN,
+    bank: ["radii", "tanRadius", "commonSide", "rhs", "congTri", "given"],
+    lines: [
+      { s: "Construction: join OA, OB and OP", r: "construction" },
+      { s: "In △OAP and △OBP:" },
+      { s: "OA = OB", r: "radii", gap: true },
+      { s: "∠OAP = ∠OBP = 90°", r: "tanRadius", gap: true },
+      { s: "OP = OP", r: "commonSide", gap: true },
+      { s: "∴ △OAP ≡ △OBP", r: "rhs", gap: true },
+      { s: "∴ PA = PB", r: "congTri", gap: true },
+    ],
+  },
+
+  /* ===== MORE solve-for-x (algebra) ===== */
+  {
+    id: "adv-algebra-semicircle", type: "values", accent: ACCENTS[2], unit: "",
+    title: { en: "Solve for x: Semicircle", af: "Los op vir x: Halfsirkel" },
+    blurb: { en: "Use the semicircle angle to make an equation.", af: "Gebruik die halfsirkel-hoek om 'n vergelyking te maak." },
+    given: { en: "AB is a diameter, ∠PAB = 2x and ∠PBA = x. (Hint: the angle in a semicircle is 90°, and the angles of a triangle add to 180°.)", af: "AB is 'n middellyn, ∠PAB = 2x en ∠PBA = x. (Wenk: die hoek in 'n halfsirkel is 90°, en die hoeke van 'n driehoek tel op tot 180°.)" },
+    diagram: ALG_SEMI,
+    rows: [
+      { name: "x", value: 30, reason: "semiCircle" },
+      { name: "∠PAB", value: 60, reason: "semiCircle" },
+    ],
+  },
+  {
+    id: "adv-algebra-tanchord", type: "values", accent: ACCENTS[0], unit: "",
+    title: { en: "Solve for x: Tangent–Chord", af: "Los op vir x: Raaklyn–Koord" },
+    blurb: { en: "The tan-chord theorem makes two angles equal.", af: "Die raaklyn–koord-stelling maak twee hoeke gelyk." },
+    given: { en: "The tangent–chord angle is 2x and the angle in the alternate segment is (x + 25). (Hint: tan-chord makes them equal.)", af: "Die raaklyn–koord-hoek is 2x en die hoek in die oorstaande segment is (x + 25). (Wenk: raaklyn–koord maak hulle gelyk.)" },
+    diagram: ALG_TC,
+    rows: [
+      { name: "x", value: 25, reason: "tanChord" },
+      { name: "∠TPB", value: 50, reason: "tanChord" },
+    ],
+  },
+
+  /* ===== MORE spot-the-error ===== */
+  {
+    id: "adv-spot-centre", type: "spoterror", accent: ACCENTS[3],
+    title: { en: "Spot the Error: Centre & Segment", af: "Vind die Fout: Middelpunt & Segment" },
+    blurb: { en: "One line of the solution is wrong — find it.", af: "Een reël van die oplossing is verkeerd — vind dit." },
+    given: { en: "Ô = 100° at the centre. A learner wrote — one line is wrong:", af: "Ô = 100° by die middelpunt. 'n Leerder het geskryf — een reël is verkeerd:" },
+    diagram: D1,
+    lines: [
+      { s: "∠AOB = 100°", r: "given" },
+      { s: "P̂ = 50°", r: "centreDouble" },
+      { s: "Q̂ = 100°", r: "sameSeg" },
+    ],
+    badLine: 2,
+    fix: { en: "Q̂ is wrong. P̂ and Q̂ stand on the same chord AB in the same segment, so Q̂ = P̂ = 50°, not 100°.", af: "Q̂ is verkeerd. P̂ en Q̂ staan op dieselfde koord AB in dieselfde segment, dus Q̂ = P̂ = 50°, nie 100° nie." },
+  },
+  {
+    id: "adv-spot-semicircle", type: "spoterror", accent: ACCENTS[2],
+    title: { en: "Spot the Error: Semicircle", af: "Vind die Fout: Halfsirkel" },
+    blurb: { en: "One line of the solution is wrong — find it.", af: "Een reël van die oplossing is verkeerd — vind dit." },
+    given: { en: "AB is a diameter and ∠PAB = 35°. A learner wrote — one line is wrong:", af: "AB is 'n middellyn en ∠PAB = 35°. 'n Leerder het geskryf — een reël is verkeerd:" },
+    diagram: D6,
+    lines: [
+      { s: "∠APB = 90°", r: "semiCircle" },
+      { s: "∠PAB = 35°", r: "given" },
+      { s: "∠PBA = 55°", r: "cyclicOpp" },
+    ],
+    badLine: 2,
+    fix: { en: "The value 55° is correct, but the reason is wrong. ∠PBA = 180° − 90° − 35° comes from the angle sum of △APB, so the reason is “int angles of triangle”, not “opp ∠s of cyclic quad”.", af: "Die waarde 55° is reg, maar die rede is verkeerd. ∠PBA = 180° − 90° − 35° kom van die hoeksom van △APB, dus is die rede “binnehoeke van Δ”, nie “teenoorst. ∠e van kvh” nie." },
   },
 ];
 

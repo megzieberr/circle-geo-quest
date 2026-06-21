@@ -46,7 +46,8 @@ export function renderAdventures(app, host) {
     card.style.setProperty("--accent", a.accent);
     const tag = a.type === "reasons" ? `📝 ${t("fillReasons")}`
               : a.type === "values" ? `🔢 ${t("fillValues")}`
-              : a.type === "mixed" ? `🎯 ${t("fillBoth")}` : `🔍 ${t("spotError")}`;
+              : a.type === "mixed" ? `🎯 ${t("fillBoth")}`
+              : a.type === "proofgap" ? `🧩 ${t("completeProof")}` : `🔍 ${t("spotError")}`;
     card.innerHTML = `
       <div class="rc-top"><span class="rc-kind">${tag}</span>${done ? '<span class="rc-badge" title="Done">✓</span>' : ""}</div>
       <h3>${tx(a.title)}</h3>
@@ -78,7 +79,7 @@ export function renderAdventure(app, host, params) {
   const screen = el("div", "play adventure");
   screen.style.setProperty("--accent", adv.accent);
 
-  const tag = adv.type === "reasons" ? "📝" : adv.type === "values" ? "🔢" : adv.type === "mixed" ? "🎯" : "🔍";
+  const tag = adv.type === "reasons" ? "📝" : adv.type === "values" ? "🔢" : adv.type === "mixed" ? "🎯" : adv.type === "proofgap" ? "🧩" : "🔍";
   const top = el("div", "play-top");
   top.innerHTML = `<button class="link-btn quit">✕</button>
     <div class="play-title">${tx(adv.title)}</div>
@@ -92,7 +93,8 @@ export function renderAdventure(app, host, params) {
 
   const hintText = adv.type === "reasons" ? t("advReasonsHint")
                  : adv.type === "values" ? t("advValuesHint")
-                 : adv.type === "mixed" ? t("advMixedHint") : t("advSpotHint");
+                 : adv.type === "mixed" ? t("advMixedHint")
+                 : adv.type === "proofgap" ? t("advProofHint") : t("advSpotHint");
   screen.appendChild(el("p", "adv-instr", hintText));
   if (adv.given) screen.appendChild(el("div", "adv-given", "📌 " + tx(adv.given)));
   if (alreadyPassed) screen.appendChild(el("div", "replay-note", "🔁 " + t("replayNoXp")));
@@ -101,7 +103,84 @@ export function renderAdventure(app, host, params) {
   host.appendChild(screen);
 
   if (adv.type === "spoterror") renderSpot(app, adv, screen, foot, alreadyPassed);
+  else if (adv.type === "proofgap") renderProofGap(app, adv, screen, foot, alreadyPassed);
   else renderTable(app, adv, screen, foot, alreadyPassed);
+}
+
+/* ---------- complete the proof: supply each missing reason ---------- */
+function renderProofGap(app, adv, screen, foot, alreadyPassed) {
+  const accept = ln => Array.isArray(ln.r) ? ln.r : [ln.r];
+  const gaps = adv.lines.map((ln, i) => ({ ln, i })).filter(x => x.ln.gap);
+  const bank = shuffled(adv.bank || gaps.flatMap(g => accept(g.ln)));
+  const vals = {};                       // line index -> picked reason code
+  let active = gaps.length ? gaps[0].i : null;
+  let locked = false;
+
+  const list = el("div", "proofgap-list");
+  const inputArea = el("div", "adv-input");
+  const checkBtn = el("button", "btn primary big", t("check"));
+  checkBtn.disabled = true;
+  foot.appendChild(checkBtn);
+  mount(screen, list, inputArea, foot);
+
+  const gapOK = i => accept(adv.lines[i]).includes(vals[i]);
+  const allFilled = () => gaps.every(g => vals[g.i] != null);
+
+  function renderList() {
+    list.innerHTML = "";
+    adv.lines.forEach((ln, i) => {
+      const isActive = !locked && active === i;
+      const row = el("div", "pg-line" + (isActive ? " active" : "") + (locked && ln.gap ? (gapOK(i) ? " gap-ok" : " gap-bad") : ""));
+      let html = `<span class="pg-n">${i + 1}</span><span class="pg-s">${nameOf(ln.s)}</span>`;
+      if (ln.gap) {
+        const txt = vals[i] != null ? reason(vals[i]) : t("advPickReason");
+        html += `<span class="pg-slot ${vals[i] == null ? "empty" : "filled"}${isActive ? " sel" : ""}">${txt}</span>`;
+      } else if (ln.r) {
+        html += `<span class="pg-r">${reason(accept(ln)[0])}</span>`;
+      }
+      row.innerHTML = html;
+      if (ln.gap && !locked) row.querySelector(".pg-slot").addEventListener("click", () => { active = i; sync(); });
+      if (locked && ln.gap && !gapOK(i)) row.appendChild(el("div", "adv-correct", "✓ " + accept(ln).map(reason).join(" / ")));
+      list.appendChild(row);
+    });
+  }
+
+  function renderInput() {
+    inputArea.innerHTML = "";
+    if (locked || active == null) return;
+    const wrap = el("div", "wordbank reasons");
+    bank.forEach(code => {
+      const chip = el("button", "wordchip" + (vals[active] === code ? " picked" : ""), reason(code));
+      chip.addEventListener("click", () => { vals[active] = code; advanceGap(); });
+      wrap.appendChild(chip);
+    });
+    inputArea.appendChild(wrap);
+  }
+
+  function advanceGap() { const nx = gaps.find(g => vals[g.i] == null); active = nx ? nx.i : active; sync(); }
+  function sync() { renderList(); renderInput(); checkBtn.disabled = !allFilled(); }
+
+  checkBtn.addEventListener("click", async () => {
+    if (locked || !allFilled()) return;
+    locked = true;
+    const total = gaps.length;
+    const correct = gaps.filter(g => gapOK(g.i)).length;
+    let xp = 0, streak = 0;
+    gaps.forEach(g => {
+      if (gapOK(g.i)) { streak++; xp += CONFIG.xpPerCorrect + CONFIG.firstTryBonus + CONFIG.streakStep * Math.min(streak - 1, CONFIG.streakCap); }
+      else streak = 0;
+    });
+    const gained = alreadyPassed ? 0 : xp;
+    renderList();
+    inputArea.innerHTML = "";
+    checkBtn.remove();
+    const frac = total ? correct / total : 0;
+    try { const s = getSession(); await api.submitRound(s.name, s.password, adv.id, { score: frac, xpGained: gained, total, correct }); } catch { /* offline */ }
+    await app.refreshState();
+    showResult(app, adv, screen, foot, { correct, total, gained, frac, alreadyPassed });
+  });
+
+  sync();
 }
 
 /* ---------- field-based table: values | reasons | mixed ---------- */

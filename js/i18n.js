@@ -147,6 +147,8 @@ const UI = {
   fillValues:      { en: "Fill the values", af: "Vul die waardes in" },
   fillBoth:        { en: "Value + reason", af: "Waarde + rede" },
   spotError:       { en: "Spot the error", af: "Vind die fout" },
+  completeProof:   { en: "Complete the proof", af: "Voltooi die bewys" },
+  advProofHint:    { en: "Each line of the proof is given. Tap a blank and choose the missing reason.", af: "Elke reël van die bewys is gegee. Klik 'n oop spasie en kies die ontbrekende rede." },
   advReasonsHint:  { en: "Each statement is given. Tap a row, then choose its reason.", af: "Elke stelling is gegee. Klik 'n ry, kies dan sy rede." },
   advValuesHint:   { en: "Each reason is given. Tap a row, then type the angle.", af: "Elke rede is gegee. Klik 'n ry, tik dan die hoek." },
   advMixedHint:    { en: "Fill in BOTH the angle and its reason for every row.", af: "Vul BEIDE die hoek en sy rede vir elke ry in." },
