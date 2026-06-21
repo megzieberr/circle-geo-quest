@@ -101,6 +101,6 @@ export const round = {
       diagram: { O: true, pts: { F: 42, C: 318 }, ext: [{ name: "A", t: ["F", "C"] }], chords: [["O", "F"], ["O", "C"]],
         angles: [ { at: "F", legs: ["O", "A"], t: "", o: { v: 90, mark: 1 } }, { at: "C", legs: ["O", "A"], t: "", o: { v: 90, mark: 1 } } ] },
       options: [ { text: O.kite, correct: true }, { text: { en: "A rhombus", af: "’n Ruit" } }, { text: O.parallelogram }, { text: O.trapezium } ],
-      answer: { en: "A kite — OF = OC (radii) and AF = AC (tangents from a common point), so OFAC has two pairs of adjacent sides equal.", af: "’n Vlieër — OF = OC (radiusse) en AF = AC (raaklyne vanuit 'n gemeenskaplike punt), dus het OFAC twee pare aangrensende gelyke sye." } },
+      answer: { en: "A kite — OF = OC (radii) and AF = AC (tangents from the same point), so OFAC has two pairs of adjacent sides equal.", af: "’n Vlieër — OF = OC (radiusse) en AF = AC (raaklyne vanuit dieselfde punt), dus het OFAC twee pare aangrensende gelyke sye." } },
   ],
 };

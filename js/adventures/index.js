@@ -46,6 +46,38 @@ const D2 = {
   ],
 };
 
+/* D3 — tangent-chord triangle: tangent STU at T, chords TA and TB. The two
+   tan-chord angles ∠UTA and ∠STB are given; the inscribed angles equal them
+   (tan-chord) and ∠ATB closes the straight line. From the verified data set. */
+const D3 = {
+  pts: { T: 270, A: 8, B: 156 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: [["T", "A"], ["T", "B"], ["A", "B"]],
+  angles: [
+    { at: "T", legs: ["tg+", "A"], t: "49°", o: { v: 49 } },   // given
+    { at: "T", legs: ["tg-", "B"], t: "57°", o: { v: 57 } },   // given
+    { at: "B", legs: ["T", "A"], t: "", o: { v: 49 } },        // B̂
+    { at: "A", legs: ["T", "B"], t: "", o: { v: 57 } },        // Â
+    { at: "T", legs: ["A", "B"], t: "", o: { v: 74 } },        // ∠ATB
+  ],
+};
+
+/* D4 — tangents PT and PS from external point P (isosceles △PTS), with Q on the
+   circle. Base angles by ∠s opp equal sides, the apex by ∠ sum of △, and the
+   inscribed ∠TQS by tan-chord. From the verified data set. */
+const D4 = {
+  h: 256, cx: 160, cy: 96, R: 58,
+  pts: { T: 334, S: 206, Q: 90 },
+  ext: [{ name: "P", t: ["T", "S"] }],
+  chords: [["T", "S"], ["Q", "T"], ["Q", "S"]],
+  angles: [
+    { at: "T", legs: ["P", "S"], t: "64°", o: { v: 64 } },   // given ∠PTS
+    { at: "S", legs: ["P", "T"], t: "", o: { v: 64 } },       // ∠PST
+    { at: "P", legs: ["T", "S"], t: "", o: { v: 52 } },       // ∠TPS
+    { at: "Q", legs: ["T", "S"], t: "", o: { v: 64 } },       // ∠TQS
+  ],
+};
+
 export const ADVENTURES = [
   {
     id: "adv-centre-values", type: "values", accent: ACCENTS[3],
@@ -72,27 +104,28 @@ export const ADVENTURES = [
     ],
   },
   {
-    id: "adv-cyclic-values", type: "values", accent: ACCENTS[2],
-    title: { en: "Diameter & Quad Quest", af: "Middellyn & Vierhoek-soeke" },
+    id: "adv-tanchord-values", type: "values", accent: ACCENTS[2],
+    title: { en: "Tangent–Chord Quest", af: "Raaklyn–Koord-soeke" },
     blurb: { en: "Type each angle. The reason for each is given.", af: "Tik elke hoek. Die rede vir elkeen is gegee." },
-    given: { en: "Given: N̂ = 105°, and NL is a diameter.", af: "Gegee: N̂ = 105°, en NL is 'n middellyn." },
-    diagram: D2,
+    given: { en: "Given: STU is a tangent at T, with ∠UTA = 49° and ∠STB = 57°.", af: "Gegee: STU is 'n raaklyn by T, met ∠UTA = 49° en ∠STB = 57°." },
+    diagram: D3,
     rows: [
-      { name: "K̂", value: 90, reason: "semiCircle" },
-      { name: "M̂", value: 90, reason: "semiCircle" },
-      { name: "L̂", value: 75, reason: "cyclicOpp" },
+      { name: "B̂", value: 49, reason: "tanChord" },
+      { name: "Â", value: 57, reason: "tanChord" },
+      { name: "∠ATB", value: 74, reason: "straightLine" },
     ],
   },
   {
-    id: "adv-centre-reasons", type: "reasons", accent: ACCENTS[0],
-    title: { en: "Centre & Segment Reasons", af: "Middelpunt & Segment-redes" },
+    id: "adv-tangentpoint-reasons", type: "reasons", accent: ACCENTS[0],
+    title: { en: "Tangents-from-a-Point Reasons", af: "Raaklyne-vanuit-'n-Punt-redes" },
     blurb: { en: "Each statement is given — choose the right reason.", af: "Elke stelling is gegee — kies die regte rede." },
-    given: { en: "Given: the centre angle Ô = 100°.", af: "Gegee: die middelpunthoek Ô = 100°." },
-    diagram: D1,
-    bank: ["centreDouble", "sameSeg", "semiCircle", "cyclicOpp", "isosBase", "straightLine"],
+    given: { en: "Given: PT and PS are tangents from P, and ∠PTS = 64°.", af: "Gegee: PT en PS is raaklyne vanaf P, en ∠PTS = 64°." },
+    diagram: D4,
+    bank: ["isosBase", "triSum", "tanChord", "tansCommonPt", "cyclicOpp", "sameSeg"],
     rows: [
-      { name: "P̂", value: 50, reason: "centreDouble" },
-      { name: "Q̂", value: 50, reason: "sameSeg" },
+      { name: "∠PST", value: 64, reason: "isosBase" },
+      { name: "∠TPS", value: 52, reason: "triSum" },
+      { name: "∠TQS", value: 64, reason: "tanChord" },
     ],
   },
 ];

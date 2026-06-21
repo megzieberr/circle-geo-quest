@@ -63,7 +63,7 @@ export const round = {
       prompt: { en: "PT and PS are tangents from P. Which theorem gives PT = PS?", af: "PT en PS is raaklyne vanaf P. Watter stelling gee PT = PS?" },
       diagram: { h: 280, cx: 160, cy: 92, R: 56, pts: { T: 338, S: 202 }, ext: [{ name: "P", t: ["T", "S"] }], chords: [["T", "S"]] },
       options: [ { code: "tansCommonPt", correct: true }, { code: "tanRadius" }, { code: "equalChords" }, { code: "isosBase" } ],
-      answer: { en: "Tangents from a common point are equal.", af: "Raaklyne vanaf 'n gemeenskaplike punt is gelyk." }, explainReason: "tansCommonPt" },
+      answer: { en: "Tangents from the same point are equal.", af: "Raaklyne vanaf dieselfde punt is gelyk." }, explainReason: "tansCommonPt" },
 
     { id: "r12q9", type: "reason", accent: AC,
       prompt: { en: "OM meets chord AB at a right angle. Which theorem lets you say AM = MB?", af: "OM ontmoet koord AB teen 'n regte hoek. Watter stelling laat jou sê AM = MB?" },
