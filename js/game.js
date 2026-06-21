@@ -6,6 +6,8 @@ import { getSession } from "./session.js";
 import { t, tx, reason } from "./i18n.js";
 import { el, clear, mount, progressBar, shuffled, toast } from "./ui.js";
 import { mountQuestion } from "./questions.js";
+import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
+import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -62,6 +64,9 @@ export function renderHome(app, host) {
   host.appendChild(head);
 
   host.appendChild(renderRankLadder(progress));
+
+  // Daily Challenge + Fix-My-Mistakes — the two "come back and practise" hooks
+  host.appendChild(renderPracticeStrip(app));
 
   // Adventure (Grand Master bonus) — visible to all, unlocked once every badge is earned
   const isGM = GROUPS.length > 0 && badgesEarned === GROUPS.length;
@@ -142,6 +147,61 @@ function renderRankLadder(progress) {
   return card;
 }
 
+/* the two daily-habit hooks: the Daily Challenge streak + the Fix pile */
+function renderPracticeStrip(app) {
+  const strip = el("div", "practice-strip");
+  strip.appendChild(dailyCard(app));
+  strip.appendChild(fixCard(app));
+  return strip;
+}
+
+function dailyCard(app) {
+  const unlocked = dailyUnlocked(app);
+  const done = unlocked && isDoneToday(app);
+  const streak = (getDaily(app).streak) || 0;
+  const card = el("div", "card practice-card daily-pc" + (done ? " done" : "") + (unlocked ? "" : " locked"));
+  const icon = streak > 0 ? `🔥<span class="pc-streak">${streak}</span>` : "📅";
+  card.innerHTML = `
+    <div class="pc-icon">${icon}</div>
+    <div class="pc-body">
+      <span class="eyebrow">${t("dailyChallenge")}</span>
+      <p class="muted small">${!unlocked ? t("dailyLocked") : (done ? t("dailyDoneToday") : t("dailyBlurb"))}</p>
+    </div>
+    <div class="pc-foot"></div>`;
+  const foot = card.querySelector(".pc-foot");
+  if (unlocked && !done) {
+    const b = el("button", "btn primary small", "▶ " + t("dailyStart"));
+    b.addEventListener("click", () => app.go("daily"));
+    foot.appendChild(b);
+  } else if (done) {
+    foot.appendChild(el("span", "pc-streaknote", `🔥 ${streak} ${t("dayStreak")}`));
+  } else {
+    foot.appendChild(el("span", "rc-lock", "🔒"));
+  }
+  return card;
+}
+
+function fixCard(app) {
+  const n = mistakeCount(app);
+  const card = el("div", "card practice-card fix-pc" + (n ? "" : " calm"));
+  card.innerHTML = `
+    <div class="pc-icon">🩹${n ? `<span class="pc-streak warn">${n}</span>` : ""}</div>
+    <div class="pc-body">
+      <span class="eyebrow">${t("fixMistakes")}</span>
+      <p class="muted small">${n ? t("fixCardBlurb") : t("fixNone")}</p>
+    </div>
+    <div class="pc-foot"></div>`;
+  const foot = card.querySelector(".pc-foot");
+  if (n) {
+    const b = el("button", "btn primary small", `${t("fixStart")} (${n})`);
+    b.addEventListener("click", () => app.go("fix"));
+    foot.appendChild(b);
+  } else {
+    foot.appendChild(el("span", "pc-streaknote", "✓"));
+  }
+  return card;
+}
+
 /* ---------------- PLAY LOOP (graded exercise rounds) ---------------- */
 export function renderPlay(app, host, params) {
   const round = ROUND_BY_ID[params.roundId];
@@ -191,6 +251,9 @@ export function renderPlay(app, host, params) {
     mountQuestion(qhost, q, (isCorrect, qScore) => {
       const score = (qScore != null) ? qScore : (isCorrect ? 1 : 0);
       state.score += score;
+      // remember misses for the Fix-My-Mistakes pile; a clean correct clears it
+      if (isCorrect) clearMistake(app, q.id);
+      else if (score === 0) addMistake(app, q.id, round.id);
       let gained = 0;
       const lines = [];
       if (isCorrect) {

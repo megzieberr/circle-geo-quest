@@ -151,6 +151,40 @@ const UI = {
   advCleared:      { en: "Adventure cleared! 🏆", af: "Avontuur voltooi! 🏆" },
   advTryAgainMsg:  { en: "Give it another go to clear it (80%).", af: "Probeer weer om dit te voltooi (80%)." },
 
+  // hints (graded rounds)
+  needHint:       { en: "Stuck? Get a hint", af: "Vasgeval? Kry 'n wenk" },
+  anotherHint:    { en: "Another hint", af: "Nog 'n wenk" },
+  hintThink:      { en: "Think about", af: "Dink aan" },
+  hintNoMore:     { en: "That's every hint — give it your best shot!", af: "Dis al die wenke — gee dit jou beste poging!" },
+  hintUsedNote:   { en: "Hints are free here — use them to learn, not to lose marks.", af: "Wenke is gratis hier — gebruik dit om te leer." },
+
+  // fix-my-mistakes
+  fixMistakes:    { en: "Fix your mistakes", af: "Maak jou foute reg" },
+  fixCardBlurb:   { en: "Re-try the questions you missed. Get one right and it leaves the pile.", af: "Probeer weer die vrae wat jy gemis het. Kry een reg en dit verlaat die stapel." },
+  fixToFix:       { en: "to fix", af: "om reg te maak" },
+  fixStart:       { en: "Fix them", af: "Maak reg" },
+  fixNone:        { en: "Nothing to fix — you're all caught up! 🎉", af: "Niks om reg te maak nie — jy is op datum! 🎉" },
+  fixEmptyHint:   { en: "Miss a question in a round and it lands here so you can master it.", af: "Mis 'n vraag in 'n rondte en dit beland hier sodat jy dit kan bemeester." },
+  fixComplete:    { en: "Mistakes session done", af: "Foute-sessie klaar" },
+  fixCleared:     { en: "cleared", af: "reggemaak" },
+  fixStillToGo:   { en: "still to fix", af: "nog reg te maak" },
+  fixFromRound:   { en: "From round", af: "Uit rondte" },
+  fixAllClear:    { en: "Every mistake cleared — brilliant! 🌟", af: "Elke fout reggemaak — briljant! 🌟" },
+
+  // daily challenge
+  dailyChallenge: { en: "Daily Challenge", af: "Daaglikse Uitdaging" },
+  dailyBlurb:     { en: "5 quick questions to keep every theorem fresh.", af: "5 vinnige vrae om elke stelling vars te hou." },
+  dailyStart:     { en: "Start today's 5", af: "Begin vandag se 5" },
+  dailyDoneToday: { en: "Done for today 🎉 Come back tomorrow!", af: "Klaar vir vandag 🎉 Kom môre terug!" },
+  dailyReplay:    { en: "Practise again", af: "Oefen weer" },
+  dayStreak:      { en: "day streak", af: "dag-streak" },
+  streakBest:     { en: "best", af: "beste" },
+  dailyLocked:    { en: "Pass your first round to unlock the Daily Challenge.", af: "Slaag jou eerste rondte om die Daaglikse Uitdaging oop te sluit." },
+  dailyComplete:  { en: "Daily Challenge complete!", af: "Daaglikse Uitdaging voltooi!" },
+  dailyStreakUp:  { en: "day streak — keep it alive tomorrow!", af: "dag-streak — hou dit môre lewendig!" },
+  dailyStreakNew: { en: "Streak started! Come back tomorrow to build it.", af: "Streak begin! Kom môre terug om dit te bou." },
+  dailyKeptFresh: { en: "Great retrieval practice — this is how it sticks. 🧠", af: "Goeie oefening — só bly dit vassteek. 🧠" },
+
   // misc
   language:       { en: "Afrikaans", af: "English" }, // label shows the OTHER language to switch to
   loading:        { en: "Loading…", af: "Laai…" },

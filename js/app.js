@@ -9,6 +9,8 @@ import { renderDiscover } from "./discover.js";
 import { renderCutscene } from "./cutscene.js";
 import { renderLeaderboard } from "./leaderboard.js";
 import { renderAdventures, renderAdventure } from "./adventure.js";
+import { renderFixMistakes } from "./mistakes.js";
+import { renderDaily } from "./daily.js";
 
 const app = {
   root: null,
@@ -66,6 +68,8 @@ const app = {
       case "results": renderResults(this, view, this.params); break;
       case "adventures": renderAdventures(this, view); break;
       case "adventure": renderAdventure(this, view, this.params); break;
+      case "fix": renderFixMistakes(this, view); break;
+      case "daily": renderDaily(this, view); break;
       case "leaderboard": renderLeaderboard(this, view); break;
       default: renderHome(this, view);
     }

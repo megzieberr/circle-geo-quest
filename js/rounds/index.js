@@ -83,3 +83,19 @@ export const ROUNDS = ORDER.map((r, i) => {
   return r;
 });
 export const ROUND_BY_ID = Object.fromEntries(ROUNDS.map(r => [r.id, r]));
+
+/* ------------------------------------------------------------
+   Flat index of every GRADED question (only "play" rounds carry a
+   `questions` array; cutscenes/discovery carry `panels` instead).
+   Powers Fix-My-Mistakes and the Daily Challenge, which need to look
+   a single question up by its id and know which round it came from. */
+export const QUESTION_BANK = [];
+export const QUESTION_BY_ID = {};
+ROUNDS.forEach(r => {
+  if (!Array.isArray(r.questions)) return;
+  r.questions.forEach(q => {
+    const entry = { q, roundId: r.id, roundN: r.n, title: r.title, accent: r.accent || q.accent, group: r.group };
+    QUESTION_BANK.push(entry);
+    QUESTION_BY_ID[q.id] = entry;
+  });
+});

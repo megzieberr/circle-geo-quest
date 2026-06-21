@@ -250,6 +250,17 @@ const LocalBackend = {
    If js/supabase-config.js has a url + anon key, use the shared
    Supabase backend; otherwise fall back to local play. Either way
    the rest of the app calls the exact same methods.
+
+   Append ?local=1 to the URL (or set localStorage cgg.forceLocal=1)
+   to force the offline demo backend — handy for offline play and for
+   testing changes without touching the live class data.
    ============================================================ */
-export const api = hasSupabase ? SupabaseBackend : LocalBackend;
-export const BACKEND = hasSupabase ? "supabase" : "local";
+function forceLocal() {
+  try {
+    if (new URLSearchParams(location.search).has("local")) { localStorage.setItem("cgg.forceLocal", "1"); return true; }
+    return localStorage.getItem("cgg.forceLocal") === "1";
+  } catch { return false; }
+}
+const useLocal = !hasSupabase || forceLocal();
+export const api = useLocal ? LocalBackend : SupabaseBackend;
+export const BACKEND = useLocal ? "local" : "supabase";

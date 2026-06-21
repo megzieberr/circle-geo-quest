@@ -55,9 +55,11 @@ export function mountQuestion(container, q, onAnswered) {
   feedback.hidden = true;
 
   let answered = false;
+  let hintWrap = null;                  // the "Stuck? hint" control, hidden once answered
   function reveal(isCorrect, answerText, reasonText) {
     if (answered) return;
     answered = true;
+    if (hintWrap) hintWrap.hidden = true;
     feedback.hidden = false;
     feedback.classList.add(isCorrect ? "good" : "bad");
     const head = isCorrect ? t("correct") : t("notQuite");
@@ -87,6 +89,29 @@ export function mountQuestion(container, q, onAnswered) {
   }
   function answerText() {
     return q.answer ? tx(q.answer) : "";
+  }
+
+  // Build a progressive hint ladder for this question. The first hint NAMES
+  // the theorem to use; later hints reveal the working lines — but never the
+  // final answer line. Sources, in order: an explicit q.hints array, the
+  // q.solution working steps, or the single explainReason nudge.
+  function buildHintSteps() {
+    if (Array.isArray(q.hints) && q.hints.length) return q.hints.map(h => tx(h));
+    const sol = Array.isArray(q.solution) ? q.solution.filter(s => s && (s.s || s.r)) : [];
+    if (sol.length) {
+      const steps = [];
+      const firstR = sol.find(s => s.r);
+      if (firstR) steps.push(`<b>${t("hintThink")}:</b> <i>${resolveR(firstR.r)}</i>`);
+      // reveal every working line except the last (which states the answer)
+      const reveal = sol.length > 1 ? sol.slice(0, sol.length - 1) : [];
+      reveal.forEach(st => {
+        const r = st.r ? resolveR(st.r) : "";
+        steps.push(`${tx(st.s)}${r ? ` <span class="qh-r">(${r})</span>` : ""}`);
+      });
+      return steps;
+    }
+    const er = explainReason();
+    return er ? [`<b>${t("hintThink")}:</b> <i>${er}</i>`] : [];
   }
 
   // ---- per-type rendering ----
@@ -235,8 +260,34 @@ export function mountQuestion(container, q, onAnswered) {
     render();
   }
 
+  hintWrap = buildHintBar(buildHintSteps());
+  if (hintWrap) root.appendChild(hintWrap);
   root.appendChild(feedback);
   container.appendChild(root);
+}
+
+/* ------------------------------------------------------------
+   The "Stuck? Get a hint" ladder. Reveals one step per tap so a
+   learner who can't start still gets a foothold instead of quitting.
+   ------------------------------------------------------------ */
+function buildHintBar(steps) {
+  if (!steps.length) return null;
+  const wrap = el("div", "q-hints");
+  const panel = el("div", "q-hint-panel");
+  const btn = el("button", "btn ghost small hint-btn", "💡 " + t("needHint"));
+  let shown = 0;
+  btn.addEventListener("click", () => {
+    if (shown >= steps.length) return;
+    const step = el("div", "q-hint-step");
+    step.innerHTML = `<span class="qh-n">${shown + 1}</span><span class="qh-body">${steps[shown]}</span>`;
+    panel.appendChild(step);
+    shown++;
+    if (shown >= steps.length) { btn.textContent = "✓ " + t("hintNoMore"); btn.disabled = true; }
+    else btn.textContent = "💡 " + t("anotherHint");
+  });
+  wrap.appendChild(panel);
+  wrap.appendChild(btn);
+  return wrap;
 }
 
 /* ------------------------------------------------------------
