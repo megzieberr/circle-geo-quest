@@ -28,7 +28,7 @@ export const round = {
   title: { en: "Converse theorems", af: "Omgekeerde stellings" },
   blurb: { en: "Read the clue, name the figure.", af: "Lees die leidraad, benoem die figuur." },
   reasonCode: null,
-  questionsPerPlay: 10,
+  questionsPerPlay: 11,
   questions: [
     { id: "r15q1", type: "mc", accent: AC,
       prompt: { en: "OB is a radius and line CD is drawn perpendicular to OB at B (on the circle). What is CD?", af: "OB is 'n radius en lyn CD is loodreg op OB by B (op die sirkel) geteken. Wat is CD?" },
@@ -95,5 +95,12 @@ export const round = {
       diagram: { O: true, pts: { A: 200, B: 340 }, mid: [{ name: "M", of: ["A", "B"] }], chords: [["A", "B"], ["O", "M"]], angles: [{ at: "M", legs: ["O", "A"], t: "", o: { v: 90, mark: 1 } }] },
       options: [ { text: O.centre, correct: true }, { text: { en: "A point on AB", af: "’n Punt op AB" } }, { text: { en: "The midpoint of OA", af: "Die middelpunt van OA" } }, { text: O.tangent } ],
       answer: { en: "The centre — the perpendicular bisector of a chord passes through the centre of the circle.", af: "Die middelpunt — die middelloodlyn van 'n koord gaan deur die middelpunt van die sirkel." } },
+
+    { id: "r15q11", type: "mc", accent: AC,
+      prompt: { en: "Two tangents from external point A touch the circle at F and C. The radii OF and OC are drawn, each ⊥ its tangent. What type of quadrilateral is OFAC?", af: "Twee raaklyne vanuit buitepunt A raak die sirkel by F en C. Die radiusse OF en OC is geteken, elk ⊥ sy raaklyn. Watter soort vierhoek is OFAC?" },
+      diagram: { O: true, pts: { F: 42, C: 318 }, ext: [{ name: "A", t: ["F", "C"] }], chords: [["O", "F"], ["O", "C"]],
+        angles: [ { at: "F", legs: ["O", "A"], t: "", o: { v: 90, mark: 1 } }, { at: "C", legs: ["O", "A"], t: "", o: { v: 90, mark: 1 } } ] },
+      options: [ { text: O.kite, correct: true }, { text: { en: "A rhombus", af: "’n Ruit" } }, { text: O.parallelogram }, { text: O.trapezium } ],
+      answer: { en: "A kite — OF = OC (radii) and AF = AC (tangents from a common point), so OFAC has two pairs of adjacent sides equal.", af: "’n Vlieër — OF = OC (radiusse) en AF = AC (raaklyne vanuit 'n gemeenskaplike punt), dus het OFAC twee pare aangrensende gelyke sye." } },
   ],
 };
