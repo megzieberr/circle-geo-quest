@@ -78,6 +78,95 @@ const D4 = {
   ],
 };
 
+/* D5 — line from the centre ⊥ chord. OM ⊥ AB at the midpoint M; radius OA drawn.
+   A right-angled triangle OMA: radius (hyp), distance OM and half-chord AM (legs).
+   Length adventure (Pythagoras), so the rows are lengths, not degrees. */
+const D5 = {
+  O: true,
+  pts: { A: 205, B: 335 },
+  mid: [{ name: "M", of: ["A", "B"] }],
+  chords: [["A", "B"], ["O", "M"], ["O", "A"]],
+  angles: [{ at: "M", legs: ["O", "A"], t: "", o: { v: 90, mark: true } }],
+};
+
+/* D6 — angle in a semicircle. Diameter AB, P on the circle. ∠APB = 90°,
+   and ∠PAB = 35° (given) fixes ∠PBA = 55° by the angle sum of the triangle. */
+const D6 = {
+  O: true,
+  pts: { A: 180, B: 0, P: 70 },
+  chords: [["A", "B"], ["A", "P"], ["B", "P"]],
+  angles: [
+    { at: "P", legs: ["A", "B"], t: "", o: { v: 90, mark: true } },   // semicircle
+    { at: "A", legs: ["P", "B"], t: "35°", o: { v: 35 } },            // given
+    { at: "B", legs: ["P", "A"], t: "", o: { v: 55 } },               // ∠PBA
+  ],
+};
+
+/* D7 — equal chords AB = CD subtend equal angles at the centre (∠AOB = ∠COD).
+   △OCD is isosceles (OC = OD radii), so its base angles are 50°. */
+const D7 = {
+  O: true,
+  pts: { A: 130, B: 50, C: 300, D: 220 },
+  chords: [["O", "A"], ["O", "B"], ["O", "C"], ["O", "D"], ["A", "B"], ["C", "D"]],
+  angles: [
+    { at: "O", legs: ["A", "B"], t: "80°", o: { v: 80 } },   // given
+    { at: "O", legs: ["C", "D"], t: "", o: { v: 80 } },      // equal chords
+    { at: "C", legs: ["O", "D"], t: "", o: { v: 50 } },      // isosceles base ∠
+  ],
+};
+
+/* D8 — exterior angle of a cyclic quad. ABCD cyclic, BC produced to E. The
+   exterior ∠DCE equals the interior opposite ∠A (100°); ∠BCD = 80° (straight line). */
+const D8 = {
+  pts: { A: 140, B: 50, C: 315, D: 210 },
+  chords: [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"]],
+  out: [{ name: "E", along: ["B", "C"], len: 30 }],
+  angles: [
+    { at: "A", legs: ["D", "B"], t: "100°", o: { v: 100 } },   // given
+    { at: "C", legs: ["D", "E"], t: "", o: { v: 100 } },        // exterior = opp interior
+    { at: "C", legs: ["B", "D"], t: "", o: { v: 80 } },         // interior ∠BCD
+  ],
+};
+
+/* D9 — tangent ⊥ radius. Tangent STU at T, radius OT, chord TA. The tangent–chord
+   angle is 35°, so ∠OTA = 55° (tan ⊥ radius). △OTA is isosceles (OT = OA),
+   so ∠OAT = 55° and ∠TOA = 70°. */
+const D9 = {
+  O: true,
+  pts: { T: 270, A: 340 },
+  tang: [{ at: "T" }],
+  chords: [["O", "T"], ["O", "A"], ["T", "A"]],
+  angles: [
+    { at: "T", legs: ["tg+", "A"], t: "35°", o: { v: 35 } },   // given tangent–chord angle
+    { at: "T", legs: ["O", "A"], t: "", o: { v: 55 } },         // ∠OTA = 90 − 35
+    { at: "A", legs: ["O", "T"], t: "", o: { v: 55 } },         // isosceles base ∠
+    { at: "O", legs: ["T", "A"], t: "", o: { v: 70 } },         // apex
+  ],
+};
+
+/* D10 — SOLVE FOR x (centre). ∠AOB = 3x at the centre, ∠APB = (x+20) at the
+   circumference. Centre = 2 × circumference → 3x = 2(x+20) → x = 40. */
+const D10 = {
+  O: true,
+  pts: { A: 150, B: 30, P: 250 },
+  chords: [["O", "A"], ["O", "B"], ["A", "B"], ["A", "P"], ["B", "P"]],
+  angles: [
+    { at: "O", legs: ["A", "B"], t: "3x", o: { v: 120 } },
+    { at: "P", legs: ["A", "B"], t: "x+20", o: { v: 60 } },
+  ],
+};
+
+/* D11 — SOLVE FOR x (cyclic quad). ∠A = 2x, ∠C = 80° (opposite). Opposite ∠s of a
+   cyclic quad add to 180° → 2x + 80 = 180 → x = 50, so ∠A = 100°. */
+const D11 = {
+  pts: { A: 140, B: 50, C: 315, D: 210 },
+  chords: [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"]],
+  angles: [
+    { at: "A", legs: ["D", "B"], t: "2x", o: { v: 100 } },
+    { at: "C", legs: ["B", "D"], t: "80°", o: { v: 80 } },
+  ],
+};
+
 export const ADVENTURES = [
   {
     id: "adv-centre-values", type: "values", accent: ACCENTS[3],
@@ -139,6 +228,160 @@ export const ADVENTURES = [
       { name: "∠TPS", value: 52, reason: "triSum" },
       { name: "∠TQS", value: 64, reason: "tanChord" },
     ],
+  },
+
+  /* ===== NEW: more theorems with the existing two types ===== */
+  {
+    id: "adv-linecentre-values", type: "values", accent: ACCENTS[3], unit: "",
+    title: { en: "Line from the Centre Quest", af: "Lyn vanaf die Middelpunt-soeke" },
+    blurb: { en: "Type each length. The reason for each is given.", af: "Tik elke lengte. Die rede vir elkeen is gegee." },
+    given: { en: "Given: O is the centre, OM ⊥ chord AB, radius OA = 10 and OM = 6.", af: "Gegee: O is die middelpunt, OM ⊥ koord AB, radius OA = 10 en OM = 6." },
+    diagram: D5,
+    rows: [
+      { name: "AM", value: 8, reason: "pythagoras" },
+      { name: "AB", value: 16, reason: "centrePerpChord" },
+    ],
+  },
+  {
+    id: "adv-equalchords-values", type: "values", accent: ACCENTS[2],
+    title: { en: "Equal Chords Quest", af: "Gelyke Koorde-soeke" },
+    blurb: { en: "Type each angle. The reason for each is given.", af: "Tik elke hoek. Die rede vir elkeen is gegee." },
+    given: { en: "Given: chords AB = CD, and ∠AOB = 80°.", af: "Gegee: koorde AB = CD, en ∠AOB = 80°." },
+    diagram: D7,
+    rows: [
+      { name: "∠COD", value: 80, reason: "equalChords" },
+      { name: "∠OCD", value: 50, reason: "isosBase" },
+    ],
+  },
+  {
+    id: "adv-exterior-reasons", type: "reasons", accent: ACCENTS[4],
+    title: { en: "Exterior Angle Reasons", af: "Buitehoek-redes" },
+    blurb: { en: "Each statement is given — choose the right reason.", af: "Elke stelling is gegee — kies die regte rede." },
+    given: { en: "Given: ABCD is a cyclic quad with BC produced to E, and ∠A = 100°.", af: "Gegee: ABCD is 'n koordevierhoek met BC verleng na E, en ∠A = 100°." },
+    diagram: D8,
+    bank: ["cyclicExt", "straightLine", "cyclicOpp", "sameSeg", "triSum", "semiCircle"],
+    rows: [
+      { name: "∠DCE", value: 100, reason: "cyclicExt" },
+      { name: "∠BCD", value: 80, reason: "straightLine" },
+    ],
+  },
+  {
+    id: "adv-tanradius-values", type: "values", accent: ACCENTS[1],
+    title: { en: "Tangent ⊥ Radius Quest", af: "Raaklyn ⊥ Radius-soeke" },
+    blurb: { en: "Type each angle. The reason for each is given.", af: "Tik elke hoek. Die rede vir elkeen is gegee." },
+    given: { en: "Given: STU is a tangent at T, O is the centre, and the tangent–chord angle (between the tangent and chord TA) is 35°.", af: "Gegee: STU is 'n raaklyn by T, O is die middelpunt, en die raaklyn–koord-hoek (tussen die raaklyn en koord TA) is 35°." },
+    diagram: D9,
+    rows: [
+      { name: "∠OTA", value: 55, reason: "tanRadius" },
+      { name: "∠OAT", value: 55, reason: "isosBase" },
+      { name: "∠TOA", value: 70, reason: "triSum" },
+    ],
+  },
+
+  /* ===== NEW TYPE: mixed (fill BOTH the value and the reason) ===== */
+  {
+    id: "adv-semicircle-mixed", type: "mixed", accent: ACCENTS[2],
+    title: { en: "Semicircle Boss", af: "Halfsirkel-baas" },
+    blurb: { en: "Fill in BOTH the angle and its reason.", af: "Vul BEIDE die hoek en sy rede in." },
+    given: { en: "Given: AB is a diameter, and ∠PAB = 35°.", af: "Gegee: AB is 'n middellyn, en ∠PAB = 35°." },
+    diagram: D6,
+    bank: ["semiCircle", "triSum", "sameSeg", "isosBase", "cyclicOpp", "tanChord"],
+    rows: [
+      { name: "∠APB", value: 90, reason: "semiCircle" },
+      { name: "∠PBA", value: 55, reason: "triSum" },
+    ],
+  },
+  {
+    id: "adv-centre-mixed", type: "mixed", accent: ACCENTS[3],
+    title: { en: "Centre & Segment Boss", af: "Middelpunt & Segment-baas" },
+    blurb: { en: "Fill in BOTH the angle and its reason.", af: "Vul BEIDE die hoek en sy rede in." },
+    given: { en: "Given: the centre angle Ô = 100°.", af: "Gegee: die middelpunthoek Ô = 100°." },
+    diagram: D1,
+    bank: ["centreDouble", "sameSeg", "semiCircle", "cyclicOpp", "isosBase", "equalChords"],
+    rows: [
+      { name: "P̂", value: 50, reason: "centreDouble" },
+      { name: "Q̂", value: 50, reason: ["sameSeg", "centreDouble"] },
+    ],
+  },
+  {
+    id: "adv-tanchord-mixed", type: "mixed", accent: ACCENTS[0],
+    title: { en: "Tangent–Chord Boss", af: "Raaklyn–Koord-baas" },
+    blurb: { en: "Fill in BOTH the angle and its reason.", af: "Vul BEIDE die hoek en sy rede in." },
+    given: { en: "Given: STU is a tangent at T, with ∠UTA = 49° and ∠STB = 57°.", af: "Gegee: STU is 'n raaklyn by T, met ∠UTA = 49° en ∠STB = 57°." },
+    diagram: D3,
+    bank: ["tanChord", "straightLine", "triSum", "isosBase", "sameSeg", "cyclicOpp"],
+    rows: [
+      { name: "B̂", value: 49, reason: "tanChord" },
+      { name: "Â", value: 57, reason: "tanChord" },
+      { name: "∠ATB", value: 74, reason: "straightLine" },
+    ],
+  },
+  {
+    id: "adv-cyclic-mixed", type: "mixed", accent: ACCENTS[4],
+    title: { en: "Cyclic Quad Boss", af: "Koordevierhoek-baas" },
+    blurb: { en: "Fill in BOTH the angle and its reason.", af: "Vul BEIDE die hoek en sy rede in." },
+    given: { en: "Given: N̂ = 105°, and NL is a diameter.", af: "Gegee: N̂ = 105°, en NL is 'n middellyn." },
+    diagram: D2,
+    bank: ["semiCircle", "cyclicOpp", "centreDouble", "sameSeg", "cyclicExt", "isosBase"],
+    rows: [
+      { name: "K̂", value: 90, reason: "semiCircle" },
+      { name: "M̂", value: 90, reason: "semiCircle" },
+      { name: "L̂", value: 75, reason: "cyclicOpp" },
+    ],
+  },
+
+  /* ===== NEW TYPE: solve for x (algebra, via the values engine) ===== */
+  {
+    id: "adv-algebra-centre", type: "values", accent: ACCENTS[3], unit: "",
+    title: { en: "Solve for x: Centre", af: "Los op vir x: Middelpunt" },
+    blurb: { en: "Make an equation from the theorem, then solve.", af: "Maak 'n vergelyking uit die stelling, los dan op." },
+    given: { en: "Given: ∠AOB = 3x at the centre and ∠APB = (x + 20) at the circumference. (Hint: ∠AOB = 2 × ∠APB.)", af: "Gegee: ∠AOB = 3x by die middelpunt en ∠APB = (x + 20) by die omtrek. (Wenk: ∠AOB = 2 × ∠APB.)" },
+    diagram: D10,
+    rows: [
+      { name: "x", value: 40, reason: "centreDouble" },
+      { name: "∠APB", value: 60, reason: "centreDouble" },
+    ],
+  },
+  {
+    id: "adv-algebra-cyclic", type: "values", accent: ACCENTS[4], unit: "",
+    title: { en: "Solve for x: Cyclic Quad", af: "Los op vir x: Koordevierhoek" },
+    blurb: { en: "Use the cyclic-quad rule to make an equation.", af: "Gebruik die koordevierhoek-reël om 'n vergelyking te maak." },
+    given: { en: "Given: ABCD is a cyclic quad with ∠A = 2x and ∠C = 80°. (Hint: opposite angles add to 180°.)", af: "Gegee: ABCD is 'n koordevierhoek met ∠A = 2x en ∠C = 80°. (Wenk: teenoorstaande hoeke tel op tot 180°.)" },
+    diagram: D11,
+    rows: [
+      { name: "x", value: 50, reason: "cyclicOpp" },
+      { name: "∠A", value: 100, reason: "cyclicOpp" },
+    ],
+  },
+
+  /* ===== NEW TYPE: spot the error (tap the wrong line) ===== */
+  {
+    id: "adv-cyclic-spot", type: "spoterror", accent: ACCENTS[4],
+    title: { en: "Spot the Error: Cyclic Quad", af: "Vind die Fout: Koordevierhoek" },
+    blurb: { en: "One line of the solution is wrong — find it.", af: "Een reël van die oplossing is verkeerd — vind dit." },
+    given: { en: "NL is a diameter and N̂ = 105°. A learner wrote this solution — one line is wrong:", af: "NL is 'n middellyn en N̂ = 105°. 'n Leerder het hierdie oplossing geskryf — een reël is verkeerd:" },
+    diagram: D2,
+    lines: [
+      { s: "K̂ = 90°", r: "semiCircle" },
+      { s: "M̂ = 90°", r: "semiCircle" },
+      { s: "L̂ = 75°", r: "cyclicExt" },
+    ],
+    badLine: 2,
+    fix: { en: "The value 75° is right, but the reason is wrong. L̂ and N̂ are OPPOSITE angles of the cyclic quad (they add to 180°), so the reason is “opp ∠s of cyclic quad”, not “ext ∠ of cyclic quad”.", af: "Die waarde 75° is reg, maar die rede is verkeerd. L̂ en N̂ is TEENOORSTAANDE hoeke van die koordevierhoek (hulle tel op tot 180°), dus is die rede “teenoorst. ∠e van kvh”, nie “buite∠ van kvh” nie." },
+  },
+  {
+    id: "adv-tangentpoint-spot", type: "spoterror", accent: ACCENTS[0],
+    title: { en: "Spot the Error: Tangents", af: "Vind die Fout: Raaklyne" },
+    blurb: { en: "One line of the solution is wrong — find it.", af: "Een reël van die oplossing is verkeerd — vind dit." },
+    given: { en: "PT and PS are tangents from P, ∠PTS = 64°, and Q lies on the circle. A learner wrote — one line is wrong:", af: "PT en PS is raaklyne vanaf P, ∠PTS = 64°, en Q lê op die sirkel. 'n Leerder het geskryf — een reël is verkeerd:" },
+    diagram: D4,
+    lines: [
+      { s: "∠PST = 64°", r: "isosBase" },
+      { s: "∠TPS = 64°", r: "triSum" },
+      { s: "∠TQS = 64°", r: "tanChord" },
+    ],
+    badLine: 1,
+    fix: { en: "∠TPS is wrong. In △PTS the three angles add to 180°, so ∠TPS = 180° − 64° − 64° = 52°, not 64°.", af: "∠TPS is verkeerd. In △PTS tel die drie hoeke op tot 180°, dus ∠TPS = 180° − 64° − 64° = 52°, nie 64°." },
   },
 ];
 

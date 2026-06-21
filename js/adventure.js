@@ -4,14 +4,16 @@
    renderAdventures(app, host)        the Adventure tab landing
    renderAdventure(app, host, params) play one adventure
 
-   Both game types share one "complete the table" loop:
-     • tap a row to make it active
-     • fill it from the input area (reason bank, or number pad)
-     • Check → grade every row, award XP, show the result inline
+   Four game types:
+     • values    — the reason is given; type each angle
+     • reasons   — the statement is given; pick each reason
+     • mixed     — fill BOTH the angle AND its reason per row
+     • spoterror — one line of a worked solution is wrong; tap it
 
-   XP mirrors the round economy: 10 per correct row + first-try and
-   streak bonuses (CONFIG). XP is submitted via api.submitRound under
-   the adventure's id, so the server's anti-farm gives it once.
+   The first three share one field-based "complete the table" loop;
+   spot-the-error has its own. XP mirrors the round economy and is
+   submitted via api.submitRound under the adventure's id, so the
+   server anti-farm gives it once.
    ============================================================ */
 import { ADVENTURES, ADVENTURE_BY_ID } from "./adventures/index.js";
 import { CONFIG } from "./config.js";
@@ -22,6 +24,7 @@ import { el, clear, mount, shuffled } from "./ui.js";
 import { renderDiagram } from "./engine.js";
 
 const nameOf = n => (typeof n === "string" ? n : tx(n));
+const FIELDS = { values: ["value"], reasons: ["reason"], mixed: ["value", "reason"] };
 
 /* ---------------- ADVENTURE LIST ---------------- */
 export function renderAdventures(app, host) {
@@ -41,7 +44,9 @@ export function renderAdventures(app, host) {
     const done = !!(p && p.passed);
     const card = el("article", "round-card adv-card" + (done ? " done" : ""));
     card.style.setProperty("--accent", a.accent);
-    const tag = a.type === "reasons" ? `📝 ${t("fillReasons")}` : `🔢 ${t("fillValues")}`;
+    const tag = a.type === "reasons" ? `📝 ${t("fillReasons")}`
+              : a.type === "values" ? `🔢 ${t("fillValues")}`
+              : a.type === "mixed" ? `🎯 ${t("fillBoth")}` : `🔍 ${t("spotError")}`;
     card.innerHTML = `
       <div class="rc-top"><span class="rc-kind">${tag}</span>${done ? '<span class="rc-badge" title="Done">✓</span>' : ""}</div>
       <h3>${tx(a.title)}</h3>
@@ -65,7 +70,6 @@ export function renderAdventures(app, host) {
 export function renderAdventure(app, host, params) {
   const adv = ADVENTURE_BY_ID[params.advId];
   if (!adv) return app.go("adventures");
-  const isReasons = adv.type === "reasons";
 
   const prev = (app.state && app.state.progress) ? app.state.progress[adv.id] : null;
   const alreadyPassed = !!(prev && prev.passed);
@@ -74,10 +78,11 @@ export function renderAdventure(app, host, params) {
   const screen = el("div", "play adventure");
   screen.style.setProperty("--accent", adv.accent);
 
+  const tag = adv.type === "reasons" ? "📝" : adv.type === "values" ? "🔢" : adv.type === "mixed" ? "🎯" : "🔍";
   const top = el("div", "play-top");
   top.innerHTML = `<button class="link-btn quit">✕</button>
     <div class="play-title">${tx(adv.title)}</div>
-    <div class="play-count">${isReasons ? "📝" : "🔢"}</div>`;
+    <div class="play-count">${tag}</div>`;
   top.querySelector(".quit").addEventListener("click", () => app.go("adventures"));
   screen.appendChild(top);
 
@@ -85,50 +90,80 @@ export function renderAdventure(app, host, params) {
   diag.innerHTML = renderDiagram(adv.diagram, adv.accent);
   screen.appendChild(diag);
 
-  screen.appendChild(el("p", "adv-instr", isReasons ? t("advReasonsHint") : t("advValuesHint")));
+  const hintText = adv.type === "reasons" ? t("advReasonsHint")
+                 : adv.type === "values" ? t("advValuesHint")
+                 : adv.type === "mixed" ? t("advMixedHint") : t("advSpotHint");
+  screen.appendChild(el("p", "adv-instr", hintText));
   if (adv.given) screen.appendChild(el("div", "adv-given", "📌 " + tx(adv.given)));
   if (alreadyPassed) screen.appendChild(el("div", "replay-note", "🔁 " + t("replayNoXp")));
 
+  const foot = el("div", "play-foot");
+  host.appendChild(screen);
+
+  if (adv.type === "spoterror") renderSpot(app, adv, screen, foot, alreadyPassed);
+  else renderTable(app, adv, screen, foot, alreadyPassed);
+}
+
+/* ---------- field-based table: values | reasons | mixed ---------- */
+function renderTable(app, adv, screen, foot, alreadyPassed) {
+  const fields = FIELDS[adv.type] || ["value"];
+  const wantReason = fields.includes("reason");
+  const wantValue = fields.includes("value");
+  const accept = def => Array.isArray(def.reason) ? def.reason : [def.reason];
+
+  const unit = adv.unit ?? "°";   // "" for lengths / solve-for-x adventures
+  const rows = adv.rows.map((def, i) => ({ def, i, value: null, reasonVal: null }));
+  const bank = wantReason ? shuffled(adv.bank || rows.flatMap(r => accept(r.def))) : null;
+
   const table = el("div", "adv-table");
   const inputArea = el("div", "adv-input");
-  const foot = el("div", "play-foot");
   const checkBtn = el("button", "btn primary big", t("check"));
   checkBtn.disabled = true;
   foot.appendChild(checkBtn);
   mount(screen, table, inputArea, foot);
-  host.appendChild(screen);
 
-  // row working state: value holds a reason code (reasons) or a number (values)
-  const rows = adv.rows.map((def, i) => ({ def, i, value: null }));
-  const accept = def => Array.isArray(def.reason) ? def.reason : [def.reason];   // a row may accept more than one valid reason
-  const bank = isReasons ? shuffled(adv.bank || rows.flatMap(r => accept(r.def))) : null;
-  let active = 0;
+  let active = { row: 0, field: fields[0] };
   let locked = false;
 
-  const isCorrect = r => isReasons ? accept(r.def).includes(r.value) : Number(r.value) === Number(r.def.value);
-  const allFilled = () => rows.every(r => r.value != null && r.value !== "");
+  const valueOK = r => Number(r.value) === Number(r.def.value);
+  const reasonOK = r => accept(r.def).includes(r.reasonVal);
+  const rowOK = r => (!wantValue || valueOK(r)) && (!wantReason || reasonOK(r));
+  const rowFilled = r => (!wantValue || (r.value != null && r.value !== "")) && (!wantReason || r.reasonVal != null);
+  const allFilled = () => rows.every(rowFilled);
 
-  function renderTable() {
+  function renderTableBody() {
     table.innerHTML = "";
     rows.forEach(r => {
-      const row = el("div", "adv-row" + (r.i === active && !locked ? " active" : "") +
-        (locked ? (isCorrect(r) ? " row-ok" : " row-bad") : ""));
+      const isActive = !locked && r.i === active.row;
+      const row = el("div", "adv-row" + (isActive ? " active" : "") + (locked ? (rowOK(r) ? " row-ok" : " row-bad") : ""));
       const head = el("div", "adv-rowhead");
-      const stmt = isReasons ? `${nameOf(r.def.name)} = ${r.def.value}°` : `${nameOf(r.def.name)} = ?`;
+      const stmt = adv.type === "reasons" ? `${nameOf(r.def.name)} = ${r.def.value}°` : `${nameOf(r.def.name)} = ?`;
       head.innerHTML = `<span class="adv-stmt">${stmt}</span>` +
-        (!isReasons ? `<span class="adv-reasongiven">${reason(accept(r.def)[0])}</span>` : "");
+        (adv.type === "values" ? `<span class="adv-reasongiven">${reason(accept(r.def)[0])}</span>` : "");
       row.appendChild(head);
 
-      const slot = el("button", "adv-slot" + (r.value == null ? " empty" : " filled"));
-      slot.innerHTML = r.value == null
-        ? (isReasons ? t("advPickReason") : "?")
-        : (isReasons ? reason(r.value) : `${r.value}°`);
-      if (!locked) slot.addEventListener("click", () => { active = r.i; sync(); });
-      row.appendChild(slot);
+      const slots = el("div", "adv-slots");
+      if (wantValue) {
+        const sel = isActive && active.field === "value";
+        const vs = el("button", "adv-slot val" + (r.value == null ? " empty" : " filled") + (sel ? " sel" : ""));
+        vs.innerHTML = r.value == null ? "?" : `${r.value}${unit}`;
+        if (!locked) vs.addEventListener("click", () => { active = { row: r.i, field: "value" }; sync(); });
+        slots.appendChild(vs);
+      }
+      if (wantReason) {
+        const sel = isActive && active.field === "reason";
+        const rs = el("button", "adv-slot reason-slot" + (r.reasonVal == null ? " empty" : " filled") + (sel ? " sel" : ""));
+        rs.innerHTML = r.reasonVal == null ? t("advPickReason") : reason(r.reasonVal);
+        if (!locked) rs.addEventListener("click", () => { active = { row: r.i, field: "reason" }; sync(); });
+        slots.appendChild(rs);
+      }
+      row.appendChild(slots);
 
-      if (locked && !isCorrect(r)) {
-        row.appendChild(el("div", "adv-correct",
-          `✓ ${isReasons ? accept(r.def).map(reason).join(" / ") : r.def.value + "°"}`));
+      if (locked && !rowOK(r)) {
+        const corr = [];
+        if (wantValue && !valueOK(r)) corr.push(`${r.def.value}${unit}`);
+        if (wantReason && !reasonOK(r)) corr.push(accept(r.def).map(reason).join(" / "));
+        row.appendChild(el("div", "adv-correct", "✓ " + corr.join(" · ")));
       }
       table.appendChild(row);
     });
@@ -137,28 +172,28 @@ export function renderAdventure(app, host, params) {
   function renderInput() {
     inputArea.innerHTML = "";
     if (locked) return;
-    if (isReasons) {
+    if (active.field === "reason") {
       const wrap = el("div", "wordbank reasons");
       bank.forEach(code => {
-        const chip = el("button", "wordchip" + (rows[active].value === code ? " picked" : ""), reason(code));
-        chip.addEventListener("click", () => { rows[active].value = code; advance(); });
+        const chip = el("button", "wordchip" + (rows[active.row].reasonVal === code ? " picked" : ""), reason(code));
+        chip.addEventListener("click", () => { rows[active.row].reasonVal = code; advance(); });
         wrap.appendChild(chip);
       });
       inputArea.appendChild(wrap);
     } else {
       const pad = el("div", "numpad");
-      let buf = rows[active].value != null ? String(rows[active].value) : "";
+      let buf = rows[active.row].value != null ? String(rows[active.row].value) : "";
       const disp = el("div", "numpad-disp", buf || "0");
       const grid = el("div", "numpad-grid");
       ["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", "0", "✓"].forEach(k => {
         const b = el("button", "numkey" + (k === "✓" ? " ok" : k === "⌫" ? " del" : ""), k);
         b.addEventListener("click", () => {
           if (k === "⌫") buf = buf.slice(0, -1);
-          else if (k === "✓") { rows[active].value = buf === "" ? null : Number(buf); advance(); return; }
+          else if (k === "✓") { rows[active.row].value = buf === "" ? null : Number(buf); advance(); return; }
           else if (buf.length < 3) buf += k;
           disp.textContent = buf || "0";
-          rows[active].value = buf === "" ? null : Number(buf);
-          renderTable(); checkBtn.disabled = !allFilled();
+          rows[active.row].value = buf === "" ? null : Number(buf);
+          renderTableBody(); checkBtn.disabled = !allFilled();
         });
         grid.appendChild(b);
       });
@@ -167,62 +202,84 @@ export function renderAdventure(app, host, params) {
     }
   }
 
-  function advance() {
-    const after = rows.findIndex((r, idx) => idx > active && r.value == null);
-    const anyEmpty = rows.findIndex(r => r.value == null);
-    active = after >= 0 ? after : (anyEmpty >= 0 ? anyEmpty : active);
-    sync();
+  function nextField() {
+    const order = [];
+    rows.forEach(r => fields.forEach(f => order.push({ row: r.i, field: f })));
+    const cur = order.findIndex(o => o.row === active.row && o.field === active.field);
+    for (let k = 1; k <= order.length; k++) {
+      const o = order[(cur + k) % order.length];
+      const filled = o.field === "value" ? (rows[o.row].value != null) : (rows[o.row].reasonVal != null);
+      if (!filled) return o;
+    }
+    return active;
   }
-  function sync() { renderTable(); renderInput(); checkBtn.disabled = !allFilled(); }
+  function advance() { active = nextField(); sync(); }
+  function sync() { renderTableBody(); renderInput(); checkBtn.disabled = !allFilled(); }
 
   checkBtn.addEventListener("click", async () => {
     if (locked || !allFilled()) return;
     locked = true;
     const total = rows.length;
-    const correct = rows.filter(isCorrect).length;
-
-    // XP: per correct row, mirroring the round economy (correct + first-try + streak)
+    const correct = rows.filter(rowOK).length;
     let xp = 0, streak = 0;
     rows.forEach(r => {
-      if (isCorrect(r)) {
-        streak++;
-        xp += CONFIG.xpPerCorrect + CONFIG.firstTryBonus;
-        xp += CONFIG.streakStep * Math.min(streak - 1, CONFIG.streakCap);
-      } else streak = 0;
+      if (rowOK(r)) { streak++; xp += CONFIG.xpPerCorrect + CONFIG.firstTryBonus + CONFIG.streakStep * Math.min(streak - 1, CONFIG.streakCap); }
+      else streak = 0;
     });
     const gained = alreadyPassed ? 0 : xp;
-
-    renderTable();
+    renderTableBody();
     inputArea.innerHTML = "";
     checkBtn.remove();
-
     const frac = total ? correct / total : 0;
-    try {
-      const s = getSession();
-      await api.submitRound(s.name, s.password, adv.id, { score: frac, xpGained: gained, total, correct });
-    } catch { /* offline — still show the local result */ }
+    try { const s = getSession(); await api.submitRound(s.name, s.password, adv.id, { score: frac, xpGained: gained, total, correct }); } catch { /* offline */ }
     await app.refreshState();
-    showResult({ correct, total, gained, frac });
+    showResult(app, adv, screen, foot, { correct, total, gained, frac, alreadyPassed });
   });
 
-  function showResult({ correct, total, gained, frac }) {
-    const passed = frac >= CONFIG.passThreshold;
-    const card = el("div", "card adv-result");
-    card.innerHTML = `
-      <div class="result-emoji">${passed ? "🎉" : "💪"}</div>
-      <h2>${correct} / ${total} ${t("correctRows")}</h2>
-      <div class="result-pills"><span class="pill xp">★ +${gained} ${t("xpEarned")}</span></div>
-      <div class="result-msg ${passed ? "good" : "warn"}">${passed ? t("advCleared") : t("advTryAgainMsg")}</div>
-      ${alreadyPassed ? `<div class="result-msg note">🔁 ${t("replayNoXpMsg")}</div>` : ""}`;
-    foot.innerHTML = "";
-    const more = el("button", "btn primary big", "🗺️ " + t("adventures"));
-    more.addEventListener("click", () => app.go("adventures"));
-    const retry = el("button", "btn ghost", t("tryAgain"));
-    retry.addEventListener("click", () => app.go("adventure", { advId: adv.id }));
-    mount(foot, more, retry);
-    screen.insertBefore(card, foot);
-    card.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-
   sync();
+}
+
+/* ---------- spot the error: tap the wrong line ---------- */
+function renderSpot(app, adv, screen, foot, alreadyPassed) {
+  const list = el("div", "spot-list");
+  let locked = false;
+  adv.lines.forEach((ln, i) => {
+    const r = ln.r ? reason(ln.r) : "";
+    const row = el("button", "spot-line");
+    row.innerHTML = `<span class="spot-n">${i + 1}</span><span class="spot-s">${nameOf(ln.s)}</span>${r ? `<span class="spot-r">${r}</span>` : ""}`;
+    row.addEventListener("click", async () => {
+      if (locked) return;
+      locked = true;
+      const correct = i === adv.badLine;
+      [...list.children].forEach((b, j) => { b.disabled = true; b.classList.add("locked"); if (j === adv.badLine) b.classList.add("spot-bad"); });
+      if (!correct) row.classList.add("spot-pick-wrong");
+      const gained = alreadyPassed ? 0 : (correct ? CONFIG.xpPerCorrect + CONFIG.firstTryBonus : 0);
+      try { const s = getSession(); await api.submitRound(s.name, s.password, adv.id, { score: correct ? 1 : 0, xpGained: gained, total: 1, correct: correct ? 1 : 0 }); } catch { /* offline */ }
+      await app.refreshState();
+      screen.insertBefore(el("div", "card spot-fix", `<b>${correct ? "✓ " + t("advSpotCorrect") : t("advSpotWrong")}</b><br>${tx(adv.fix)}`), foot);
+      showResult(app, adv, screen, foot, { correct: correct ? 1 : 0, total: 1, gained, frac: correct ? 1 : 0, alreadyPassed });
+    });
+    list.appendChild(row);
+  });
+  mount(screen, list, foot);
+}
+
+/* ---------- shared result card ---------- */
+function showResult(app, adv, screen, foot, { correct, total, gained, frac, alreadyPassed }) {
+  const passed = frac >= CONFIG.passThreshold;
+  const card = el("div", "card adv-result");
+  card.innerHTML = `
+    <div class="result-emoji">${passed ? "🎉" : "💪"}</div>
+    <h2>${correct} / ${total} ${t("correctRows")}</h2>
+    <div class="result-pills"><span class="pill xp">★ +${gained} ${t("xpEarned")}</span></div>
+    <div class="result-msg ${passed ? "good" : "warn"}">${passed ? t("advCleared") : t("advTryAgainMsg")}</div>
+    ${alreadyPassed ? `<div class="result-msg note">🔁 ${t("replayNoXpMsg")}</div>` : ""}`;
+  foot.innerHTML = "";
+  const more = el("button", "btn primary big", "🗺️ " + t("adventures"));
+  more.addEventListener("click", () => app.go("adventures"));
+  const retry = el("button", "btn ghost", t("tryAgain"));
+  retry.addEventListener("click", () => app.go("adventure", { advId: adv.id }));
+  mount(foot, more, retry);
+  screen.insertBefore(card, foot);
+  card.scrollIntoView({ behavior: "smooth", block: "center" });
 }
