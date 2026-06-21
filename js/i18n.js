@@ -217,7 +217,7 @@ export const PARTS = {
 export const REASONS = {
   tanChord:      { en: "tan-chord theorem",        af: "raaklyn-koord-stelling" },
   straightLine:  { en: "∠s on a str line",         af: "∠e op 'n reguitlyn" },
-  triSum:        { en: "∠ sum of Δ",               af: "som van ∠e in Δ" },
+  triSum:        { en: "int angles of triangle",   af: "som van ∠e in Δ" },
   tanRadius:     { en: "tan ⊥ radius",             af: "raaklyn ⊥ radius" },
   tanDiameter:   { en: "tan ⊥ diameter",           af: "raaklyn ⊥ middellyn" },
   // converses — used to PROVE a line is a tangent
