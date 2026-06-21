@@ -63,6 +63,27 @@ export function renderHome(app, host) {
 
   host.appendChild(renderRankLadder(progress));
 
+  // Adventure (Grand Master bonus) — visible to all, unlocked once every badge is earned
+  const isGM = GROUPS.length > 0 && badgesEarned === GROUPS.length;
+  const advBanner = el("div", "card adventure-banner" + (isGM ? "" : " locked"));
+  advBanner.innerHTML = `
+    <div class="adv-bn-icon">🗺️</div>
+    <div class="adv-bn-text">
+      <span class="eyebrow">${t("grandMasterArena")}</span>
+      <h3>${t("adventures")}</h3>
+      <p class="muted small">${isGM ? t("adventuresBlurb") : t("adventureLocked")}</p>
+    </div>
+    <div class="adv-bn-foot"></div>`;
+  const bnFoot = advBanner.querySelector(".adv-bn-foot");
+  if (isGM) {
+    const go = el("button", "btn primary", "▶ " + t("play"));
+    go.addEventListener("click", () => app.go("adventures"));
+    bnFoot.appendChild(go);
+  } else {
+    bnFoot.appendChild(el("span", "rc-lock", "🔒"));
+  }
+  host.appendChild(advBanner);
+
   const grid = el("div", "round-grid");
   ROUNDS.forEach(r => {
     const p = progress[r.id];

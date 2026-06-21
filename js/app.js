@@ -8,6 +8,7 @@ import { renderHome, renderPlay, renderResults } from "./game.js";
 import { renderDiscover } from "./discover.js";
 import { renderCutscene } from "./cutscene.js";
 import { renderLeaderboard } from "./leaderboard.js";
+import { renderAdventures, renderAdventure } from "./adventure.js";
 
 const app = {
   root: null,
@@ -63,6 +64,8 @@ const app = {
       case "discover": renderDiscover(this, view, this.params); break;
       case "cutscene": renderCutscene(this, view, this.params); break;
       case "results": renderResults(this, view, this.params); break;
+      case "adventures": renderAdventures(this, view); break;
+      case "adventure": renderAdventure(this, view, this.params); break;
       case "leaderboard": renderLeaderboard(this, view); break;
       default: renderHome(this, view);
     }

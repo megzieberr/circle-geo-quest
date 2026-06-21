@@ -137,6 +137,20 @@ const UI = {
   discoverUnlocked:{ en: "Nice exploring — the next round is unlocked.", af: "Goed verken — die volgende rondte is oopgesluit." },
   dragHint:       { en: "Drag the dot to explore.", af: "Sleep die kol om te verken." },
 
+  // adventures (Grand Master bonus)
+  adventures:      { en: "Adventures", af: "Avonture" },
+  grandMasterArena:{ en: "Grand Master Arena", af: "Grootmeester-arena" },
+  adventuresBlurb: { en: "Bonus challenges for Grand Masters — earn extra XP!", af: "Bonus-uitdagings vir Grootmeesters — verdien ekstra XP!" },
+  adventureLocked: { en: "Earn all 5 badges to unlock the Adventures.", af: "Verdien al 5 badges om die Avonture oop te sluit." },
+  fillReasons:     { en: "Fill the reasons", af: "Vul die redes in" },
+  fillValues:      { en: "Fill the values", af: "Vul die waardes in" },
+  advReasonsHint:  { en: "Each statement is given. Tap a row, then choose its reason.", af: "Elke stelling is gegee. Klik 'n ry, kies dan sy rede." },
+  advValuesHint:   { en: "Each reason is given. Tap a row, then type the angle.", af: "Elke rede is gegee. Klik 'n ry, tik dan die hoek." },
+  advPickReason:   { en: "tap to choose a reason…", af: "klik om 'n rede te kies…" },
+  correctRows:     { en: "correct", af: "korrek" },
+  advCleared:      { en: "Adventure cleared! 🏆", af: "Avontuur voltooi! 🏆" },
+  advTryAgainMsg:  { en: "Give it another go to clear it (80%).", af: "Probeer weer om dit te voltooi (80%)." },
+
   // misc
   language:       { en: "Afrikaans", af: "English" }, // label shows the OTHER language to switch to
   loading:        { en: "Loading…", af: "Laai…" },
