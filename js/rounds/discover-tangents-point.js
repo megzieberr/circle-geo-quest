@@ -60,6 +60,8 @@ export const round = {
   panels: [
     { type: "note",
       prompt: { en: "Two tangents from one point", af: "Twee raaklyne vanuit een punt" },
+      diagram: { O: true, pts: { F: 42, C: 318 }, ext: [{ name: "A", t: ["F", "C"] }], chords: [["O", "F"], ["O", "C"]],
+        angles: [ { at: "F", legs: ["O", "A"], t: "", o: { v: 90, mark: 1 } }, { at: "C", legs: ["O", "A"], t: "", o: { v: 90, mark: 1 } } ] },
       note: { en: "From a point <b>A outside</b> the circle you can draw exactly <b>two</b> tangents, touching the circle at F and C. (Each radius, OF and OC, meets its tangent at 90° — tan ⊥ radius.)", af: "Vanuit 'n punt <b>A buite</b> die sirkel kan jy presies <b>twee</b> raaklyne trek, wat die sirkel by F en C raak. (Elke radius, OF en OC, ontmoet sy raaklyn teen 90° — raaklyn ⊥ radius.)" } },
 
     { type: "explore",
