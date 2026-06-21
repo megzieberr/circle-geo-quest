@@ -52,9 +52,9 @@ import { round as r21 } from "./round21-riders-mixed2.js";
 const ORDER = [
   rPartsIntro, r1,                                       // intro
   lineCentreCut, dLine, rLine, dPyth, r2,                // g1 · line from the centre (intro + discovery)
-  dCentre, r2b, r3,                                      // g1 · angle at the centre = 2×
+  dCentre, subtendCut, r2b, r3,                          // subtend intro (g2) now precedes r2b; then angle at the centre = 2×
   dSemi, r4,                                             // g1 · angle in a semicircle
-  subtendCut, dSameSeg, bowtieCut, r5,                   // g2 · subtend + same segment + bowtie
+  dSameSeg, bowtieCut, r5,                               // g2 · same segment + bowtie
   dEqChord, r6,                                          // g2 · equal chords
   qCyclic, dCycOpp, r7,                                  // g2 · cyclic quad: intro + opposite angles
   dCycExt, r8,                                           // g2 · cyclic quad: exterior angle
