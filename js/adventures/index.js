@@ -116,6 +116,18 @@ export const ADVENTURES = [
     ],
   },
   {
+    id: "adv-centre-reasons", type: "reasons", accent: ACCENTS[1],
+    title: { en: "Centre & Segment Reasons", af: "Middelpunt & Segment-redes" },
+    blurb: { en: "Each statement is given — choose the right reason.", af: "Elke stelling is gegee — kies die regte rede." },
+    given: { en: "Given: the centre angle Ô = 100°.", af: "Gegee: die middelpunthoek Ô = 100°." },
+    diagram: D1,
+    bank: ["centreDouble", "sameSeg", "semiCircle", "cyclicOpp", "isosBase", "straightLine"],
+    rows: [
+      { name: "P̂", value: 50, reason: "centreDouble" },
+      { name: "Q̂", value: 50, reason: ["sameSeg", "centreDouble"] },   // either reason is valid
+    ],
+  },
+  {
     id: "adv-tangentpoint-reasons", type: "reasons", accent: ACCENTS[0],
     title: { en: "Tangents-from-a-Point Reasons", af: "Raaklyne-vanuit-'n-Punt-redes" },
     blurb: { en: "Each statement is given — choose the right reason.", af: "Elke stelling is gegee — kies die regte rede." },

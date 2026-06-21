@@ -100,11 +100,12 @@ export function renderAdventure(app, host, params) {
 
   // row working state: value holds a reason code (reasons) or a number (values)
   const rows = adv.rows.map((def, i) => ({ def, i, value: null }));
-  const bank = isReasons ? shuffled(adv.bank || rows.map(r => r.def.reason)) : null;
+  const accept = def => Array.isArray(def.reason) ? def.reason : [def.reason];   // a row may accept more than one valid reason
+  const bank = isReasons ? shuffled(adv.bank || rows.flatMap(r => accept(r.def))) : null;
   let active = 0;
   let locked = false;
 
-  const isCorrect = r => isReasons ? r.value === r.def.reason : Number(r.value) === Number(r.def.value);
+  const isCorrect = r => isReasons ? accept(r.def).includes(r.value) : Number(r.value) === Number(r.def.value);
   const allFilled = () => rows.every(r => r.value != null && r.value !== "");
 
   function renderTable() {
@@ -115,7 +116,7 @@ export function renderAdventure(app, host, params) {
       const head = el("div", "adv-rowhead");
       const stmt = isReasons ? `${nameOf(r.def.name)} = ${r.def.value}°` : `${nameOf(r.def.name)} = ?`;
       head.innerHTML = `<span class="adv-stmt">${stmt}</span>` +
-        (!isReasons ? `<span class="adv-reasongiven">${reason(r.def.reason)}</span>` : "");
+        (!isReasons ? `<span class="adv-reasongiven">${reason(accept(r.def)[0])}</span>` : "");
       row.appendChild(head);
 
       const slot = el("button", "adv-slot" + (r.value == null ? " empty" : " filled"));
@@ -127,7 +128,7 @@ export function renderAdventure(app, host, params) {
 
       if (locked && !isCorrect(r)) {
         row.appendChild(el("div", "adv-correct",
-          `✓ ${isReasons ? reason(r.def.reason) : r.def.value + "°"}`));
+          `✓ ${isReasons ? accept(r.def).map(reason).join(" / ") : r.def.value + "°"}`));
       }
       table.appendChild(row);
     });
