@@ -44,3 +44,13 @@
 .mini-btn:hover{background:var(--ink); color:#fff;}
 .mini-btn.danger{border-color:#e64980; color:#e64980;}
 .mini-btn.danger:hover{background:#e64980; color:#fff;}
+
+/* ---------- hardest-questions report ---------- */
+.admin-report{margin-top:26px;}
+.report-title{font-size:1.3rem; margin-bottom:4px;}
+.admin-report > p{margin-bottom:12px;}
+.report-table{min-width:680px;}
+.report-table td.qlabel{max-width:380px; font-weight:600;}
+.report-table td.pct-bad{color:#c52e6c;}
+.report-table td.pct-warn{color:#c25a00;}
+.report-table td.pct-ok{color:#0a8a5f;}

@@ -220,6 +220,7 @@ export function renderPlay(app, host, params) {
   });
 
   const state = { i: 0, correct: 0, score: 0, xp: 0, streak: 0, total: set.length };
+  const items = [];   // per-question results for the teacher's item-analytics report
 
   clear(host);
   const screen = el("div", "play");
@@ -248,12 +249,15 @@ export function renderPlay(app, host, params) {
     xpline.textContent = "";
     xpline.className = "xp-pop";
 
-    mountQuestion(qhost, q, (isCorrect, qScore) => {
+    mountQuestion(qhost, q, (isCorrect, qScore, chosen) => {
       const score = (qScore != null) ? qScore : (isCorrect ? 1 : 0);
       state.score += score;
       // remember misses for the Fix-My-Mistakes pile; a clean correct clears it
       if (isCorrect) clearMistake(app, q.id);
       else if (score === 0) addMistake(app, q.id, round.id);
+      // record this question's result for the teacher item-analytics report
+      // (firstTry = a genuine first-pass attempt, not a replay of a passed round)
+      items.push({ qid: q.id, correct: isCorrect, firstTry: !alreadyPassed, chosen: isCorrect ? null : (chosen || null) });
       let gained = 0;
       const lines = [];
       if (isCorrect) {
@@ -303,6 +307,7 @@ export function renderPlay(app, host, params) {
           score: frac, xpGained: state.xp, total: state.total, correct: state.correct,
         });
       } catch { /* offline — still show local results */ }
+      try { await api.logItems(sess.name, sess.password, round.id, items); } catch { /* analytics is best-effort */ }
       await app.refreshState();
       app.go("results", { roundId: round.id, correct: state.correct, total: state.total, xp: state.xp, frac, badgeEarned: !!(res && res.badgeEarned), alreadyPassed });
     }

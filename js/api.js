@@ -41,6 +41,7 @@ const LS = {
   progress: "cgg.progress",
   events:   "cgg.events",
   meta:     "cgg.meta",
+  items:    "cgg.itemevents",   // per-question results (teacher analytics)
 };
 function read(k, fallback) { try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; } }
 function write(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
@@ -59,6 +60,7 @@ const LocalBackend = {
     if (!read(LS.meta, null)) write(LS.meta, { adminPassword: "admin", weeklyAnchor: 0 });
     if (!read(LS.progress, null)) write(LS.progress, {});
     if (!read(LS.events, null)) write(LS.events, []);
+    if (!read(LS.items, null)) write(LS.items, []);
   },
   _find(name) {
     const students = read(LS.students, {});
@@ -151,6 +153,69 @@ const LocalBackend = {
     this._touch(s.id);
 
     return { ok: true, progress: p[roundId], passed, badgeEarned: passed && !wasPassed, xpAwarded: xpAward, alreadyPassed: wasPassed };
+  },
+
+  /* Daily Challenge XP — server grants a flat CONFIG.dailyXp, but only ONCE per
+     local day (the client passes its own YYYY-MM-DD). The guard lives on the
+     student record so wiping localStorage can't re-claim it. Mirrors the
+     cgg_submit_daily RPC. */
+  async submitDaily(name, password, payload) {
+    const s = this._verify(name, password);
+    if (!s) return { ok: false, error: "auth" };
+    const day = String(payload && payload.day || "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { ok: false, error: "bad_day" };
+    const students = read(LS.students, {});
+    const stu = students[s.id];
+    const last = stu.last_daily_day || "";
+    if (day <= last) {                                   // already claimed today (string compare is safe for ISO dates)
+      this._touch(s.id);
+      return { ok: true, xpAwarded: 0, alreadyClaimed: true, day };
+    }
+    const xpAward = Math.max(0, Math.round(CONFIG.dailyXp) || 0);
+    stu.last_daily_day = day;
+    stu.last_active_at = Date.now();
+    write(LS.students, students);
+    const events = read(LS.events, []);
+    events.push({ studentId: s.id, roundId: "daily", xp: xpAward, score: payload && payload.total ? (payload.correct || 0) / payload.total : null, ts: Date.now() });
+    write(LS.events, events);
+    return { ok: true, xpAwarded: xpAward, alreadyClaimed: false, day };
+  },
+
+  /* Per-question results for the teacher's "hardest questions" report.
+     Mirrors the cgg_log_items RPC. */
+  async logItems(name, password, roundId, items) {
+    const s = this._verify(name, password);
+    if (!s) return { ok: false, error: "auth" };
+    if (!Array.isArray(items) || !items.length) return { ok: true, logged: 0 };
+    const store = read(LS.items, []);
+    items.forEach(it => {
+      if (!it || !it.qid) return;
+      store.push({ studentId: s.id, roundId, qid: it.qid, correct: !!it.correct, firstTry: !!it.firstTry, chosen: it.chosen || null, ts: Date.now() });
+    });
+    write(LS.items, store);
+    return { ok: true, logged: items.length };
+  },
+
+  async adminItemStats(adminPassword) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const store = read(LS.items, []);
+    const byQ = {};
+    store.forEach(r => {
+      if (!r.firstTry) return;                           // genuine first-pass attempts only (exclude replays)
+      const k = r.qid;
+      const g = byQ[k] || (byQ[k] = { roundId: r.roundId, qid: k, attempts: 0, correct: 0, wrong: {} });
+      g.attempts++;
+      if (r.correct) g.correct++;
+      else if (r.chosen) g.wrong[r.chosen] = (g.wrong[r.chosen] || 0) + 1;
+    });
+    const rows = Object.values(byQ).map(g => {
+      const top = Object.entries(g.wrong).sort((a, b) => b[1] - a[1])[0];
+      return { roundId: g.roundId, qid: g.qid, attempts: g.attempts, correct: g.correct,
+        correctPct: g.attempts ? Math.round((g.correct / g.attempts) * 100) : null,
+        topWrong: top ? top[0] : null, topWrongCount: top ? top[1] : 0 };
+    }).sort((a, b) => (a.correctPct ?? 101) - (b.correctPct ?? 101));
+    return { ok: true, rows };
   },
 
   async leaderboard(name, password) {

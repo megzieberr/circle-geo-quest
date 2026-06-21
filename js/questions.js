@@ -56,7 +56,7 @@ export function mountQuestion(container, q, onAnswered) {
 
   let answered = false;
   let hintWrap = null;                  // the "Stuck? hint" control, hidden once answered
-  function reveal(isCorrect, answerText, reasonText) {
+  function reveal(isCorrect, answerText, reasonText, chosen) {
     if (answered) return;
     answered = true;
     if (hintWrap) hintWrap.hidden = true;
@@ -75,7 +75,7 @@ export function mountQuestion(container, q, onAnswered) {
       html += `<div class="fb-reason"><b>${t("reasonLabel")}:</b> <i>${reasonText}</i></div>`;
     }
     feedback.innerHTML = html;
-    onAnswered(isCorrect, isCorrect ? 1 : 0);
+    onAnswered(isCorrect, isCorrect ? 1 : 0, chosen);
   }
 
   // resolve a reason that may be a code (from REASONS) or an English phrase
@@ -131,7 +131,7 @@ export function mountQuestion(container, q, onAnswered) {
           if (isC) x.classList.add("is-correct");
         });
         b.classList.add(o.correct ? "is-correct" : "is-wrong");
-        reveal(o.correct, answerText(), explainReason());
+        reveal(o.correct, answerText(), explainReason(), o.label);
       });
       opts.appendChild(b);
     });
@@ -147,7 +147,7 @@ export function mountQuestion(container, q, onAnswered) {
         const isCorrect = (o.val === !!q.yes);
         opts.querySelectorAll(".opt").forEach(x => x.disabled = true);
         b.classList.add(isCorrect ? "is-correct" : "is-wrong");
-        reveal(isCorrect, answerText(), explainReason());
+        reveal(isCorrect, answerText(), explainReason(), o.label);
       });
       opts.appendChild(b);
     });
@@ -176,7 +176,7 @@ export function mountQuestion(container, q, onAnswered) {
           if (o.id === q.tap.correctId) n.classList.add("show-correct");
         });
         node.classList.add(correct ? "show-correct" : "show-wrong");
-        reveal(correct, answerText(), explainReason());
+        reveal(correct, answerText(), explainReason(), tg.id);
       };
       node.addEventListener("click", choose);
       node.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(); } });
@@ -255,7 +255,7 @@ export function mountQuestion(container, q, onAnswered) {
       }
       feedback.innerHTML = html;
       bankEl.style.opacity = ".45";
-      onAnswered(full, frac);
+      onAnswered(full, frac, null);
     });
     render();
   }

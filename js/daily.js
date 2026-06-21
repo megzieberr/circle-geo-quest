@@ -17,6 +17,8 @@ import { t, tx } from "./i18n.js";
 import { el, clear, mount, shuffled, progressBar } from "./ui.js";
 import { mountQuestion } from "./questions.js";
 import { addMistake, clearMistake } from "./mistakes.js";
+import { api } from "./api.js";
+import { getSession } from "./session.js";
 
 const SIZE = 5;
 const keyFor = app => `cgg.daily.${(app && app.state && app.state.student && app.state.student.id) || "anon"}`;
@@ -136,23 +138,37 @@ export function renderDaily(app, host) {
     });
   }
 
-  next.addEventListener("click", () => {
+  next.addEventListener("click", async () => {
     state.i++;
     if (state.i < state.total) { window.scrollTo(0, 0); show(); }
-    else { const res = completeDaily(app); renderDailyDone(app, host, res, state.correct, state.total); }
+    else {
+      next.disabled = true;
+      const res = completeDaily(app);                    // local streak
+      // claim the daily XP on the server (granted at most once per local day)
+      let award = { xpAwarded: 0, alreadyClaimed: true };
+      try {
+        const s = getSession();
+        award = await api.submitDaily(s.name, s.password, { day: localDay(), correct: state.correct, total: state.total });
+      } catch { /* offline — still show the streak result */ }
+      await app.refreshState();
+      renderDailyDone(app, host, res, state.correct, state.total, award);
+    }
   });
 
   show();
 }
 
 /* The "done for today" celebration — also shown if they revisit later. */
-function renderDailyDone(app, host, st, correct, total) {
+function renderDailyDone(app, host, st, correct, total, award) {
   clear(host);
   const card = el("div", "card center daily-done");
+  const xpPill = (award && award.xpAwarded > 0)
+    ? `<div class="result-pills"><span class="pill xp">★ +${award.xpAwarded} ${t("xpEarned")}</span></div>` : "";
   card.innerHTML = `
     <div class="result-emoji">🔥</div>
     <h1>${t("dailyComplete")}</h1>
     ${correct != null ? `<div class="big-score">${correct}/${total}</div>` : ""}
+    ${xpPill}
     <div class="streak-big"><span class="flame">🔥</span><b>${st.streak}</b> <span>${t("dayStreak")}</span></div>
     <div class="result-msg good">${st.isNew ? t("dailyStreakNew") : `${st.streak} ${t("dailyStreakUp")}`}</div>
     <p class="muted small">${t("dailyKeptFresh")}${st.best > 1 ? ` · ${t("streakBest")} ${st.best}` : ""}</p>`;

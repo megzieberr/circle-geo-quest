@@ -7,6 +7,8 @@ export const CONFIG = {
   firstTryBonus: 5,        // extra XP when correct on the first attempt of a question
   streakStep: 2,           // streak bonus = streakStep * (current streak, capped)
   streakCap: 5,            // streak bonus stops growing after this many in a row
+  // daily challenge
+  dailyXp: 25,             // flat XP for completing the Daily Challenge (server grants this, once per local day)
   // round pass rule
   passThreshold: 0.8,      // 80% correct (first-try) to pass a round and earn its badge
   // admin / participation

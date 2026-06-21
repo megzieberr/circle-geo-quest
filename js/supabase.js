@@ -34,11 +34,18 @@ export const SupabaseBackend = {
   submitRound(name, password, roundId, p) {
     return rpc("cgg_submit_round", { p_name: name, p_password: password, p_round: roundId, p_score: p.score, p_xp: p.xpGained, p_total: p.total, p_correct: p.correct });
   },
+  submitDaily(name, password, p) {
+    return rpc("cgg_submit_daily", { p_name: name, p_password: password, p_day: p.day, p_correct: p.correct, p_total: p.total });
+  },
+  logItems(name, password, roundId, items) {
+    return rpc("cgg_log_items", { p_name: name, p_password: password, p_round: roundId, p_items: items });
+  },
   leaderboard(name, password) { return rpc("cgg_leaderboard", { p_name: name, p_password: password }); },
 
   // admin
   adminLogin(pw) { return rpc("cgg_admin_login", { p_admin_password: pw }); },
   adminData(pw) { return rpc("cgg_admin_data", { p_admin_password: pw }); },
+  adminItemStats(pw) { return rpc("cgg_admin_item_stats", { p_admin_password: pw }); },
   adminResetWeekly(pw) { return rpc("cgg_admin_reset_weekly", { p_admin_password: pw }); },
   adminAddStudent(pw, name) { return rpc("cgg_admin_add_student", { p_admin_password: pw, p_name: name }); },
   adminRemoveStudent(pw, id) { return rpc("cgg_admin_remove_student", { p_admin_password: pw, p_id: id }); },

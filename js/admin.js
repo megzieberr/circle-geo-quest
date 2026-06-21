@@ -5,12 +5,13 @@
    admin password server-side. No service-role key in the client.
    ============================================================ */
 import { api, BACKEND } from "./api.js";
-import { ROUNDS } from "./rounds/index.js";
+import { ROUNDS, QUESTION_BY_ID } from "./rounds/index.js";
 
 const root = document.getElementById("admin");
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 let adminPw = null;
 let data = null;
+let itemStats = null;
 
 const INACTIVE_DAYS = 7;
 const fmtDate = ts => ts ? new Date(ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
@@ -42,6 +43,8 @@ async function load() {
   const r = await api.adminData(adminPw).catch(() => ({ ok: false }));
   if (!r.ok) return renderLogin("Session expired — log in again.");
   data = r;
+  // item-level "hardest questions" report (best-effort; needs the Phase-2 RPC)
+  itemStats = api.adminItemStats ? await api.adminItemStats(adminPw).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
   renderDashboard();
 }
 
@@ -117,8 +120,52 @@ function renderDashboard() {
   wrap.appendChild(table);
   root.appendChild(wrap);
 
+  renderItemReport();
+
   root.appendChild(el("p", "muted small center", "Passwords are shown so you can return a forgotten one. Backend: " + BACKEND));
 }
+
+/* ---------- "hardest questions" report ---------- */
+function renderItemReport() {
+  const section = el("div", "admin-report");
+  section.appendChild(el("h2", "report-title", "🔍 Hardest questions"));
+  const rows = (itemStats && itemStats.rows) || [];
+
+  if (!itemStats || !itemStats.ok) {
+    section.appendChild(el("p", "muted small", "Question-level stats aren't available yet — this needs the Phase-2 database update (cgg_admin_item_stats)."));
+    root.appendChild(section);
+    return;
+  }
+  if (!rows.length) {
+    section.appendChild(el("p", "muted small", "No question attempts logged yet. Once learners play, the questions they trip on most show up here."));
+    root.appendChild(section);
+    return;
+  }
+
+  section.appendChild(el("p", "muted small", "Ranked by lowest first-try success — these are the misconceptions to target first. Replays are excluded."));
+  const wrap = el("div", "table-wrap");
+  const table = el("table", "admin-table report-table");
+  table.innerHTML = `<thead><tr><th>Rd</th><th>Question</th><th>First-try</th><th>Attempts</th><th>Most-picked wrong answer</th></tr></thead>`;
+  const tbody = el("tbody");
+  rows.forEach(r => {
+    const entry = QUESTION_BY_ID[r.qid];
+    const label = entry ? (entry.q.prompt ? truncate(entry.q.prompt.en, 70) : r.qid) : r.qid;
+    const rd = entry ? entry.roundN : (r.roundId || "—");
+    const pct = r.correctPct;
+    const cls = pct == null ? "" : (pct < 50 ? "pct-bad" : pct < 75 ? "pct-warn" : "pct-ok");
+    const wrong = r.topWrong ? `${escapeHtml(String(r.topWrong))} <span class="muted">×${r.topWrongCount}</span>` : "—";
+    const tr = el("tr");
+    tr.innerHTML = `<td>${rd}</td><td class="qlabel">${escapeHtml(label)}</td>
+      <td class="num ${cls}">${pct == null ? "—" : pct + "%"}</td>
+      <td class="num">${r.attempts}</td><td>${wrong}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  section.appendChild(wrap);
+  root.appendChild(section);
+}
+const truncate = (s, n) => { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
 
 /* ---------- actions ---------- */
 async function addLearner() {
