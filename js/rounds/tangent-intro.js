@@ -1,6 +1,6 @@
 /* Animated intro — what is a tangent? (cutscene, first round of Group 3)
    Contrast a secant (cuts at 2 points) with a tangent (touches at 1), show the
-   contact point, then draw the radius to it — teasing the angle to come. */
+   contact point, then draw a chord from it — teasing the tan-chord angle to come. */
 import { pol } from "../engine.js";
 const AC = "#f76707";
 
@@ -12,7 +12,7 @@ const dot = (p, label, dx = 10, dy = -8, cls = "cs-dot") => `<circle class="${cl
   (label ? `<text class="pl" x="${f(p[0] + dx)}" y="${f(p[1] + dy)}">${label}</text>` : "");
 
 const circ = `<circle class="cs-circle cs-draw" cx="${cx}" cy="${cy}" r="${R}" pathLength="1"/>`;
-const T = P(270), O = [cx, cy];                // contact point + centre
+const T = P(270), A = P(35);                   // contact point + the chord's far end
 const tanL = [T[0] - 110, T[1]], tanR = [T[0] + 110, T[1]];   // tangent at T (horizontal)
 // a secant cutting the circle at two points
 const S1 = P(205), S2 = P(335);
@@ -33,7 +33,7 @@ export const round = {
     { caption: { en: "A <b>tangent</b> is different — it just <b>touches</b> the circle at <b>one</b> point: the <b>contact point</b> T.", af: "'n <b>Raaklyn</b> is anders — dit <b>raak</b> die sirkel by <b>een</b> punt: die <b>raakpunt</b> T." },
       anim: "draw", frag: ln(tanL, tanR, "cs-part cs-draw") + dot(T, "T", 0, 18) },
 
-    { caption: { en: "Now join the centre <b>O</b> to the contact point T — that's the <b>radius</b> OT. Soon you'll discover the special angle it makes with the tangent.", af: "Verbind nou die middelpunt <b>O</b> met die raakpunt T — dis die <b>radius</b> OT. Binnekort ontdek jy die spesiale hoek wat dit met die raaklyn maak." },
-      anim: "draw", frag: ln(O, T, "cs-arm cs-draw") + dot(O, "O", 11, -4) },
+    { caption: { en: "Now draw a <b>chord</b> from the contact point T to a point A on the circle. Soon you'll discover the special angle this <b>chord</b> makes with the tangent.", af: "Trek nou 'n <b>koord</b> vanaf die raakpunt T na 'n punt A op die sirkel. Binnekort ontdek jy die spesiale hoek wat hierdie <b>koord</b> met die raaklyn maak." },
+      anim: "draw", frag: ln(T, A, "cs-arm cs-draw") + dot(A, "A", 10, -6) },
   ],
 };
