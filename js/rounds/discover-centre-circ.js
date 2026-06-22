@@ -84,7 +84,7 @@ export const round = {
       prompt: { en: "Try it with a number", af: "Probeer dit met 'n getal" },
       // geometry matches the numbers: arc gives ∠AOB = 80°, so ∠APB = 40°
       diagram: { O: true, pts: { A: 230, B: 310, P: 90 }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]],
-        angles: [{ at: "O", legs: ["A", "B"], t: "", o: { v: 80 } }, { at: "P", legs: ["A", "B"], t: "40°", o: { v: 40 } }] },
+        angles: [{ at: "O", legs: ["A", "B"], t: "", o: { v: 80 } }, { at: "P", legs: ["A", "B"], t: "40°", o: { v: 40, r: 38 } }] },
       sentence: [
         { en: "If the angle at the circumference is 40°, then the angle at the centre is ", af: "As die hoek by die omtrek 40° is, dan is die hoek by die middelpunt " },
         { kind: "num", answer: 80, unit: "°" },

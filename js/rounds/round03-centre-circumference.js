@@ -3,11 +3,25 @@
    tap-the-centre-angle variant. */
 const AC = "#0ea271";
 
+/* Label radius in px from the angle's vertex. The engine's default pushes a
+   value well out along the bisector so it clears a narrow wedge — but here
+   BOTH angles (at O and at P) open along the same O–P line, so a roomy radius
+   drifts the number toward the middle: "100°" floats up by the chord, "x"
+   hovers next to O. These tuned radii sit each label just outside its own
+   little arc, near its true vertex, widening only for the narrowest wedges so
+   the digits still clear the two legs. */
+function lr(v) {
+  if (v <= 34) return 44;   // narrow wedge — needs room to clear the legs
+  if (v <= 50) return 38;
+  if (v <= 80) return 34;
+  return 32;                 // wide centre angle — snug just above the arc
+}
+
 // helper: O, two points A,B on the circle, P on the far arc; radii + chords.
 function D(a, b, p, oAngle, pAngle) {
   const angles = [];
-  if (pAngle) angles.push({ at: "P", legs: ["A", "B"], t: pAngle.t, o: { v: pAngle.v, r: pAngle.r } });
-  if (oAngle) angles.push({ at: "O", legs: ["A", "B"], t: oAngle.t, o: { v: oAngle.v, r: oAngle.r } });
+  if (pAngle) angles.push({ at: "P", legs: ["A", "B"], t: pAngle.t, o: { v: pAngle.v, r: pAngle.r ?? lr(pAngle.v) } });
+  if (oAngle) angles.push({ at: "O", legs: ["A", "B"], t: oAngle.t, o: { v: oAngle.v, r: oAngle.r ?? lr(oAngle.v) } });
   return { O: true, pts: { A: a, B: b, P: p }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]], angles };
 }
 
@@ -26,7 +40,7 @@ export const round = {
 
     { id: "r3q2", type: "calc-mc", accent: AC,
       prompt: { en: "O is the centre and ∠APB = 35° at the circumference. Find the angle at the centre, x = ∠AOB.", af: "O is die middelpunt en die omtrekshoek ∠APB = 35°. Bereken die middelpuntshoek, x = ∠AOB." },
-      diagram: D(125, 55, 270, { t: "x", v: 70 }, { t: "35°", v: 35, r: 42 }),
+      diagram: D(125, 55, 270, { t: "x", v: 70 }, { t: "35°", v: 35 }),
       options: [ { text: "70°", correct: true }, { text: "17,5°" }, { text: "35°" }, { text: "140°" } ],
       answer: { en: "x = 2 × 35° = 70°.", af: "x = 2 × 35° = 70°." }, explainReason: "centreDouble" },
 
@@ -45,13 +59,13 @@ export const round = {
     // reflex case (centre angle not drawn — it would be > 180°)
     { id: "r3q5", type: "calc-mc", accent: AC,
       prompt: { en: "P is on the minor arc, so ∠APB = 110° looks at the major arc. Find the REFLEX angle ∠AOB at the centre.", af: "P is op die kleiner boog, dus ∠APB = 110° kyk na die groter boog. Bereken die INSPRINGENDE middelpuntshoek ∠AOB." },
-      diagram: { O: true, pts: { A: 160, B: 20, P: 90 }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]], angles: [{ at: "P", legs: ["A", "B"], t: "110°", o: { v: 110 } }] },
+      diagram: { O: true, pts: { A: 160, B: 20, P: 90 }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]], angles: [{ at: "P", legs: ["A", "B"], t: "110°", o: { v: 110, r: lr(110) } }] },
       options: [ { text: "220°", correct: true }, { text: "110°" }, { text: "140°" }, { text: "55°" } ],
       answer: { en: "Reflex ∠AOB = 2 × 110° = 220°.", af: "Inspringende ∠AOB = 2 × 110° = 220°." }, explainReason: "centreDouble" },
 
     { id: "r3q6", type: "calc-mc", accent: AC,
       prompt: { en: "The reflex angle at the centre is 240°. Find x = ∠APB at the circumference.", af: "Die inspringende middelpuntshoek is 240°. Bereken die omtrekshoek x = ∠APB." },
-      diagram: { O: true, pts: { A: 150, B: 30, P: 90 }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]], angles: [{ at: "P", legs: ["A", "B"], t: "x", o: { v: 120 } }] },
+      diagram: { O: true, pts: { A: 150, B: 30, P: 90 }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]], angles: [{ at: "P", legs: ["A", "B"], t: "x", o: { v: 120, r: lr(120) } }] },
       options: [ { text: "120°", correct: true }, { text: "480°" }, { text: "60°" }, { text: "240°" } ],
       answer: { en: "x = 240° ÷ 2 = 120°.", af: "x = 240° ÷ 2 = 120°." }, explainReason: "centreDouble" },
 
@@ -59,7 +73,7 @@ export const round = {
     { id: "r3q7", type: "tap", accent: AC,
       prompt: { en: "∠APB (marked y) sits at the circumference. Tap the angle at the CENTRE subtended by the same arc AB.", af: "∠APB (gemerk y) is die omtrekshoek. Klik op die MIDDELPUNTSHOEK wat deur dieselfde boog AB onderspan word." },
       diagram: { O: true, pts: { A: 150, B: 30, P: 270 }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]],
-        angles: [ { at: "P", legs: ["A", "B"], t: "y", o: { v: 60 } }, { at: "O", legs: ["A", "B"], t: "", o: { v: 120 } }, { at: "A", legs: ["O", "P"], t: "", o: {} } ] },
+        angles: [ { at: "P", legs: ["A", "B"], t: "y", o: { v: 60, r: lr(60) } }, { at: "O", legs: ["A", "B"], t: "", o: { v: 120 } }, { at: "A", legs: ["O", "P"], t: "", o: {} } ] },
       tap: { targets: [ { id: "centre", kind: "angle", angleIndex: 1 }, { id: "atA", kind: "angle", angleIndex: 2 } ], correctId: "centre" },
       answer: { en: "∠AOB at the centre = 2 × y.", af: "Die middelpuntshoek ∠AOB = 2 × y." }, explainReason: "centreDouble" },
 
@@ -70,7 +84,7 @@ export const round = {
 
     { id: "r3q9", type: "calc-mc", accent: AC,
       prompt: { en: "The centre angle ∠AOB = 64°. Find x = ∠APB at the circumference.", af: "Die middelpuntshoek ∠AOB = 64°. Bereken x = ∠APB by die omtrek." },
-      diagram: D(142, 78, 270, { t: "64°", v: 64 }, { t: "x", v: 32, r: 42 }),
+      diagram: D(142, 78, 270, { t: "64°", v: 64 }, { t: "x", v: 32 }),
       options: [ { text: "32°", correct: true }, { text: "128°" }, { text: "64°" }, { text: "26°" } ],
       answer: { en: "x = 64° ÷ 2 = 32°.", af: "x = 64° ÷ 2 = 32°." }, explainReason: "centreDouble" },
 
