@@ -46,6 +46,7 @@ import { round as r18 } from "./round18-riders-twochord.js";
 import { round as r19 } from "./round19-riders-diameter.js";
 import { round as r20 } from "./round20-riders-mixed1.js";
 import { round as r21 } from "./round21-riders-mixed2.js";
+import { round as dailyExtra } from "./daily-extra.js";          // bonus daily bank (not in play order)
 
 /* ordered play sequence (Group 1 discoveries for centre=2× and semicircle
    are added in the next build step) */
@@ -107,4 +108,14 @@ ROUNDS.forEach(r => {
     QUESTION_BANK.push(entry);
     QUESTION_BY_ID[q.id] = entry;
   });
+});
+
+/* Daily bonus bank — extra mixed riders for learners who've passed every round.
+   NOT pushed to QUESTION_BANK (so it never leaks into a normal Daily pool) and
+   NOT in ROUNDS (no map card / badge), but registered in QUESTION_BY_ID so the
+   Daily and Fix-Mistakes can resolve its ids. daily.js adds it for finishers. */
+export const DAILY_EXTRA = (dailyExtra.questions || []).map(q => {
+  const entry = { q, roundId: dailyExtra.id, roundN: null, title: dailyExtra.title, accent: q.accent || dailyExtra.accent, group: "bonus" };
+  QUESTION_BY_ID[q.id] = entry;
+  return entry;
 });

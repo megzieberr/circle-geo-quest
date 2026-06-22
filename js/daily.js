@@ -12,7 +12,7 @@
    spots resurface. Reward here is the streak itself: no leaderboard
    XP in phase 1, so the server economy is untouched.
    ============================================================ */
-import { ROUNDS, QUESTION_BANK, QUESTION_BY_ID } from "./rounds/index.js";
+import { ROUNDS, QUESTION_BANK, QUESTION_BY_ID, DAILY_EXTRA } from "./rounds/index.js";
 import { t, tx } from "./i18n.js";
 import { el, clear, mount, shuffled, progressBar } from "./ui.js";
 import { mountQuestion } from "./questions.js";
@@ -34,7 +34,7 @@ function dayBefore(dayStr) {
   return localDay(dt);
 }
 
-const DEFAULT = { streak: 0, best: 0, lastDay: null, setDay: null, set: [], doneDay: null };
+const DEFAULT = { streak: 0, best: 0, lastDay: null, setDay: null, set: [], doneDay: null, served: [] };
 function read(app) { try { return { ...DEFAULT, ...(JSON.parse(localStorage.getItem(keyFor(app))) || {}) }; } catch { return { ...DEFAULT }; } }
 function write(app, st) { try { localStorage.setItem(keyFor(app), JSON.stringify(st)); } catch { /* ignore */ } }
 
@@ -45,31 +45,62 @@ function passedQuestionPool(app) {
   return QUESTION_BANK.filter(e => passed.has(e.roundId));
 }
 
+/* has the learner passed EVERY graded round? (graded = rounds that contribute
+   questions to the bank). Finishers get the bonus rider bank in their Daily. */
+function allRoundsPassed(app) {
+  const progress = (app.state && app.state.progress) || {};
+  const graded = new Set(QUESTION_BANK.map(e => e.roundId));
+  return graded.size > 0 && [...graded].every(rid => progress[rid] && progress[rid].passed);
+}
+
 export function dailyUnlocked(app) { return passedQuestionPool(app).length > 0; }
 export function getDaily(app) { return read(app); }
 export function isDoneToday(app) { return read(app).doneDay === localDay(); }
 
-/* Pick (and remember for the day) an interleaved set of question ids,
-   spreading picks across as many different rounds as possible. */
+/* Pick (and remember for the day) an interleaved set of question ids.
+   - Finishers (every round passed) get mostly FRESH bonus riders plus one
+     review, so the Daily stops recycling the round questions.
+   - Everyone else gets a spread across their passed rounds.
+   In both cases we prefer questions not served recently (`served` log), and
+   reset a pool's rotation once it's been exhausted. */
 function todaySet(app) {
   const st = read(app);
   const today = localDay();
   if (st.setDay === today && Array.isArray(st.set) && st.set.length && st.set.every(id => QUESTION_BY_ID[id])) {
     return st.set;
   }
-  const pool = passedQuestionPool(app);
-  // bucket by round, shuffle each, then round-robin so the 5 are spread out
-  const byRound = {};
-  shuffled(pool).forEach(e => { (byRound[e.roundId] || (byRound[e.roundId] = [])).push(e); });
-  const buckets = shuffled(Object.values(byRound));
-  const picks = [];
-  let added = true;
-  while (picks.length < SIZE && added) {
-    added = false;
-    for (const b of buckets) { if (b.length) { picks.push(b.shift()); added = true; if (picks.length >= SIZE) break; } }
+  const served = new Set(st.served || []);
+  // take n entries, preferring those not served recently; if a pool is used up
+  // (fewer fresh than needed) start a new rotation over the whole pool.
+  const take = (entries, n) => {
+    if (n <= 0 || !entries.length) return [];
+    let fresh = entries.filter(e => !served.has(e.q.id));
+    if (fresh.length < n) fresh = entries.slice();
+    return shuffled(fresh).slice(0, n);
+  };
+
+  let picks;
+  if (allRoundsPassed(app) && DAILY_EXTRA.length) {
+    const bonus = take(DAILY_EXTRA, Math.min(SIZE - 1, DAILY_EXTRA.length));  // up to 4 fresh bonus riders
+    const review = take(QUESTION_BANK, SIZE - bonus.length);                   // + a review for spaced retrieval
+    picks = shuffled([...bonus, ...review]).slice(0, SIZE);
+  } else {
+    // bucket by round, unseen first within each, then round-robin so the 5 spread out
+    const byRound = {};
+    shuffled(passedQuestionPool(app)).forEach(e => { (byRound[e.roundId] || (byRound[e.roundId] = [])).push(e); });
+    Object.values(byRound).forEach(b => b.sort((a, c) => (served.has(a.q.id) ? 1 : 0) - (served.has(c.q.id) ? 1 : 0)));
+    const buckets = shuffled(Object.values(byRound));
+    picks = [];
+    let added = true;
+    while (picks.length < SIZE && added) {
+      added = false;
+      for (const b of buckets) { if (b.length) { picks.push(b.shift()); added = true; if (picks.length >= SIZE) break; } }
+    }
   }
+
   const set = picks.map(e => e.q.id);
-  write(app, { ...st, setDay: today, set });
+  const served2 = [...(st.served || []), ...set].slice(-40);   // remember recent picks to avoid repeats
+  write(app, { ...st, setDay: today, set, served: served2 });
   return set;
 }
 
