@@ -194,6 +194,38 @@ const UI = {
   dailyStreakNew: { en: "Streak started! Come back tomorrow to build it.", af: "Streak begin! Kom môre terug om dit te bou." },
   dailyKeptFresh: { en: "Great retrieval practice — this is how it sticks. 🧠", af: "Goeie oefening — só bly dit vassteek. 🧠" },
 
+  // weekly hype — "Star of the Week" (weekly.js)
+  // -- Friday–Sunday rally (live standings + weekend push) --
+  wkRallyEyebrow: { en: "Weekend rally", af: "Naweek-jaag" },
+  wkRallyTitle:   { en: "The board locks soon!", af: "Die telbord sluit binnekort!" },
+  wkLockHook:     { en: "The weekly board locks Sunday night.", af: "Die week-telbord sluit Sondagaand." },
+  wkYouAreNum:    { en: "You're", af: "Jy is" },                         // …followed by "#4"
+  wkOnly:         { en: "only", af: "net" },
+  wkBehind:       { en: "behind", af: "agter" },                         // "only 20 XP behind #3"
+  wkClimbHook:    { en: "One good round could do it!", af: "Een goeie rondte kan dit doen!" },
+  wkRallyClimb:   { en: "climb the board before it locks!", af: "klim die telbord voor dit sluit!" },
+  wkTopNow:       { en: "You're #1 this week — defend your crown! 👑", af: "Jy is #1 hierdie week — verdedig jou kroon! 👑" },
+  wkNoScoreYet:   { en: "You haven't scored this week yet — a quick Daily Challenge bumps you up.", af: "Jy het nog nie hierdie week getel nie — 'n vinnige Daaglikse Uitdaging stoot jou op." },
+  // -- Monday–Tuesday crown (last week's settled results) --
+  wkCrownEyebrow: { en: "Results day", af: "Uitslagdag" },
+  wkCrownTitle:   { en: "Last week's results", af: "Verlede week se uitslae" },
+  wkAwardStar:    { en: "Star of the Week", af: "Ster van die Week" },
+  wkAwardImproved:{ en: "Most Improved", af: "Meeste Verbeter" },        // Phase B
+  wkAwardStreak:  { en: "On Fire", af: "Aan die Brand" },                // Phase B
+  wkYouAreStar:   { en: "You're the Star of the Week! 🌟", af: "Jy is die Ster van die Week! 🌟" },
+  wkFinishedNum:  { en: "You finished", af: "Jy het geëindig" },         // "You finished #4 last week — …"
+  wkLastWeek:     { en: "last week", af: "verlede week" },
+  wkUp:           { en: "up", af: "op" },                                // "up 2 spots 🔼"
+  wkSteady:       { en: "holding steady 💪", af: "hou steady 💪" },
+  wkBounceBack:   { en: "a fresh week to climb 💪", af: "'n vars week om te klim 💪" },
+  wkBestWeek:     { en: "your best week yet! 🌟", af: "jou beste week tot dusver! 🌟" },
+  wkFirstWeek:    { en: "your first full week — welcome aboard!", af: "jou eerste volle week — welkom aan boord!" },
+  wkSatOut:       { en: "You sat last week out — this week's a clean slate. Jump in!", af: "Jy het verlede week oorgeslaan — hierdie week is 'n skoon lei. Spring in!" },
+  // -- shared buttons --
+  wkLetsGo:       { en: "Let's go →", af: "Kom ons gaan →" },
+  wkNice:         { en: "Nice! 🎉", af: "Lekker! 🎉" },
+  wkSeeBoard:     { en: "See full board →", af: "Sien volle telbord →" },
+
   // misc
   language:       { en: "Afrikaans", af: "English" }, // label shows the OTHER language to switch to
   loading:        { en: "Loading…", af: "Laai…" },

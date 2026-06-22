@@ -378,6 +378,35 @@ svg.cs-svg{width:100%; max-width:380px; height:auto;}
   opacity:0; transform:translateY(10px); transition:.3s;}
 .toast-item.show{opacity:1; transform:translateY(0);}
 
+/* ---------- weekly hype (Star of the Week) ---------- */
+.wk-overlay{position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
+  padding:18px; background:rgba(37,42,74,.45); backdrop-filter:blur(3px); opacity:0; transition:opacity .2s ease;}
+.wk-overlay.show{opacity:1;}
+.wk-modal{position:relative; width:100%; max-width:420px; text-align:center;
+  transform:translateY(14px) scale(.96); transition:transform .25s cubic-bezier(.2,1.4,.4,1);}
+.wk-overlay.show .wk-modal{transform:none;}
+.wk-close{position:absolute; top:9px; right:12px; background:none; border:none; font-size:1.05rem; line-height:1;
+  color:var(--ink-soft); cursor:pointer;}
+.wk-close:hover{color:var(--ink);}
+.wk-emoji{font-size:2.6rem; line-height:1; margin-bottom:2px;}
+.wk-modal h1{font-size:1.5rem; margin:2px 0 10px;}
+.wk-winners{display:flex; flex-direction:column; gap:8px; margin:4px 0 12px;}
+.wk-award{display:flex; align-items:center; gap:11px; text-align:left; border:2px solid var(--ink); border-radius:13px;
+  padding:9px 12px; background:#fff; box-shadow:var(--shadow-sm);}
+.wk-award:first-child{background:linear-gradient(180deg,#fff7e0,#fff); border-color:#e0a000;}
+.wk-aw-icon{font-size:1.5rem; line-height:1;}
+.wk-aw-body{display:flex; flex-direction:column; flex:1; min-width:0;}
+.wk-aw-label{font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);}
+.wk-aw-name{font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:1.1rem;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.wk-aw-xp{font-weight:800; white-space:nowrap;}
+.wk-personal{font-weight:700; font-size:1.02rem; background:#eef1ff; border:2px solid var(--ink); border-radius:12px;
+  padding:11px 13px; margin:2px 0 8px; box-shadow:var(--shadow-sm);}
+.wk-rally .wk-personal{background:#fff3e8;}
+.wk-sub{margin-bottom:2px;}
+.wk-actions{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+.wk-seeboard{margin:0 auto;}
+
 /* ---------- adventures (Grand Master bonus) ---------- */
 .adventure-banner{display:flex; align-items:center; gap:14px; margin-bottom:22px; border-left:7px solid var(--s5);}
 .adventure-banner.locked{opacity:.72; border-left-style:dashed;

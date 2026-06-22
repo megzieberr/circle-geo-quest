@@ -8,6 +8,7 @@ import { el, clear, mount, progressBar, shuffled, toast } from "./ui.js";
 import { mountQuestion } from "./questions.js";
 import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
 import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
+import { maybeShowWeekly } from "./weekly.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -124,6 +125,10 @@ export function renderHome(app, host) {
     grid.appendChild(card);
   });
   host.appendChild(grid);
+
+  // Star-of-the-Week: Fri–Sun rally / Mon–Tue crown. No-ops off-day or if already seen.
+  // Never let a popup glitch blank the home screen.
+  try { maybeShowWeekly(app); } catch { /* non-critical */ }
 }
 
 /* the badge ladder: a medallion per group with progress toward each */

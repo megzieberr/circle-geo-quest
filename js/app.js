@@ -39,7 +39,12 @@ const app = {
       // enrich with rank + weekly XP for the chrome / home
       try {
         const lb = await api.leaderboard(s.name, s.password);
-        if (lb.ok) { this.state.rank = lb.myAllTime ? lb.myAllTime.rank : null; this.state.weeklyXp = lb.myWeekly ? lb.myWeekly.xp : 0; }
+        if (lb.ok) {
+          this.state.rank = lb.myAllTime ? lb.myAllTime.rank : null;
+          this.state.weeklyXp = lb.myWeekly ? lb.myWeekly.xp : 0;
+          this.state.weekly = lb.weekly || [];      // full board → Star-of-the-Week popups (weekly.js)
+          this.state.myWeekly = lb.myWeekly || null;
+        }
       } catch { /* ignore */ }
       return true;
     } catch { return false; }
