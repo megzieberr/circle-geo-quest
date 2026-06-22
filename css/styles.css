@@ -158,6 +158,9 @@ svg.diag .al{font:700 13.5px "Instrument Sans",sans-serif; text-anchor:middle; d
   paint-order:stroke; stroke:#fff; stroke-width:4.5px; stroke-linejoin:round;}
 svg.diag .pl{font:700 13px "Instrument Sans",sans-serif; fill:#2b2f4a; text-anchor:middle; dominant-baseline:middle;
   paint-order:stroke; stroke:#fff; stroke-width:4px; stroke-linejoin:round;}
+/* hint pulse — softly shades the angle a hint is about (added on hint open) */
+svg.diag .q-hl{fill-opacity:.22; pointer-events:none; animation:qHlPulse 1.1s ease-in-out infinite alternate;}
+@keyframes qHlPulse{from{fill-opacity:.08} to{fill-opacity:.34}}
 /* tap overlays */
 svg.diag .hit{cursor:pointer; pointer-events:all; stroke:transparent; fill:transparent; transition:.12s;}
 svg.diag .hit:hover, svg.diag .hit:focus{stroke:var(--accent); stroke-opacity:.5; fill:var(--accent); fill-opacity:.13; outline:none;}

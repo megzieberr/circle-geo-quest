@@ -59,6 +59,7 @@ export function mountQuestion(container, q, onAnswered) {
   function reveal(isCorrect, answerText, reasonText, chosen) {
     if (answered) return;
     answered = true;
+    if (svgNode) svgNode.querySelectorAll(".q-hl").forEach(n => n.remove());   // clear the hint pulse
     if (hintWrap) hintWrap.hidden = true;
     feedback.hidden = false;
     feedback.classList.add(isCorrect ? "good" : "bad");
@@ -260,7 +261,7 @@ export function mountQuestion(container, q, onAnswered) {
     render();
   }
 
-  hintWrap = buildHintBar(buildHintSteps());
+  hintWrap = buildHintBar(buildHintSteps(), () => { if (geo && svgNode) highlightHintTargets(q, geo, svgNode, accent); });
   if (hintWrap) root.appendChild(hintWrap);
   root.appendChild(feedback);
   container.appendChild(root);
@@ -270,7 +271,7 @@ export function mountQuestion(container, q, onAnswered) {
    The "Stuck? Get a hint" ladder. Reveals one step per tap so a
    learner who can't start still gets a foothold instead of quitting.
    ------------------------------------------------------------ */
-function buildHintBar(steps) {
+function buildHintBar(steps, onFirstReveal) {
   if (!steps.length) return null;
   const wrap = el("div", "q-hints");
   const panel = el("div", "q-hint-panel");
@@ -278,6 +279,7 @@ function buildHintBar(steps) {
   let shown = 0;
   btn.addEventListener("click", () => {
     if (shown >= steps.length) return;
+    if (shown === 0 && typeof onFirstReveal === "function") onFirstReveal();   // pulse the angle on first hint
     const step = el("div", "q-hint-step");
     step.innerHTML = `<span class="qh-n">${shown + 1}</span><span class="qh-body">${steps[shown]}</span>`;
     panel.appendChild(step);
@@ -288,6 +290,32 @@ function buildHintBar(steps) {
   wrap.appendChild(panel);
   wrap.appendChild(btn);
   return wrap;
+}
+
+/* ------------------------------------------------------------
+   When a hint opens, softly pulse the angle(s) the question is
+   about, so the learner's eye lands on the right spot. Auto-derived:
+   every deliberately MARKED angle (has a label, a custom colour, or a
+   right-angle mark). For tap questions the tappable angles are excluded,
+   so the answer is never given away. No diagram / no marked angle → nothing.
+   ------------------------------------------------------------ */
+function highlightHintTargets(q, geo, svgNode, accent) {
+  if (svgNode.querySelector(".q-hl")) return;            // already drawn
+  const spec = (q.diagram && q.diagram.angles) || [];
+  const tapAngles = new Set();
+  if (q.type === "tap" && q.tap) (q.tap.targets || []).forEach(tg => { if (tg.kind === "angle" && tg.angleIndex != null) tapAngles.add(tg.angleIndex); });
+  const R = 30;
+  geo.angles.forEach(ang => {
+    const o = (spec[ang.index] && spec[ang.index].o) || {};
+    const marked = (ang.t && ang.t.trim() !== "") || o.c || o.mark;
+    if (!marked || tapAngles.has(ang.index)) return;
+    const v = ang.vertex;
+    const [x1, y1] = pol(v.x, v.y, R, ang.from);
+    const [x2, y2] = pol(v.x, v.y, R, ang.from + ang.sweep);
+    const large = ang.sweep > 180 ? 1 : 0;
+    const d = `M ${Math.round(v.x)} ${Math.round(v.y)} L ${Math.round(x1)} ${Math.round(y1)} A ${R} ${R} 0 ${large} 0 ${Math.round(x2)} ${Math.round(y2)} Z`;
+    svgNode.insertBefore(svg("path", { d, class: "q-hl", fill: accent }), svgNode.firstChild);   // behind the diagram
+  });
 }
 
 /* ------------------------------------------------------------
