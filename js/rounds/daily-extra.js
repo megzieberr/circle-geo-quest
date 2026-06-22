@@ -199,5 +199,163 @@ export const round = {
         { en: "Q is on the same arc as P, so ∠AQB = ∠APB (angles in the same segment).",
           af: "Q is op dieselfde boog as P, dus ∠AQB = ∠APB (hoeke in dieselfde segment)." },
       ] },
+
+    // ===== BATCH 2 — tangent-heavy + reflex (filling the gaps) =====
+
+    // 13 — reflex case: P on the minor arc, centre angle is the reflex
+    { id: "dx13", type: "calc-mc", accent: G1, reasonCode: "centreDouble",
+      prompt: { en: "P is on the minor arc and ∠APB = 115°. Find the REFLEX angle ∠AOB at the centre.", af: "P is op die kleiner boog en ∠APB = 115°. Bereken die INSPRINGENDE hoek ∠AOB by die middelpunt." },
+      diagram: { O: true, pts: { A: 160, B: 30, P: 95 }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]],
+        angles: [ { at: "P", legs: ["A", "B"], t: "115°", o: { v: 115 } } ] },
+      options: [ { text: "230°", correct: true }, { text: "115°" }, { text: "130°" }, { text: "260°" } ],
+      answer: { en: "Reflex ∠AOB = 2 × ∠APB = 2 × 115° = 230°.", af: "Inspringende ∠AOB = 2 × ∠APB = 2 × 115° = 230°." },
+      explainReason: "centreDouble",
+      hints: [
+        { en: "P is on the minor arc, so the matching centre angle is the REFLEX ∠AOB (the big one round the back).", af: "P is op die kleiner boog, dus is die ooreenstemmende middelpuntshoek die INSPRINGENDE ∠AOB (die grote om die agterkant)." },
+        { en: "Reflex ∠AOB = 2 × ∠APB. Double the angle at P.", af: "Inspringende ∠AOB = 2 × ∠APB. Verdubbel die hoek by P." },
+      ] },
+
+    // 14 — tan-chord, then triangle, to reach the APEX angle
+    { id: "dx14", type: "calc-mc", accent: G3, reasonCode: "tanChord",
+      prompt: { en: "STU is a tangent at T. The tangent-chord angle ∠UTA = 49° and ∠TAB = 57°. Find x = ∠ATB.", af: "STU is 'n raaklyn by T. Die raaklyn-koord-hoek ∠UTA = 49° en ∠TAB = 57°. Bereken x = ∠ATB." },
+      diagram: { pts: { T: 270, A: 8, B: 156 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "A"], ["T", "B"], ["A", "B"]],
+        angles: [ { at: "T", legs: ["tg+", "A"], t: "49°", o: { v: 49 } }, { at: "A", legs: ["T", "B"], t: "57°", o: { v: 57 } }, { at: "T", legs: ["A", "B"], t: "x", o: { v: 74 } } ] },
+      options: [ { text: "74°", correct: true }, { text: "49°" }, { text: "57°" }, { text: "82°" } ],
+      answer: { en: "∠ABT = ∠UTA = 49° (tan-chord, alternate segment); x = 180° − 49° − 57° = 74°.", af: "∠ABT = ∠UTA = 49° (raaklyn-koord, oorstaande segment); x = 180° − 49° − 57° = 74°." },
+      explainReason: "tanChord",
+      hints: [
+        { en: "The tangent-chord angle equals the angle in the alternate segment: ∠ABT = ∠UTA = 49°.", af: "Die raaklyn-koord-hoek is gelyk aan die hoek in die oorstaande segment: ∠ABT = ∠UTA = 49°." },
+        { en: "Now use the angle sum of △ATB: x = 180° − 49° − 57°.", af: "Gebruik nou die hoeksom van △ATB: x = 180° − 49° − 57°." },
+      ] },
+
+    // 15 — tan-chord gives one inscribed angle; the opposite side is its supplement
+    { id: "dx15", type: "calc-mc", accent: G3, reasonCode: "tanChord",
+      prompt: { en: "STU is a tangent at T and ∠UTA = 64°. P and Q are on opposite sides of chord TA. Find x = ∠TQA.", af: "STU is 'n raaklyn by T en ∠UTA = 64°. P en Q is aan teenoorgestelde kante van koord TA. Bereken x = ∠TQA." },
+      diagram: { pts: { T: 270, A: 38, P: 150, Q: 330 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "A"], ["P", "T"], ["P", "A"], ["Q", "T"], ["Q", "A"]],
+        angles: [ { at: "T", legs: ["tg+", "A"], t: "64°", o: { v: 64 } }, { at: "Q", legs: ["T", "A"], t: "x", o: { v: 116 } } ] },
+      options: [ { text: "116°", correct: true }, { text: "64°" }, { text: "124°" }, { text: "52°" } ],
+      answer: { en: "∠TPA = ∠UTA = 64° (tan-chord); ∠TQA is on the opposite side of TA, so x = 180° − 64° = 116°.", af: "∠TPA = ∠UTA = 64° (raaklyn-koord); ∠TQA is aan die ander kant van TA, dus x = 180° − 64° = 116°." },
+      explainReason: "tanChord",
+      hints: [
+        { en: "The tangent-chord angle equals ∠TPA in the alternate segment: ∠TPA = 64°.", af: "Die raaklyn-koord-hoek is gelyk aan ∠TPA in die oorstaande segment: ∠TPA = 64°." },
+        { en: "Q is on the OTHER side of chord TA, so ∠TQA is the supplement: x = 180° − 64°.", af: "Q is aan die ANDER kant van koord TA, dus ∠TQA is die supplement: x = 180° − 64°." },
+      ] },
+
+    // 16 — tangent ⊥ radius: split the right angle (given the radius part)
+    { id: "dx16", type: "calc-mc", accent: G3, reasonCode: "tanRadius",
+      prompt: { en: "STU is a tangent at T and OT is a radius, with C on the circle. If ∠OTC = 62°, find x = ∠CTU.", af: "STU is 'n raaklyn by T en OT 'n radius, met C op die sirkel. As ∠OTC = 62°, bereken x = ∠CTU." },
+      diagram: { O: true, pts: { T: 270, C: 326 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["O", "T"], ["T", "C"]],
+        angles: [ { at: "T", legs: ["O", "C"], t: "62°", o: { v: 62 } }, { at: "T", legs: ["C", "tg+"], t: "x", o: { v: 28, r: 40 } } ] },
+      options: [ { text: "28°", correct: true }, { text: "62°" }, { text: "90°" }, { text: "118°" } ],
+      answer: { en: "∠OTU = 90° (tan ⊥ radius), so x = 90° − 62° = 28°.", af: "∠OTU = 90° (raaklyn ⊥ radius), dus x = 90° − 62° = 28°." },
+      explainReason: "tanRadius",
+      hints: [
+        { en: "The radius and the tangent meet at 90° (tan ⊥ radius), so ∠OTU = 90°.", af: "Die radius en die raaklyn ontmoet teen 90° (raaklyn ⊥ radius), dus ∠OTU = 90°." },
+        { en: "∠OTC and ∠CTU split that 90°, so x = 90° − 62°.", af: "∠OTC en ∠CTU verdeel daardie 90°, dus x = 90° − 62°." },
+      ] },
+
+    // 17 — two tangents + two radii: the centre angle (∠O + ∠P = 180°)
+    { id: "dx17", type: "calc-mc", accent: G3, reasonCode: "tanRadius",
+      prompt: { en: "PT and PS are tangents from P, and OT, OS are radii. If ∠TPS = 50°, find x = ∠TOS.", af: "PT en PS is raaklyne vanaf P, en OT, OS is radiusse. As ∠TPS = 50°, bereken x = ∠TOS." },
+      diagram: { O: true, h: 284, cx: 160, cy: 150, R: 70, pts: { T: 320, S: 190 }, ext: [{ name: "P", t: ["T", "S"] }], chords: [["O", "T"], ["O", "S"]],
+        angles: [ { at: "P", legs: ["T", "S"], t: "50°", o: { v: 50 } }, { at: "O", legs: ["T", "S"], t: "x", o: { v: 130 } } ] },
+      options: [ { text: "130°", correct: true }, { text: "50°" }, { text: "100°" }, { text: "65°" } ],
+      answer: { en: "OT ⊥ PT and OS ⊥ PS, so in quad OTPS: ∠TOS = 360° − 90° − 90° − 50° = 130°.", af: "OT ⊥ PT en OS ⊥ PS, dus in vierhoek OTPS: ∠TOS = 360° − 90° − 90° − 50° = 130°." },
+      explainReason: "tanRadius",
+      hints: [
+        { en: "Each tangent meets its radius at 90° (tan ⊥ radius): ∠OTP = ∠OSP = 90°.", af: "Elke raaklyn ontmoet sy radius teen 90° (raaklyn ⊥ radius): ∠OTP = ∠OSP = 90°." },
+        { en: "The four angles of quad OTPS add to 360°, so x = 360° − 90° − 90° − 50°.", af: "Die vier hoeke van vierhoek OTPS is saam 360°, dus x = 360° − 90° − 90° − 50°." },
+      ] },
+
+    // 18 — tangent ⊥ diameter: split the right angle
+    { id: "dx18", type: "calc-mc", accent: G3, reasonCode: "tanDiameter",
+      prompt: { en: "STU is a tangent at T and TD is a diameter, with C on the circle. If ∠DTC = 65°, find x = ∠CTU.", af: "STU is 'n raaklyn by T en TD 'n middellyn, met C op die sirkel. As ∠DTC = 65°, bereken x = ∠CTU." },
+      diagram: { O: true, pts: { T: 270, D: 90, C: 320 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "D"], ["T", "C"]],
+        angles: [ { at: "T", legs: ["D", "C"], t: "65°", o: { v: 65 } }, { at: "T", legs: ["C", "tg+"], t: "x", o: { v: 25 } } ] },
+      options: [ { text: "25°", correct: true }, { text: "65°" }, { text: "90°" }, { text: "155°" } ],
+      answer: { en: "∠DTU = 90° (tan ⊥ diameter), so x = 90° − 65° = 25°.", af: "∠DTU = 90° (raaklyn ⊥ middellyn), dus x = 90° − 65° = 25°." },
+      explainReason: "tanDiameter",
+      hints: [
+        { en: "TD is a diameter (a radius), so the tangent meets it at 90°: ∠DTU = 90°.", af: "TD is 'n middellyn ('n radius), dus die raaklyn ontmoet dit teen 90°: ∠DTU = 90°." },
+        { en: "∠DTC and ∠CTU split that 90°, so x = 90° − 65°.", af: "∠DTC en ∠CTU verdeel daardie 90°, dus x = 90° − 65°." },
+      ] },
+
+    // 19 — tan-chord, then triangle, to the apex (a different figure)
+    { id: "dx19", type: "calc-mc", accent: G3, reasonCode: "tanChord",
+      prompt: { en: "STU is a tangent at T. The tangent-chord angle ∠STB = 49° and ∠ABT = 63°. Find x = ∠ATB.", af: "STU is 'n raaklyn by T. Die raaklyn-koord-hoek ∠STB = 49° en ∠ABT = 63°. Bereken x = ∠ATB." },
+      diagram: { pts: { T: 270, A: 36, B: 172 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "A"], ["T", "B"], ["A", "B"]],
+        angles: [ { at: "T", legs: ["tg-", "B"], t: "49°", o: { v: 49 } }, { at: "B", legs: ["T", "A"], t: "63°", o: { v: 63 } }, { at: "T", legs: ["A", "B"], t: "x", o: { v: 68 } } ] },
+      options: [ { text: "68°", correct: true }, { text: "49°" }, { text: "63°" }, { text: "75°" } ],
+      answer: { en: "∠TAB = ∠STB = 49° (tan-chord, alternate segment); x = 180° − 49° − 63° = 68°.", af: "∠TAB = ∠STB = 49° (raaklyn-koord, oorstaande segment); x = 180° − 49° − 63° = 68°." },
+      explainReason: "tanChord",
+      hints: [
+        { en: "The tangent-chord angle equals the angle in the alternate segment: ∠TAB = ∠STB = 49°.", af: "Die raaklyn-koord-hoek is gelyk aan die hoek in die oorstaande segment: ∠TAB = ∠STB = 49°." },
+        { en: "Now use the angle sum of △ATB: x = 180° − 49° − 63°.", af: "Gebruik nou die hoeksom van △ATB: x = 180° − 49° − 63°." },
+      ] },
+
+    // 20 — reflex centre given, find the angle at the circumference
+    { id: "dx20", type: "calc-mc", accent: G1, reasonCode: "centreDouble",
+      prompt: { en: "The reflex angle ∠AOB = 240° at the centre, with P on the minor arc. Find x = ∠APB.", af: "Die inspringende hoek ∠AOB = 240° by die middelpunt, met P op die kleiner boog. Bereken x = ∠APB." },
+      diagram: { O: true, pts: { A: 170, B: 50, P: 110 }, chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]],
+        angles: [ { at: "P", legs: ["A", "B"], t: "x", o: { v: 120 } } ] },
+      options: [ { text: "120°", correct: true }, { text: "240°" }, { text: "60°" }, { text: "130°" } ],
+      answer: { en: "∠APB = reflex ∠AOB ÷ 2 = 240° ÷ 2 = 120°.", af: "∠APB = inspringende ∠AOB ÷ 2 = 240° ÷ 2 = 120°." },
+      explainReason: "centreDouble",
+      hints: [
+        { en: "P is on the minor arc, so it pairs with the REFLEX centre angle: reflex ∠AOB = 2 × ∠APB.", af: "P is op die kleiner boog, dus pas dit by die INSPRINGENDE middelpuntshoek: inspringende ∠AOB = 2 × ∠APB." },
+        { en: "So ∠APB is half of the reflex angle: x = 240° ÷ 2.", af: "Dus is ∠APB die helfte van die inspringende hoek: x = 240° ÷ 2." },
+      ] },
+
+    // 21 — diameter + centre = 2 × circumference
+    { id: "dx21", type: "calc-mc", accent: G1, reasonCode: "centreDouble",
+      prompt: { en: "O is the centre, AB is a diameter and C is on the circle. If ∠BOC = 70°, find x = ∠BAC.", af: "O is die middelpunt, AB is 'n middellyn en C is op die sirkel. As ∠BOC = 70°, bereken x = ∠BAC." },
+      diagram: { O: true, pts: { A: 180, B: 0, C: 70 }, chords: [["A", "B"], ["O", "C"], ["A", "C"], ["B", "C"]],
+        angles: [ { at: "O", legs: ["B", "C"], t: "70°", o: { v: 70 } }, { at: "A", legs: ["B", "C"], t: "x", o: { v: 35, r: 46 } } ] },
+      options: [ { text: "35°", correct: true }, { text: "70°" }, { text: "140°" }, { text: "55°" } ],
+      answer: { en: "∠BAC and ∠BOC stand on the same arc BC, so ∠BAC = ∠BOC ÷ 2 = 70° ÷ 2 = 35°.", af: "∠BAC en ∠BOC staan op dieselfde boog BC, dus ∠BAC = ∠BOC ÷ 2 = 70° ÷ 2 = 35°." },
+      explainReason: "centreDouble",
+      hints: [
+        { en: "∠BOC is at the centre and ∠BAC is at the circumference, both on arc BC.", af: "∠BOC is by die middelpunt en ∠BAC by die omtrek, albei op boog BC." },
+        { en: "The circumference angle is half the centre angle: x = 70° ÷ 2.", af: "Die omtrekshoek is die helfte van die middelpuntshoek: x = 70° ÷ 2." },
+      ] },
+
+    // 22 — tan-chord, then triangle, for a base angle of the triangle
+    { id: "dx22", type: "calc-mc", accent: G3, reasonCode: "tanChord",
+      prompt: { en: "STU is a tangent at T. The tangent-chord angle ∠UTA = 49° and the apex ∠ATB = 74°. Find x = ∠TAB.", af: "STU is 'n raaklyn by T. Die raaklyn-koord-hoek ∠UTA = 49° en die apeks ∠ATB = 74°. Bereken x = ∠TAB." },
+      diagram: { pts: { T: 270, A: 8, B: 156 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "A"], ["T", "B"], ["A", "B"]],
+        angles: [ { at: "T", legs: ["tg+", "A"], t: "49°", o: { v: 49 } }, { at: "T", legs: ["A", "B"], t: "74°", o: { v: 74 } }, { at: "A", legs: ["T", "B"], t: "x", o: { v: 57 } } ] },
+      options: [ { text: "57°", correct: true }, { text: "49°" }, { text: "74°" }, { text: "64°" } ],
+      answer: { en: "∠ABT = ∠UTA = 49° (tan-chord); x = 180° − 74° − 49° = 57°.", af: "∠ABT = ∠UTA = 49° (raaklyn-koord); x = 180° − 74° − 49° = 57°." },
+      explainReason: "tanChord",
+      hints: [
+        { en: "The tangent-chord angle equals ∠ABT in the alternate segment: ∠ABT = 49°.", af: "Die raaklyn-koord-hoek is gelyk aan ∠ABT in die oorstaande segment: ∠ABT = 49°." },
+        { en: "Use the angle sum of △ATB: x = 180° − 74° − 49°.", af: "Gebruik die hoeksom van △ATB: x = 180° − 74° − 49°." },
+      ] },
+
+    // 23 — isosceles radii (fresh numbers)
+    { id: "dx23", type: "calc-mc", accent: G1, reasonCode: "isosBase",
+      prompt: { en: "O is the centre, so OA = OB. If ∠AOB = 100°, find x = ∠OAB.", af: "O is die middelpunt, dus OA = OB. As ∠AOB = 100°, bereken x = ∠OAB." },
+      diagram: { O: true, pts: { A: 160, B: 60 }, chords: [["O", "A"], ["O", "B"], ["A", "B"]],
+        angles: [ { at: "O", legs: ["A", "B"], t: "100°", o: { v: 100 } }, { at: "A", legs: ["O", "B"], t: "x", o: { v: 40, r: 40 } } ] },
+      options: [ { text: "40°", correct: true }, { text: "50°" }, { text: "80°" }, { text: "100°" } ],
+      answer: { en: "OA = OB (radii), so x = (180° − 100°) ÷ 2 = 40°.", af: "OA = OB (radiusse), dus x = (180° − 100°) ÷ 2 = 40°." },
+      explainReason: "isosBase",
+      hints: [
+        { en: "OA = OB are radii, so △OAB is isosceles — the two base angles are equal.", af: "OA = OB is radiusse, dus △OAB is gelykbenig — die twee basishoeke is gelyk." },
+        { en: "The three angles add to 180°: x = (180° − 100°) ÷ 2.", af: "Die drie hoeke is saam 180°: x = (180° − 100°) ÷ 2." },
+      ] },
+
+    // 24 — two tangents (isosceles): given a base angle, find the apex (fresh numbers)
+    { id: "dx24", type: "calc-mc", accent: G3, reasonCode: "isosBase",
+      prompt: { en: "PT and PS are tangents from P and the base angle ∠PTS = 70°. Find x = ∠TPS.", af: "PT en PS is raaklyne vanaf P en die basishoek ∠PTS = 70°. Bereken x = ∠TPS." },
+      diagram: { h: 284, cx: 160, cy: 94, R: 58, pts: { T: 340, S: 200 }, ext: [{ name: "P", t: ["T", "S"] }], chords: [["T", "S"]],
+        angles: [ { at: "T", legs: ["P", "S"], t: "70°", o: { v: 70 } }, { at: "P", legs: ["T", "S"], t: "x", o: { v: 40 } } ] },
+      options: [ { text: "40°", correct: true }, { text: "70°" }, { text: "140°" }, { text: "20°" } ],
+      answer: { en: "PT = PS, so ∠PST = ∠PTS = 70°; x = 180° − 70° − 70° = 40°.", af: "PT = PS, dus ∠PST = ∠PTS = 70°; x = 180° − 70° − 70° = 40°." },
+      explainReason: "isosBase",
+      hints: [
+        { en: "PT = PS (tangents from one point), so the base angles are equal: ∠PST = ∠PTS = 70°.", af: "PT = PS (raaklyne vanaf een punt), dus die basishoeke is gelyk: ∠PST = ∠PTS = 70°." },
+        { en: "The three angles of △PTS add to 180°: x = 180° − 70° − 70°.", af: "Die drie hoeke van △PTS is saam 180°: x = 180° − 70° − 70°." },
+      ] },
   ],
 };
