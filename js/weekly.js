@@ -1,34 +1,39 @@
 /* ============================================================
-   WEEKLY HYPE — "Star of the Week" announcements   (Phase A: client-only)
+   WEEKLY HYPE — "Star of the Week" announcements
    ------------------------------------------------------------
-   Two once-a-week dopamine moments. Both read the weekly leaderboard
-   the app already fetches (app.state.weekly / app.state.myWeekly), so
-   there is NO backend change here:
+   Two once-a-week dopamine moments, gated to one show per learner
+   per week (localStorage flags) and to the right weekday:
 
      • Fri–Sun  RALLY  — "the board locks soon — here's where YOU
-                         stand" + a nudge to push for the weekend.
-                         Uses the live current-week board.
-     • Mon–Tue  CROWN  — last week's settled results: who was Star of
-                         the Week + how YOU finished, with movement vs
-                         the week before.
+                         stand" + a weekend push. Reads the live
+                         current-week board the app already loaded
+                         (app.state.weekly), so it's instant.
+     • Mon–Tue  CROWN  — last week's settled results, fetched from
+                         the server (cgg_weekly_results): Star of the
+                         Week + Most Improved + On Fire, plus how YOU
+                         finished with movement vs the week before.
 
-   The weekly board resets every Monday (server-side), so to name last
-   week's winner AFTER the reset we keep a rolling client snapshot of
-   the board and promote it to "last week" when the week rolls over.
-   That snapshot is per-device, so the crown is best-effort: a learner
-   who didn't open the app late last week may see a slightly stale board.
+   The crown is server-authoritative (Phase B): the RPC computes last
+   week's board from xp_events, so it's consistent across devices and
+   no longer depends on a client snapshot. The three awards go to three
+   DIFFERENT learners (Most Improved excludes the Star; On Fire excludes
+   both) so the dopamine spreads instead of always landing on one kid.
 
-   PHASE B (next Supabase pass) makes it authoritative via a server
-   weekly snapshot, and adds the "Most Improved" and "On Fire (streak)"
-   award chips. The winners strip below already renders an array of
-   awards, so Phase B is a drop-in — it just passes more chips.
+   GO-LIVE: nothing shows before WEEKLY_START — the class gets the game
+   the weekend of 27–28 Jun, and the first rally is held to Fri 3 Jul so
+   it lands on a full week of play, not an empty board.
    ============================================================ */
 import { t, getLang } from "./i18n.js";
 import { el } from "./ui.js";
+import { api } from "./api.js";
+import { getSession } from "./session.js";
 
 const RALLY_DAYS = new Set([5, 6, 0]);   // Fri, Sat, Sun  (Date.getDay)
 const CROWN_DAYS = new Set([1, 2]);      // Mon, Tue  (grace day after results day)
 const CHASE_XP   = 60;                    // show the "only N XP behind" chase only under this gap
+// First weekly popup is held until this local date — see GO-LIVE note above.
+// (Month is 0-indexed: 6 = July.) First rally: Fri 3 Jul; first crown: Mon 6 Jul.
+const WEEKLY_START = new Date(2026, 6, 3);
 
 /* Monday-00:00 anchor of the week containing `d` (mirrors api.js startOfWeek). */
 function startOfWeekTs(d = new Date()) {
@@ -39,66 +44,67 @@ function startOfWeekTs(d = new Date()) {
   return x.getTime();
 }
 
-/* per-learner local state */
+/* per-learner "seen this week" flags */
 const keyFor = app => `cgg.weekly.${(app && app.state && app.state.student && app.state.student.id) || "anon"}`;
-const DEFAULT = { rallyAnchor: 0, crownAnchor: 0, snap: null, lastSnap: null, prevFinishRank: null, bestXp: 0 };
+const DEFAULT = { rallyAnchor: 0, crownAnchor: 0 };
 function read(app) { try { return { ...DEFAULT, ...(JSON.parse(localStorage.getItem(keyFor(app))) || {}) }; } catch { return { ...DEFAULT }; } }
 function write(app, st) { try { localStorage.setItem(keyFor(app), JSON.stringify(st)); } catch { /* ignore */ } }
 
-const slim = board => (board || []).map(r => ({ name: r.name, xp: r.xp }));
-const topXp = board => (board && board.length) ? Math.max(...board.map(r => r.xp || 0)) : 0;
 const spotsWord = n => getLang() === "af" ? (n === 1 ? "plek" : "plekke") : (n === 1 ? "spot" : "spots");
+const daysWord  = n => getLang() === "af" ? (n === 1 ? "dag" : "dae") : (n === 1 ? "day" : "days");
+
+let crownBusy = false;   // guards the async crown fetch against re-render double-fires
 
 /* ============================================================
    ORCHESTRATOR — called at the end of renderHome. No-ops unless
-   it's the right day AND this week's popup hasn't been seen yet.
+   it's live, the right day, and this week's popup is unseen.
    ============================================================ */
 export function maybeShowWeekly(app) {
   const st = read(app);
+  const now = new Date();
+  const force = (() => { try { return new URLSearchParams(location.search).get("wk"); } catch { return null; } })();
   const board = app && app.state && app.state.weekly;
   const me = app && app.state && app.state.myWeekly;
   const nowAnchor = startOfWeekTs();
-  const force = (() => { try { return new URLSearchParams(location.search).get("wk"); } catch { return null; } })();
+  const lastWeekId = nowAnchor - 7 * 864e5;             // stable per-week id for the crown "seen" guard
 
-  // --- snapshot bookkeeping (every visit) ---
-  // When a new week begins, the snapshot we kept of the old week becomes
-  // "last week" — the board the crown announces after the server reset.
-  if (st.snap && st.snap.anchor < nowAnchor) { st.lastSnap = st.snap; st.snap = null; }
-  if (Array.isArray(board)) {
-    st.snap = { anchor: nowAnchor, board: slim(board), myRank: (me && me.rank) || null, myXp: (me && me.xp) || 0 };
+  // preview/teacher override (?wk=rally|crown): force exactly one popup, bypassing
+  // the day, seen, and go-live gates so it can be checked any day.
+  if (force === "crown") { fetchAndShowCrown(app, lastWeekId, true); return; }
+  if (force === "rally") { showWeeklyModal(app, buildRally(board || [], me)); return; }
+
+  // genuine path
+  if (now < WEEKLY_START) return;                       // not live yet (first rally held to WEEKLY_START)
+  const day = now.getDay();
+
+  // CROWN (Mon/Tue) — authoritative server results. Rally days (Fri–Sun) are
+  // disjoint, so the two never compete on a real calendar.
+  if (CROWN_DAYS.has(day) && st.crownAnchor !== lastWeekId) {
+    fetchAndShowCrown(app, lastWeekId, false);
+    return;
   }
-  write(app, st);
-
-  const day = new Date().getDay();
-
-  // --- CROWN (Mon/Tue): last week's settled results ---
-  const settled = st.lastSnap;
-  const crownEligible = settled && topXp(settled.board) > 0 && st.crownAnchor !== settled.anchor;
-  if (force === "crown" || (CROWN_DAYS.has(day) && crownEligible)) {
-    // teacher preview (?wk=crown) with no real snapshot yet: stand in with the live board
-    const snap = settled || (Array.isArray(board) ? { anchor: nowAnchor - 1, board: slim(board), myRank: (me && me.rank) || null, myXp: (me && me.xp) || 0 } : null);
-    if (snap && topXp(snap.board) > 0) {
-      const cfg = buildCrown(st, snap);          // reads OLD prevFinishRank/bestXp for movement
-      if (!force) {                              // real show → mark seen + roll personal memory forward
-        st.crownAnchor = snap.anchor;
-        st.prevFinishRank = snap.myRank;
-        st.bestXp = Math.max(st.bestXp || 0, snap.myXp || 0);
-        write(app, st);
-      }
-      showWeeklyModal(app, cfg);
-      return;
-    }
-  }
-
-  // --- RALLY (Fri–Sun): live standings + weekend push ---
-  if (force === "rally" || (RALLY_DAYS.has(day) && Array.isArray(board) && st.rallyAnchor !== nowAnchor)) {
-    const cfg = buildRally(board || [], me);
-    if (!force) { st.rallyAnchor = nowAnchor; write(app, st); }
-    showWeeklyModal(app, cfg);
+  // RALLY (Fri–Sun) — live standings + weekend push.
+  if (RALLY_DAYS.has(day) && Array.isArray(board) && st.rallyAnchor !== nowAnchor) {
+    showWeeklyModal(app, buildRally(board || [], me));
+    st.rallyAnchor = nowAnchor; write(app, st);
   }
 }
 
-/* ---------------- builders ---------------- */
+async function fetchAndShowCrown(app, lastWeekId, force) {
+  if (crownBusy) return;
+  crownBusy = true;
+  try {
+    const s = getSession();
+    if (!s) return;
+    const res = await api.weeklyResults(s.name, s.password);
+    if (!res || !res.ok || !Array.isArray(res.board) || !res.board.length || !res.star) return;
+    if (!force) { const st = read(app); st.crownAnchor = lastWeekId; write(app, st); }   // mark seen
+    showWeeklyModal(app, buildCrown(res, app));
+  } catch { /* offline — the crown just won't show */ }
+  finally { crownBusy = false; }
+}
+
+/* ---------------- rally ---------------- */
 function buildRally(board, me) {
   return {
     kind: "rally",
@@ -122,32 +128,38 @@ function rallyPersonal(board, me) {
   return `${t("wkYouAreNum")} #${me.rank} — ${t("wkRallyClimb")}`;
 }
 
-function buildCrown(st, snap) {
-  const ranked = [...snap.board].sort((a, b) => b.xp - a.xp);
-  const winner = ranked[0];
+/* ---------------- crown ---------------- */
+function buildCrown(res, app) {
+  const meName = (app && app.state && app.state.student) ? app.state.student.name : null;
+  const winners = [{ icon: "🌟", label: t("wkAwardStar"), name: res.star.name, value: `★ ${res.star.xp}` }];
+  if (res.mostImproved)
+    winners.push({ icon: "📈", label: t("wkAwardImproved"), name: res.mostImproved.name, value: `+${res.mostImproved.delta} XP` });
+  if (res.onFire)
+    winners.push({ icon: "🔥", label: t("wkAwardStreak"), name: res.onFire.name, value: `${res.onFire.days} ${daysWord(res.onFire.days)}` });
+  winners.forEach(w => { w.me = !!(meName && w.name === meName); });   // highlight a chip the learner won
   return {
     kind: "crown",
     emoji: "🌟",
     eyebrow: t("wkCrownEyebrow"),
     headline: t("wkCrownTitle"),
-    // Phase B pushes Most Improved + On Fire chips onto this array.
-    winners: [{ icon: "🌟", label: t("wkAwardStar"), name: winner.name, xp: winner.xp }],
-    personalHTML: crownPersonal(st, snap),
+    winners,
+    personalHTML: crownPersonal(res),
     subHTML: null,
     primaryLabel: t("wkNice"),
   };
 }
 
-function crownPersonal(st, snap) {
-  const r = snap.myRank, xp = snap.myXp || 0;
+function crownPersonal(res) {
+  const r = res.me ? res.me.rank : null;
+  const xp = res.me ? res.me.xp : 0;
   if (r === 1) return t("wkYouAreStar");                 // they took the crown
   if (!xp) return t("wkSatOut");                         // didn't play last week
   let move;
-  if (st.prevFinishRank == null) move = t("wkFirstWeek");
-  else if (r < st.prevFinishRank) { const up = st.prevFinishRank - r; move = `${t("wkUp")} ${up} ${spotsWord(up)} 🔼`; }
-  else if (r > st.prevFinishRank) move = t("wkBounceBack");
+  if (res.prevRank == null) move = t("wkFirstWeek");
+  else if (r < res.prevRank) { const up = res.prevRank - r; move = `${t("wkUp")} ${up} ${spotsWord(up)} 🔼`; }
+  else if (r > res.prevRank) move = t("wkBounceBack");
   else move = t("wkSteady");
-  const best = (st.bestXp > 0 && xp > st.bestXp) ? ` · ${t("wkBestWeek")}` : "";
+  const best = (res.prevRank != null && xp > (res.bestPrevXp || 0)) ? ` · ${t("wkBestWeek")}` : "";
   return `${t("wkFinishedNum")} #${r} ${t("wkLastWeek")} — ${move}${best}`;
 }
 
@@ -164,10 +176,10 @@ function showWeeklyModal(app, cfg) {
 
   if (cfg.winners && cfg.winners.length) {
     const strip = el("div", "wk-winners");
-    cfg.winners.forEach(w => strip.appendChild(el("div", "wk-award", `
+    cfg.winners.forEach(w => strip.appendChild(el("div", "wk-award" + (w.me ? " you" : ""), `
       <span class="wk-aw-icon">${w.icon}</span>
-      <span class="wk-aw-body"><span class="wk-aw-label">${w.label}</span><span class="wk-aw-name">${w.name}</span></span>
-      <span class="wk-aw-xp">★ ${w.xp}</span>`)));
+      <span class="wk-aw-body"><span class="wk-aw-label">${w.label}</span><span class="wk-aw-name">${w.name}${w.me ? ` <span class="tag-you">${t("you")}</span>` : ""}</span></span>
+      <span class="wk-aw-xp">${w.value}</span>`)));
     m.appendChild(strip);
   }
   if (cfg.personalHTML) m.appendChild(el("div", "wk-personal", cfg.personalHTML));

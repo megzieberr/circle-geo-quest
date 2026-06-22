@@ -394,6 +394,8 @@ svg.cs-svg{width:100%; max-width:380px; height:auto;}
 .wk-award{display:flex; align-items:center; gap:11px; text-align:left; border:2px solid var(--ink); border-radius:13px;
   padding:9px 12px; background:#fff; box-shadow:var(--shadow-sm);}
 .wk-award:first-child{background:linear-gradient(180deg,#fff7e0,#fff); border-color:#e0a000;}
+.wk-award.you{box-shadow:3px 3px 0 var(--s4);}
+.wk-aw-body .tag-you{margin-left:6px;}
 .wk-aw-icon{font-size:1.5rem; line-height:1;}
 .wk-aw-body{display:flex; flex-direction:column; flex:1; min-width:0;}
 .wk-aw-label{font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);}

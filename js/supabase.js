@@ -41,6 +41,7 @@ export const SupabaseBackend = {
     return rpc("cgg_log_items", { p_name: name, p_password: password, p_round: roundId, p_items: items });
   },
   leaderboard(name, password) { return rpc("cgg_leaderboard", { p_name: name, p_password: password }); },
+  weeklyResults(name, password) { return rpc("cgg_weekly_results", { p_name: name, p_password: password }); },
 
   // admin
   adminLogin(pw) { return rpc("cgg_admin_login", { p_admin_password: pw }); },
