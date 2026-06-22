@@ -20,6 +20,12 @@ export const round = {
   blurb: { en: "Spot which chord subtends which angle.", af: "Herken watter koord watter hoek onderspan." },
   reasonCode: null,
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "A chord 'subtends' an angle when it joins the two ARMS of that angle — the angle's two arms end at the chord's two endpoints.",
+      af: "'n Koord 'onderspan' 'n hoek wanneer dit die twee BENE van daardie hoek verbind — die hoek se twee bene eindig by die koord se twee eindpunte." },
+    { en: "So follow the marked angle's two arms to where they meet the circle; the chord joining those two points is the one it subtends. An arm of the angle itself is never the subtended chord.",
+      af: "Volg dus die gemerkte hoek se twee bene tot waar hulle die sirkel ontmoet; die koord wat daardie twee punte verbind is die een wat dit onderspan. 'n Been van die hoek self is nooit die onderspande koord nie." },
+  ],
   questions: [
     // --- single triangle ---
     { id: "r2bq1", type: "tap", accent: AC,

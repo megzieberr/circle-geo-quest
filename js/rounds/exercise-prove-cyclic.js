@@ -26,6 +26,14 @@ export const round = {
   blurb: { en: "Three converse tests — decide if it's cyclic, and say why.", af: "Drie omgekeerde toetse — besluit of dit koordevierhoek is, en sê hoekom." },
   reasonCode: "cyclicOppConv",
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "To PROVE a quad is cyclic, test a CONVERSE: do the opposite angles add to 180°? OR does an exterior angle equal the interior opposite angle? OR do two angles on the same side of a chord match?",
+      af: "Om te BEWYS 'n vierhoek is 'n koordevierhoek, toets 'n OMGEKEERDE: tel die teenoorstaande hoeke op tot 180°? OF is 'n buitehoek gelyk aan die binne-teenoorstaande hoek? OF stem twee hoeke aan dieselfde kant van 'n koord ooreen?",
+    },
+    { en: "If the condition holds, it IS cyclic — and the reason is the CONVERSE ('opp ∠s supplementary ⇒ cyclic'), not the forward theorem. If it fails (e.g. they add to 170°), it is NOT cyclic.",
+      af: "As die voorwaarde geld, IS dit 'n koordevierhoek — en die rede is die OMGEKEERDE ('teenoorst. ∠e supplementêr ⇒ kvh'), nie die voorwaartse stelling nie. As dit faal (bv. hulle tel op tot 170°), is dit NIE 'n koordevierhoek nie.",
+    },
+  ],
   questions: [
     // --- way 1: opposite angles supplementary ---
     { id: "pc1", type: "yesno", accent: AC, diagram: QUAD_AC, yes: true,

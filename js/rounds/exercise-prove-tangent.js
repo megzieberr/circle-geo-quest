@@ -18,6 +18,14 @@ export const round = {
   blurb: { en: "Decide if a line is a tangent, and say why.", af: "Besluit of 'n lyn 'n raaklyn is, en sê hoekom." },
   reasonCode: "tanRadiusConv",
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "To PROVE a line is a tangent, test a CONVERSE: is it ⊥ to the radius at a point on the circle? OR does it make an angle with a chord equal to the angle in the alternate segment?",
+      af: "Om te BEWYS 'n lyn is 'n raaklyn, toets 'n OMGEKEERDE: is dit ⊥ op die radius by 'n punt op die sirkel? OF maak dit 'n hoek met 'n koord gelyk aan die hoek in die oorstaande segment?",
+    },
+    { en: "If yes, it IS a tangent — and the reason is the CONVERSE ('line ⊥ radius ⇒ tangent'), not the forward 'tan ⊥ radius'. If the angle isn't 90° (or the alternate-segment angles differ), it is NOT a tangent.",
+      af: "Indien wel, IS dit 'n raaklyn — en die rede is die OMGEKEERDE ('lyn ⊥ radius ⇒ raaklyn'), nie die voorwaartse 'raaklyn ⊥ radius' nie. As die hoek nie 90° is nie (of die oorstaande-segment-hoeke verskil), is dit NIE 'n raaklyn nie.",
+    },
+  ],
   questions: [
     { id: "pt1", type: "yesno", accent: AC, diagram: TAN_PERP, yes: true,
       prompt: { en: "Line SU passes through T on the circle, and the radius OT ⊥ SU. Is SU a tangent?", af: "Lyn SU gaan deur T op die sirkel, en die radius OT ⊥ SU. Is SU 'n raaklyn?" },

@@ -91,5 +91,11 @@ export const round = {
   blurb: { en: "Tangent-chord angle = angle in the alternate segment.", af: "Raaklyn-koord-hoek = hoek in die oorstaande segment." },
   reasonCode: "tanChord",
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "The tangent-chord angle (between tangent STU and a chord at T) equals the angle in the ALTERNATE segment — the inscribed angle on the far side of that chord.",
+      af: "Die raaklyn-koord-hoek (tussen raaklyn STU en 'n koord by T) is gelyk aan die hoek in die OORSTAANDE segment — die omtrekshoek aan die ander kant van daardie koord." },
+    { en: "Spot which chord the marked angle sits against; its equal angle is subtended by that same chord from the other side. Then use triangle/angle facts for anything left.",
+      af: "Sien teen watter koord die gemerkte hoek sit; sy gelyke hoek word deur daardie selfde koord van die ander kant onderspan. Gebruik dan driehoek-/hoekfeite vir wat oorbly." },
+  ],
   questions: [...tapQuestions, ...mcQuestions],
 };

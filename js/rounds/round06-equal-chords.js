@@ -13,6 +13,12 @@ export const round = {
   blurb: { en: "Equal chords subtend equal angles.", af: "Gelyke koorde onderspan gelyke hoeke." },
   reasonCode: "equalChords",
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "Equal chords subtend equal angles — at the centre and at the circumference. And it works both ways: equal angles ⇒ equal chords.",
+      af: "Gelyke koorde onderspan gelyke hoeke — by die middelpunt en by die omtrek. En dit werk altwee kante toe: gelyke hoeke ⇒ gelyke koorde." },
+    { en: "So AB = CD gives ∠AOB = ∠COD (and the reverse). Match the equal chord to the equal angle.",
+      af: "Dus AB = CD gee ∠AOB = ∠COD (en andersom). Pas die gelyke koord by die gelyke hoek." },
+  ],
   questions: [
     { id: "r6q1", type: "reason", accent: AC,
       prompt: { en: "AB = CD (equal chords). Which reason lets you write ∠AOB = ∠COD?", af: "AB = CD (gelyke koorde). Watter rede laat jou ∠AOB = ∠COD skryf?" },

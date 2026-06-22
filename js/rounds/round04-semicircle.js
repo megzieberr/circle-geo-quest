@@ -3,12 +3,28 @@
    tap which angle the diameter subtends as a right angle. */
 const AC = "#4263eb";
 
+/* Guiding hints — name the angle and the move to make, never the answer.
+   "findThird" is for the calc questions that combine ∠P = 90° with the
+   angle sum of triangle APB. */
+const findThird = [
+  { en: "AB is a diameter, so ∠APB = 90° (angle in a semicircle).",
+    af: "AB is 'n middellyn, dus ∠APB = 90° (hoek in 'n semi sirkel)." },
+  { en: "The three angles of triangle APB add up to 180°. Take away 90° and the angle you're given.",
+    af: "Die drie hoeke van driehoek APB is saam 180°. Trek 90° en die gegewe hoek af." },
+];
+
 export const round = {
   id: "r4", n: 4, accent: AC,
   title: { en: "Angle in a semicircle", af: "Hoek in 'n semi sirkel" },
   blurb: { en: "A diameter subtends 90° at the circumference.", af: "’n Middellyn onderspan 90° by die omtrek." },
   reasonCode: "semiCircle",
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "Look at chord AB — does it pass through the centre O? Only a diameter gives a right angle at P.",
+      af: "Kyk na koord AB — gaan dit deur die middelpunt O? Net 'n middellyn gee 'n regte hoek by P." },
+    { en: "If AB is a diameter, then ∠APB = 90° (angle in a semicircle). If AB is just a chord, it is not 90°.",
+      af: "As AB 'n middellyn is, dan is ∠APB = 90° (hoek in 'n semi sirkel). As AB net 'n koord is, is dit nie 90° nie." },
+  ],
   questions: [
     { id: "r4q1", type: "yesno", accent: AC,
       prompt: { en: "AB passes through the centre O. Is ∠APB = 90°?", af: "AB gaan deur die middelpunt O. Is ∠APB = 90°?" },
@@ -50,7 +66,7 @@ export const round = {
       options: [ { text: "90°", correct: true }, { text: "180°" }, { text: "45°" }, { text: "60°" } ],
       answer: { en: "90° — the angle in a semicircle.", af: "90° — die hoek in 'n semi sirkel." }, explainReason: "semiCircle" },
 
-    { id: "r4q8", type: "calc-mc", accent: AC,
+    { id: "r4q8", type: "calc-mc", accent: AC, hints: findThird,
       prompt: { en: "AB is a diameter and ∠PAB = 35°. Find x = ∠PBA.", af: "AB is 'n middellyn en ∠PAB = 35°. Bereken x = ∠PBA." },
       diagram: { O: true, pts: { A: 180, B: 0, P: 70 }, chords: [["A", "B"], ["A", "P"], ["B", "P"]],
         angles: [ { at: "A", legs: ["B", "P"], t: "35°", o: { v: 35 } }, { at: "B", legs: ["A", "P"], t: "x", o: { v: 55 } }, { at: "P", legs: ["A", "B"], t: "", o: { v: 90, mark: 1 } } ] },
@@ -62,7 +78,7 @@ export const round = {
       diagram: { O: true, pts: { A: 180, B: 0, P: 50 }, chords: [["A", "B"], ["A", "P"], ["B", "P"]], angles: [{ at: "P", legs: ["A", "B"], t: "?", o: { v: 90 } }] },
       yes: true, answer: { en: "Yes — the angle in a semicircle is 90°.", af: "Ja — die hoek in 'n semi sirkel is 90°." }, explainReason: "semiCircle" },
 
-    { id: "r4q10", type: "calc-mc", accent: AC,
+    { id: "r4q10", type: "calc-mc", accent: AC, hints: findThird,
       prompt: { en: "AB is a diameter and ∠PAB = 40°. Find x = ∠PBA.", af: "AB is 'n middellyn en ∠PAB = 40°. Bereken x = ∠PBA." },
       diagram: { O: true, pts: { A: 180, B: 0, P: 80 }, chords: [["A", "B"], ["A", "P"], ["B", "P"]],
         angles: [ { at: "A", legs: ["B", "P"], t: "40°", o: { v: 40 } }, { at: "B", legs: ["A", "P"], t: "x", o: { v: 50 } }, { at: "P", legs: ["A", "B"], t: "", o: { v: 90, mark: 1 } } ] },

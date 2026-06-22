@@ -4,6 +4,20 @@
    exercise round (80% to pass). */
 const AC = "#f76707";
 
+/* Guiding hints — the two directions are converses, so each gets its own pair. */
+const HINT_PERP = [   // the 90° is GIVEN → conclude it bisects
+  { en: "The right angle at M is given — the line from O meets chord AB at 90°.",
+    af: "Die regte hoek by M is gegee — die lyn vanuit O ontmoet koord AB by 90°." },
+  { en: "A line from the centre perpendicular to a chord bisects it, so AM = MB.",
+    af: "'n Lyn vanuit die middelpunt loodreg op 'n koord halveer dit, dus AM = MB." },
+];
+const HINT_MID = [    // the midpoint is GIVEN → conclude it is perpendicular
+  { en: "You're told M is the midpoint of AB — so AM = MB is the given.",
+    af: "Daar word gesê M is die middelpunt van AB — dus is AM = MB die gegewe." },
+  { en: "A line from the centre to the midpoint of a chord is perpendicular to it, so OM ⊥ AB.",
+    af: "'n Lyn vanuit die middelpunt na die middelpunt van 'n koord is loodreg daarop, dus OM ⊥ AB." },
+];
+
 const D_PERP = { O: true, pts: { A: 205, B: 335 }, mid: [{ name: "M", of: ["A", "B"] }],
   chords: [["A", "B"], ["O", "M"]], angles: [{ at: "M", legs: ["O", "B"], t: "", o: { v: 90, mark: 1 } }] };
 const D_MID = { O: true, pts: { A: 205, B: 335 }, mid: [{ name: "M", of: ["A", "B"] }],
@@ -15,14 +29,14 @@ const D_MID2 = { O: true, pts: { A: 120, B: 250 }, mid: [{ name: "M", of: ["A", 
   chords: [["A", "B"], ["O", "M"]] };
 
 const perpQ = (id, d) => ({
-  id, type: "reason", accent: AC, diagram: d,
+  id, type: "reason", accent: AC, diagram: d, hints: HINT_PERP,
   prompt: { en: "OM is drawn from O to chord AB and OM ⊥ AB (the 90° is given). Which reason lets you conclude AM = MB?", af: "OM is van O na koord AB geteken en OM ⊥ AB (die 90° is gegee). Watter rede laat jou aflei dat AM = MB?" },
   options: [{ code: "centrePerpChord", correct: true }, { code: "centreMidChord" }, { code: "tanRadius" }, { code: "sameSeg" }],
   answer: { en: "The 90° is given, so use: line from centre ⊥ to chord ⇒ it bisects the chord.", af: "Die 90° is gegee, gebruik dus: lyn vanuit mdpt ⊥ op koord ⇒ dit halveer die koord." },
   explainReason: "centrePerpChord",
 });
 const midQ = (id, d) => ({
-  id, type: "reason", accent: AC, diagram: d,
+  id, type: "reason", accent: AC, diagram: d, hints: HINT_MID,
   prompt: { en: "M is the midpoint of chord AB (AM = MB is given) and OM is drawn. Which reason lets you conclude OM ⊥ AB?", af: "M is die middelpunt van koord AB (AM = MB is gegee) en OM is geteken. Watter rede laat jou aflei dat OM ⊥ AB?" },
   options: [{ code: "centreMidChord", correct: true }, { code: "centrePerpChord" }, { code: "equalChords" }, { code: "semiCircle" }],
   answer: { en: "The midpoint is given, so use: line from centre to midpt of chord ⇒ it is perpendicular.", af: "Die middelpunt is gegee, gebruik dus: lyn vanuit mdpt na mdpt van koord ⇒ dit is loodreg." },

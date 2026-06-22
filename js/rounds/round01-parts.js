@@ -23,6 +23,13 @@ export const round = {
   blurb: { en: "Warm-up: name every part of the circle.", af: "Opwarming: benoem elke deel van die sirkel." },
   reasonCode: null,
   questionsPerPlay: 10,
+  // vocabulary warm-up: the hint is a glossary so the name is learned, not guessed.
+  defaultHints: [
+    { en: "Lines: a CHORD joins two points on the circle; a RADIUS runs from the centre O to the circle; a DIAMETER is a chord through the centre; a TANGENT touches the circle at just one point.",
+      af: "Lyne: 'n KOORD verbind twee punte op die sirkel; 'n RADIUS loop van die middelpunt O na die sirkel; 'n MIDDELLYN is 'n koord deur die middelpunt; 'n RAAKLYN raak die sirkel by net een punt." },
+    { en: "Curves & regions: the CIRCUMFERENCE is the edge all the way round; an ARC is part of that edge between two points; a SECTOR is the pie-slice between two radii; a SEGMENT is the bit between a chord and the arc.",
+      af: "Krommes & gebiede: die OMTREK is die rand al om; 'n BOOG is deel van daardie rand tussen twee punte; 'n SEKTOR is die koekstuk tussen twee radiusse; 'n SEGMENT is die deel tussen 'n koord en die boog." },
+  ],
   questions: [
     { id: "r1q1", type: "tap", accent: AC, prompt: { en: "Tap the chord.", af: "Klik op die koord." },
       diagram: LINES, tap: { targets: LINE_TARGETS, correctId: "chord" },

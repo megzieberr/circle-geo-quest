@@ -11,28 +11,44 @@ const D_PERP = { O: true, pts: { A: 200, B: 340 }, mid: [{ name: "M", of: ["A", 
 const D_MID = { O: true, pts: { A: 200, B: 340 }, mid: [{ name: "M", of: ["A", "B"] }],
   chords: [["A", "B"], ["O", "M"]] };
 
+/* Guiding hints. The concept questions ask which is given (⊥ vs midpoint);
+   the length questions are Pythagoras on the half-chord. */
+const HINT_CONCEPT = [
+  { en: "Spot what's GIVEN. A line from the centre perpendicular to a chord bisects it; a line from the centre to the midpoint of a chord is perpendicular to it.",
+    af: "Sien wat GEGEE is. 'n Lyn vanuit die middelpunt loodreg op 'n koord halveer dit; 'n lyn vanuit die middelpunt na die middelpunt van 'n koord is loodreg daarop." },
+  { en: "Given the 90°, you conclude AM = MB. Given the midpoint, you conclude OM ⊥ AB.",
+    af: "Gegee die 90°, lei jy af AM = MB. Gegee die middelpunt, lei jy af OM ⊥ AB." },
+];
+
 export const round = {
   id: "r2", n: 2, accent: AC,
   title: { en: "Line from the centre to a chord", af: "Lyn van die middelpunt na 'n koord" },
   blurb: { en: "Perpendicular ↔ midpoint, and Pythagoras on the half-chord.", af: "Loodreg ↔ middelpunt, en Pythagoras op die halfkoord." },
   reasonCode: "centrePerpChord",
   questionsPerPlay: 10,
+  // length questions: Pythagoras on the half-chord (concept questions override below)
+  defaultHints: [
+    { en: "OM ⊥ AB means M is the midpoint, so AM is HALF of AB. That makes triangle OMA right-angled at M.",
+      af: "OM ⊥ AB beteken M is die middelpunt, dus is AM die HELFTE van AB. Dit maak driehoek OMA reghoekig by M." },
+    { en: "Use Pythagoras in △OMA: OA² = OM² + AM² (the radius OA is the hypotenuse). Solve for the missing side, then double AM for the whole chord.",
+      af: "Gebruik Pythagoras in △OMA: OA² = OM² + AM² (die radius OA is die skuinssy). Los die ontbrekende sy op, en verdubbel dan AM vir die hele koord." },
+  ],
   questions: [
-    { id: "r2q1", type: "reason", accent: AC,
+    { id: "r2q1", type: "reason", accent: AC, hints: HINT_CONCEPT,
       prompt: { en: "OM is drawn from centre O to chord AB, and OM ⊥ AB (given). Which reason lets you conclude AM = MB?", af: "OM is van middelpunt O na koord AB geteken, en OM ⊥ AB (gegee). Watter rede laat jou aflei dat AM = MB?" },
       diagram: D_PERP,
       options: [ { code: "centrePerpChord", correct: true }, { code: "centreMidChord" }, { code: "tanRadius" }, { code: "sameSeg" } ],
       answer: { en: "The ⊥ from the centre bisects the chord, so AM = MB.", af: "Die loodlyn vanaf die middelpunt halveer die koord, dus AM = MB." },
       explainReason: "centrePerpChord" },
 
-    { id: "r2q2", type: "reason", accent: AC,
+    { id: "r2q2", type: "reason", accent: AC, hints: HINT_CONCEPT,
       prompt: { en: "M is the midpoint of chord AB (AM = MB, given) and OM is drawn. Which reason lets you conclude OM ⊥ AB?", af: "M is die middelpunt van koord AB (AM = MB, gegee) en OM is geteken. Watter rede laat jou aflei dat OM ⊥ AB?" },
       diagram: D_MID,
       options: [ { code: "centreMidChord", correct: true }, { code: "centrePerpChord" }, { code: "tanRadius" }, { code: "isosBase" } ],
       answer: { en: "The line from the centre to the midpoint of a chord is ⊥ to it.", af: "Die lyn van die middelpunt na die middelpunt van 'n koord is ⊥ daarop." },
       explainReason: "centreMidChord" },
 
-    { id: "r2q3", type: "yesno", accent: AC,
+    { id: "r2q3", type: "yesno", accent: AC, hints: HINT_CONCEPT,
       prompt: { en: "OM ⊥ AB and O is the centre. Does it follow that AM = MB?", af: "OM ⊥ AB en O is die middelpunt. Volg dit dat AM = MB?" },
       diagram: D_PERP, yes: true,
       answer: { en: "Yes — the perpendicular from the centre bisects the chord.", af: "Ja — die loodlyn vanaf die middelpunt halveer die koord." },
@@ -73,7 +89,7 @@ export const round = {
       answer: { en: "AM = √(17² − 15²) = 8, so AB = 16.", af: "AM = √(17² − 15²) = 8, dus AB = 16." },
       explainReason: "pythagoras" },
 
-    { id: "r2q9", type: "reason", accent: AC,
+    { id: "r2q9", type: "reason", accent: AC, hints: HINT_CONCEPT,
       prompt: { en: "Which statement is the CONCLUSION when you are GIVEN that OM passes through the midpoint of chord AB?", af: "Watter stelling is die GEVOLGTREKKING wanneer dit GEGEE is dat OM deur die middelpunt van koord AB gaan?" },
       diagram: D_MID,
       options: [ { code: "centreMidChord", correct: true }, { code: "centrePerpChord" }, { code: "equalChords" }, { code: "semiCircle" } ],

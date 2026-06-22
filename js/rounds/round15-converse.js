@@ -29,6 +29,13 @@ export const round = {
   blurb: { en: "Read the clue, name the figure.", af: "Lees die leidraad, benoem die figuur." },
   reasonCode: null,
   questionsPerPlay: 11,
+  // converse round: the hint teaches how to read the clue, not the answer.
+  defaultHints: [
+    { en: "Each clue is the TEST for a converse theorem — it tells you what the figure MUST be. Match the given condition to the figure it forces.",
+      af: "Elke leidraad is die TOETS vir 'n omgekeerde stelling — dit sê wat die figuur MOET wees. Pas die gegewe voorwaarde by die figuur wat dit afdwing." },
+    { en: "⊥ to a radius at the contact point ⇒ a tangent. Opposite angles add to 180° (or exterior = interior opposite) ⇒ a cyclic quad. Equal angles on the same side of a chord ⇒ the points are concyclic. A chord subtending 90° ⇒ a diameter. The ⊥ bisector of a chord ⇒ passes through the centre.",
+      af: "⊥ op 'n radius by die raakpunt ⇒ 'n raaklyn. Teenoorstaande hoeke tel op tot 180° (of buitehoek = teenoorstaande binnehoek) ⇒ 'n koordevierhoek. Gelyke hoeke aan dieselfde kant van 'n koord ⇒ die punte is konsiklies. 'n Koord wat 90° onderspan ⇒ 'n middellyn. Die middelloodlyn van 'n koord ⇒ gaan deur die middelpunt." },
+  ],
   questions: [
     { id: "r15q1", type: "mc", accent: AC,
       prompt: { en: "OB is a radius and line CD is drawn perpendicular to OB at B (on the circle). What is CD?", af: "OB is 'n radius en lyn CD is loodreg op OB by B (op die sirkel) geteken. Wat is CD?" },

@@ -84,6 +84,15 @@ export const ROUNDS = ORDER.map((r, i) => {
 });
 export const ROUND_BY_ID = Object.fromEntries(ROUNDS.map(r => [r.id, r]));
 
+/* Guiding-hint fallback: a round may set `defaultHints` (a 2-rung ladder that
+   names its theorem's angles and the move to make). Apply it to every graded
+   question that doesn't carry its own `hints`, so a uniform round needs just
+   one definition instead of repeating it per question. */
+ROUNDS.forEach(r => {
+  if (!Array.isArray(r.defaultHints) || !Array.isArray(r.questions)) return;
+  r.questions.forEach(q => { if (!q.hints) q.hints = r.defaultHints; });
+});
+
 /* ------------------------------------------------------------
    Flat index of every GRADED question (only "play" rounds carry a
    `questions` array; cutscenes/discovery carry `panels` instead).

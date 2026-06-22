@@ -22,6 +22,12 @@ export const round = {
   blurb: { en: "Same chord, same side ⇒ equal angles.", af: "Selfde koord, selfde kant ⇒ gelyke hoeke." },
   reasonCode: "sameSeg",
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "Angles standing on the same chord AB, on the SAME side, are equal. Find the other angle on the same side as the marked one.",
+      af: "Hoeke wat op dieselfde koord AB, aan DIESELFDE kant staan, is gelyk. Vind die ander hoek aan dieselfde kant as die gemerkte een." },
+    { en: "So ∠APB = ∠AQB (same segment). An angle on the OTHER side of AB is the supplement — it adds to 180°, not equal.",
+      af: "Dus ∠APB = ∠AQB (dieselfde segment). 'n Hoek aan die ANDER kant van AB is die supplement — dit tel op tot 180°, nie gelyk nie." },
+  ],
   questions: [
     { id: "r5q1", type: "tap", accent: AC,
       prompt: { en: "∠APB (marked x) and another angle stand on chord AB. Tap the angle EQUAL to x — same chord, same side.", af: "∠APB (gemerk x) en 'n ander hoek staan op koord AB. Klik op die hoek GELYK aan x — selfde koord, selfde kant." },

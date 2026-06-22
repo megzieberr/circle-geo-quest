@@ -10,6 +10,13 @@ export const round = {
   blurb: { en: "Spot the right theorem from the diagram.", af: "Herken die regte stelling uit die diagram." },
   reasonCode: null,
   questionsPerPlay: 10,
+  // boss "name the theorem" round: the hint teaches what to look for, not the answer.
+  defaultHints: [
+    { en: "Look for the tell-tale feature: a tangent touching the circle, a diameter through O, a 4-sided cyclic quad, two radii (isosceles), or two angles standing on the same chord.",
+      af: "Soek die verklikkende kenmerk: 'n raaklyn wat die sirkel raak, 'n middellyn deur O, 'n 4-sydige koordevierhoek, twee radiusse (gelykbenig), of twee hoeke wat op dieselfde koord staan." },
+    { en: "Tangent + chord ⇒ tan-chord. Diameter + angle on the circle ⇒ angle in a semicircle. Tangent + radius ⇒ tan ⊥ radius. Centre angle with a circumference angle ⇒ centre = 2 × circumference. Same chord, same side ⇒ same segment. Cyclic quad: opposite angles ⇒ supplementary, a side extended ⇒ exterior = opposite interior. Two tangents from a point ⇒ equal.",
+      af: "Raaklyn + koord ⇒ raaklyn-koord. Middellyn + hoek op die sirkel ⇒ hoek in 'n semi sirkel. Raaklyn + radius ⇒ raaklyn ⊥ radius. Middelpuntshoek met 'n omtrekshoek ⇒ middelpunt = 2 × omtrek. Selfde koord, selfde kant ⇒ selfde segment. Koordevierhoek: teenoorstaande hoeke ⇒ supplementêr, 'n sy verleng ⇒ buitehoek = teenoorstaande binnehoek. Twee raaklyne vanaf 'n punt ⇒ gelyk." },
+  ],
   questions: [
     { id: "r12q1", type: "reason", accent: AC,
       prompt: { en: "Which theorem do you use here?", af: "Watter stelling gebruik jy hier?" },

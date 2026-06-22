@@ -13,6 +13,12 @@ export const round = {
   blurb: { en: "Opposite angles of a cyclic quad add to 180°.", af: "Teenoorstaande hoeke van 'n koordevierhoek is supplementêr." },
   reasonCode: "cyclicOpp",
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "ABCD is a cyclic quad. Its OPPOSITE angles (∠A & ∠C, ∠B & ∠D) add up to 180°. Angles next to each other do not.",
+      af: "ABCD is 'n koordevierhoek. Sy TEENOORSTAANDE hoeke (∠A & ∠C, ∠B & ∠D) tel op tot 180°. Hoeke langs mekaar nie." },
+    { en: "So ∠A + ∠C = 180°. Take the angle you're given away from 180° to find the opposite one.",
+      af: "Dus ∠A + ∠C = 180°. Trek die gegewe hoek van 180° af om die teenoorstaande een te kry." },
+  ],
   questions: [
     { id: "r7q1", type: "calc-mc", accent: AC,
       prompt: { en: "ABCD is a cyclic quad and ∠A = 100°. Find x = ∠C.", af: "ABCD is 'n koordevierhoek en ∠A = 100°. Bereken x = ∠C." },

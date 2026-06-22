@@ -9,6 +9,12 @@ export const round = {
   blurb: { en: "Exterior angle = interior opposite angle.", af: "Buitehoek = teenoorstaande binnehoek." },
   reasonCode: "cyclicExt",
   questionsPerPlay: 10,
+  defaultHints: [
+    { en: "When a side of the cyclic quad is extended, the exterior angle equals the interior angle at the OPPOSITE corner — not the corner next to it.",
+      af: "Wanneer 'n sy van die koordevierhoek verleng word, is die buitehoek gelyk aan die binnehoek by die TEENOORSTAANDE hoekpunt — nie die hoekpunt langsaan nie." },
+    { en: "So the exterior angle and that interior opposite angle are equal — just copy the value across.",
+      af: "Dus is die buitehoek en daardie teenoorstaande binnehoek gelyk — kopieer net die waarde oor." },
+  ],
   questions: [
     // AB extended past B to E -> exterior ∠EBC equals interior opposite ∠D
     { id: "r8q1", type: "tap", accent: AC,

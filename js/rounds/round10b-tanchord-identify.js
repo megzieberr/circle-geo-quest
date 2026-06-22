@@ -67,5 +67,11 @@ export const round = {
   blurb: { en: "Which inside angle equals the tangent-chord angle? 20 diagrams.", af: "Watter binnehoek is gelyk aan die raaklyn-koord-hoek? 20 diagramme." },
   reasonCode: "tanChord",
   questionsPerPlay: 12,
+  defaultHints: [
+    { en: "The tangent-chord angle x equals the inscribed angle in the ALTERNATE segment — the one on the far side of the chord that x sits against.",
+      af: "Die raaklyn-koord-hoek x is gelyk aan die omtrekshoek in die OORSTAANDE segment — die een aan die ander kant van die koord waarteen x sit." },
+    { en: "First spot WHICH chord x is against (the chord from T). The equal angle is subtended by that same chord, on the other side of it — not the same-side angle (that's the supplement) or an angle on a different chord.",
+      af: "Sien eers WATTER koord x teen sit (die koord vanaf T). Die gelyke hoek word deur daardie selfde koord onderspan, aan die ander kant daarvan — nie die selfde-kant-hoek nie (dis die supplement) of 'n hoek op 'n ander koord nie." },
+  ],
   questions,
 };
