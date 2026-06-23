@@ -19,8 +19,8 @@ function isIOS() {
 function isAndroid() { return /android/i.test(navigator.userAgent); }
 
 const IPHONE_STEPS = [
-  { en: "Open this page in <b>Safari</b> (the blue compass).", af: "Maak hierdie bladsy in <b>Safari</b> oop (die blou kompas)." },
-  { en: "Tap the <b>Share</b> button — the square with an arrow ↑ (bottom of the screen).", af: "Tik die <b>Deel</b>-knoppie — die blokkie met 'n pyl ↑ (onderaan die skerm)." },
+  { en: "If you opened this from <b>WhatsApp</b>, tap the <b>•••</b> (three dots, bottom right) and choose <b>“Open in Safari”</b> first. Already in Safari? Skip to step 2.", af: "As jy dit van <b>WhatsApp</b> af oopgemaak het, tik die <b>•••</b> (drie kolletjies, regs onder) en kies <b>“Open in Safari”</b> eerste. Reeds in Safari? Gaan na stap 2." },
+  { en: "In <b>Safari</b>, tap the <b>Share</b> button at the bottom — the <b>square with an arrow ↑</b>.", af: "In <b>Safari</b>, tik die <b>Deel</b>-knoppie onderaan — die <b>blokkie met 'n pyl ↑</b>." },
   { en: "Scroll down and tap <b>“Add to Home Screen”</b>.", af: "Rol af en tik <b>“Voeg by Tuisskerm”</b>." },
   { en: "Tap <b>“Add”</b> (top right).", af: "Tik <b>“Voeg by”</b> (regs bo)." },
   { en: "Open <b>Circle Quest</b> from the new icon on your home screen.", af: "Maak <b>Circle Quest</b> oop vanaf die nuwe ikoon op jou tuisskerm." },

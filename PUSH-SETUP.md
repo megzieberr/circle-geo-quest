@@ -164,13 +164,16 @@ anyone who already did that day's quest.)
 
 Send them this once:
 
-> **Circle Quest — get your daily reminder**
+> **Circle Quest — add it to your phone**
 > 1. Open **https://megzieberr.github.io/circle-geo-quest/**
->    - **iPhone:** in **Safari**, tap **Share** (□↑) → **Add to Home Screen** → **Add**. Then open it from the new icon.
+>    - **iPhone:** if it opens inside WhatsApp, tap the **•••** (three dots, bottom right) → **Open in Safari** first. Then in **Safari** tap **Share** (□↑) → **Add to Home Screen** → **Add**. Open it from the new icon.
 >    - **Android:** in **Chrome**, tap **⋮** → **Install app** / **Add to Home screen**.
 > 2. Log in as usual.
-> 3. On the home screen, tap **🔔 Turn on** and then **Allow**.
+> 3. On the home screen, tap **🔔 Turn on** and then **Allow** for daily reminders.
 > That's it — you'll get a friendly reminder each day to do your quest. 🔵
+
+> 💡 Tip: tell them to open the link in **Safari/Chrome**, not inside WhatsApp — the
+> "Add to Home Screen" option only appears in the real browser.
 
 ---
 
