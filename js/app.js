@@ -12,6 +12,7 @@ import { renderAdventures, renderAdventure } from "./adventure.js";
 import { renderFixMistakes } from "./mistakes.js";
 import { renderDaily } from "./daily.js";
 import { registerServiceWorker } from "./pwa.js";
+import { renderInstall } from "./install.js";
 
 const app = {
   root: null,
@@ -77,6 +78,7 @@ const app = {
       case "adventure": renderAdventure(this, view, this.params); break;
       case "fix": renderFixMistakes(this, view); break;
       case "daily": renderDaily(this, view); break;
+      case "install": renderInstall(this, view); break;
       case "leaderboard": renderLeaderboard(this, view); break;
       default: renderHome(this, view);
     }

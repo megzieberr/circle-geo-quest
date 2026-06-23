@@ -237,6 +237,15 @@ const UI = {
   remindFail:     { en: "Couldn't turn on reminders. Try again.", af: "Kon nie onthounotas aanskakel nie. Probeer weer." },
   remindIosHint:  { en: "On iPhone: add Circle Quest to your home screen and open it from there first.", af: "Op iPhone: voeg Circle Quest by jou tuisskerm en maak dit eers daar oop." },
 
+  // install / "add to home screen" guide
+  installBtn:     { en: "📱 How to install on your phone", af: "📱 Hoe om op jou foon te installeer" },
+  installTitle:   { en: "Add Circle Quest to your phone", af: "Voeg Circle Quest by jou foon" },
+  installWhy:     { en: "Install it like a normal app — you get a home-screen icon, and you can switch on daily reminders.", af: "Installeer dit soos 'n gewone app — jy kry 'n tuisskerm-ikoon en kan daaglikse onthounotas aanskakel." },
+  installIphone:  { en: "iPhone or iPad", af: "iPhone of iPad" },
+  installAndroid: { en: "Android phone or tablet", af: "Android-foon of -tablet" },
+  installNotifLine:{ en: "Want daily reminders? After installing, open the app, tap 🔔 Turn on, then Allow.", af: "Wil jy daaglikse onthounotas hê? Ná installasie, maak die app oop, tik 🔔 Skakel aan, en kies Toelaat." },
+  installAlready: { en: "You've already installed Circle Quest — you're all set! 🎉", af: "Jy het Circle Quest reeds geïnstalleer — alles reg! 🎉" },
+
   // misc
   language:       { en: "Afrikaans", af: "English" }, // label shows the OTHER language to switch to
   loading:        { en: "Loading…", af: "Laai…" },

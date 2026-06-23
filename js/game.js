@@ -10,6 +10,7 @@ import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
 import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
+import { installEntryButton } from "./install.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -73,6 +74,10 @@ export function renderHome(app, host) {
   // "Turn on daily reminders" — only appears once notifications are usable
   // (configured + a supported browser; hidden in a plain iPhone Safari tab).
   host.appendChild(remindersCard(app));
+
+  // "How to install" entry — hidden once the app is already installed
+  const installBtn = installEntryButton(app);
+  if (installBtn) { const row = el("div", "install-entry-row"); row.appendChild(installBtn); host.appendChild(row); }
 
   // Adventure (Grand Master bonus) — visible to all, unlocked once every badge is earned
   const isGM = GROUPS.length > 0 && badgesEarned === GROUPS.length;

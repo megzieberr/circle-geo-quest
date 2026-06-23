@@ -4,6 +4,7 @@ import { api } from "./api.js";
 import { setSession } from "./session.js";
 import { t, tx } from "./i18n.js";
 import { el, clear, toast } from "./ui.js";
+import { installEntryButton } from "./install.js";
 
 export async function renderLogin(app, host) {
   clear(host);
@@ -16,6 +17,8 @@ export async function renderLogin(app, host) {
     </div>`;
   const card = el("div", "card login-card");
   wrap.appendChild(card);
+  const ie = installEntryButton(app);
+  if (ie) { const foot = el("div", "login-foot"); foot.appendChild(ie); wrap.appendChild(foot); }
   host.appendChild(wrap);
 
   let students = [];
