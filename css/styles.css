@@ -110,6 +110,18 @@ h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",sans-serif; line-he
 .round-card p{font-size:.84rem; color:var(--ink-soft); flex:1;}
 .rc-foot{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px;}
 .rc-best{font-size:.78rem; font-weight:700; color:var(--accent);}
+.round-card.current{box-shadow:0 0 0 3px var(--accent), var(--shadow-sm);}
+.rc-next-tag{font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:.62rem; letter-spacing:.05em;
+  text-transform:uppercase; color:#fff; background:var(--accent); padding:3px 8px; border-radius:999px;}
+.more-rounds{margin:16px 0 0; text-align:center;}
+
+/* ---------- "Continue your quest" card (top of home) ---------- */
+.continue-card{display:flex; align-items:center; gap:14px; margin-bottom:18px; padding:14px 18px;
+  border-left:7px solid var(--accent); box-shadow:var(--shadow);}
+.continue-card .cont-body{flex:1; min-width:0;}
+.continue-card .cont-body .eyebrow{display:block;}
+.continue-card .cont-body h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.15rem; margin-top:2px;}
+.continue-card .cont-foot{margin-left:auto; flex:none;}
 
 /* ---------- rank ladder ---------- */
 .rank-card{margin-bottom:22px;}

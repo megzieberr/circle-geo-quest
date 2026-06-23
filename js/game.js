@@ -29,6 +29,16 @@ function unlockedSet(progress) {
   return set;
 }
 
+/* the next round to play: the first unlocked round not yet passed (i.e. where
+   the learner should continue). Null only when every unlocked round is done. */
+function nextRoundToPlay(progress) {
+  const unlocked = unlockedSet(progress);
+  for (const r of ROUNDS) {
+    if (unlocked.has(r.id) && !(progress[r.id] && progress[r.id].passed)) return r;
+  }
+  return null;
+}
+
 /* badge groups: each group's rounds, how many passed, and whether earned */
 function groupStatus(progress) {
   return GROUPS.map(group => {
@@ -61,6 +71,25 @@ export function renderHome(app, host) {
   stats.appendChild(lb);
   head.appendChild(stats);
   host.appendChild(head);
+
+  // "Continue your quest" — a one-tap jump to the current round, right at the
+  // top, so a learner never has to scroll the map to find where they're up to.
+  const nextR = nextRoundToPlay(progress);
+  if (nextR) {
+    const anyDone = ROUNDS.some(r => progress[r.id] && progress[r.id].passed);
+    const cont = el("div", "card continue-card");
+    cont.style.setProperty("--accent", nextR.accent);
+    cont.innerHTML = `
+      <div class="cont-body">
+        <span class="eyebrow">${anyDone ? t("continueQuest") : t("startHere")}</span>
+        <h3>${nextR.n}. ${tx(nextR.title)}</h3>
+      </div>
+      <div class="cont-foot"></div>`;
+    const go = el("button", "btn primary", "▶ " + (anyDone ? t("resume") : t("start")));
+    go.addEventListener("click", () => app.go(screenFor(nextR), { roundId: nextR.id }));
+    cont.querySelector(".cont-foot").appendChild(go);
+    host.appendChild(cont);
+  }
 
   const ladder = renderRankLadder(progress);
   if (ladder) host.appendChild(ladder);            // hidden until the first badge is earned
@@ -96,12 +125,15 @@ export function renderHome(app, host) {
   }
 
   const grid = el("div", "round-grid");
-  ROUNDS.forEach(r => {
+  // Only unlocked rounds appear — locked ones stay hidden so the map is short
+  // and the learner's current spot is easy to find (the Continue card jumps here).
+  ROUNDS.filter(r => unlocked.has(r.id)).forEach(r => {
     const p = progress[r.id];
-    const isUnlocked = unlocked.has(r.id);
+    const isUnlocked = true;
     const passed = !!(p && p.passed);
     const learn = isLearningRound(r);
-    const card = el("article", "round-card" + (isUnlocked ? "" : " locked") + (passed ? " done" : "") + (learn ? " learn" : ""));
+    const isCurrent = !!(nextR && r.id === nextR.id);
+    const card = el("article", "round-card" + (passed ? " done" : "") + (learn ? " learn" : "") + (isCurrent ? " current" : ""));
     card.style.setProperty("--accent", r.accent);
     const best = p ? Math.round(p.best_score * 100) : 0;
     const kindTag = r.kind === "cutscene" ? `<span class="rc-kind">▶ ${t("watch")}</span>`
@@ -115,6 +147,7 @@ export function renderHome(app, host) {
       <h3>${tx(r.title)}</h3>
       <p>${tx(r.blurb)}</p>
       <div class="rc-foot"></div>`;
+    if (isCurrent) card.querySelector(".rc-top").appendChild(el("span", "rc-next-tag", t("upNext")));
     const foot = card.querySelector(".rc-foot");
     if (isUnlocked) {
       if (!learn && p && p.attempts) foot.appendChild(el("span", "rc-best", `${t("bestScore")} ${best}%`));
@@ -130,6 +163,9 @@ export function renderHome(app, host) {
     grid.appendChild(card);
   });
   host.appendChild(grid);
+
+  // gentle reassurance that the journey continues (without a wall of locked cards)
+  if (ROUNDS.some(r => !unlocked.has(r.id))) host.appendChild(el("p", "more-rounds muted small center", t("moreToCome")));
 
   // First-login nudge to install the app (one-time, hidden if already installed).
   try { maybeShowInstallPopup(app); } catch { /* non-critical */ }
