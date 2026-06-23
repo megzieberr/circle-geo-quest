@@ -1,6 +1,6 @@
 /* Game screens: the progress map (home), the play loop, and results. */
 import { ROUNDS, ROUND_BY_ID } from "./rounds/index.js";
-import { CONFIG, GROUPS, BASE_RANK } from "./config.js";
+import { CONFIG, GROUPS } from "./config.js";
 import { api } from "./api.js";
 import { getSession } from "./session.js";
 import { t, tx, reason } from "./i18n.js";
@@ -10,7 +10,7 @@ import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
 import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
-import { installEntryButton } from "./install.js";
+import { installEntryButton, maybeShowInstallPopup } from "./install.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -38,10 +38,6 @@ function groupStatus(progress) {
     return { ...group, passed, total, available: total > 0, earned: total > 0 && passed === total };
   });
 }
-function currentRank(progress) {
-  const earned = groupStatus(progress).filter(g => g.earned);
-  return earned.length ? earned[earned.length - 1] : null;
-}
 
 /* ---------------- HOME / PROGRESS MAP ---------------- */
 export function renderHome(app, host) {
@@ -66,7 +62,8 @@ export function renderHome(app, host) {
   head.appendChild(stats);
   host.appendChild(head);
 
-  host.appendChild(renderRankLadder(progress));
+  const ladder = renderRankLadder(progress);
+  if (ladder) host.appendChild(ladder);            // hidden until the first badge is earned
 
   // Daily Challenge + Fix-My-Mistakes — the two "come back and practise" hooks
   host.appendChild(renderPracticeStrip(app));
@@ -79,26 +76,24 @@ export function renderHome(app, host) {
   const installBtn = installEntryButton(app);
   if (installBtn) { const row = el("div", "install-entry-row"); row.appendChild(installBtn); host.appendChild(row); }
 
-  // Adventure (Grand Master bonus) — visible to all, unlocked once every badge is earned
+  // Adventure (Grand Master bonus) — only shown once every badge is earned, so
+  // the locked teaser never pushes the rounds down for a beginner.
   const isGM = GROUPS.length > 0 && badgesEarned === GROUPS.length;
-  const advBanner = el("div", "card adventure-banner" + (isGM ? "" : " locked"));
-  advBanner.innerHTML = `
-    <div class="adv-bn-icon">🗺️</div>
-    <div class="adv-bn-text">
-      <span class="eyebrow">${t("grandMasterArena")}</span>
-      <h3>${t("adventures")}</h3>
-      <p class="muted small">${isGM ? t("adventuresBlurb") : t("adventureLocked")}</p>
-    </div>
-    <div class="adv-bn-foot"></div>`;
-  const bnFoot = advBanner.querySelector(".adv-bn-foot");
   if (isGM) {
+    const advBanner = el("div", "card adventure-banner");
+    advBanner.innerHTML = `
+      <div class="adv-bn-icon">🗺️</div>
+      <div class="adv-bn-text">
+        <span class="eyebrow">${t("grandMasterArena")}</span>
+        <h3>${t("adventures")}</h3>
+        <p class="muted small">${t("adventuresBlurb")}</p>
+      </div>
+      <div class="adv-bn-foot"></div>`;
     const go = el("button", "btn primary", "▶ " + t("play"));
     go.addEventListener("click", () => app.go("adventures"));
-    bnFoot.appendChild(go);
-  } else {
-    bnFoot.appendChild(el("span", "rc-lock", "🔒"));
+    advBanner.querySelector(".adv-bn-foot").appendChild(go);
+    host.appendChild(advBanner);
   }
-  host.appendChild(advBanner);
 
   const grid = el("div", "round-grid");
   ROUNDS.forEach(r => {
@@ -136,25 +131,27 @@ export function renderHome(app, host) {
   });
   host.appendChild(grid);
 
+  // First-login nudge to install the app (one-time, hidden if already installed).
+  try { maybeShowInstallPopup(app); } catch { /* non-critical */ }
+
   // Star-of-the-Week: Fri–Sun rally / Mon–Tue crown. No-ops off-day or if already seen.
   // Never let a popup glitch blank the home screen.
   try { maybeShowWeekly(app); } catch { /* non-critical */ }
 }
 
-/* the badge ladder: a medallion per group with progress toward each */
+/* the badge ladder: only the badges the learner has actually EARNED — locked
+   ones stay hidden so a beginner isn't faced with a wall of them and can find
+   where to start. Returns null until the first badge is unlocked. */
 function renderRankLadder(progress) {
-  const groups = groupStatus(progress);
-  const rank = currentRank(progress);
+  const earned = groupStatus(progress).filter(g => g.earned);
+  if (!earned.length) return null;
+  const rank = earned[earned.length - 1];
   const card = el("div", "card rank-card");
-  card.innerHTML = `<div class="rank-head"><span class="eyebrow">${t("rankLabel")}</span><h3>${rank ? `${rank.icon} ${rank.name}` : BASE_RANK}</h3></div>`;
+  card.innerHTML = `<div class="rank-head"><span class="eyebrow">${t("rankLabel")}</span><h3>${rank.icon} ${rank.name}</h3></div>`;
   const row = el("div", "rank-row");
-  groups.forEach(g => {
-    const state = g.earned ? "earned" : (g.available ? "active" : "locked");
-    const item = el("div", "rank-tier " + state);
-    let foot;
-    if (g.earned) foot = `<span class="rank-done">✓ ${t("rankEarned")}</span>`;
-    else foot = `<div class="rank-bar"><i style="width:${Math.round(100 * g.passed / (g.total || 1))}%"></i></div><span class="rank-count">${g.passed}/${g.total}</span>`;
-    item.innerHTML = `<div class="rank-icon">${g.icon}</div><div class="rank-name">${g.name}</div><div class="rank-foot">${foot}</div>`;
+  earned.forEach(g => {
+    const item = el("div", "rank-tier earned");
+    item.innerHTML = `<div class="rank-icon">${g.icon}</div><div class="rank-name">${g.name}</div><div class="rank-foot"><span class="rank-done">✓ ${t("rankEarned")}</span></div>`;
     item.title = tx(g.blurb);
     row.appendChild(item);
   });

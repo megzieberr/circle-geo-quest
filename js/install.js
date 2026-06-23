@@ -1,8 +1,12 @@
 /* ============================================================
-   "How to install" guide — a learner-facing page that explains
-   adding Circle Quest to a phone's home screen (and switching on
-   daily reminders). Reached from a button on the login and home
-   screens; those buttons hide once the app is already installed.
+   "How to install" — a learner-facing guide for adding Circle Quest
+   to a phone's home screen (and switching on daily reminders).
+
+   Three surfaces, all sharing the same steps:
+     • renderInstall(app, host)      — a full page (reached from a button)
+     • installEntryButton(app)       — that button (login + home)
+     • maybeShowInstallPopup(app)    — a one-time popup on first login
+   All three hide themselves once the app is already installed.
    ============================================================ */
 import { t, tx } from "./i18n.js";
 import { el, clear } from "./ui.js";
@@ -13,16 +17,6 @@ function isIOS() {
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPadOS
 }
 function isAndroid() { return /android/i.test(navigator.userAgent); }
-
-/* one "platform card" with a numbered step list */
-function platformCard(titleKey, icon, steps) {
-  const card = el("div", "card install-card");
-  card.innerHTML = `<h3 class="install-ph"><span class="install-ph-ic">${icon}</span> ${t(titleKey)}</h3>`;
-  const ol = el("ol", "install-steps");
-  steps.forEach(s => { const li = el("li"); li.innerHTML = tx(s); ol.appendChild(li); });
-  card.appendChild(ol);
-  return card;
-}
 
 const IPHONE_STEPS = [
   { en: "Open this page in <b>Safari</b> (the blue compass).", af: "Maak hierdie bladsy in <b>Safari</b> oop (die blou kompas)." },
@@ -38,6 +32,30 @@ const ANDROID_STEPS = [
   { en: "Tap <b>“Install app”</b> or <b>“Add to Home screen”</b>.", af: "Tik <b>“Installeer app”</b> of <b>“Voeg by Tuisskerm”</b>." },
   { en: "Open <b>Circle Quest</b> from the new icon on your home screen.", af: "Maak <b>Circle Quest</b> oop vanaf die nuwe ikoon op jou tuisskerm." },
 ];
+
+/* one platform section: a heading + numbered steps */
+function platformCard(titleKey, icon, steps, cls = "card install-card") {
+  const card = el("div", cls);
+  card.innerHTML = `<h3 class="install-ph"><span class="install-ph-ic">${icon}</span> ${t(titleKey)}</h3>`;
+  const ol = el("ol", "install-steps");
+  steps.forEach(s => { const li = el("li"); li.innerHTML = tx(s); ol.appendChild(li); });
+  card.appendChild(ol);
+  return card;
+}
+
+/* the platform sections, the visitor's own phone first. When detectedOnly is
+   true and we can tell the platform, return just that one (keeps the popup short). */
+function platformSections(detectedOnly, cls) {
+  const ios = isIOS();
+  const android = isAndroid() && !ios;
+  const iCard = () => platformCard("installIphone", "🍏", IPHONE_STEPS, cls);
+  const aCard = () => platformCard("installAndroid", "🤖", ANDROID_STEPS, cls);
+  if (detectedOnly) {
+    if (ios) return [iCard()];
+    if (android) return [aCard()];
+  }
+  return android ? [aCard(), iCard()] : [iCard(), aCard()];
+}
 
 export function renderInstall(app, host) {
   clear(host);
@@ -56,25 +74,60 @@ export function renderInstall(app, host) {
   screen.appendChild(head);
 
   if (isStandalone()) {
-    // already running as an installed app — no steps needed
     screen.appendChild(el("div", "card install-done", `✅ ${t("installAlready")}`));
   } else {
-    const iphone = platformCard("installIphone", "🍏", IPHONE_STEPS);
-    const android = platformCard("installAndroid", "🤖", ANDROID_STEPS);
-    // show the visitor's own platform first
-    if (isAndroid() && !isIOS()) { screen.appendChild(android); screen.appendChild(iphone); }
-    else { screen.appendChild(iphone); screen.appendChild(android); }
+    platformSections(false).forEach(c => screen.appendChild(c));
     screen.appendChild(el("div", "card install-note", `🔔 ${t("installNotifLine")}`));
   }
 
   host.appendChild(screen);
 }
 
-/* A reusable entry button for the login / home screens. Returns null when the
-   app is already installed (nothing to explain), so callers can append freely. */
+/* Entry button for the login / home screens. Returns null when the app is
+   already installed, so callers can append it freely. */
 export function installEntryButton(app) {
   if (isStandalone()) return null;
   const b = el("button", "btn ghost install-entry", t("installBtn"));
   b.addEventListener("click", () => app.go("install"));
   return b;
+}
+
+/* One-time popup, shown the first time a learner reaches the home screen on a
+   device where the app isn't installed. Remembered per learner so it never nags. */
+export function maybeShowInstallPopup(app) {
+  if (isStandalone()) return;
+  if (document.querySelector(".wk-overlay, .install-overlay")) return;   // don't stack on another popup
+  const sid = (app.state && app.state.student && app.state.student.id) || "anon";
+  const key = "cgg.installSeen." + sid;
+  try { if (localStorage.getItem(key) === "1") return; } catch { /* ignore */ }
+  try { localStorage.setItem(key, "1"); } catch { /* ignore */ }
+
+  const ov = el("div", "install-overlay");
+  const m = el("div", "install-modal");
+  m.innerHTML = `
+    <button class="wk-close" aria-label="Close">✕</button>
+    <div class="install-modal-emoji">📱</div>
+    <h1>${t("installTitle")}</h1>
+    <p class="muted small">${t("installWhy")}</p>`;
+  const body = el("div", "install-modal-body");
+  platformSections(true, "install-sec").forEach(c => body.appendChild(c));
+  m.appendChild(body);
+  m.appendChild(el("div", "install-note", `🔔 ${t("installNotifLine")}`));
+
+  const actions = el("div", "wk-actions");
+  const close = () => { ov.classList.remove("show"); document.body.style.overflow = ""; document.removeEventListener("keydown", onKey); setTimeout(() => ov.remove(), 200); };
+  const onKey = e => { if (e.key === "Escape") close(); };
+  const gotit = el("button", "btn primary big", t("installGotIt"));
+  gotit.addEventListener("click", close);
+  actions.appendChild(gotit);
+  m.appendChild(actions);
+
+  m.querySelector(".wk-close").addEventListener("click", close);
+  ov.addEventListener("click", e => { if (e.target === ov) close(); });
+  document.addEventListener("keydown", onKey);
+
+  ov.appendChild(m);
+  document.body.appendChild(ov);
+  document.body.style.overflow = "hidden";
+  requestAnimationFrame(() => ov.classList.add("show"));
 }

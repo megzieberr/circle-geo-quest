@@ -245,6 +245,7 @@ const UI = {
   installAndroid: { en: "Android phone or tablet", af: "Android-foon of -tablet" },
   installNotifLine:{ en: "Want daily reminders? After installing, open the app, tap 🔔 Turn on, then Allow.", af: "Wil jy daaglikse onthounotas hê? Ná installasie, maak die app oop, tik 🔔 Skakel aan, en kies Toelaat." },
   installAlready: { en: "You've already installed Circle Quest — you're all set! 🎉", af: "Jy het Circle Quest reeds geïnstalleer — alles reg! 🎉" },
+  installGotIt:   { en: "Got it!", af: "Reg so!" },
 
   // misc
   language:       { en: "Afrikaans", af: "English" }, // label shows the OTHER language to switch to
