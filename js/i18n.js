@@ -226,6 +226,17 @@ const UI = {
   wkNice:         { en: "Nice! 🎉", af: "Lekker! 🎉" },
   wkSeeBoard:     { en: "See full board →", af: "Sien volle telbord →" },
 
+  // daily reminders (push notifications)
+  remindTitle:    { en: "Daily reminder", af: "Daaglikse onthounota" },
+  remindBlurb:    { en: "Get a friendly ping to do your daily quest.", af: "Kry 'n vriendelike por om jou daaglikse soektog te doen." },
+  remindEnable:   { en: "🔔 Turn on", af: "🔔 Skakel aan" },
+  remindAsking:   { en: "Just a sec…", af: "Net 'n oomblik…" },
+  remindOn:       { en: "Reminders on", af: "Onthounotas aan" },
+  remindTurnOff:  { en: "Turn off", af: "Skakel af" },
+  remindBlocked:  { en: "Notifications are blocked. Turn them on in your phone's settings, then reopen the app.", af: "Kennisgewings is geblokkeer. Skakel dit aan in jou foon se instellings en maak die app weer oop." },
+  remindFail:     { en: "Couldn't turn on reminders. Try again.", af: "Kon nie onthounotas aanskakel nie. Probeer weer." },
+  remindIosHint:  { en: "On iPhone: add Circle Quest to your home screen and open it from there first.", af: "Op iPhone: voeg Circle Quest by jou tuisskerm en maak dit eers daar oop." },
+
   // misc
   language:       { en: "Afrikaans", af: "English" }, // label shows the OTHER language to switch to
   loading:        { en: "Loading…", af: "Laai…" },

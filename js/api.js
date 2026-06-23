@@ -202,6 +202,17 @@ const LocalBackend = {
     return { ok: true, logged: items.length };
   },
 
+  /* Push notifications: there is no notification server in local/offline mode,
+     so these just acknowledge. The subscribe flow still works for UI testing. */
+  async savePush(name, password, _endpoint, _subscription) {
+    const s = this._verify(name, password);
+    return s ? { ok: true } : { ok: false, error: "auth" };
+  },
+  async removePush(name, password, _endpoint) {
+    const s = this._verify(name, password);
+    return s ? { ok: true } : { ok: false, error: "auth" };
+  },
+
   async adminItemStats(adminPassword) {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };

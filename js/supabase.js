@@ -43,6 +43,14 @@ export const SupabaseBackend = {
   leaderboard(name, password) { return rpc("cgg_leaderboard", { p_name: name, p_password: password }); },
   weeklyResults(name, password) { return rpc("cgg_weekly_results", { p_name: name, p_password: password }); },
 
+  // push notifications (daily reminders)
+  savePush(name, password, endpoint, subscription) {
+    return rpc("cgg_save_push", { p_name: name, p_password: password, p_endpoint: endpoint, p_subscription: subscription });
+  },
+  removePush(name, password, endpoint) {
+    return rpc("cgg_remove_push", { p_name: name, p_password: password, p_endpoint: endpoint });
+  },
+
   // admin
   adminLogin(pw) { return rpc("cgg_admin_login", { p_admin_password: pw }); },
   adminData(pw) { return rpc("cgg_admin_data", { p_admin_password: pw }); },

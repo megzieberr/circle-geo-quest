@@ -22,20 +22,42 @@ the rendering core for every diagram. Every diagram is drawn to scale and self-c
 index.html              the learner game
 admin.html              the teacher dashboard
 verify.html             dev tool: checks every diagram is to scale
+manifest.json           PWA manifest (install to home screen)
+sw.js                   service worker (installable + shows push notifications)
+icon-*.png              app icons (regenerate with tools/make_icons.py)
 css/                    styles (shared family of the tan-chord page)
 js/
   engine.js             the diagram engine (extracted + extended)
   questions.js          the 5 reusable question types
   rounds/               the 12 rounds (round10 imports the tan-chord exercises)
   game.js, app.js, …    game shell, routing, leaderboard, login
+  pwa.js                registers the service worker
+  push.js               turn-on / subscribe flow for daily reminders
+  push-config.js        >>> paste your VAPID public key here <<<
   api.js                backend switch (local ⇄ Supabase)
   supabase.js           Supabase RPC client
   supabase-config.js    >>> paste your URL + anon key here <<<
 supabase/
   schema.sql            tables, RLS lockdown, RPC functions  (run first)
   admin-and-seed.sql    set admin password + seed class list (run second)
+  phase2.sql … phase4.sql  later additive migrations (daily XP, weekly, push)
+  functions/send-push/  Edge Function: the daily-reminder sender
+  cron.sql              schedules the daily reminder
+tools/
+  gen_vapid.py          generate the VAPID notification keys
+  make_icons.py         (re)generate the app icons
 netlify.toml            static-site deploy config
 ```
+
+## Install as an app + daily reminders
+
+Circle Quest is a **PWA**: on a phone, "Add to Home Screen" (iPhone/Safari) or
+"Install app" (Android/Chrome) installs it like a native app. It can also send a
+**daily push reminder** to do the Daily Challenge — only to learners who haven't
+done that day's quest. To switch reminders on, follow **`PUSH-SETUP.md`**
+(generate VAPID keys → run `phase4.sql` → deploy the `send-push` Edge Function →
+schedule it with `cron.sql`). Until the VAPID key is set, the reminder UI stays
+hidden and nothing changes.
 
 ---
 

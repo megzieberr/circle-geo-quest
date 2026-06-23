@@ -9,6 +9,7 @@ import { mountQuestion } from "./questions.js";
 import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
 import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
+import { pushState, enablePush, disablePush } from "./push.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -68,6 +69,10 @@ export function renderHome(app, host) {
 
   // Daily Challenge + Fix-My-Mistakes — the two "come back and practise" hooks
   host.appendChild(renderPracticeStrip(app));
+
+  // "Turn on daily reminders" — only appears once notifications are usable
+  // (configured + a supported browser; hidden in a plain iPhone Safari tab).
+  host.appendChild(remindersCard(app));
 
   // Adventure (Grand Master bonus) — visible to all, unlocked once every badge is earned
   const isGM = GROUPS.length > 0 && badgesEarned === GROUPS.length;
@@ -204,6 +209,59 @@ function fixCard(app) {
   } else {
     foot.appendChild(el("span", "pc-streaknote", "✓"));
   }
+  return card;
+}
+
+/* The opt-in daily-reminder card. Self-hides unless push is usable on this
+   device (configured VAPID key + a supporting browser; in an iPhone Safari
+   tab PushManager is absent, so it stays hidden until the app is installed). */
+function remindersCard(app) {
+  const card = el("div", "card reminders-card");
+  card.hidden = true;                       // revealed by paint() only when usable
+  card.innerHTML = `
+    <div class="pc-icon">🔔</div>
+    <div class="rc2-body">
+      <span class="eyebrow">${t("remindTitle")}</span>
+      <p class="muted small rc2-status">${t("remindBlurb")}</p>
+    </div>
+    <div class="rc2-foot"></div>`;
+  const statusEl = card.querySelector(".rc2-status");
+  const foot = card.querySelector(".rc2-foot");
+
+  async function paint() {
+    const st = await pushState();
+    if (st === "unsupported" || st === "unconfigured") { card.hidden = true; return; }
+    card.hidden = false;
+    foot.innerHTML = "";
+    card.classList.toggle("on", st === "on");
+    if (st === "on") {
+      statusEl.textContent = "🔔 " + t("remindOn");
+      const off = el("button", "btn ghost small", t("remindTurnOff"));
+      off.addEventListener("click", async () => {
+        const s = getSession();
+        off.disabled = true;
+        await disablePush(s.name, s.password);
+        paint();
+      });
+      foot.appendChild(off);
+    } else if (st === "blocked") {
+      statusEl.textContent = t("remindBlocked");
+    } else {                                 // "off" — can ask
+      statusEl.textContent = t("remindBlurb");
+      const on = el("button", "btn primary small", t("remindEnable"));
+      on.addEventListener("click", async () => {
+        const s = getSession();
+        on.disabled = true; on.textContent = t("remindAsking");
+        const r = await enablePush(s.name, s.password);
+        if (!r.ok && r.reason !== "denied" && r.reason !== "default") {
+          statusEl.textContent = t("remindFail");
+        }
+        paint();                             // reflect the real resulting state
+      });
+      foot.appendChild(on);
+    }
+  }
+  paint();
   return card;
 }
 
