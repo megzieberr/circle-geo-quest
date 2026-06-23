@@ -11,6 +11,7 @@ import { renderLeaderboard } from "./leaderboard.js";
 import { renderAdventures, renderAdventure } from "./adventure.js";
 import { renderFixMistakes } from "./mistakes.js";
 import { renderDaily } from "./daily.js";
+import { registerServiceWorker } from "./pwa.js";
 
 const app = {
   root: null,
@@ -20,6 +21,7 @@ const app = {
 
   async boot() {
     this.root = document.getElementById("app");
+    registerServiceWorker();                     // make the app installable (fire-and-forget)
     setLang(getLang());                          // sync <html lang> + persisted choice
     onLangChange(() => this.render());           // re-render current screen on toggle
     if (isLoggedIn()) {
