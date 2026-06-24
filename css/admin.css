@@ -23,7 +23,7 @@
 .admin-table tr.stale td{background:rgba(247,103,7,.06);}
 .admin-table td.num{font-variant-numeric:tabular-nums; font-weight:700; text-align:right;}
 .admin-table td.name{font-weight:700; white-space:nowrap;}
-.admin-table td.pw code{background:rgba(37,42,74,.07); border:1px dashed rgba(37,42,74,.3); border-radius:6px; padding:1px 7px; font-size:.85rem;}
+.admin-table td.pw .pw-set{color:#0a8a5f; font-weight:700;}
 .admin-table td.flag{color:#c25a00; font-weight:700; white-space:nowrap;}
 .dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:#f76707; margin-left:4px; vertical-align:middle;}
 

@@ -5,7 +5,8 @@
 An online circle-geometry game for Grade 11 learners. Each learner logs in to their
 own account, plays themed rounds (one per theorem), earns XP and badges, and sees a
 live leaderboard. The teacher logs in as admin to see every learner's progress, scores,
-last-active date and (recoverable) password.
+and last-active date. Learner passwords are never shown; a forgotten one is cleared with
+a "reset pw" button so the learner picks a new one.
 
 **No learner ever types a maths answer** — every answer is a multiple-choice tap, a
 yes/no tap, or a tap directly on the diagram.
@@ -107,8 +108,9 @@ That's it — the app now uses Supabase automatically.
   supplied password **server-side** before doing anything. A learner can only write their
   own row, and only with their correct password.
 - The leaderboard returns **names and XP only** — never passwords.
-- Learner passwords are stored readable **on purpose** so you can return a forgotten one;
-  they are only ever exposed through the admin function, which checks the admin password.
+- Learner passwords are **never returned to the browser** — not even to the admin dashboard
+  (since `supabase/phase5.sql`). The dashboard shows only *whether* a password is set, and if
+  a learner forgets theirs the teacher uses **"reset pw"** to clear it so they pick a new one.
 - The admin password is stored **hashed** (bcrypt). **The service-role key is never used
   in the app.**
 
@@ -118,8 +120,9 @@ That's it — the app now uses Supabase automatically.
 
 Log in with your admin password to see, for every learner: weekly XP, all-time XP, rank,
 last-active date (with an inactivity flag at 7+ days), which rounds are passed and the
-best score per round, and their password. You can **export CSV**, **reset the weekly
-board**, **add/remove a learner**, and **clear a learner's password** so they re-pick it.
+best score per round, and whether a password is set (never the password itself). You can
+**export CSV**, **reset the weekly board**, **add/remove a learner**, and **clear a
+learner's password** ("reset pw") so they re-pick it.
 
 ### Add or remove a learner later
 Use the dashboard buttons, or run in the Supabase SQL editor:

@@ -338,7 +338,7 @@ const LocalBackend = {
     const rows = Object.values(students).map(s => ({
       id: s.id,
       name: s.display_name,
-      password: s.password,
+      hasPassword: s.password != null,        // privacy: never expose the actual password
       weeklyXp: weeklyMap[s.id] || 0,
       allTimeXp: allMap[s.id] || 0,
       rank: allRank[s.id],

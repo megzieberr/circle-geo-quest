@@ -16,6 +16,9 @@ let itemStats = null;
 const INACTIVE_DAYS = 7;
 const fmtDate = ts => ts ? new Date(ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 const daysSince = ts => ts ? Math.floor((Date.now() - new Date(ts).getTime()) / 86400000) : Infinity;
+// Whether a learner has set a password — WITHOUT ever revealing it. Works with
+// the new backend (hasPassword) and, as a fallback, the old one (password).
+const hasPw = r => (r.hasPassword !== undefined ? !!r.hasPassword : r.password != null);
 
 /* ---------- login ---------- */
 function renderLogin(msg) {
@@ -89,6 +92,7 @@ function renderDashboard() {
       <th>#</th><th>Name</th><th>Password</th><th>Weekly</th><th>All-time</th>
       <th>Last active</th><th>Rounds (best %)</th><th></th>
     </tr></thead>`;
+  // NB: the Password column shows only whether one is SET — never the value.
   const tbody = el("tbody");
   rows.forEach(r => {
     const stale = daysSince(r.lastActive) >= inactiveDays;
@@ -102,7 +106,7 @@ function renderDashboard() {
     tr.innerHTML = `
       <td>${r.rank}</td>
       <td class="name">${r.name}</td>
-      <td class="pw">${r.password ? `<code>${escapeHtml(r.password)}</code>` : '<span class="muted">— not set</span>'}</td>
+      <td class="pw">${hasPw(r) ? '<span class="pw-set">✓ set</span>' : '<span class="muted">— not set</span>'}</td>
       <td class="num">${r.weeklyXp}</td>
       <td class="num">${r.allTimeXp}</td>
       <td class="${stale ? "flag" : ""}">${fmtDate(r.lastActive)}${stale && r.lastActive ? ' <span class="dot"></span>' : (r.lastActive ? "" : ' <span class="dot"></span>')}</td>
@@ -122,7 +126,7 @@ function renderDashboard() {
 
   renderItemReport();
 
-  root.appendChild(el("p", "muted small center", "Passwords are shown so you can return a forgotten one. Backend: " + BACKEND));
+  root.appendChild(el("p", "muted small center", "Passwords are hidden. If a learner forgets theirs, use “reset pw” to clear it so they pick a new one. Backend: " + BACKEND));
 }
 
 /* ---------- "hardest questions" report ---------- */
@@ -190,12 +194,12 @@ async function resetWeekly() {
   if (!r.ok) alert("Could not reset weekly board."); else load();
 }
 function exportCSV() {
-  const header = ["Rank", "Name", "Password", "WeeklyXP", "AllTimeXP", "LastActive", "RoundsPassed", "BestPerRound"];
+  const header = ["Rank", "Name", "PasswordSet", "WeeklyXP", "AllTimeXP", "LastActive", "RoundsPassed", "BestPerRound"];
   const lines = [header.join(",")];
   data.rows.forEach(r => {
     const passed = ROUNDS.filter(rd => r.rounds && r.rounds[rd.id] && r.rounds[rd.id].passed).length;
     const best = ROUNDS.map(rd => { const p = r.rounds && r.rounds[rd.id]; return `${rd.n}:${p ? Math.round((p.best_score || 0) * 100) : 0}`; }).join(" ");
-    const cells = [r.rank, r.name, r.password || "", r.weeklyXp, r.allTimeXp, fmtDate(r.lastActive), `${passed}/${ROUNDS.length}`, best];
+    const cells = [r.rank, r.name, hasPw(r) ? "yes" : "no", r.weeklyXp, r.allTimeXp, fmtDate(r.lastActive), `${passed}/${ROUNDS.length}`, best];
     lines.push(cells.map(csvCell).join(","));
   });
   const blob = new Blob([lines.join("\n")], { type: "text/csv" });
