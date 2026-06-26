@@ -68,6 +68,7 @@ const UI = {
   continueQuest:  { en: "Continue your quest", af: "Gaan voort met jou soektog" },
   resume:         { en: "Continue", af: "Gaan voort" },
   upNext:         { en: "Up next", af: "Volgende" },
+  roundsDone:     { en: "rounds done", af: "rondtes klaar" },
   moreToCome:     { en: "More rounds unlock as you go 🔓", af: "Meer rondtes ontsluit soos jy vorder 🔓" },
   play:           { en: "Play", af: "Speel" },
   replay:         { en: "Replay", af: "Speel weer" },

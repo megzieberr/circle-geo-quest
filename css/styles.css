@@ -121,6 +121,7 @@ h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",sans-serif; line-he
 .continue-card .cont-body{flex:1; min-width:0;}
 .continue-card .cont-body .eyebrow{display:block;}
 .continue-card .cont-body h3{font-family:"Bricolage Grotesque",sans-serif; font-size:1.15rem; margin-top:2px;}
+.continue-card .cont-progress{display:block; margin-top:3px; font-size:.78rem; font-weight:700; color:var(--ink-soft);}
 .continue-card .cont-foot{margin-left:auto; flex:none;}
 
 /* ---------- rank ladder ---------- */

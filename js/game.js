@@ -76,13 +76,16 @@ export function renderHome(app, host) {
   // top, so a learner never has to scroll the map to find where they're up to.
   const nextR = nextRoundToPlay(progress);
   if (nextR) {
-    const anyDone = ROUNDS.some(r => progress[r.id] && progress[r.id].passed);
+    const total = ROUNDS.length;
+    const doneCount = ROUNDS.filter(r => progress[r.id] && progress[r.id].passed).length;
+    const anyDone = doneCount > 0;
     const cont = el("div", "card continue-card");
     cont.style.setProperty("--accent", nextR.accent);
     cont.innerHTML = `
       <div class="cont-body">
         <span class="eyebrow">${anyDone ? t("continueQuest") : t("startHere")}</span>
         <h3>${nextR.n}. ${tx(nextR.title)}</h3>
+        <span class="cont-progress">${doneCount} / ${total} ${t("roundsDone")}</span>
       </div>
       <div class="cont-foot"></div>`;
     const go = el("button", "btn primary", "▶ " + (anyDone ? t("resume") : t("start")));
@@ -125,15 +128,16 @@ export function renderHome(app, host) {
   }
 
   const grid = el("div", "round-grid");
-  // Only unlocked rounds appear — locked ones stay hidden so the map is short
-  // and the learner's current spot is easy to find (the Continue card jumps here).
-  ROUNDS.filter(r => unlocked.has(r.id)).forEach(r => {
+  // The whole map is shown — including locked rounds — so learners can see how
+  // many rounds there are and plan their pace. The Continue card above still
+  // jumps them straight to their current spot, so the longer list is no problem.
+  ROUNDS.forEach(r => {
     const p = progress[r.id];
-    const isUnlocked = true;
+    const isUnlocked = unlocked.has(r.id);
     const passed = !!(p && p.passed);
     const learn = isLearningRound(r);
     const isCurrent = !!(nextR && r.id === nextR.id);
-    const card = el("article", "round-card" + (passed ? " done" : "") + (learn ? " learn" : "") + (isCurrent ? " current" : ""));
+    const card = el("article", "round-card" + (isUnlocked ? "" : " locked") + (passed ? " done" : "") + (learn ? " learn" : "") + (isCurrent ? " current" : ""));
     card.style.setProperty("--accent", r.accent);
     const best = p ? Math.round(p.best_score * 100) : 0;
     const kindTag = r.kind === "cutscene" ? `<span class="rc-kind">▶ ${t("watch")}</span>`
@@ -163,9 +167,6 @@ export function renderHome(app, host) {
     grid.appendChild(card);
   });
   host.appendChild(grid);
-
-  // gentle reassurance that the journey continues (without a wall of locked cards)
-  if (ROUNDS.some(r => !unlocked.has(r.id))) host.appendChild(el("p", "more-rounds muted small center", t("moreToCome")));
 
   // First-login nudge to install the app (one-time, hidden if already installed).
   try { maybeShowInstallPopup(app); } catch { /* non-critical */ }
