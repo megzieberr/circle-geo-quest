@@ -66,6 +66,9 @@ function renderDashboard() {
   const head = el("div", "admin-head");
   head.innerHTML = `<div><span class="eyebrow">Teacher dashboard</span><h1>Circle Quest — Admin</h1></div>`;
   const tools = el("div", "admin-tools");
+  const preview = el("button", "btn primary small", "👁️ Preview learner view");
+  preview.title = "Open the game as a learner with every round unlocked — nothing is saved";
+  preview.addEventListener("click", () => window.open("index.html?preview=1", "_blank", "noopener"));
   const add = el("button", "btn ghost small", "＋ Add learner");
   add.addEventListener("click", addLearner);
   const csv = el("button", "btn ghost small", "⬇ Export CSV");
@@ -76,7 +79,7 @@ function renderDashboard() {
   refresh.addEventListener("click", load);
   const out = el("button", "btn ghost small", "Log out");
   out.addEventListener("click", () => { adminPw = null; renderLogin(); });
-  [add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
+  [preview, add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
   head.appendChild(tools);
   root.appendChild(head);
 

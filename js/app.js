@@ -1,6 +1,6 @@
 /* App controller: shell, routing, session boot, language re-render. */
-import { api } from "./api.js";
-import { getSession, isLoggedIn, clearSession } from "./session.js";
+import { api, PREVIEW } from "./api.js";
+import { getSession, isLoggedIn, clearSession, setSession } from "./session.js";
 import { onLangChange, setLang, getLang } from "./i18n.js";
 import { el, clear, renderChrome } from "./ui.js";
 import { renderLogin } from "./auth.js";
@@ -26,6 +26,18 @@ const app = {
     registerServiceWorker();                     // make the app installable (fire-and-forget)
     setLang(getLang());                          // sync <html lang> + persisted choice
     onLangChange(() => this.render());           // re-render current screen on toggle
+
+    // Teacher "view as learner" preview (opened from the admin dashboard):
+    // an in-memory session only (persist=false, never clobbers a real login),
+    // every round unlocked, nothing saved. See PreviewBackend in api.js.
+    if (PREVIEW) {
+      setSession("Teacher Preview", "preview", false);
+      this.previewBanner();
+      await this.refreshState();
+      this.go("home");
+      return;
+    }
+
     if (isLoggedIn()) {
       const ok = await this.refreshState();
       if (!ok) clearSession();
@@ -62,6 +74,20 @@ const app = {
   },
 
   logout() { clearSession(); this.state = null; this.go("login"); },
+
+  // A persistent strip making it unmistakable this is the teacher preview and
+  // that nothing here is saved. "Close" simply closes the preview tab.
+  previewBanner() {
+    if (document.getElementById("preview-banner")) return;
+    const bar = el("div", "preview-banner");
+    bar.id = "preview-banner";
+    bar.innerHTML = `<span>👁️ Teacher preview — all rounds unlocked, nothing is saved</span>`;
+    const close = el("button", "pv-close", "✕ Close");
+    close.addEventListener("click", () => window.close());
+    bar.appendChild(close);
+    document.body.appendChild(bar);
+    document.body.classList.add("has-preview-banner");
+  },
 
   render() {
     clear(this.root);

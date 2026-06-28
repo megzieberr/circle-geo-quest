@@ -125,6 +125,13 @@ best score per round, and whether a password is set (never the password itself).
 **export CSV**, **reset the weekly board**, **add/remove a learner**, and **clear a
 learner's password** ("reset pw") so they re-pick it.
 
+**👁️ Preview learner view** opens the game exactly as a learner sees it, with
+**every round unlocked**, so you can inspect any round or new content without
+making a real account. It is fully sandboxed: it opens at `index.html?preview=1`,
+writes nothing, earns no XP, and never appears on any leaderboard — so it can't
+repeat the "teacher stuck at #1 all-time" problem. A bottom banner makes it clear
+nothing is being saved; close the tab to leave.
+
 ### Add or remove a learner later
 Use the dashboard buttons, or run in the Supabase SQL editor:
 ```sql

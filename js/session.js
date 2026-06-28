@@ -12,9 +12,11 @@ try { current = JSON.parse(localStorage.getItem(KEY) || "null"); } catch { curre
 export function getSession() { return current; }
 export function isLoggedIn() { return !!(current && current.name && current.password); }
 
-export function setSession(name, password) {
+export function setSession(name, password, persist = true) {
   current = { name, password };
-  localStorage.setItem(KEY, JSON.stringify(current));
+  // Teacher preview uses persist=false: an in-memory session only, so opening
+  // the preview never overwrites a real learner's stored login in this browser.
+  if (persist) localStorage.setItem(KEY, JSON.stringify(current));
 }
 export function clearSession() {
   current = null;

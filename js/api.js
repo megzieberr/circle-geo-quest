@@ -439,6 +439,45 @@ const LocalBackend = {
 };
 
 /* ============================================================
+   PREVIEW BACKEND  (teacher "view as learner" sandbox)
+   ------------------------------------------------------------
+   Opened from the admin dashboard via ?preview=1. Every round is
+   unlocked so the teacher can inspect any round or new content, but
+   NOTHING is persisted and NOTHING touches the real backend: writes
+   are no-ops, the leaderboard is empty, and there is no XP — so the
+   teacher never appears on the live board (the ghost-account problem).
+   ============================================================ */
+function isPreview() {
+  try { return new URLSearchParams(location.search).has("preview"); } catch { return false; }
+}
+const PREVIEW_STUDENT = { id: "preview", name: "Teacher Preview" };
+const PreviewBackend = {
+  async listStudents() { return [{ id: "preview", display_name: PREVIEW_STUDENT.name, has_password: true }]; },
+  async login() { return { ok: true }; },
+  async firstLogin() { return { ok: true }; },
+  async getState() {
+    // mark every round passed → unlockedSet() opens them all on the home map
+    const { ROUNDS } = await import("./rounds/index.js");
+    const progress = {};
+    ROUNDS.forEach(r => {
+      progress[r.id] = { best_score: 1, attempts: 1, total_xp: 0, passed: true, last_played_at: null, last_correct: null, last_total: null };
+    });
+    return { ok: true, student: { ...PREVIEW_STUDENT }, progress, totalXp: 0, badges: ROUNDS.map(r => r.id) };
+  },
+  // every write is a no-op that reports success, so the game plays normally
+  async submitRound() { return { ok: true, passed: true, badgeEarned: false, xpAwarded: 0, alreadyPassed: true }; },
+  async submitDaily() { return { ok: true, xpAwarded: 0, alreadyClaimed: true }; },
+  async logItems() { return { ok: true, logged: 0 }; },
+  async submitFeedback() { return { ok: true }; },
+  async getMyFeedback() { return { ok: true, rating: null, comment: "" }; },
+  async savePush() { return { ok: true }; },
+  async removePush() { return { ok: true }; },
+  // read views: empty / benign so nothing from the real class shows or is altered
+  async leaderboard() { return { ok: true, weekly: [], allTime: [], myWeekly: null, myAllTime: null }; },
+  async weeklyResults() { return { ok: true, board: [], star: null, mostImproved: null, onFire: null, me: { xp: 0, rank: null }, prevRank: null, bestPrevXp: 0 }; },
+};
+
+/* ============================================================
    BACKEND SELECTION
    If js/supabase-config.js has a url + anon key, use the shared
    Supabase backend; otherwise fall back to local play. Either way
@@ -455,5 +494,6 @@ function forceLocal() {
   } catch { return false; }
 }
 const useLocal = !hasSupabase || forceLocal();
-export const api = useLocal ? LocalBackend : SupabaseBackend;
-export const BACKEND = useLocal ? "local" : "supabase";
+export const PREVIEW = isPreview();
+export const api = PREVIEW ? PreviewBackend : (useLocal ? LocalBackend : SupabaseBackend);
+export const BACKEND = PREVIEW ? "preview" : (useLocal ? "local" : "supabase");

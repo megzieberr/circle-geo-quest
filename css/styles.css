@@ -569,6 +569,15 @@ svg.cs-svg{width:100%; max-width:380px; height:auto;}
 .install-sec + .install-sec{margin-top:10px; padding-top:10px; border-top:2px dashed #e7e3d6;}
 .install-modal .install-note{text-align:left; border-radius:12px; margin-top:6px;}
 
+/* ---------- teacher "view as learner" preview banner ---------- */
+.preview-banner{position:fixed; left:0; right:0; bottom:0; z-index:240; display:flex; align-items:center;
+  justify-content:center; gap:14px; flex-wrap:wrap; padding:8px 14px; background:var(--ink); color:#fff;
+  font-weight:700; font-size:.86rem; box-shadow:0 -3px 0 rgba(37,42,74,.18);}
+.preview-banner .pv-close{cursor:pointer; font:700 .8rem "Instrument Sans",sans-serif; color:var(--ink);
+  background:#fff; border:2px solid #fff; border-radius:999px; padding:3px 12px;}
+.preview-banner .pv-close:hover{background:#ffe3ef; border-color:#ffe3ef;}
+body.has-preview-banner .view{padding-bottom:84px;}
+
 /* ---------- anonymous feedback survey ---------- */
 /* permanent home card */
 .feedback-card{display:flex; align-items:center; gap:14px; padding:12px 16px; margin-bottom:22px;
