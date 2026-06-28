@@ -56,7 +56,10 @@ export function mountQuestion(container, q, onAnswered) {
 
   let answered = false;
   let hintWrap = null;                  // the "Stuck? hint" control, hidden once answered
-  function reveal(isCorrect, answerText, reasonText, chosen) {
+  // `misconception` (optional {en,af}) is a targeted nudge for ONE wrong answer:
+  // when a learner picks that specific distractor, we lead the feedback with it,
+  // so even learners who never tap a hint get the misconception addressed.
+  function reveal(isCorrect, answerText, reasonText, chosen, misconception) {
     if (answered) return;
     answered = true;
     if (svgNode) svgNode.querySelectorAll(".q-hl").forEach(n => n.remove());   // clear the hint pulse
@@ -65,6 +68,7 @@ export function mountQuestion(container, q, onAnswered) {
     feedback.classList.add(isCorrect ? "good" : "bad");
     const head = isCorrect ? t("correct") : t("notQuite");
     let html = `<div class="fb-head">${isCorrect ? "✓" : "✗"} ${head}</div>`;
+    if (!isCorrect && misconception) html += `<div class="fb-nudge">💡 ${tx(misconception)}</div>`;
     if (answerText) html += `<div class="fb-ans"><b>${t("theAnswer")}:</b> ${answerText}</div>`;
     if (q.solution && q.solution.length) {
       // multi-step working: each line is statement + (reason)
@@ -119,8 +123,8 @@ export function mountQuestion(container, q, onAnswered) {
   if (q.type === "mc" || q.type === "calc-mc" || q.type === "reason") {
     const opts = el("div", "q-options" + (q.type === "calc-mc" ? " grid2" : ""));
     const list = q.type === "reason"
-      ? q.options.map(o => ({ label: reason(o.code), correct: o.correct }))
-      : q.options.map(o => ({ label: tx(o.text), correct: o.correct }));
+      ? q.options.map(o => ({ label: reason(o.code), correct: o.correct, misc: o.misconception }))
+      : q.options.map(o => ({ label: tx(o.text), correct: o.correct, misc: o.misconception }));
 
     list.forEach(o => {
       const b = el("button", "opt", o.label);
@@ -132,7 +136,7 @@ export function mountQuestion(container, q, onAnswered) {
           if (isC) x.classList.add("is-correct");
         });
         b.classList.add(o.correct ? "is-correct" : "is-wrong");
-        reveal(o.correct, answerText(), explainReason(), o.label);
+        reveal(o.correct, answerText(), explainReason(), o.label, o.misc);
       });
       opts.appendChild(b);
     });

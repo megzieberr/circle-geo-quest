@@ -34,14 +34,18 @@ const D_MID2 = { O: true, pts: { A: 120, B: 250 }, mid: [{ name: "M", of: ["A", 
 const perpQ = (id, d) => ({
   id, type: "reason", accent: AC, diagram: d, hints: HINT_PERP,
   prompt: { en: "OM is drawn from O to chord AB and OM ⊥ AB (the 90° is given). Which reason lets you conclude AM = MB?", af: "OM is van O na koord AB geteken en OM ⊥ AB (die 90° is gegee). Watter rede laat jou aflei dat AM = MB?" },
-  options: [{ code: "centrePerpChord", correct: true }, { code: "centreMidChord" }, { code: "tanRadius" }, { code: "sameSeg" }],
+  options: [{ code: "centrePerpChord", correct: true },
+    { code: "centreMidChord", misconception: { en: "That's the reason for the OTHER direction. You were GIVEN the 90° (⊥) — so name the reason after the ⊥, not after AM = MB (that's what you’re proving).", af: "Dis die rede vir die ANDER rigting. Jy het die 90° (⊥) GEKRY — noem dus die rede ná die ⊥, nie ná AM = MB nie (dít is wat jy bewys)." } },
+    { code: "tanRadius" }, { code: "sameSeg" }],
   answer: { en: "The 90° is given, so use: line from centre ⊥ to chord ⇒ it bisects the chord.", af: "Die 90° is gegee, gebruik dus: lyn vanuit mdpt ⊥ op koord ⇒ dit halveer die koord." },
   explainReason: "centrePerpChord",
 });
 const midQ = (id, d) => ({
   id, type: "reason", accent: AC, diagram: d, hints: HINT_MID,
   prompt: { en: "M is the midpoint of chord AB (AM = MB is given) and OM is drawn. Which reason lets you conclude OM ⊥ AB?", af: "M is die middelpunt van koord AB (AM = MB is gegee) en OM is geteken. Watter rede laat jou aflei dat OM ⊥ AB?" },
-  options: [{ code: "centreMidChord", correct: true }, { code: "centrePerpChord" }, { code: "equalChords" }, { code: "semiCircle" }],
+  options: [{ code: "centreMidChord", correct: true },
+    { code: "centrePerpChord", misconception: { en: "That's the reason for the OTHER direction. You were GIVEN the midpoint (AM = MB) — so name the reason after the midpoint, not after OM ⊥ AB (that's what you’re proving).", af: "Dis die rede vir die ANDER rigting. Jy het die middelpunt (AM = MB) GEKRY — noem dus die rede ná die middelpunt, nie ná OM ⊥ AB nie (dít is wat jy bewys)." } },
+    { code: "equalChords" }, { code: "semiCircle" }],
   answer: { en: "The midpoint is given, so use: line from centre to midpt of chord ⇒ it is perpendicular.", af: "Die middelpunt is gegee, gebruik dus: lyn vanuit mdpt na mdpt van koord ⇒ dit is loodreg." },
   explainReason: "centreMidChord",
 });

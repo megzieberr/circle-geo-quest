@@ -198,6 +198,8 @@ svg.diag .hit.locked{pointer-events:none;}
 .q-feedback.good{background:#e8f8f1; border-color:#0ea271;}
 .q-feedback.bad{background:#fdeef4; border-color:#e64980;}
 .fb-head{font-weight:800; font-size:1rem; margin-bottom:4px;}
+.fb-nudge{font-size:.9rem; font-weight:600; margin:4px 0 8px; padding:8px 10px; border-radius:10px;
+  background:#fff; border:1.5px dashed #e64980; color:var(--ink);}
 .fb-ans{font-size:.92rem; margin:2px 0;}
 .fb-reason{font-size:.88rem; color:var(--ink-soft);}
 .fb-steps{margin-top:8px; border-top:1.5px dashed rgba(37,42,74,.25); padding-top:6px; display:flex; flex-direction:column; gap:3px;}
