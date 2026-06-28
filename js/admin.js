@@ -220,10 +220,10 @@ function renderItemReport() {
     return;
   }
 
-  section.appendChild(el("p", "muted small", "Ranked by lowest first-try success — these are the misconceptions to target first. Replays are excluded."));
+  section.appendChild(el("p", "muted small", "Ranked by lowest first-try success — these are the misconceptions to target first. Replays are excluded. “Learners” = how many different learners tried it; “Attempts” counts retries too, so Attempts > Learners means some are retrying."));
   const wrap = el("div", "table-wrap");
   const table = el("table", "admin-table report-table");
-  table.innerHTML = `<thead><tr><th>Rd</th><th>Question</th><th>First-try</th><th>Attempts</th><th>Most-picked wrong answer</th></tr></thead>`;
+  table.innerHTML = `<thead><tr><th>Rd</th><th>Question</th><th>First-try</th><th>Learners</th><th>Attempts</th><th>Most-picked wrong answer</th></tr></thead>`;
   const tbody = el("tbody");
   rows.forEach(r => {
     const entry = QUESTION_BY_ID[r.qid];
@@ -233,8 +233,10 @@ function renderItemReport() {
     const cls = pct == null ? "" : (pct < 50 ? "pct-bad" : pct < 75 ? "pct-warn" : "pct-ok");
     const wrong = r.topWrong ? `${escapeHtml(String(r.topWrong))} <span class="muted">×${r.topWrongCount}</span>` : "—";
     const tr = el("tr");
+    const learners = (r.learners != null) ? r.learners : "—";
     tr.innerHTML = `<td>${rd}</td><td class="qlabel">${escapeHtml(label)}</td>
       <td class="num ${cls}">${pct == null ? "—" : pct + "%"}</td>
+      <td class="num">${learners}</td>
       <td class="num">${r.attempts}</td><td>${wrong}</td>`;
     tbody.appendChild(tr);
   });

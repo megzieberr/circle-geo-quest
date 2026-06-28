@@ -279,14 +279,15 @@ const LocalBackend = {
     store.forEach(r => {
       if (!r.firstTry) return;                           // genuine first-pass attempts only (exclude replays)
       const k = r.qid;
-      const g = byQ[k] || (byQ[k] = { roundId: r.roundId, qid: k, attempts: 0, correct: 0, wrong: {} });
+      const g = byQ[k] || (byQ[k] = { roundId: r.roundId, qid: k, attempts: 0, correct: 0, wrong: {}, learners: new Set() });
       g.attempts++;
+      if (r.studentId) g.learners.add(r.studentId);     // distinct learners who tried it
       if (r.correct) g.correct++;
       else if (r.chosen) g.wrong[r.chosen] = (g.wrong[r.chosen] || 0) + 1;
     });
     const rows = Object.values(byQ).map(g => {
       const top = Object.entries(g.wrong).sort((a, b) => b[1] - a[1])[0];
-      return { roundId: g.roundId, qid: g.qid, attempts: g.attempts, correct: g.correct,
+      return { roundId: g.roundId, qid: g.qid, attempts: g.attempts, learners: g.learners.size, correct: g.correct,
         correctPct: g.attempts ? Math.round((g.correct / g.attempts) * 100) : null,
         topWrong: top ? top[0] : null, topWrongCount: top ? top[1] : 0 };
     }).sort((a, b) => (a.correctPct ?? 101) - (b.correctPct ?? 101));
