@@ -41,7 +41,8 @@ js/
 supabase/
   schema.sql            tables, RLS lockdown, RPC functions  (run first)
   admin-and-seed.sql    set admin password + seed class list (run second)
-  phase2.sql … phase4.sql  later additive migrations (daily XP, weekly, push)
+  phase2.sql … phase6.sql  later additive migrations (daily XP, weekly, push,
+                           password privacy, anonymous feedback survey)
   functions/send-push/  Edge Function: the daily-reminder sender
   cron.sql              schedules the daily reminder
 tools/
@@ -170,3 +171,26 @@ in CAPS exams, in English and Afrikaans (toggle in the top bar).
 
 **Phase 2 (not built yet):** a proof-building round where learners drag
 statement-and-reason pairs into order — the round structure leaves room for it.
+
+---
+
+## Anonymous feedback survey
+
+At the end of the quest, learners tell you how it felt. One question — pick a
+face (😭 🙁 😐 🙂 😍) — plus an optional written note prompted with "Was it fun or
+boring? Too easy or too hard? Did you get stuck? Should we keep doing this?".
+
+- It appears two ways: a **permanent "Tell your teacher how it's going" card** on
+  the home screen, and a **one-time popup** the first time a learner finishes the
+  final round. They can change their answer any time from the home card.
+- It is **anonymous** — the card and popup both say so. The backend authenticates
+  the learner only to gate spam and to let them edit their own answer; the
+  feedback row itself stores **no learner id**, and the admin dashboard never
+  receives a name. (The only link, `students.last_feedback_id`, is used purely
+  server-side for the edit and is never exposed.)
+- Results live in the **admin dashboard** under *"How learners feel about the
+  game"*: the spread of faces, the average, and every written comment — no names.
+- To switch it on against the real backend, run **`supabase/phase6.sql`** once in
+  the Supabase SQL editor (additive and idempotent, like the other phases). It
+  works locally with no setup. To make it fully anonymous even at the database
+  level (drop the hidden edit link), just ask — it's a one-line change.

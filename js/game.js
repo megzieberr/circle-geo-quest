@@ -11,6 +11,7 @@ import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
+import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -99,6 +100,9 @@ export function renderHome(app, host) {
 
   // Daily Challenge + Fix-My-Mistakes — the two "come back and practise" hooks
   host.appendChild(renderPracticeStrip(app));
+
+  // Permanent, anonymous "tell your teacher how it's going" card
+  host.appendChild(feedbackCard(app));
 
   // "Turn on daily reminders" — only appears once notifications are usable
   // (configured + a supported browser; hidden in a plain iPhone Safari tab).
@@ -489,4 +493,11 @@ export function renderResults(app, host, params) {
   host.appendChild(screen);
 
   if (groupEarned) toast(`${group.icon} ${t("badgeEarned")} ${group.name}`);
+
+  // Finishing the very last round of the quest → one-time anonymous survey popup.
+  // (No-ops if they've already given feedback or been prompted before.)
+  const isFinalRound = ROUNDS.length > 0 && round.id === ROUNDS[ROUNDS.length - 1].id;
+  if (isFinalRound && passed && !params.discovery) {
+    try { maybeShowSurveyPopup(app); } catch { /* non-critical */ }
+  }
 }

@@ -54,3 +54,18 @@
 .report-table td.pct-bad{color:#c52e6c;}
 .report-table td.pct-warn{color:#c25a00;}
 .report-table td.pct-ok{color:#0a8a5f;}
+
+/* ---------- anonymous feedback report ---------- */
+.admin-feedback .fb-spread{display:flex; flex-direction:column; gap:7px; max-width:520px; margin:6px 0 18px;}
+.fb-srow{display:flex; align-items:center; gap:10px;}
+.fb-srow .fb-face{font-size:1.5rem; line-height:1; width:30px; text-align:center;}
+.fb-srow .fb-bar{flex:1; height:16px; background:#eef0f7; border:1.5px solid var(--ink); border-radius:99px; overflow:hidden;}
+.fb-srow .fb-bar i{display:block; height:100%; background:var(--s5); border-radius:99px;}
+.fb-srow .fb-num{min-width:78px; font-variant-numeric:tabular-nums; font-weight:700; font-size:.85rem;}
+.fb-comments-title{font-size:1.05rem; margin:14px 0 8px;}
+.fb-comments{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:10px;}
+.fb-comment{display:flex; gap:10px; background:#fff; border:2px solid var(--ink); border-radius:14px; padding:10px 12px; box-shadow:var(--shadow-sm);}
+.fb-comment .fb-cface{font-size:1.4rem; line-height:1.2; flex:none;}
+.fb-comment .fb-cbody{min-width:0;}
+.fb-comment .fb-cbody p{margin:0 0 4px; line-height:1.4; overflow-wrap:anywhere;}
+.fb-cdate{font-size:.72rem;}

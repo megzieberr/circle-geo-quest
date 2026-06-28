@@ -253,6 +253,34 @@ const UI = {
   installAlready: { en: "You've already installed Circle Quest — you're all set! 🎉", af: "Jy het Circle Quest reeds geïnstalleer — alles reg! 🎉" },
   installGotIt:   { en: "Got it!", af: "Reg so!" },
 
+  // anonymous end-of-game feedback survey
+  surveyEyebrow:    { en: "Your turn 😄", af: "Jou beurt 😄" },
+  surveyCardTitle:  { en: "Tell your teacher how it's going", af: "Vertel jou onderwyser hoe dit gaan" },
+  surveyCardBlurb:  { en: "It's anonymous — your teacher won't see who said what. Be honest! 💛", af: "Dit is anoniem — jou onderwyser sal nie sien wie wat gesê het nie. Wees eerlik! 💛" },
+  surveyGive:       { en: "Give feedback", af: "Gee terugvoer" },
+  surveyChange:     { en: "Change my answer", af: "Verander my antwoord" },
+  surveyThanks:     { en: "Thanks for your feedback! 💛", af: "Dankie vir jou terugvoer! 💛" },
+  surveyTitle:      { en: "How was Circle Quest for you?", af: "Hoe was Circle Quest vir jou?" },
+  surveyAnon:       { en: "100% anonymous — your teacher can't see who said what, so be totally honest.", af: "100% anoniem — jou onderwyser kan nie sien wie wat gesê het nie, so wees heeltemal eerlik." },
+  surveyPickFace:   { en: "Tap the face that fits best", af: "Tik die gesig wat die beste pas" },
+  surveyWriteLabel: { en: "Want to tell us more? (optional)", af: "Wil jy ons meer vertel? (opsioneel)" },
+  surveyPlaceholder:{ en: "Was it fun or boring? Too easy or too hard? Did you get stuck or confused? Should we keep playing games like this for the rest of the term?", af: "Was dit lekker of vervelig? Te maklik of te moeilik? Het jy vasgehaak of deurmekaar geraak? Moet ons aanhou om sulke speletjies vir die res van die kwartaal te speel?" },
+  surveySubmit:     { en: "Send to teacher", af: "Stuur aan onderwyser" },
+  surveySending:    { en: "Sending…", af: "Stuur…" },
+  surveyPickFirst:  { en: "Tap a face first 🙂", af: "Tik eers 'n gesig 🙂" },
+  surveyFail:       { en: "Couldn't send. Check your connection and try again.", af: "Kon nie stuur nie. Kontroleer jou verbinding en probeer weer." },
+  surveyDone:       { en: "Thank you! 💛", af: "Dankie! 💛" },
+  surveyDoneMsg:    { en: "Your honest feedback helps your teacher make this better for you.", af: "Jou eerlike terugvoer help jou onderwyser om dit vir jou beter te maak." },
+  surveyPopupTitle: { en: "You finished Circle Quest! 🎉", af: "Jy het Circle Quest klaar gespeel! 🎉" },
+  surveyPopupBlurb: { en: "One last thing — tell your teacher how it felt. It's anonymous.", af: "Nog een ding — vertel jou onderwyser hoe dit gevoel het. Dit is anoniem." },
+  surveyLater:      { en: "Maybe later", af: "Dalk later" },
+  // the five faces (crying → heart-eyes); labels are for hover/accessibility
+  face1:            { en: "Hated it", af: "Gehaat dit" },
+  face2:            { en: "Didn't like it", af: "Nie van gehou nie" },
+  face3:            { en: "It was OK", af: "Dit was OK" },
+  face4:            { en: "Liked it", af: "Daarvan gehou" },
+  face5:            { en: "Loved it!", af: "Mal daaroor!" },
+
   // misc
   language:       { en: "Afrikaans", af: "English" }, // label shows the OTHER language to switch to
   loading:        { en: "Loading…", af: "Laai…" },

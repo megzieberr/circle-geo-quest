@@ -43,6 +43,12 @@ export const SupabaseBackend = {
   leaderboard(name, password) { return rpc("cgg_leaderboard", { p_name: name, p_password: password }); },
   weeklyResults(name, password) { return rpc("cgg_weekly_results", { p_name: name, p_password: password }); },
 
+  // anonymous end-of-game feedback survey
+  submitFeedback(name, password, rating, comment) {
+    return rpc("cgg_submit_feedback", { p_name: name, p_password: password, p_rating: rating, p_comment: comment });
+  },
+  getMyFeedback(name, password) { return rpc("cgg_get_feedback", { p_name: name, p_password: password }); },
+
   // push notifications (daily reminders)
   savePush(name, password, endpoint, subscription) {
     return rpc("cgg_save_push", { p_name: name, p_password: password, p_endpoint: endpoint, p_subscription: subscription });
@@ -55,6 +61,7 @@ export const SupabaseBackend = {
   adminLogin(pw) { return rpc("cgg_admin_login", { p_admin_password: pw }); },
   adminData(pw) { return rpc("cgg_admin_data", { p_admin_password: pw }); },
   adminItemStats(pw) { return rpc("cgg_admin_item_stats", { p_admin_password: pw }); },
+  adminFeedback(pw) { return rpc("cgg_admin_feedback", { p_admin_password: pw }); },
   adminResetWeekly(pw) { return rpc("cgg_admin_reset_weekly", { p_admin_password: pw }); },
   adminAddStudent(pw, name) { return rpc("cgg_admin_add_student", { p_admin_password: pw, p_name: name }); },
   adminRemoveStudent(pw, id) { return rpc("cgg_admin_remove_student", { p_admin_password: pw, p_id: id }); },

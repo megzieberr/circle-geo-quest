@@ -48,6 +48,7 @@ const LS = {
   events:   "cgg.events",
   meta:     "cgg.meta",
   items:    "cgg.itemevents",   // per-question results (teacher analytics)
+  feedback: "cgg.feedback",     // anonymous end-of-game survey responses
 };
 function read(k, fallback) { try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; } }
 function write(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
@@ -67,6 +68,7 @@ const LocalBackend = {
     if (!read(LS.progress, null)) write(LS.progress, {});
     if (!read(LS.events, null)) write(LS.events, []);
     if (!read(LS.items, null)) write(LS.items, []);
+    if (!read(LS.feedback, null)) write(LS.feedback, []);
   },
   _find(name) {
     const students = read(LS.students, {});
@@ -200,6 +202,62 @@ const LocalBackend = {
     });
     write(LS.items, store);
     return { ok: true, logged: items.length };
+  },
+
+  /* Anonymous end-of-game feedback. The learner authenticates only so that
+     (a) random visitors can't spam it and (b) they can edit their OWN answer
+     later — the link from learner to row lives on the student record as
+     lastFeedbackId and is NEVER returned to the admin. The feedback row itself
+     stores no identity. Mirrors cgg_submit_feedback. */
+  async submitFeedback(name, password, rating, comment) {
+    const s = this._verify(name, password);
+    if (!s) return { ok: false, error: "auth" };
+    const r = Math.max(1, Math.min(5, Math.round(Number(rating) || 0)));
+    if (r < 1) return { ok: false, error: "bad_rating" };
+    const text = String(comment || "").slice(0, 1000).trim();
+    const students = read(LS.students, {});
+    const stu = students[s.id];
+    const rows = read(LS.feedback, []);
+    const existingId = stu.lastFeedbackId || null;
+    const existing = existingId ? rows.find(x => x.id === existingId) : null;
+    if (existing) {                                  // edit their own answer in place
+      existing.rating = r; existing.comment = text; existing.updated_at = Date.now();
+    } else {
+      const id = "f" + (Math.max(0, ...rows.map(x => +String(x.id).slice(1) || 0)) + 1);
+      rows.push({ id, rating: r, comment: text, created_at: Date.now(), updated_at: Date.now() });
+      stu.lastFeedbackId = id;
+      write(LS.students, students);
+    }
+    write(LS.feedback, rows);
+    this._touch(s.id);
+    return { ok: true };
+  },
+
+  /* A learner reading back their OWN answer (to pre-fill the edit form). */
+  async getMyFeedback(name, password) {
+    const s = this._verify(name, password);
+    if (!s) return { ok: false, error: "auth" };
+    const students = read(LS.students, {});
+    const id = students[s.id] && students[s.id].lastFeedbackId;
+    const row = id ? read(LS.feedback, []).find(x => x.id === id) : null;
+    return row ? { ok: true, rating: row.rating, comment: row.comment } : { ok: true, rating: null, comment: "" };
+  },
+
+  /* The teacher's anonymous feedback report: the spread of faces + every
+     written comment, with NO names attached. Mirrors cgg_admin_feedback. */
+  async adminFeedback(adminPassword) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const rows = read(LS.feedback, []);
+    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let sum = 0;
+    rows.forEach(r => { const v = Math.max(1, Math.min(5, r.rating || 0)); counts[v]++; sum += v; });
+    const total = rows.length;
+    const comments = rows.filter(r => r.comment && r.comment.trim())
+      .map(r => ({ rating: r.rating, comment: r.comment, at: r.updated_at || r.created_at }))
+      .sort((a, b) => b.at - a.at);
+    const totalLearners = Object.keys(read(LS.students, {})).length;
+    return { ok: true, counts, total, average: total ? sum / total : null, comments, totalLearners };
   },
 
   /* Push notifications: there is no notification server in local/offline mode,

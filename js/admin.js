@@ -12,6 +12,7 @@ const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls)
 let adminPw = null;
 let data = null;
 let itemStats = null;
+let feedback = null;
 
 const INACTIVE_DAYS = 7;
 const fmtDate = ts => ts ? new Date(ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
@@ -48,6 +49,8 @@ async function load() {
   data = r;
   // item-level "hardest questions" report (best-effort; needs the Phase-2 RPC)
   itemStats = api.adminItemStats ? await api.adminItemStats(adminPw).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
+  // anonymous end-of-game feedback (best-effort; needs the Phase-6 RPC)
+  feedback = api.adminFeedback ? await api.adminFeedback(adminPw).catch(() => ({ ok: false })) : { ok: false };
   renderDashboard();
 }
 
@@ -124,9 +127,77 @@ function renderDashboard() {
   wrap.appendChild(table);
   root.appendChild(wrap);
 
+  renderFeedbackReport();
   renderItemReport();
 
   root.appendChild(el("p", "muted small center", "Passwords are hidden. If a learner forgets theirs, use “reset pw” to clear it so they pick a new one. Backend: " + BACKEND));
+}
+
+/* ---------- anonymous feedback report ---------- */
+const FB_FACES = [
+  { v: 1, emoji: "😭", label: "Hated it" },
+  { v: 2, emoji: "🙁", label: "Didn't like it" },
+  { v: 3, emoji: "😐", label: "It was OK" },
+  { v: 4, emoji: "🙂", label: "Liked it" },
+  { v: 5, emoji: "😍", label: "Loved it" },
+];
+function renderFeedbackReport() {
+  const section = el("div", "admin-report admin-feedback");
+  section.appendChild(el("h2", "report-title", "💬 How learners feel about the game (anonymous)"));
+
+  if (!feedback || !feedback.ok) {
+    section.appendChild(el("p", "muted small", "Anonymous feedback isn't available yet — this needs the Phase-6 database update (run supabase/phase6.sql)."));
+    root.appendChild(section);
+    return;
+  }
+  const total = feedback.total || 0;
+  if (!total) {
+    section.appendChild(el("p", "muted small", "No feedback yet. Once learners tap the faces, the spread and their comments show up here — with no names attached."));
+    root.appendChild(section);
+    return;
+  }
+
+  const counts = feedback.counts || {};
+  const learners = feedback.totalLearners || 0;
+  const avg = feedback.average != null ? Math.round(feedback.average * 10) / 10 : null;
+  const avgFace = avg ? FB_FACES[Math.min(4, Math.max(0, Math.round(avg) - 1))].emoji : "—";
+  section.appendChild(el("p", "muted small",
+    `${total} of ${learners} learner${learners === 1 ? "" : "s"} answered · average ${avg != null ? avg + " " + avgFace : "—"}. Honest and anonymous — you can't see who said what.`));
+
+  // face spread (a bar per face, width = share of responses)
+  const max = Math.max(1, ...FB_FACES.map(f => counts[f.v] || counts[String(f.v)] || 0));
+  const spread = el("div", "fb-spread");
+  FB_FACES.forEach(f => {
+    const c = counts[f.v] || counts[String(f.v)] || 0;
+    const pct = total ? Math.round((c / total) * 100) : 0;
+    const row = el("div", "fb-srow");
+    row.innerHTML = `
+      <span class="fb-face" title="${f.label}">${f.emoji}</span>
+      <span class="fb-bar"><i style="width:${Math.round((c / max) * 100)}%"></i></span>
+      <span class="fb-num">${c}<span class="muted"> · ${pct}%</span></span>`;
+    spread.appendChild(row);
+  });
+  section.appendChild(spread);
+
+  // written comments
+  const comments = feedback.comments || [];
+  if (comments.length) {
+    section.appendChild(el("h3", "fb-comments-title", `Written comments (${comments.length})`));
+    const list = el("div", "fb-comments");
+    comments.forEach(c => {
+      const face = FB_FACES.find(f => f.v === c.rating);
+      const item = el("div", "fb-comment");
+      item.innerHTML = `
+        <span class="fb-cface" title="${face ? face.label : ""}">${face ? face.emoji : "💬"}</span>
+        <div class="fb-cbody"><p>${escapeHtml(c.comment)}</p><span class="fb-cdate muted small">${fmtDate(c.at)}</span></div>`;
+      list.appendChild(item);
+    });
+    section.appendChild(list);
+  } else {
+    section.appendChild(el("p", "muted small", "No written comments yet — only face ratings so far."));
+  }
+
+  root.appendChild(section);
 }
 
 /* ---------- "hardest questions" report ---------- */

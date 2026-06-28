@@ -13,6 +13,7 @@ import { renderFixMistakes } from "./mistakes.js";
 import { renderDaily } from "./daily.js";
 import { registerServiceWorker } from "./pwa.js";
 import { renderInstall } from "./install.js";
+import { renderSurvey } from "./survey.js";
 
 const app = {
   root: null,
@@ -79,6 +80,7 @@ const app = {
       case "fix": renderFixMistakes(this, view); break;
       case "daily": renderDaily(this, view); break;
       case "install": renderInstall(this, view); break;
+      case "survey": renderSurvey(this, view); break;
       case "leaderboard": renderLeaderboard(this, view); break;
       default: renderHome(this, view);
     }
