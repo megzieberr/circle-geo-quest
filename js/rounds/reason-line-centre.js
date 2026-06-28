@@ -4,18 +4,21 @@
    exercise round (80% to pass). */
 const AC = "#f76707";
 
-/* Guiding hints — the two directions are converses, so each gets its own pair. */
+/* Guiding hints — the two directions are converses and learners mix them up:
+   they match the reason to what they're FINDING instead of to what's GIVEN.
+   So rung 1 always says: name the reason after the GIVEN. Rung 2 quotes the
+   exact option wording (matches i18n REASONS) so the right choice is obvious. */
 const HINT_PERP = [   // the 90° is GIVEN → conclude it bisects
-  { en: "The right angle at M is given — the line from O meets chord AB at 90°.",
-    af: "Die regte hoek by M is gegee — die lyn vanuit O ontmoet koord AB by 90°." },
-  { en: "A line from the centre perpendicular to a chord bisects it, so AM = MB.",
-    af: "'n Lyn vanuit die middelpunt loodreg op 'n koord halveer dit, dus AM = MB." },
+  { en: "First, what are you GIVEN? The 90° (OM ⊥ AB). Name the reason after the GIVEN — not after what you want to find.",
+    af: "Eerstens, wat is GEGEE? Die 90° (OM ⊥ AB). Noem die rede ná die GEGEWE — nie ná wat jy wil kry nie." },
+  { en: "Given the ⊥, use “line from centre ⊥ to chord” — it bisects the chord, so AM = MB.",
+    af: "Gegee die ⊥, gebruik “lyn vanuit mdpt ⊥ op koord” — dit halveer die koord, dus AM = MB." },
 ];
 const HINT_MID = [    // the midpoint is GIVEN → conclude it is perpendicular
-  { en: "You're told M is the midpoint of AB — so AM = MB is the given.",
-    af: "Daar word gesê M is die middelpunt van AB — dus is AM = MB die gegewe." },
-  { en: "A line from the centre to the midpoint of a chord is perpendicular to it, so OM ⊥ AB.",
-    af: "'n Lyn vanuit die middelpunt na die middelpunt van 'n koord is loodreg daarop, dus OM ⊥ AB." },
+  { en: "First, what are you GIVEN? The midpoint (AM = MB). Name the reason after the GIVEN — not after the answer.",
+    af: "Eerstens, wat is GEGEE? Die middelpunt (AM = MB). Noem die rede ná die GEGEWE — nie ná die antwoord nie." },
+  { en: "Given the midpoint, use “line from centre to midpt of chord” — it is perpendicular, so OM ⊥ AB.",
+    af: "Gegee die middelpunt, gebruik “lyn vanuit mdpt na mdpt van koord” — dit is loodreg, dus OM ⊥ AB." },
 ];
 
 const D_PERP = { O: true, pts: { A: 205, B: 335 }, mid: [{ name: "M", of: ["A", "B"] }],
