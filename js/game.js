@@ -12,6 +12,7 @@ import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
+import { submitRoundReliable } from "./sync.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -407,15 +408,19 @@ export function renderPlay(app, host, params) {
       next.disabled = true;
       const frac = state.total ? state.score / state.total : 0;
       const sess = getSession();
-      let res = { ok: false };
-      try {
-        res = await api.submitRound(sess.name, sess.password, round.id, {
-          score: frac, xpGained: state.xp, total: state.total, correct: state.correct,
-        });
-      } catch { /* offline — still show local results */ }
+      // Retry on a dropped connection; if it still can't reach the server the
+      // pass is queued (sync.js) and `res.ok` is false, so results won't let the
+      // learner skip ahead on a round the server never recorded.
+      const res = await submitRoundReliable(sess.name, sess.password, round.id, {
+        score: frac, xpGained: state.xp, total: state.total, correct: state.correct,
+      });
       try { await api.logItems(sess.name, sess.password, round.id, items); } catch { /* analytics is best-effort */ }
       await app.refreshState();
-      app.go("results", { roundId: round.id, correct: state.correct, total: state.total, xp: state.xp, frac, badgeEarned: !!(res && res.badgeEarned), alreadyPassed });
+      app.go("results", {
+        roundId: round.id, correct: state.correct, total: state.total, xp: state.xp, frac,
+        badgeEarned: !!(res && res.badgeEarned), alreadyPassed,
+        saved: !!(res && res.ok),       // false → pass is only queued locally, not yet on the server
+      });
     }
   });
 
@@ -466,20 +471,36 @@ export function renderResults(app, host, params) {
       </div>`;
   }
 
-  // was this round passed (so the next round is unlocked)? if so, offer a
-  // straight "Go to next round" so they don't have to hunt for it on the map.
   const frac = (params.frac != null) ? params.frac : (params.total ? params.correct / params.total : 0);
   const passed = params.discovery || params.alreadyPassed || frac >= CONFIG.passThreshold;
-  const ridx = ROUNDS.findIndex(x => x.id === round.id);
-  const nextRound = (ridx >= 0 && ridx + 1 < ROUNDS.length) ? ROUNDS[ridx + 1] : null;
-  const showNext = passed && !!nextRound;
+  // Only advance once the SERVER has the pass. The graded path sets saved:false
+  // when the submit could only be queued — advancing on that is exactly what let
+  // an unsaved round get skipped before.
+  const saved = params.saved !== false;
+  // Where "next" goes: the first round that still NEEDS playing, read from the
+  // freshly-refreshed server progress — never a blind index+1. So a learner is
+  // never sent back into a round they've already cleared (e.g. after re-clearing
+  // an earlier gap they jump straight to their real frontier, not the round after).
+  const nextRound = nextRoundToPlay(app.state.progress || {});
+  const showNext = saved && passed && !!nextRound && nextRound.id !== round.id;
 
   const actions = screen.querySelector(".result-actions");
   const mkBtn = (label, primary, fn) => { const b = el("button", "btn " + (primary ? "primary" : "ghost"), label); b.addEventListener("click", fn); actions.appendChild(b); };
   const goNext = () => app.go(screenFor(nextRound), { roundId: nextRound.id });
   const goHome = () => app.go("home");
   const goRetry = () => app.go(screenFor(round), { roundId: round.id });
-  if (showNext) {
+  if (!saved && !params.discovery) {
+    // The pass is only queued locally — be honest and don't let them move on as
+    // if it counted. It will sync automatically; retry is the clearest action.
+    const warn = el("div", "result-msg warn");
+    warn.innerHTML = "📶 " + tx({
+      en: "We couldn't reach the server, so this round isn't saved yet. Your progress is kept and will sync automatically — please retry or check your connection before moving on.",
+      af: "Ons kon nie die bediener bereik nie, so hierdie rondte is nog nie gestoor nie. Jou vordering word behou en sal outomaties sinkroniseer — probeer asseblief weer of kontroleer jou verbinding voordat jy aangaan.",
+    });
+    screen.querySelector(".result-card").insertBefore(warn, actions);
+    mkBtn(t("tryAgain"), true, goRetry);
+    mkBtn(t("backHome"), false, goHome);
+  } else if (showNext) {
     mkBtn(t("nextRound"), true, goNext);
     mkBtn(t("backHome"), false, goHome);
     if (!params.discovery) mkBtn(t("tryAgain"), false, goRetry);

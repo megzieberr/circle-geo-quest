@@ -16,6 +16,7 @@
    ============================================================ */
 import { ROUND_BY_ID } from "./rounds/index.js";
 import { api } from "./api.js";
+import { submitRoundReliable } from "./sync.js";
 import { getSession } from "./session.js";
 import { t, tx } from "./i18n.js";
 import { el, clear } from "./ui.js";
@@ -74,10 +75,8 @@ export function renderCutscene(app, host, params) {
 
   async function finish() {
     if (!alreadyDone) {
-      try {
-        const s = getSession();
-        await api.submitRound(s.name, s.password, round.id, { score: 1, xpGained: 0, total: scenes.length, correct: scenes.length });
-      } catch { /* offline */ }
+      const s = getSession();
+      await submitRoundReliable(s.name, s.password, round.id, { score: 1, xpGained: 0, total: scenes.length, correct: scenes.length });
     }
     await app.refreshState();
     app.go("results", { roundId: round.id, discovery: true, correct: scenes.length, total: scenes.length, xp: 0, frac: 1, badgeEarned: false, alreadyPassed: alreadyDone });

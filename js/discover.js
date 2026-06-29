@@ -24,6 +24,7 @@
    ============================================================ */
 import { ROUND_BY_ID } from "./rounds/index.js";
 import { api } from "./api.js";
+import { submitRoundReliable } from "./sync.js";
 import { getSession } from "./session.js";
 import { t, tx, reason as reasonText, REASONS, word as wordText } from "./i18n.js";
 import { el, clear, mount } from "./ui.js";
@@ -70,10 +71,8 @@ export function renderDiscover(app, host, params) {
     bar.querySelector("i").style.width = "100%";
     let res = { ok: false };
     if (!alreadyDone) {
-      try {
-        const s = getSession();
-        res = await api.submitRound(s.name, s.password, round.id, { score: 1, xpGained: 0, total: panels.length, correct: panels.length });
-      } catch { /* offline — still let them through locally */ }
+      const s = getSession();
+      res = await submitRoundReliable(s.name, s.password, round.id, { score: 1, xpGained: 0, total: panels.length, correct: panels.length });
     }
     await app.refreshState();
     app.go("results", { roundId: round.id, discovery: true, correct: panels.length, total: panels.length, xp: 0, frac: 1, badgeEarned: !!(res && res.badgeEarned), alreadyPassed: alreadyDone });

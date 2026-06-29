@@ -14,6 +14,7 @@ import { renderDaily } from "./daily.js";
 import { registerServiceWorker } from "./pwa.js";
 import { renderInstall } from "./install.js";
 import { renderSurvey } from "./survey.js";
+import { flushPendingSubmits } from "./sync.js";
 
 const app = {
   root: null,
@@ -39,10 +40,22 @@ const app = {
     }
 
     if (isLoggedIn()) {
+      // Push any round passes that were queued offline last session BEFORE we
+      // pull state, so the home map reflects them and no pass is left stranded.
+      try { await flushPendingSubmits(); } catch { /* will retry next boot */ }
       const ok = await this.refreshState();
       if (!ok) clearSession();
     }
     this.go(isLoggedIn() ? "home" : "login");
+
+    // When the device regains connectivity, flush queued passes and refresh.
+    window.addEventListener("online", async () => {
+      if (PREVIEW || !isLoggedIn()) return;
+      try {
+        const synced = await flushPendingSubmits();
+        if (synced) { await this.refreshState(); this.render(); }
+      } catch { /* stays queued for next time */ }
+    });
   },
 
   async refreshState() {
