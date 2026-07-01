@@ -207,6 +207,31 @@ svg.diag .hit.locked{pointer-events:none;}
 .fb-step .fb-s{font-weight:600; font-variant-numeric:tabular-nums;}
 .fb-step .fb-sr{font-size:.76rem; color:var(--ink-soft); font-style:italic; text-align:right; flex:none; max-width:52%;}
 
+/* ---------- Boost mode (struggling-learner support) ---------- */
+.boost-banner{display:flex; gap:12px; align-items:center; padding:12px 14px; margin-bottom:10px;
+  background:linear-gradient(120deg,#fff8e6,#fff); border-color:#f7b32b;}
+.boost-banner .boost-icon{font-size:1.7rem; line-height:1;}
+.boost-banner b{font-size:.95rem;}
+.boost-banner p{margin:2px 0 0; font-size:.85rem; color:var(--ink-soft);}
+.q-second{margin:10px 0 0; padding:9px 12px; border-radius:11px; font-size:.9rem; font-weight:600;
+  background:#fff8e6; border:1.5px dashed #f7b32b; color:var(--ink);}
+.guide-card{padding:0; margin-bottom:10px; overflow:hidden;}
+.guide-card summary{cursor:pointer; list-style:none; padding:11px 14px; font-weight:700; font-size:.9rem;}
+.guide-card summary::-webkit-details-marker{display:none;}
+.guide-card summary:hover{background:#faf7ef;}
+.guide-card[open] summary{border-bottom:1.5px dashed rgba(37,42,74,.25);}
+.gd-body{padding:10px 14px 12px;}
+.gd-row{display:flex; flex-direction:column; gap:2px; padding:8px 10px; border:1.5px solid var(--ink);
+  border-radius:11px; margin-bottom:8px; background:#fff; font-size:.88rem;}
+.gd-cell.gd-given{color:#0ea271;}
+.gd-cell.gd-reason i{color:var(--ink-soft);}
+.gd-tip{margin:4px 0 0; font-size:.85rem; font-weight:700;}
+.result-msg.encourage{background:#fff8e6; border:1.5px dashed #f7b32b; color:var(--ink);
+  font-size:.9rem; line-height:1.55;}
+.result-msg.comeback{background:#e8f8f1; border:1.5px solid #0ea271; font-weight:600;}
+.pill.comeback{background:#e8f8f1; border-color:#0ea271;}
+.opt.burned{opacity:.45; text-decoration:line-through;}
+
 /* play footer */
 .play-foot{position:sticky; bottom:0; background:linear-gradient(transparent, var(--papier) 30%);
   padding-top:10px; display:flex; flex-direction:column; gap:8px;}

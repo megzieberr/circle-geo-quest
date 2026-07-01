@@ -69,6 +69,9 @@ function renderDashboard() {
   const preview = el("button", "btn primary small", "👁️ Preview learner view");
   preview.title = "Open the game as a learner with every round unlocked — nothing is saved";
   preview.addEventListener("click", () => window.open("index.html?preview=1", "_blank", "noopener"));
+  const previewBoost = el("button", "btn ghost small", "🛟 Preview Boost mode");
+  previewBoost.title = "Learner preview with Boost mode forced on: open hints + second chances, as a stuck learner sees it";
+  previewBoost.addEventListener("click", () => window.open("index.html?preview=1&boost=1", "_blank", "noopener"));
   const add = el("button", "btn ghost small", "＋ Add learner");
   add.addEventListener("click", addLearner);
   const csv = el("button", "btn ghost small", "⬇ Export CSV");
@@ -79,17 +82,50 @@ function renderDashboard() {
   refresh.addEventListener("click", load);
   const out = el("button", "btn ghost small", "Log out");
   out.addEventListener("click", () => { adminPw = null; renderLogin(); });
-  [preview, add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
+  [preview, previewBoost, add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
   head.appendChild(tools);
   root.appendChild(head);
+
+  // "Needs a hand": learners whose CURRENT round has 2+ failed attempts. The
+  // frontier is the first unpassed round (everything before it is passed), so
+  // repeated attempts there = genuinely stuck, not just taking a break.
+  const stuck = rows.map(r => {
+    const rd = ROUNDS.find(x => !(r.rounds && r.rounds[x.id] && r.rounds[x.id].passed));
+    const p = rd && r.rounds ? r.rounds[rd.id] : null;
+    return (rd && p && (p.attempts || 0) >= 2) ? { r, rd, p } : null;
+  }).filter(Boolean).sort((a, b) => (b.p.attempts || 0) - (a.p.attempts || 0));
 
   // summary
   const sum = el("div", "admin-summary");
   sum.innerHTML = `
     <div class="asum"><b>${rows.length}</b><span>learners</span></div>
     <div class="asum"><b>${totalPlayed}</b><span>have played</span></div>
-    <div class="asum ${inactive ? "warn" : ""}"><b>${inactive}</b><span>inactive ${inactiveDays}d+</span></div>`;
+    <div class="asum ${inactive ? "warn" : ""}"><b>${inactive}</b><span>inactive ${inactiveDays}d+</span></div>
+    <div class="asum ${stuck.length ? "warn" : ""}"><b>${stuck.length}</b><span>stuck (2+ tries)</span></div>`;
   root.appendChild(sum);
+
+  if (stuck.length) {
+    const sec = el("div", "card stuck-card");
+    sec.innerHTML = `<h2>🛟 Needs a hand</h2>
+      <p class="muted small">Stuck on their current round after 2+ tries. From the 3rd try the game switches them
+      to <b>Boost mode</b> automatically (hints open by themselves + a second chance per question, half credit).</p>`;
+    const tbl = el("table", "admin-table stuck-table");
+    tbl.innerHTML = `<thead><tr><th>Name</th><th>Stuck on</th><th>Tries</th><th>Best</th><th>Last active</th></tr></thead>`;
+    const tb = el("tbody");
+    stuck.forEach(({ r, rd, p }) => {
+      const tr = el("tr");
+      tr.innerHTML = `
+        <td class="name">${r.name}</td>
+        <td>${rd.n}. ${rd.title.en}</td>
+        <td class="num">${p.attempts}</td>
+        <td class="num">${Math.round((p.best_score || 0) * 100)}%</td>
+        <td>${fmtDate(r.lastActive)}</td>`;
+      tb.appendChild(tr);
+    });
+    tbl.appendChild(tb);
+    sec.appendChild(tbl);
+    root.appendChild(sec);
+  }
 
   // table
   const wrap = el("div", "table-wrap");

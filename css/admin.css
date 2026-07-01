@@ -69,3 +69,10 @@
 .fb-comment .fb-cbody{min-width:0;}
 .fb-comment .fb-cbody p{margin:0 0 4px; line-height:1.4; overflow-wrap:anywhere;}
 .fb-cdate{font-size:.72rem;}
+
+/* ---------- "Needs a hand" (stuck learners) ---------- */
+.stuck-card{margin:0 0 18px; padding:14px 16px; border-color:#f7b32b;}
+.stuck-card h2{margin:0 0 4px; font-size:1.15rem;}
+.stuck-card .muted{margin:0 0 10px;}
+.stuck-table{min-width:520px;}
+.stuck-table td.num{font-weight:700;}

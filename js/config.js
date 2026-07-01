@@ -11,6 +11,9 @@ export const CONFIG = {
   dailyXp: 25,             // flat XP for completing the Daily Challenge (server grants this, once per local day)
   // round pass rule
   passThreshold: 0.8,      // 80% correct (first-try) to pass a round and earn its badge
+  // struggling-learner support ("Boost mode")
+  rescueAfterFails: 2,     // after this many failed attempts, replays get open hints + second chances
+  comebackBonus: 40,       // extra XP for finally passing a round on the 3rd+ attempt
   // admin / participation
   inactiveDays: 7,         // learners not active in this many days get flagged in admin
   // weekly leaderboard resets every Monday 00:00 (handled server-side)

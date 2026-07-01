@@ -56,6 +56,20 @@ export const round = {
   blurb: { en: "Spot whether the 90° or the midpoint is given, then pick the reason.", af: "Herken of die 90° of die middelpunt gegee is, kies dan die rede." },
   reasonCode: "centrePerpChord",
   questionsPerPlay: 10,
+  /* the "Which reason?" guide card — the item stats show this round's misses
+     are ALL the converse mix-up, so the two directions sit side by side */
+  guide: {
+    rows: [
+      { given:    { en: "OM ⊥ AB  (the 90° is marked)", af: "OM ⊥ AB  (die 90° is gemerk)" },
+        conclude: { en: "AM = MB  (it bisects the chord)", af: "AM = MB  (dit halveer die koord)" },
+        code: "centrePerpChord" },
+      { given:    { en: "AM = MB  (M is the midpoint)", af: "AM = MB  (M is die middelpunt)" },
+        conclude: { en: "OM ⊥ AB  (it is perpendicular)", af: "OM ⊥ AB  (dit is loodreg)" },
+        code: "centreMidChord" },
+    ],
+    tip: { en: "The reason names what you were GIVEN — never what you are trying to find.",
+           af: "Die rede noem wat GEGEE is — nooit wat jy probeer kry nie." },
+  },
   questions: [
     perpQ("rl1", D_PERP), midQ("rl2", D_MID), perpQ("rl3", D_PERP2), midQ("rl4", D_MID2),
     perpQ("rl5", D_PERP), midQ("rl6", D_MID), perpQ("rl7", D_PERP2), midQ("rl8", D_MID2),

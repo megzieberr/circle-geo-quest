@@ -1,10 +1,17 @@
 /* ============================================================
    QUESTION COMPONENTS  (the reusable answer toolkit)
    ------------------------------------------------------------
-   mountQuestion(container, q, onAnswered)
+   mountQuestion(container, q, onAnswered, assist)
      renders one question, handles interaction, locks after the
      first commit, reveals the correct answer + reason inline,
      and calls onAnswered(isCorrect) exactly once.
+
+   assist (all optional — used by "Boost mode" for struggling learners):
+     autoHint     open the first hint rung automatically on mount
+     secondChance a wrong first pick isn't final: it greys out with a
+                  nudge (the question's misconception if it has one) and
+                  the learner picks again for HALF credit. Yes/no
+                  questions are excluded (the second pick would be free).
 
    Supported q.type:
      "mc"      multiple choice (four options, one correct)
@@ -31,7 +38,7 @@ function svg(tag, attrs) {
   return e;
 }
 
-export function mountQuestion(container, q, onAnswered) {
+export function mountQuestion(container, q, onAnswered, assist = {}) {
   container.innerHTML = "";
   const root = el("div", "q");
   const accent = q.accent || "#4263eb";
@@ -56,19 +63,35 @@ export function mountQuestion(container, q, onAnswered) {
 
   let answered = false;
   let hintWrap = null;                  // the "Stuck? hint" control, hidden once answered
+  // Second-chance (Boost mode) state: a wrong FIRST pick burns the chance and
+  // shows a nudge instead of locking; the SECOND pick is final. `firstWrong`
+  // remembers the first pick so the teacher's item stats still log the real
+  // misconception (the question counts as a first-try miss either way).
+  let chanceUsed = false;
+  let firstWrong = null;
+  const nudgeEl = el("div", "q-second");
+  nudgeEl.hidden = true;
+  function burnChance(chosenLabel, misconception) {
+    chanceUsed = true;
+    firstWrong = chosenLabel;
+    nudgeEl.hidden = false;
+    nudgeEl.innerHTML = `💡 ${misconception ? tx(misconception) : t("secondChance")}`;
+  }
   // `misconception` (optional {en,af}) is a targeted nudge for ONE wrong answer:
   // when a learner picks that specific distractor, we lead the feedback with it,
   // so even learners who never tap a hint get the misconception addressed.
-  function reveal(isCorrect, answerText, reasonText, chosen, misconception) {
+  // `half` = correct on the second chance → half credit, friendly green feedback.
+  function reveal(isCorrect, answerText, reasonText, chosen, misconception, half) {
     if (answered) return;
     answered = true;
     if (svgNode) svgNode.querySelectorAll(".q-hl").forEach(n => n.remove());   // clear the hint pulse
     if (hintWrap) hintWrap.hidden = true;
+    nudgeEl.hidden = true;
     feedback.hidden = false;
-    feedback.classList.add(isCorrect ? "good" : "bad");
-    const head = isCorrect ? t("correct") : t("notQuite");
-    let html = `<div class="fb-head">${isCorrect ? "✓" : "✗"} ${head}</div>`;
-    if (!isCorrect && misconception) html += `<div class="fb-nudge">💡 ${tx(misconception)}</div>`;
+    feedback.classList.add((isCorrect || half) ? "good" : "bad");
+    const head = half ? t("gotItSecond") : (isCorrect ? t("correct") : t("notQuite"));
+    let html = `<div class="fb-head">${(isCorrect || half) ? "✓" : "✗"} ${head}</div>`;
+    if (!isCorrect && !half && misconception) html += `<div class="fb-nudge">💡 ${tx(misconception)}</div>`;
     if (answerText) html += `<div class="fb-ans"><b>${t("theAnswer")}:</b> ${answerText}</div>`;
     if (q.solution && q.solution.length) {
       // multi-step working: each line is statement + (reason)
@@ -80,7 +103,9 @@ export function mountQuestion(container, q, onAnswered) {
       html += `<div class="fb-reason"><b>${t("reasonLabel")}:</b> <i>${reasonText}</i></div>`;
     }
     feedback.innerHTML = html;
-    onAnswered(isCorrect, isCorrect ? 1 : 0, chosen);
+    // half credit reports isCorrect=false so the game's partial-credit path
+    // (half XP, streak reset) applies; the first wrong pick is what gets logged.
+    onAnswered(isCorrect && !half, half ? 0.5 : (isCorrect ? 1 : 0), firstWrong || chosen);
   }
 
   // resolve a reason that may be a code (from REASONS) or an English phrase
@@ -130,17 +155,26 @@ export function mountQuestion(container, q, onAnswered) {
       const b = el("button", "opt", o.label);
       b.addEventListener("click", () => {
         if (answered) return;
+        // Boost mode: the first wrong pick greys out with a nudge instead of
+        // ending the question; the next pick is final (correct = half credit).
+        if (assist.secondChance && !chanceUsed && !o.correct) {
+          b.disabled = true;
+          b.classList.add("is-wrong", "burned");
+          burnChance(o.label, o.misc);
+          return;
+        }
         opts.querySelectorAll(".opt").forEach(x => {
           x.disabled = true;
           const isC = list[[...opts.children].indexOf(x)].correct;
           if (isC) x.classList.add("is-correct");
         });
         b.classList.add(o.correct ? "is-correct" : "is-wrong");
-        reveal(o.correct, answerText(), explainReason(), o.label, o.misc);
+        reveal(o.correct, answerText(), explainReason(), o.label, o.misc, o.correct && chanceUsed);
       });
       opts.appendChild(b);
     });
     root.appendChild(opts);
+    root.appendChild(nudgeEl);
   }
 
   else if (q.type === "yesno") {
@@ -173,6 +207,13 @@ export function mountQuestion(container, q, onAnswered) {
       const choose = () => {
         if (answered) return;
         const correct = tg.id === q.tap.correctId;
+        // Boost mode: the first wrong tap locks that target with a nudge; the
+        // next tap is final (correct = half credit).
+        if (assist.secondChance && !chanceUsed && !correct) {
+          node.classList.add("locked", "show-wrong");
+          burnChance(tg.id, null);
+          return;
+        }
         // reveal the correct target as well
         targets.forEach(o => {
           const n = svgNode.querySelector(`.hit[data-id="${CSS.escape(o.id)}"]`);
@@ -181,18 +222,26 @@ export function mountQuestion(container, q, onAnswered) {
           if (o.id === q.tap.correctId) n.classList.add("show-correct");
         });
         node.classList.add(correct ? "show-correct" : "show-wrong");
-        reveal(correct, answerText(), explainReason(), tg.id);
+        reveal(correct, answerText(), explainReason(), tg.id, null, correct && chanceUsed);
       };
       node.addEventListener("click", choose);
       node.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(); } });
       svgNode.appendChild(node);
     });
+    root.appendChild(nudgeEl);
   }
 
   hintWrap = buildHintBar(buildHintSteps(), () => { if (geo && svgNode) highlightHintTargets(q, geo, svgNode, accent); });
   if (hintWrap) root.appendChild(hintWrap);
   root.appendChild(feedback);
   container.appendChild(root);
+
+  // Boost mode: open the first hint rung automatically, so the scaffold is in
+  // front of the learner without them having to admit they need it.
+  if (assist.autoHint && hintWrap) {
+    const btn = hintWrap.querySelector(".hint-btn");
+    if (btn) btn.click();
+  }
 }
 
 /* ------------------------------------------------------------

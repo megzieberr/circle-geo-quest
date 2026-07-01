@@ -161,6 +161,26 @@ const UI = {
   anotherHint:    { en: "Another hint", af: "Nog 'n wenk" },
   hintThink:      { en: "Think about", af: "Dink aan" },
   hintNoMore:     { en: "That's every hint — give it your best shot!", af: "Dis al die wenke — gee dit jou beste poging!" },
+
+  // Boost mode (struggling-learner support) + comeback
+  boostTitle:     { en: "Boost mode is ON", af: "Hupstoot-modus is AAN" },
+  boostBlurb:     { en: "Hints open by themselves and every question gives you a second chance. You've got this!", af: "Wenke maak vanself oop en elke vraag gee jou 'n tweede kans. Jy het dit!" },
+  secondChance:   { en: "Not that one — take another look. One more try!", af: "Nie daardie een nie — kyk weer mooi. Nog een probeerslag!" },
+  gotItSecond:    { en: "Got it on the second try (½ XP)", af: "Reg met die tweede probeerslag (½ XP)" },
+  seeAgain:       { en: "See the lesson again", af: "Kyk weer na die les" },
+  failEncourage:  { en: "Tough round — but every try makes you stronger. You're closer than you think.", af: "Moeilike rondte — maar elke probeerslag maak jou sterker. Jy is nader as wat jy dink." },
+  bestYet:        { en: "That's your BEST score on this round yet!", af: "Dis jou BESTE telling nog op hierdie rondte!" },
+  boostReady:     { en: "Boost mode will be on when you try again: hints open by themselves and every question gives a second chance.", af: "Hupstoot-modus sal aan wees as jy weer probeer: wenke maak vanself oop en elke vraag gee 'n tweede kans." },
+  tryAgainBoost:  { en: "Try again with Boost", af: "Probeer weer met Hupstoot" },
+  comebackTitle:  { en: "You never gave up!", af: "Jy het nooit opgegee nie!" },
+  comebackBlurb:  { en: "Passed after {n} tries — that's real Grand Master grit.", af: "Geslaag ná {n} probeerslae — dis ware Grootmeester-deursettingsvermoë." },
+  comebackBonus:  { en: "comeback bonus", af: "terugkeer-bonus" },
+
+  // "Which reason?" guide card (rounds that declare a `guide`)
+  guideBtn:       { en: "🧭 Not sure which reason? Open the guide", af: "🧭 Onseker watter rede? Maak die gids oop" },
+  guideGiven:     { en: "Given", af: "Gegee" },
+  guideConclude:  { en: "Conclude", af: "Lei af" },
+  guideReason:    { en: "Reason", af: "Rede" },
   hintUsedNote:   { en: "Hints are free here — use them to learn, not to lose marks.", af: "Wenke is gratis hier — gebruik dit om te leer." },
 
   // fix-my-mistakes

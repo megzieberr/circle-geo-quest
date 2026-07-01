@@ -26,6 +26,20 @@ export const round = {
   blurb: { en: "Perpendicular ↔ midpoint, and Pythagoras on the half-chord.", af: "Loodreg ↔ middelpunt, en Pythagoras op die halfkoord." },
   reasonCode: "centrePerpChord",
   questionsPerPlay: 10,
+  /* same "Which reason?" guide as the rline round — the item stats show the
+     given-vs-conclusion mix-up follows learners into this round too */
+  guide: {
+    rows: [
+      { given:    { en: "OM ⊥ AB  (the 90° is marked)", af: "OM ⊥ AB  (die 90° is gemerk)" },
+        conclude: { en: "AM = MB  (it bisects the chord)", af: "AM = MB  (dit halveer die koord)" },
+        code: "centrePerpChord" },
+      { given:    { en: "AM = MB  (M is the midpoint)", af: "AM = MB  (M is die middelpunt)" },
+        conclude: { en: "OM ⊥ AB  (it is perpendicular)", af: "OM ⊥ AB  (dit is loodreg)" },
+        code: "centreMidChord" },
+    ],
+    tip: { en: "The reason names what you were GIVEN — never what you are trying to find.",
+           af: "Die rede noem wat GEGEE is — nooit wat jy probeer kry nie." },
+  },
   // length questions: Pythagoras on the half-chord (concept questions override below)
   defaultHints: [
     { en: "OM ⊥ AB means M is the midpoint, so AM is HALF of AB. That makes triangle OMA right-angled at M.",

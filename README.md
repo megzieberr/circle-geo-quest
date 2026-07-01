@@ -176,6 +176,27 @@ exterior angle · 9. Tangent ⊥ radius · 10. Tan-chord theorem (your existing 
 Each round unlocks when the previous is passed (80%). Reasons are phrased as they appear
 in CAPS exams, in English and Afrikaans (toggle in the top bar).
 
+### Boost mode (support for stuck learners)
+
+A learner failing the same round over and over gets scaffolding automatically —
+without ever having to ask for help:
+
+- **After 2 failed attempts**, replays of that round switch to **Boost mode**:
+  the first hint opens by itself on every question, and a wrong first pick isn't
+  final — it greys out with a targeted nudge and the learner picks again for
+  **half credit**. (Yes/no questions are excluded — the second pick would be free.)
+- From the second fail, the results screen adds encouragement, a **"See the
+  lesson again"** button back to that theorem's discovery round, and a note that
+  Boost is waiting.
+- Finally passing on the 3rd+ attempt earns a **comeback bonus** (+40 XP) and a
+  "You never gave up!" celebration.
+- Rounds that drill *which reason to pick* (rounds 5 and 7) also carry a
+  collapsible **"Which reason?" guide** — a given → conclude → reason table —
+  open by default in Boost mode.
+- The admin dashboard shows a **"Needs a hand"** panel (learners with 2+ tries
+  on their current round) and a **Preview Boost mode** button. Teachers can also
+  force it on any preview with `&boost=1` in the URL.
+
 ---
 
 ## Anonymous feedback survey

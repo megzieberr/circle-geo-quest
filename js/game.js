@@ -309,6 +309,34 @@ function remindersCard(app) {
   return card;
 }
 
+/* the learning round (cutscene/discovery) closest BEFORE a graded round —
+   where "See the lesson again" goes when a learner keeps failing it */
+function nearestLesson(round) {
+  const i = ROUNDS.findIndex(r => r.id === round.id);
+  for (let k = i - 1; k >= 0; k--) {
+    if (ROUNDS[k].kind === "cutscene" || ROUNDS[k].kind === "discover") return ROUNDS[k];
+  }
+  return null;
+}
+
+/* collapsible "Which reason?" guide, for rounds that declare a `guide`.
+   Open by default in Boost mode; otherwise collapsed behind an inviting label. */
+function guideCard(round, open) {
+  if (!round.guide || !Array.isArray(round.guide.rows)) return null;
+  const d = document.createElement("details");
+  d.className = "card guide-card";
+  if (open) d.open = true;
+  const rows = round.guide.rows.map(r => `
+    <div class="gd-row">
+      <span class="gd-cell gd-given"><b>${t("guideGiven")}:</b> ${tx(r.given)}</span>
+      <span class="gd-cell"><b>${t("guideConclude")}:</b> ${tx(r.conclude)}</span>
+      <span class="gd-cell gd-reason"><b>${t("guideReason")}:</b> <i>${reason(r.code)}</i></span>
+    </div>`).join("");
+  d.innerHTML = `<summary>${t("guideBtn")}</summary>
+    <div class="gd-body">${rows}${round.guide.tip ? `<p class="gd-tip">⭐ ${tx(round.guide.tip)}</p>` : ""}</div>`;
+  return d;
+}
+
 /* ---------------- PLAY LOOP (graded exercise rounds) ---------------- */
 export function renderPlay(app, host, params) {
   const round = ROUND_BY_ID[params.roundId];
@@ -317,6 +345,14 @@ export function renderPlay(app, host, params) {
   // anti-farming: once a round is passed, replays award no XP (badge already won).
   const prev = (app.state && app.state.progress) ? app.state.progress[round.id] : null;
   const alreadyPassed = !!(prev && prev.passed);
+
+  // Boost mode — the rescue ramp for a learner failing the same round over and
+  // over: hints open automatically and every question gives a second chance
+  // (half credit). Kicks in after `rescueAfterFails` failed attempts. Teachers
+  // can preview it any time with ?boost=1.
+  const failedTries = (!alreadyPassed && prev) ? (prev.attempts || 0) : 0;
+  const forceBoost = (() => { try { return new URLSearchParams(location.search).get("boost") === "1"; } catch { return false; } })();
+  const boost = forceBoost || (!alreadyPassed && failedTries >= CONFIG.rescueAfterFails);
 
   const n = round.questionsPerPlay || round.questions.length;
   const set = shuffled(round.questions).slice(0, n).map(q => {
@@ -346,6 +382,9 @@ export function renderPlay(app, host, params) {
   footer.appendChild(xpline); footer.appendChild(next);
   mount(screen, top, bar, qhost, footer);
   if (alreadyPassed) screen.insertBefore(el("div", "card replay-note", "🔁 " + t("replayNoXp")), qhost);
+  if (boost) screen.insertBefore(el("div", "card boost-banner", `<span class="boost-icon">🛟</span><div><b>${t("boostTitle")}</b><p>${t("boostBlurb")}</p></div>`), qhost);
+  const guide = guideCard(round, boost);
+  if (guide) screen.insertBefore(guide, qhost);
   host.appendChild(screen);
 
   function showQuestion() {
@@ -398,7 +437,7 @@ export function renderPlay(app, host, params) {
       next.hidden = false;
       next.textContent = state.i + 1 < state.total ? t("next") : t("finish");
       next.focus();
-    });
+    }, { autoHint: boost, secondChance: boost });
   }
 
   next.addEventListener("click", async () => {
@@ -407,6 +446,10 @@ export function renderPlay(app, host, params) {
     else {
       next.disabled = true;
       const frac = state.total ? state.score / state.total : 0;
+      // Comeback: finally passing on the 3rd+ attempt earns a bonus on top —
+      // persistence is the exact behaviour we want to celebrate.
+      const comeback = !alreadyPassed && failedTries >= CONFIG.rescueAfterFails && frac >= CONFIG.passThreshold;
+      if (comeback) state.xp += CONFIG.comebackBonus;
       const sess = getSession();
       // Retry on a dropped connection; if it still can't reach the server the
       // pass is queued (sync.js) and `res.ok` is false, so results won't let the
@@ -419,6 +462,7 @@ export function renderPlay(app, host, params) {
       app.go("results", {
         roundId: round.id, correct: state.correct, total: state.total, xp: state.xp, frac,
         badgeEarned: !!(res && res.badgeEarned), alreadyPassed,
+        comeback, tries: failedTries + 1, prevBest: prev ? (prev.best_score || 0) : 0,
         saved: !!(res && res.ok),       // false → pass is only queued locally, not yet on the server
       });
     }
@@ -457,13 +501,18 @@ export function renderResults(app, host, params) {
     const frac = (params.frac != null) ? params.frac : (params.total ? params.correct / params.total : 0);
     const passed = frac >= CONFIG.passThreshold;
     const pct = Math.round(frac * 100);
+    const comeback = passed && params.comeback;
+    const comebackPill = comeback ? `<span class="pill comeback">💪 +${CONFIG.comebackBonus} ${t("comebackBonus")}</span>` : "";
+    const comebackMsg = comeback
+      ? `<div class="result-msg comeback">🏅 <b>${t("comebackTitle")}</b> ${t("comebackBlurb").replace("{n}", params.tries)}</div>` : "";
     screen.innerHTML = `
       <div class="result-card card">
-        <div class="result-emoji">${passed ? "🎉" : "💪"}</div>
+        <div class="result-emoji">${comeback ? "🏅" : (passed ? "🎉" : "💪")}</div>
         <h1>${t("roundComplete")}</h1>
         <div class="big-score">${pct}%</div>
         <p class="muted">${t("youScored")} ${params.correct}/${params.total}</p>
-        <div class="result-pills"><span class="pill xp">★ +${params.xp} ${t("xpEarned")}</span></div>
+        <div class="result-pills"><span class="pill xp">★ +${params.xp} ${t("xpEarned")}</span>${comebackPill}</div>
+        ${comebackMsg}
         <div class="result-msg ${passed ? "good" : "warn"}">${passed ? t("roundPassed") : t("notPassedYet")}</div>
         ${params.alreadyPassed ? `<div class="result-msg note">🔁 ${t("replayNoXpMsg")}</div>` : ""}
         ${groupPop}
@@ -505,7 +554,23 @@ export function renderResults(app, host, params) {
     mkBtn(t("backHome"), false, goHome);
     if (!params.discovery) mkBtn(t("tryAgain"), false, goRetry);
   } else if (!params.discovery && !passed) {
-    mkBtn(t("tryAgain"), true, goRetry);          // failed exercise — retry is the main action
+    // Failed exercise — retry is the main action. From the second fail onwards,
+    // wrap it in encouragement: name the improvement, point back at the lesson,
+    // and tell them Boost mode is waiting so retrying feels NEW, not the same wall.
+    const p = (app.state.progress || {})[round.id];
+    const fails = (p && !p.passed) ? (p.attempts || 0) : 0;   // includes this attempt
+    const boostNext = fails >= CONFIG.rescueAfterFails;
+    if (fails >= 2) {
+      const enc = el("div", "result-msg encourage");
+      const bestYet = frac > 0 && frac > (params.prevBest || 0);
+      enc.innerHTML = `💛 ${t("failEncourage")}`
+        + (bestYet ? `<br>📈 <b>${t("bestYet")}</b>` : "")
+        + (boostNext ? `<br>🛟 ${t("boostReady")}` : "");
+      screen.querySelector(".result-card").insertBefore(enc, actions);
+    }
+    mkBtn(boostNext ? "🛟 " + t("tryAgainBoost") : t("tryAgain"), true, goRetry);
+    const lesson = fails >= 2 ? nearestLesson(round) : null;
+    if (lesson) mkBtn("🔭 " + t("seeAgain"), false, () => app.go(screenFor(lesson), { roundId: lesson.id }));
     mkBtn(t("backHome"), false, goHome);
   } else {
     mkBtn(t("backHome"), true, goHome);            // last round, nothing after
