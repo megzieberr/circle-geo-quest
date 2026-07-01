@@ -176,6 +176,17 @@ const UI = {
   comebackBlurb:  { en: "Passed after {n} tries — that's real Grand Master grit.", af: "Geslaag ná {n} probeerslae — dis ware Grootmeester-deursettingsvermoë." },
   comebackBonus:  { en: "comeback bonus", af: "terugkeer-bonus" },
 
+  // one-time "the game now has your back" announcement (Boost mode launch)
+  newsEyebrow:    { en: "New in Circle Quest", af: "Nuut in Circle Quest" },
+  newsTitle:      { en: "The game now has your back!", af: "Die speletjie staan nou agter jou!" },
+  newsIntro:      { en: "Stuck on a round? From now on the quest helps you through it:", af: "Vasgeval op 'n rondte? Van nou af help die avontuur jou daardeur:" },
+  news1:          { en: "Try a round twice and <b>Boost mode</b> switches on — hints open all by themselves.", af: "Probeer 'n rondte twee keer en <b>Hupstoot-modus</b> skakel aan — wenke maak vanself oop." },
+  news2:          { en: "In Boost mode a wrong answer isn't the end: you get a <b>second chance</b> for half marks.", af: "In Hupstoot-modus is 'n verkeerde antwoord nie die einde nie: jy kry 'n <b>tweede kans</b> vir halfpunte." },
+  news3:          { en: "The tricky “which reason?” rounds now have a built-in <b>guide</b> you can open any time.", af: "Die lastige “watter rede?”-rondtes het nou 'n ingeboude <b>gids</b> wat jy enige tyd kan oopmaak." },
+  news4:          { en: "Pass a round after a few tries and you earn a <b>+40 comeback bonus</b>.", af: "Slaag 'n rondte ná 'n paar probeerslae en jy verdien 'n <b>+40 terugkeer-bonus</b>." },
+  newsOutro:      { en: "Every try makes you stronger — you've got this! 💛", af: "Elke probeerslag maak jou sterker — jy het dit! 💛" },
+  newsGo:         { en: "Let's go!", af: "Kom ons gaan!" },
+
   // "Which reason?" guide card (rounds that declare a `guide`)
   guideBtn:       { en: "🧭 Not sure which reason? Open the guide", af: "🧭 Onseker watter rede? Maak die gids oop" },
   guideGiven:     { en: "Given", af: "Gegee" },

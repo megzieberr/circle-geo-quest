@@ -11,6 +11,7 @@ import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
+import { maybeShowBoostAnnounce } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
 import { submitRoundReliable } from "./sync.js";
 
@@ -179,6 +180,10 @@ export function renderHome(app, host) {
   // Star-of-the-Week: Fri–Sun rally / Mon–Tue crown. No-ops off-day or if already seen.
   // Never let a popup glitch blank the home screen.
   try { maybeShowWeekly(app); } catch { /* non-critical */ }
+
+  // One-time Boost-mode announcement. Runs last so it politely waits for the
+  // next login whenever the install or weekly popup got there first.
+  try { maybeShowBoostAnnounce(app); } catch { /* non-critical */ }
 }
 
 /* the badge ladder: only the badges the learner has actually EARNED — locked

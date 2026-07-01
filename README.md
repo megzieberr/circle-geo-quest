@@ -196,6 +196,9 @@ without ever having to ask for help:
 - The admin dashboard shows a **"Needs a hand"** panel (learners with 2+ tries
   on their current round) and a **Preview Boost mode** button. Teachers can also
   force it on any preview with `&boost=1` in the URL.
+- Every learner gets a **one-time announcement popup** about all of this on
+  their next login (per-learner flag; it politely waits a login if the install
+  or weekly popup shows first). Re-view it any time with `?news=1`.
 
 ---
 
