@@ -207,25 +207,6 @@ svg.diag .hit.locked{pointer-events:none;}
 .fb-step .fb-s{font-weight:600; font-variant-numeric:tabular-nums;}
 .fb-step .fb-sr{font-size:.76rem; color:var(--ink-soft); font-style:italic; text-align:right; flex:none; max-width:52%;}
 
-/* ---------- proof builder ---------- */
-.proof-slots{display:flex; flex-direction:column; gap:6px; margin:4px 0;}
-.proof-slot{display:flex; align-items:stretch; gap:8px;}
-.ps-num{flex:none; width:26px; border-radius:8px; background:var(--ink); color:#fff; font-weight:800; font-size:.82rem; display:grid; place-items:center;}
-.ps-body{flex:1; border:2px solid var(--ink); border-radius:11px; padding:8px 11px; display:flex; justify-content:space-between; align-items:baseline; gap:10px; min-height:40px;}
-.ps-body.filled{background:#fff; cursor:pointer;}
-.ps-body.empty{border-style:dashed; color:var(--ink-soft); font-style:italic; font-size:.85rem; align-items:center; background:#fbfbfd;}
-.ps-body.ps-ok{background:#e8f8f1; border-color:#0ea271;}
-.ps-body.ps-bad{background:#fdeef4; border-color:#e64980;}
-.pc-s{font-weight:600; font-size:.9rem;}
-.pc-r{font-size:.72rem; color:var(--ink-soft); font-style:italic; text-align:right; flex:none; max-width:46%;}
-.proof-seclabel{font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin:14px 0 4px;}
-.proof-bank{display:flex; flex-direction:column; gap:8px;}
-.proof-card{border:2px solid var(--ink); border-radius:11px; padding:9px 11px; background:#fff; box-shadow:2px 2px 0 rgba(37,42,74,.14);
-  display:flex; justify-content:space-between; align-items:baseline; gap:10px; cursor:pointer; transition:transform .1s ease, box-shadow .1s ease;}
-.proof-card:hover{transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--accent);}
-.proof-card .pc-s{font-weight:700;}
-.proof-foot{display:flex; gap:8px; margin-top:14px;}
-
 /* play footer */
 .play-foot{position:sticky; bottom:0; background:linear-gradient(transparent, var(--papier) 30%);
   padding-top:10px; display:flex; flex-direction:column; gap:8px;}

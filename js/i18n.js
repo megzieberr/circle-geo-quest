@@ -115,16 +115,6 @@ const UI = {
   yourRank:       { en: "Your rank", af: "Jou rang" },
   noScores:       { en: "No scores yet — be the first!", af: "Nog geen tellings nie — wees eerste!" },
 
-  // proof builder
-  buildProof:     { en: "Build the proof — tap the cards in order", af: "Bou die bewys — klik die kaarte in volgorde" },
-  cardsLeft:      { en: "Cards left", af: "Kaarte oor" },
-  checkProof:     { en: "Check proof", af: "Kontroleer bewys" },
-  resetProof:     { en: "Reset", af: "Herstel" },
-  proofCorrect:   { en: "Correct proof! 🎓", af: "Korrekte bewys! 🎓" },
-  proofPartial:   { en: "in the right place", af: "op die regte plek" },
-  correctOrder:   { en: "The correct order:", af: "Die korrekte volgorde:" },
-  tapToPlace:     { en: "tap a card to place it here…", af: "klik 'n kaart om dit hier te plaas…" },
-
   // rank tiers
   rankLabel:      { en: "Your rank", af: "Jou rang" },
   rankEarned:     { en: "Earned", af: "Verdien" },

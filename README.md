@@ -176,9 +176,6 @@ exterior angle · 9. Tangent ⊥ radius · 10. Tan-chord theorem (your existing 
 Each round unlocks when the previous is passed (80%). Reasons are phrased as they appear
 in CAPS exams, in English and Afrikaans (toggle in the top bar).
 
-**Phase 2 (not built yet):** a proof-building round where learners drag
-statement-and-reason pairs into order — the round structure leaves room for it.
-
 ---
 
 ## Anonymous feedback survey
