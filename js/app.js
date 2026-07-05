@@ -73,6 +73,8 @@ const app = {
           this.state.weeklyXp = lb.myWeekly ? lb.myWeekly.xp : 0;
           this.state.weekly = lb.weekly || [];      // full board → Star-of-the-Week popups (weekly.js)
           this.state.myWeekly = lb.myWeekly || null;
+          this.state.allTime = lb.allTime || [];    // all-time board → first rally shows all-time XP (weekly.js)
+          this.state.myAllTime = lb.myAllTime || null;
         }
       } catch { /* ignore */ }
       return true;

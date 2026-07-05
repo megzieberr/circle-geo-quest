@@ -34,6 +34,9 @@ const CHASE_XP   = 60;                    // show the "only N XP behind" chase o
 // First weekly popup is held until this local date — see GO-LIVE note above.
 // (Month is 0-indexed: 6 = July.) First rally: Fri 3 Jul; first crown: Mon 6 Jul.
 const WEEKLY_START = new Date(2026, 6, 3);
+// The very first rally (week of Fri 3 Jul) celebrates the whole game so far, so
+// it shows ALL-TIME XP/standings instead of just this week's. Later rallies are
+// weekly as normal. Anchor = Monday of the week containing WEEKLY_START.
 
 /* Monday-00:00 anchor of the week containing `d` (mirrors api.js startOfWeek). */
 function startOfWeekTs(d = new Date()) {
@@ -63,10 +66,13 @@ export function maybeShowWeekly(app) {
   const st = read(app);
   const now = new Date();
   const force = (() => { try { return new URLSearchParams(location.search).get("wk"); } catch { return null; } })();
-  const board = app && app.state && app.state.weekly;
-  const me = app && app.state && app.state.myWeekly;
   const nowAnchor = startOfWeekTs();
   const lastWeekId = nowAnchor - 7 * 864e5;             // stable per-week id for the crown "seen" guard
+
+  // First rally shows ALL-TIME standings; every later rally is weekly as usual.
+  const firstRally = nowAnchor === startOfWeekTs(WEEKLY_START);
+  const board = firstRally ? (app && app.state && app.state.allTime) : (app && app.state && app.state.weekly);
+  const me = firstRally ? (app && app.state && app.state.myAllTime) : (app && app.state && app.state.myWeekly);
 
   // preview/teacher override (?wk=rally|crown): force exactly one popup, bypassing
   // the day, seen, and go-live gates so it can be checked any day.
