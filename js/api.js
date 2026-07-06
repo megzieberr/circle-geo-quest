@@ -31,21 +31,33 @@ function rankBy(sortedRows, key, out) {
   let rank = 0, prev = null, seen = 0;
   sortedRows.forEach(r => { seen++; if (prev === null || r[key] !== prev) { rank = seen; prev = r[key]; } out[r.id] = rank; });
 }
+/* Local calendar day of a timestamp (device timezone), as YYYY-MM-DD. */
+const localDate = ts => {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 /* Shared Star-of-the-Week computation (last Mon→Sun week): the settled board
-   plus the three distinct award winners. Used by BOTH the learner crown popup
-   and the admin "weekly winners" preview, so the two always agree. */
+   plus the three distinct award winners AND the Perfect Week list (everyone
+   with a daily on all 7 days). Used by BOTH the learner crown popup and the
+   admin "weekly winners" preview, so the two always agree. Daily counts are
+   DISTINCT local days; On-Fire ties go to the earliest finisher, not the
+   alphabet (mirrors phase9.sql). */
 function computeWeeklyAwards(students, events) {
   const thisWeek = startOfWeek();
   const lwStart = thisWeek - 7 * 864e5, lwEnd = thisWeek, pwStart = thisWeek - 14 * 864e5;
 
   const agg = {};
-  Object.values(students).forEach(st => { agg[st.id] = { id: st.id, name: st.display_name, lw: 0, pw: 0, days: 0 }; });
+  Object.values(students).forEach(st => { agg[st.id] = { id: st.id, name: st.display_name, lw: 0, pw: 0, daySet: new Set(), lastDaily: 0 }; });
   events.forEach(e => {
     const a = agg[e.studentId]; if (!a) return;
-    if (e.ts >= lwStart && e.ts < lwEnd) { a.lw += e.xp; if (e.roundId === "daily") a.days += 1; }
+    if (e.ts >= lwStart && e.ts < lwEnd) {
+      a.lw += e.xp;
+      if (e.roundId === "daily") { a.daySet.add(localDate(e.ts)); a.lastDaily = Math.max(a.lastDaily, e.ts); }
+    }
     else if (e.ts >= pwStart && e.ts < lwStart) { a.pw += e.xp; }
   });
   const rows = Object.values(agg);
+  rows.forEach(r => { r.days = r.daySet.size; });
   const lwRank = {}, pwRank = {};
   rankBy([...rows].sort((a, b) => b.lw - a.lw || a.name.localeCompare(b.name)), "lw", lwRank);
   rankBy([...rows].sort((a, b) => b.pw - a.pw || a.name.localeCompare(b.name)), "pw", pwRank);
@@ -55,7 +67,7 @@ function computeWeeklyAwards(students, events) {
   const imp = [...rows].filter(r => (r.lw - r.pw) > 0 && (!star || r.id !== star.id))
     .sort((a, b) => (b.lw - b.pw) - (a.lw - a.pw) || tie(a, b))[0] || null;
   const fire = [...rows].filter(r => r.days > 0 && (!star || r.id !== star.id) && (!imp || r.id !== imp.id))
-    .sort((a, b) => b.days - a.days || tie(a, b))[0] || null;
+    .sort((a, b) => b.days - a.days || a.lastDaily - b.lastDaily || tie(a, b))[0] || null;
 
   const board = [...rows].filter(r => r.lw > 0)
     .sort((a, b) => lwRank[a.id] - lwRank[b.id]).map(r => ({ name: r.name, xp: r.lw, rank: lwRank[r.id] }));
@@ -65,6 +77,7 @@ function computeWeeklyAwards(students, events) {
     star: star ? { name: star.name, xp: star.lw } : null,
     mostImproved: imp ? { name: imp.name, delta: imp.lw - imp.pw } : null,
     onFire: fire ? { name: fire.name, days: fire.days } : null,
+    perfectWeek: rows.filter(r => r.days >= 7).map(r => r.name).sort(),
   };
 }
 
@@ -221,8 +234,24 @@ const LocalBackend = {
     write(LS.students, students);
     const events = read(LS.events, []);
     events.push({ studentId: s.id, roundId: "daily", xp: xpAward, score: payload && payload.total ? (payload.correct || 0) / payload.total : null, ts: Date.now() });
+
+    // PERFECT WEEK — all 7 days of `day`'s Mon–Sun week done → one-off bonus.
+    // Mirrors phase9.sql: distinct local days, granted at most once per week.
+    let perfectWeek = false, bonusXp = 0;
+    const d = new Date(day + "T12:00:00");                       // noon dodges DST edges
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));             // Monday of that week
+    const weekDays = Array.from({ length: 7 }, (_, i) => {
+      const x = new Date(d); x.setDate(x.getDate() + i); return localDate(x.getTime());
+    });
+    const inWeek = e => e.studentId === s.id && weekDays.includes(localDate(e.ts));
+    const daysDone = new Set(events.filter(e => e.roundId === "daily" && inWeek(e)).map(e => localDate(e.ts))).size;
+    if (daysDone >= 7 && !events.some(e => e.roundId === "perfectweek" && inWeek(e))) {
+      bonusXp = Math.max(0, Math.round(CONFIG.perfectWeekXp) || 0);
+      events.push({ studentId: s.id, roundId: "perfectweek", xp: bonusXp, score: null, ts: Date.now() });
+      perfectWeek = true;
+    }
     write(LS.events, events);
-    return { ok: true, xpAwarded: xpAward, alreadyClaimed: false, day };
+    return { ok: true, xpAwarded: xpAward, alreadyClaimed: false, day, perfectWeek, bonusXp };
   },
 
   /* Per-question results for the teacher's "hardest questions" report.
@@ -380,6 +409,7 @@ const LocalBackend = {
       star: w.star,
       mostImproved: w.mostImproved,
       onFire: w.onFire,
+      perfectWeek: w.perfectWeek,
       me: { xp: meAgg.lw, rank: w.lwRank[s.id] },
       prevRank: meAgg.pw > 0 ? w.pwRank[s.id] : null,
       bestPrevXp,
@@ -425,7 +455,7 @@ const LocalBackend = {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
     const w = computeWeeklyAwards(read(LS.students, {}), read(LS.events, []));
-    return { ok: true, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire };
+    return { ok: true, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire, perfectWeek: w.perfectWeek };
   },
   async adminResetWeekly(adminPassword) {
     const meta = read(LS.meta, {});

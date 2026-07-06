@@ -240,6 +240,8 @@ const UI = {
   wkAwardStar:    { en: "Star of the Week", af: "Ster van die Week" },
   wkAwardImproved:{ en: "Most Improved", af: "Meeste Verbeter" },        // Phase B
   wkAwardStreak:  { en: "On Fire", af: "Aan die Brand" },                // Phase B
+  wkAwardPerfect: { en: "Perfect Week", af: "Perfekte Week" },           // everyone with 7/7 dailies — not winner-take-all
+  dailyPerfectWeek:{ en: "PERFECT WEEK — every single day this week!", af: "PERFEKTE WEEK — elke enkele dag hierdie week!" },
   wkYouAreStar:   { en: "You're the Star of the Week! 🌟", af: "Jy is die Ster van die Week! 🌟" },
   wkFinishedNum:  { en: "You finished", af: "Jy het geëindig" },         // "You finished #4 last week — …"
   wkLastWeek:     { en: "last week", af: "verlede week" },

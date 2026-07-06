@@ -9,6 +9,7 @@ export const CONFIG = {
   streakCap: 5,            // streak bonus stops growing after this many in a row
   // daily challenge
   dailyXp: 25,             // flat XP for completing the Daily Challenge (server grants this, once per local day)
+  perfectWeekXp: 50,       // one-off bonus for completing the daily on ALL 7 days of a Mon–Sun week (everyone who earns it gets it)
   // round pass rule
   passThreshold: 0.8,      // 80% correct (first-try) to pass a round and earn its badge
   // struggling-learner support ("Boost mode")

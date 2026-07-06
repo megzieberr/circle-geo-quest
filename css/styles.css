@@ -660,6 +660,8 @@ body.has-preview-banner .view{padding-bottom:84px;}
   letter-spacing:.04em; margin-bottom:8px;}
 
 /* the streak medallion on the Daily "done" screen */
+.pw-banner{margin:10px auto 2px; max-width:320px; padding:10px 16px; border:2px solid #0ea271; border-radius:13px;
+  background:linear-gradient(180deg,#e8f8f1,#fff); color:#0a6b4c; font-size:1rem; box-shadow:var(--shadow-sm);}
 .streak-big{display:inline-flex; align-items:center; gap:8px; margin:10px 0 2px; padding:8px 18px;
   border:2px solid #e0a500; border-radius:99px; background:#fff8e6;}
 .streak-big .flame{font-size:1.6rem;}

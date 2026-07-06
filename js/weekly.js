@@ -143,6 +143,15 @@ function buildCrown(res, app) {
   if (res.onFire)
     winners.push({ icon: "🔥", label: t("wkAwardStreak"), name: res.onFire.name, value: `${res.onFire.days} ${daysWord(res.onFire.days)}` });
   winners.forEach(w => { w.me = !!(meName && w.name === meName); });   // highlight a chip the learner won
+  // PERFECT WEEK is not winner-take-all: EVERYONE who did all 7 dailies is named.
+  if (Array.isArray(res.perfectWeek) && res.perfectWeek.length) {
+    winners.push({
+      icon: "🎯", label: t("wkAwardPerfect"),
+      name: res.perfectWeek.join(", "),
+      value: "7/7",
+      me: !!(meName && res.perfectWeek.includes(meName)),
+    });
+  }
   return {
     kind: "crown",
     emoji: "🌟",

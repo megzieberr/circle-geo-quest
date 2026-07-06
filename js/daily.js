@@ -195,11 +195,14 @@ function renderDailyDone(app, host, st, correct, total, award) {
   const card = el("div", "card center daily-done");
   const xpPill = (award && award.xpAwarded > 0)
     ? `<div class="result-pills"><span class="pill xp">★ +${award.xpAwarded} ${t("xpEarned")}</span></div>` : "";
+  const perfect = (award && award.perfectWeek)
+    ? `<div class="pw-banner">🎯 <b>${t("dailyPerfectWeek")}</b><br>+${award.bonusXp} XP</div>` : "";
   card.innerHTML = `
-    <div class="result-emoji">🔥</div>
+    <div class="result-emoji">${award && award.perfectWeek ? "🎯" : "🔥"}</div>
     <h1>${t("dailyComplete")}</h1>
     ${correct != null ? `<div class="big-score">${correct}/${total}</div>` : ""}
     ${xpPill}
+    ${perfect}
     <div class="streak-big"><span class="flame">🔥</span><b>${st.streak}</b> <span>${t("dayStreak")}</span></div>
     <div class="result-msg good">${st.isNew ? t("dailyStreakNew") : `${st.streak} ${t("dailyStreakUp")}`}</div>
     <p class="muted small">${t("dailyKeptFresh")}${st.best > 1 ? ` · ${t("streakBest")} ${st.best}` : ""}</p>`;
