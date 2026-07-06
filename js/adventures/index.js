@@ -194,37 +194,6 @@ const ALG_TC = {
   ],
 };
 
-/* PROOF_LC — line from centre ⊥ chord (congruent triangles). OB ⊥ AC at B;
-   radii OA, OC drawn. A general figure for the bisection proof. */
-const PROOF_LC = {
-  O: true,
-  pts: { A: 205, C: 335 },
-  mid: [{ name: "B", of: ["A", "C"] }],
-  chords: [["A", "C"], ["O", "B"], ["O", "A"], ["O", "C"]],
-  angles: [{ at: "B", legs: ["O", "A"], t: "", o: { v: 90, mark: true } }],
-};
-
-/* PROOF_AC — angle at centre = 2× circumference. P on the circle, PO produced to
-   T (diameter), radii OQ, OS. General figure for the isosceles + exterior-angle proof. */
-const PROOF_AC = {
-  O: true,
-  pts: { P: 90, Q: 215, S: 325, T: 270 },
-  chords: [["P", "Q"], ["P", "S"], ["O", "Q"], ["O", "S"], ["P", "T"]],
-};
-
-/* PROOF_TAN — tangents from a point equal (congruent triangles). PA, PB tangents
-   at A, B; radii OA, OB and OP drawn; right angles at the contacts (tan ⊥ radius). */
-const PROOF_TAN = {
-  O: true,
-  pts: { A: 35, B: 325 },
-  ext: [{ name: "P", t: ["A", "B"] }],
-  chords: [["O", "A"], ["O", "B"], ["O", "P"]],
-  angles: [
-    { at: "A", legs: ["O", "P"], t: "", o: { v: 90, mark: true } },
-    { at: "B", legs: ["O", "P"], t: "", o: { v: 90, mark: true } },
-  ],
-};
-
 export const ADVENTURES = [
   {
     id: "adv-centre-values", type: "values", accent: ACCENTS[3],
@@ -440,58 +409,6 @@ export const ADVENTURES = [
     ],
     badLine: 1,
     fix: { en: "∠TPS is wrong. In △PTS the three angles add to 180°, so ∠TPS = 180° − 64° − 64° = 52°, not 64°.", af: "∠TPS is verkeerd. In △PTS tel die drie hoeke op tot 180°, dus ∠TPS = 180° − 64° − 64° = 52°, nie 64°." },
-  },
-
-  /* ===== NEW TYPE: complete the proof (supply each missing reason) ===== */
-  {
-    id: "adv-proof-linecentre", type: "proofgap", accent: ACCENTS[3],
-    title: { en: "Complete the Proof: Line from the Centre", af: "Voltooi die Bewys: Lyn vanaf die Middelpunt" },
-    blurb: { en: "Fill in each missing reason of the proof.", af: "Vul elke ontbrekende rede van die bewys in." },
-    given: { en: "O is the centre and OB ⊥ chord AC. Prove that OB bisects AC (AB = BC).", af: "O is die middelpunt en OB ⊥ koord AC. Bewys dat OB die koord AC halveer (AB = BC)." },
-    diagram: PROOF_LC,
-    bank: ["radii", "commonSide", "given", "rhs", "congTri", "pythagoras"],
-    lines: [
-      { s: "Construction: join OA and OC", r: "construction" },
-      { s: "In △OAB and △OCB:" },
-      { s: "OA = OC", r: "radii", gap: true },
-      { s: "OB = OB", r: "commonSide", gap: true },
-      { s: "∠OBA = ∠OBC = 90°", r: "given" },
-      { s: "∴ △OAB ≡ △OCB", r: "rhs", gap: true },
-      { s: "∴ AB = BC", r: "congTri", gap: true },
-    ],
-  },
-  {
-    id: "adv-proof-anglecentre", type: "proofgap", accent: ACCENTS[1],
-    title: { en: "Complete the Proof: Angle at the Centre", af: "Voltooi die Bewys: Hoek by die Middelpunt" },
-    blurb: { en: "Fill in each missing reason of the proof.", af: "Vul elke ontbrekende rede van die bewys in." },
-    given: { en: "O is the centre and PO is produced to T. Prove that ∠QOS = 2 × ∠QPS.", af: "O is die middelpunt en PO is verleng na T. Bewys dat ∠QOS = 2 × ∠QPS." },
-    diagram: PROOF_AC,
-    bank: ["radii", "isosBase", "triExt", "given", "construction", "congTri"],
-    lines: [
-      { s: "Let ∠QPO = x and ∠SPO = y" },
-      { s: "OP = OQ", r: "radii", gap: true },
-      { s: "∴ ∠OQP = x", r: "isosBase", gap: true },
-      { s: "∠QOT = x + x = 2x", r: "triExt", gap: true },
-      { s: "Similarly ∠SOT = 2y", r: "triExt" },
-      { s: "∴ ∠QOS = 2x + 2y = 2(x + y) = 2 × ∠QPS" },
-    ],
-  },
-  {
-    id: "adv-proof-tangents", type: "proofgap", accent: ACCENTS[0],
-    title: { en: "Complete the Proof: Tangents from a Point", af: "Voltooi die Bewys: Raaklyne vanuit 'n Punt" },
-    blurb: { en: "Fill in each missing reason of the proof.", af: "Vul elke ontbrekende rede van die bewys in." },
-    given: { en: "PA and PB are tangents to the circle (centre O) at A and B. Prove that PA = PB.", af: "PA en PB is raaklyne aan die sirkel (middelpunt O) by A en B. Bewys dat PA = PB." },
-    diagram: PROOF_TAN,
-    bank: ["radii", "tanRadius", "commonSide", "rhs", "congTri", "given"],
-    lines: [
-      { s: "Construction: join OA, OB and OP", r: "construction" },
-      { s: "In △OAP and △OBP:" },
-      { s: "OA = OB", r: "radii", gap: true },
-      { s: "∠OAP = ∠OBP = 90°", r: "tanRadius", gap: true },
-      { s: "OP = OP", r: "commonSide", gap: true },
-      { s: "∴ △OAP ≡ △OBP", r: "rhs", gap: true },
-      { s: "∴ PA = PB", r: "congTri", gap: true },
-    ],
   },
 
   /* ===== MORE solve-for-x (algebra) ===== */
