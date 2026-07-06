@@ -6,6 +6,11 @@
 // already played gets nagged. Send { "test": true } to ping every subscribed
 // device regardless (handy for a quick test).
 //
+// It also supports a TARGETED encouragement: send
+//   { "student_id": "<uuid>", "title": "...", "body": "...", "url": "./" }
+// to ping just one learner's device(s) with a custom message. Used by the
+// teacher to send a personal note (e.g. 'well done, try again this week').
+//
 // It runs on Deno, so libraries are imported with npm: specifiers.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -65,11 +70,31 @@ Deno.serve(async (req) => {
     return new Response("forbidden", { status: 401 });
   }
 
-  let body: { test?: boolean } = {};
+  let body: { test?: boolean; student_id?: string; title?: string; body?: string; url?: string } = {};
   try {
     body = await req.json();
   } catch (_) {
     body = {};
+  }
+
+  // --- Targeted mode: one learner, custom message -------------------------
+  // When a student_id is supplied we ping only that learner's device(s) with
+  // the given title/body. Nobody else is touched, and the daily-skip logic is
+  // irrelevant here (this is a deliberate personal note, not the reminder).
+  if (body.student_id) {
+    const { data: subs } = await admin
+      .from("push_subscriptions")
+      .select("id, student_id, subscription")
+      .eq("student_id", body.student_id);
+
+    const res = await sendTo(subs ?? [], {
+      title: body.title ?? "Circle Quest",
+      body: body.body ?? "A message from your teacher 🌟",
+      url: body.url ?? "./",
+      tag: "circle-quest-personal",
+    });
+
+    return Response.json({ ok: true, mode: "targeted", student_id: body.student_id, found: (subs ?? []).length, ...res });
   }
 
   const date = saToday();
