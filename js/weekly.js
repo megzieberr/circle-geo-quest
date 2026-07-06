@@ -169,6 +169,28 @@ function crownPersonal(res) {
   return `${t("wkFinishedNum")} #${r} ${t("wkLastWeek")} — ${move}${best}`;
 }
 
+/* ============================================================
+   TEACHER PREVIEWS — opened from the admin dashboard so the real
+   announcements can be screenshotted for the class WhatsApp group.
+   Exactly the learners' modal (same markup + CSS), with the
+   learner-personal line swapped out: the crown shows just the three
+   awards; the rally shows the top-3 podium instead of "you are #N".
+   ============================================================ */
+export function showCrownPreview(res) {
+  const cfg = buildCrown(res, null);
+  cfg.personalHTML = null;               // no learner to personalise for
+  showWeeklyModal(null, cfg);
+}
+export function showRallyPreview(board) {
+  const cfg = buildRally(board, null);
+  cfg.personalHTML = podiumHTML(board);
+  showWeeklyModal(null, cfg);
+}
+const MEDALS = ["🥇", "🥈", "🥉"];
+const podiumHTML = board => board.slice(0, 3)
+  .map((r, i) => `${MEDALS[i]} <b>${r.name}</b> — ${r.xp} XP`)
+  .join("<br>");
+
 /* ---------------- modal ---------------- */
 function showWeeklyModal(app, cfg) {
   document.querySelectorAll(".wk-overlay").forEach(n => n.remove());   // never stack
@@ -197,9 +219,11 @@ function showWeeklyModal(app, cfg) {
   const primary = el("button", "btn primary big", cfg.primaryLabel);
   primary.addEventListener("click", close);
   actions.appendChild(primary);
-  const seeBoard = el("button", "link-btn wk-seeboard", t("wkSeeBoard"));
-  seeBoard.addEventListener("click", () => { close(); app.go("leaderboard"); });
-  actions.appendChild(seeBoard);
+  if (app) {   // no leaderboard to jump to in the admin preview
+    const seeBoard = el("button", "link-btn wk-seeboard", t("wkSeeBoard"));
+    seeBoard.addEventListener("click", () => { close(); app.go("leaderboard"); });
+    actions.appendChild(seeBoard);
+  }
   m.appendChild(actions);
 
   m.querySelector(".wk-close").addEventListener("click", close);

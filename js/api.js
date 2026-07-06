@@ -31,6 +31,42 @@ function rankBy(sortedRows, key, out) {
   let rank = 0, prev = null, seen = 0;
   sortedRows.forEach(r => { seen++; if (prev === null || r[key] !== prev) { rank = seen; prev = r[key]; } out[r.id] = rank; });
 }
+/* Shared Star-of-the-Week computation (last Mon→Sun week): the settled board
+   plus the three distinct award winners. Used by BOTH the learner crown popup
+   and the admin "weekly winners" preview, so the two always agree. */
+function computeWeeklyAwards(students, events) {
+  const thisWeek = startOfWeek();
+  const lwStart = thisWeek - 7 * 864e5, lwEnd = thisWeek, pwStart = thisWeek - 14 * 864e5;
+
+  const agg = {};
+  Object.values(students).forEach(st => { agg[st.id] = { id: st.id, name: st.display_name, lw: 0, pw: 0, days: 0 }; });
+  events.forEach(e => {
+    const a = agg[e.studentId]; if (!a) return;
+    if (e.ts >= lwStart && e.ts < lwEnd) { a.lw += e.xp; if (e.roundId === "daily") a.days += 1; }
+    else if (e.ts >= pwStart && e.ts < lwStart) { a.pw += e.xp; }
+  });
+  const rows = Object.values(agg);
+  const lwRank = {}, pwRank = {};
+  rankBy([...rows].sort((a, b) => b.lw - a.lw || a.name.localeCompare(b.name)), "lw", lwRank);
+  rankBy([...rows].sort((a, b) => b.pw - a.pw || a.name.localeCompare(b.name)), "pw", pwRank);
+
+  const tie = (a, b) => a.name.localeCompare(b.name);
+  const star = [...rows].filter(r => r.lw > 0).sort((a, b) => b.lw - a.lw || tie(a, b))[0] || null;
+  const imp = [...rows].filter(r => (r.lw - r.pw) > 0 && (!star || r.id !== star.id))
+    .sort((a, b) => (b.lw - b.pw) - (a.lw - a.pw) || tie(a, b))[0] || null;
+  const fire = [...rows].filter(r => r.days > 0 && (!star || r.id !== star.id) && (!imp || r.id !== imp.id))
+    .sort((a, b) => b.days - a.days || tie(a, b))[0] || null;
+
+  const board = [...rows].filter(r => r.lw > 0)
+    .sort((a, b) => lwRank[a.id] - lwRank[b.id]).map(r => ({ name: r.name, xp: r.lw, rank: lwRank[r.id] }));
+
+  return {
+    lwStart, agg, lwRank, pwRank, board,
+    star: star ? { name: star.name, xp: star.lw } : null,
+    mostImproved: imp ? { name: imp.name, delta: imp.lw - imp.pw } : null,
+    onFire: fire ? { name: fire.name, days: fire.days } : null,
+  };
+}
 
 /* A small demo roster so the game is playable before the real
    class list is seeded into Supabase. Replaced at deploy time. */
@@ -328,48 +364,24 @@ const LocalBackend = {
   async weeklyResults(name, password) {
     const s = this._verify(name, password);
     if (!s) return { ok: false, error: "auth" };
-    const students = read(LS.students, {});
     const events = read(LS.events, []);
-    const thisWeek = startOfWeek();
-    const lwStart = thisWeek - 7 * 864e5, lwEnd = thisWeek, pwStart = thisWeek - 14 * 864e5;
+    const w = computeWeeklyAwards(read(LS.students, {}), events);
 
-    const agg = {};
-    Object.values(students).forEach(st => { agg[st.id] = { id: st.id, name: st.display_name, lw: 0, pw: 0, days: 0 }; });
-    events.forEach(e => {
-      const a = agg[e.studentId]; if (!a) return;
-      if (e.ts >= lwStart && e.ts < lwEnd) { a.lw += e.xp; if (e.roundId === "daily") a.days += 1; }
-      else if (e.ts >= pwStart && e.ts < lwStart) { a.pw += e.xp; }
-    });
-    const rows = Object.values(agg);
-    const lwRank = {}, pwRank = {};
-    rankBy([...rows].sort((a, b) => b.lw - a.lw || a.name.localeCompare(b.name)), "lw", lwRank);
-    rankBy([...rows].sort((a, b) => b.pw - a.pw || a.name.localeCompare(b.name)), "pw", pwRank);
-
-    const tie = (a, b) => a.name.localeCompare(b.name);
-    const star = [...rows].filter(r => r.lw > 0).sort((a, b) => b.lw - a.lw || tie(a, b))[0] || null;
-    const imp = [...rows].filter(r => (r.lw - r.pw) > 0 && (!star || r.id !== star.id))
-      .sort((a, b) => (b.lw - b.pw) - (a.lw - a.pw) || tie(a, b))[0] || null;
-    const fire = [...rows].filter(r => r.days > 0 && (!star || r.id !== star.id) && (!imp || r.id !== imp.id))
-      .sort((a, b) => b.days - a.days || tie(a, b))[0] || null;
-
-    const board = [...rows].filter(r => r.lw > 0)
-      .sort((a, b) => lwRank[a.id] - lwRank[b.id]).map(r => ({ name: r.name, xp: r.lw, rank: lwRank[r.id] }));
-
-    const meAgg = agg[s.id];
+    const meAgg = w.agg[s.id];
     const weekSums = {};
-    events.filter(e => e.studentId === s.id && e.ts < lwStart)
+    events.filter(e => e.studentId === s.id && e.ts < w.lwStart)
       .forEach(e => { const wk = startOfWeek(e.ts); weekSums[wk] = (weekSums[wk] || 0) + e.xp; });
     const bestPrevXp = Object.values(weekSums).reduce((m, v) => Math.max(m, v), 0);
 
     return {
       ok: true,
-      weekStart: lwStart,
-      board,
-      star: star ? { name: star.name, xp: star.lw } : null,
-      mostImproved: imp ? { name: imp.name, delta: imp.lw - imp.pw } : null,
-      onFire: fire ? { name: fire.name, days: fire.days } : null,
-      me: { xp: meAgg.lw, rank: lwRank[s.id] },
-      prevRank: meAgg.pw > 0 ? pwRank[s.id] : null,
+      weekStart: w.lwStart,
+      board: w.board,
+      star: w.star,
+      mostImproved: w.mostImproved,
+      onFire: w.onFire,
+      me: { xp: meAgg.lw, rank: w.lwRank[s.id] },
+      prevRank: meAgg.pw > 0 ? w.pwRank[s.id] : null,
       bestPrevXp,
     };
   },
@@ -405,6 +417,15 @@ const LocalBackend = {
       rounds: progress[s.id] || {},
     })).sort((a, b) => b.allTimeXp - a.allTimeXp);
     return { ok: true, rows, inactiveDays: CONFIG.inactiveDays };
+  },
+  /* Admin view of the Star-of-the-Week results — the same numbers the
+     learners' crown popup shows, minus the learner-personal fields.
+     Mirrors the cgg_admin_weekly_results RPC (phase8.sql). */
+  async adminWeeklyResults(adminPassword) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const w = computeWeeklyAwards(read(LS.students, {}), read(LS.events, []));
+    return { ok: true, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire };
   },
   async adminResetWeekly(adminPassword) {
     const meta = read(LS.meta, {});

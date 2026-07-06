@@ -6,6 +6,7 @@
    ============================================================ */
 import { api, BACKEND } from "./api.js";
 import { ROUNDS, QUESTION_BY_ID } from "./rounds/index.js";
+import { showCrownPreview, showRallyPreview } from "./weekly.js";
 
 const root = document.getElementById("admin");
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -72,6 +73,12 @@ function renderDashboard() {
   const previewBoost = el("button", "btn ghost small", "🛟 Preview Boost mode");
   previewBoost.title = "Learner preview with Boost mode forced on: open hints + second chances, as a stuck learner sees it";
   previewBoost.addEventListener("click", () => window.open("index.html?preview=1&boost=1", "_blank", "noopener"));
+  const winners = el("button", "btn ghost small", "🌟 Weekly winners");
+  winners.title = "Last week's Star of the Week announcement with the REAL winners, exactly as learners see it — screenshot it for the class group";
+  winners.addEventListener("click", showWeeklyWinners);
+  const rally = el("button", "btn ghost small", "🔥 Rally board");
+  rally.title = "This week's live standings as a rally popup (top-3 podium) — screenshot it to hype the weekend push";
+  rally.addEventListener("click", showRallyBoard);
   const add = el("button", "btn ghost small", "＋ Add learner");
   add.addEventListener("click", addLearner);
   const csv = el("button", "btn ghost small", "⬇ Export CSV");
@@ -82,7 +89,7 @@ function renderDashboard() {
   refresh.addEventListener("click", load);
   const out = el("button", "btn ghost small", "Log out");
   out.addEventListener("click", () => { adminPw = null; renderLogin(); });
-  [preview, previewBoost, add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
+  [preview, previewBoost, winners, rally, add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
   head.appendChild(tools);
   root.appendChild(head);
 
@@ -282,6 +289,23 @@ function renderItemReport() {
   root.appendChild(section);
 }
 const truncate = (s, n) => { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
+
+/* ---------- weekly announcement previews (screenshot for the class group) ---------- */
+async function showWeeklyWinners() {
+  const r = api.adminWeeklyResults
+    ? await api.adminWeeklyResults(adminPw).catch(() => ({ ok: false }))
+    : { ok: false };
+  if (!r.ok) return alert("Weekly winners need the Phase-8 database update — run supabase/phase8.sql in the Supabase SQL editor.");
+  if (!r.star) return alert("No XP was earned last week, so there are no winners to announce yet.");
+  showCrownPreview(r);
+}
+function showRallyBoard() {
+  const board = data.rows.filter(r => r.weeklyXp > 0)
+    .sort((a, b) => b.weeklyXp - a.weeklyXp)
+    .map((r, i) => ({ name: r.name, xp: r.weeklyXp, rank: i + 1 }));
+  if (!board.length) return alert("Nobody has earned XP yet this week — the rally board is still empty.");
+  showRallyPreview(board);
+}
 
 /* ---------- actions ---------- */
 async function addLearner() {

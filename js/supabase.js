@@ -66,4 +66,5 @@ export const SupabaseBackend = {
   adminAddStudent(pw, name) { return rpc("cgg_admin_add_student", { p_admin_password: pw, p_name: name }); },
   adminRemoveStudent(pw, id) { return rpc("cgg_admin_remove_student", { p_admin_password: pw, p_id: id }); },
   adminResetPassword(pw, id) { return rpc("cgg_admin_reset_password", { p_admin_password: pw, p_id: id }); },
+  adminWeeklyResults(pw) { return rpc("cgg_admin_weekly_results", { p_admin_password: pw }); },
 };
