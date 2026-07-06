@@ -520,6 +520,32 @@ svg.cs-svg{width:100%; max-width:380px; height:auto;}
 .pg-line.gap-bad{border-color:var(--s1); background:#fdeef4;}
 .pg-line.gap-bad .pg-slot{color:var(--s1); border-color:var(--s1);}
 
+/* ---------- say it like the examiner (build the reason) ---------- */
+.say-slots{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px;}
+.say-slot{border:2px dashed var(--ink); border-radius:9px; padding:5px 11px; background:#fff; cursor:pointer;
+  font:700 .86rem "Instrument Sans",sans-serif; color:var(--accent); min-width:34px;}
+.say-slot.empty{color:var(--ink-soft); font-style:italic; font-weight:600;}
+.say-slot.filled{border-style:solid;}
+.say-row.row-ok .say-slot{color:#0a6b4c; border-color:#0ea271;}
+.say-row.row-bad .say-slot{color:var(--s1); border-color:var(--s1);}
+.wordbank.say-bank{justify-content:center; max-width:430px; margin:0 auto;}
+.wordbank.say-bank .wordchip:disabled{opacity:.35; cursor:default; transform:none; box-shadow:none;}
+
+/* ---------- "why are we doing this?" explainer ---------- */
+.why-overlay{position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
+  padding:18px; background:rgba(37,42,74,.45); backdrop-filter:blur(3px); opacity:0; transition:opacity .2s ease;}
+.why-overlay.show{opacity:1;}
+.why-modal{position:relative; width:100%; max-width:430px; text-align:center;
+  transform:translateY(14px) scale(.96); transition:transform .25s cubic-bezier(.2,1.4,.4,1);}
+.why-overlay.show .why-modal{transform:none;}
+.why-emoji{font-size:2.6rem; line-height:1; margin-bottom:2px;}
+.why-modal h1{font-size:1.4rem; margin:2px 0 10px;}
+.why-body{text-align:left; font-size:.95rem; line-height:1.55; color:var(--ink);}
+.why-dots{display:flex; justify-content:center; gap:6px; margin:14px 0 4px;}
+.why-dots i{width:8px; height:8px; border-radius:50%; background:#d6d9ea; transition:.15s;}
+.why-dots i.on{background:var(--ink); transform:scale(1.25);}
+.why-actions{display:flex; gap:10px; justify-content:center; margin-top:10px;}
+
 /* ---------- hint ladder (graded rounds) ---------- */
 .q-hints{margin-top:14px;}
 .q-hint-panel{display:flex; flex-direction:column; gap:7px; margin-bottom:8px;}

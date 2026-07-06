@@ -547,6 +547,85 @@ export const ADVENTURES = [
     badLine: 2,
     fix: { en: "The value 55° is correct, but the reason is wrong. ∠PBA = 180° − 90° − 35° comes from the angle sum of △APB, so the reason is “int ∠s of Δ”, not “opp ∠s of cyclic quad”.", af: "Die waarde 55° is reg, maar die rede is verkeerd. ∠PBA = 180° − 90° − 35° kom van die hoeksom van △APB, dus is die rede “binne-∠e van Δ”, nie “teenoorst. ∠e van kvh” nie." },
   },
+
+  /* ===== NEW TYPE: say it like the examiner (build the reason from pieces) =====
+     Trains PRODUCTION, not just recognition: the statement is given and the
+     learner assembles the CAPS reason word-for-word from fragment chips.
+     Decoys are the classic wrong fragments (converses, ÷2 instead of ×2,
+     “of Δ” vs “of cyclic quad”). Each row: { s, parts, decoys } — parts in
+     the exact answer order; the row's chip bank = shuffled(parts + decoys). */
+  {
+    id: "adv-say-chord", type: "sayit", accent: ACCENTS[1],
+    title: { en: "Say It Like the Examiner: Chords", af: "Sê Dit Soos die Eksaminator: Koorde" },
+    blurb: { en: "You can SEE it — now write it in exam words.", af: "Jy kan dit SIEN — skryf dit nou in eksamenwoorde." },
+    given: { en: "Given: O is the centre, OM ⊥ chord AB, radius OA = 10 and OM = 6.", af: "Gegee: O is die middelpunt, OM ⊥ koord AB, radius OA = 10 en OM = 6." },
+    diagram: D5,
+    rows: [
+      { s: "∠OMA = 90°",
+        parts: [{ en: "given", af: "gegee" }],
+        decoys: [{ en: "construction", af: "konstruksie" }, { en: "tan ⊥ radius", af: "raaklyn ⊥ radius" }] },
+      { s: "AM = MB",
+        parts: [{ en: "line from centre", af: "lyn vanuit mdpt" }, { en: "⊥", af: "⊥" }, { en: "to chord", af: "op koord" }],
+        decoys: [{ en: "line from midpt", af: "lyn vanuit koord" }, { en: "∥", af: "∥" }] },
+      { s: "OA² = OM² + AM²",
+        parts: [{ en: "Pythagoras", af: "Pythagoras" }],
+        decoys: [{ en: "line from centre ⊥ to chord", af: "lyn vanuit mdpt ⊥ op koord" }, { en: "radii", af: "radii" }] },
+    ],
+  },
+  {
+    id: "adv-say-centre", type: "sayit", accent: ACCENTS[3],
+    title: { en: "Say It Like the Examiner: Centre & Segment", af: "Sê Dit Soos die Eksaminator: Middelpunt & Segment" },
+    blurb: { en: "You can SEE it — now write it in exam words.", af: "Jy kan dit SIEN — skryf dit nou in eksamenwoorde." },
+    given: { en: "Given: the centre angle Ô = 100°.", af: "Gegee: die middelpunthoek Ô = 100°." },
+    diagram: D1,
+    rows: [
+      { s: "P̂ = 50°",
+        parts: [{ en: "∠ at centre", af: "middelpuntshoek" }, { en: "= 2 ×", af: "= 2 ×" }, { en: "∠ at circumference", af: "omtrekshoek" }],
+        decoys: [{ en: "= ½ ×", af: "= ½ ×" }, { en: "∠ at midpoint", af: "koordhoek" }] },
+      { s: "Q̂ = P̂",
+        parts: [{ en: "∠s", af: "∠e" }, { en: "in same seg", af: "in dieselfde segment" }],
+        decoys: [{ en: "on same chord", af: "op dieselfde koord" }, { en: "in opp seg", af: "in die teenoorstaande segment" }] },
+      { s: "∠OAB = ∠OBA",
+        parts: [{ en: "∠s opp", af: "∠e teenoor" }, { en: "equal sides", af: "gelyke sye" }],
+        decoys: [{ en: "sides opp", af: "sye teenoor" }, { en: "equal ∠s", af: "gelyke ∠e" }] },
+    ],
+  },
+  {
+    id: "adv-say-tangent", type: "sayit", accent: ACCENTS[0],
+    title: { en: "Say It Like the Examiner: Tangents", af: "Sê Dit Soos die Eksaminator: Raaklyne" },
+    blurb: { en: "You can SEE it — now write it in exam words.", af: "Jy kan dit SIEN — skryf dit nou in eksamenwoorde." },
+    given: { en: "Given: STU is a tangent at T, O is the centre, and the tangent–chord angle (between the tangent and chord TA) is 35°.", af: "Gegee: STU is 'n raaklyn by T, O is die middelpunt, en die raaklyn–koord-hoek (tussen die raaklyn en koord TA) is 35°." },
+    diagram: D9,
+    rows: [
+      { s: "∠OTU = 90°",
+        parts: [{ en: "tan", af: "raaklyn" }, { en: "⊥", af: "⊥" }, { en: "radius", af: "radius" }],
+        decoys: [{ en: "∥", af: "∥" }, { en: "chord", af: "koord" }] },
+      { s: "∠OAT = ∠OTA",
+        parts: [{ en: "∠s opp", af: "∠e teenoor" }, { en: "equal sides", af: "gelyke sye" }],
+        decoys: [{ en: "sides opp", af: "sye teenoor" }, { en: "equal ∠s", af: "gelyke ∠e" }] },
+      { s: "∠TOA = 70°",
+        parts: [{ en: "int ∠s", af: "binne-∠e" }, { en: "of Δ", af: "van Δ" }],
+        decoys: [{ en: "ext ∠", af: "buite∠" }, { en: "of cyclic quad", af: "van kvh" }] },
+    ],
+  },
+  {
+    id: "adv-say-cyclic", type: "sayit", accent: ACCENTS[4],
+    title: { en: "Say It Like the Examiner: Cyclic Quads", af: "Sê Dit Soos die Eksaminator: Koordevierhoeke" },
+    blurb: { en: "You can SEE it — now write it in exam words.", af: "Jy kan dit SIEN — skryf dit nou in eksamenwoorde." },
+    given: { en: "Given: ABCD is a cyclic quad with BC produced to E, and Â = 100°.", af: "Gegee: ABCD is 'n koordevierhoek met BC verleng na E, en Â = 100°." },
+    diagram: D8,
+    rows: [
+      { s: "∠DCE = 100°",
+        parts: [{ en: "ext ∠", af: "buite∠" }, { en: "of cyclic quad", af: "van kvh" }],
+        decoys: [{ en: "of Δ", af: "van Δ" }, { en: "opp ∠s", af: "teenoorst. ∠e" }] },
+      { s: "∠BCD = 80°",
+        parts: [{ en: "∠s on", af: "∠e op" }, { en: "a str line", af: "'n reguitlyn" }],
+        decoys: [{ en: "a diameter", af: "'n middellyn" }, { en: "∠s in", af: "∠e in" }] },
+      { s: "Â + ∠BCD = 180°",
+        parts: [{ en: "opp ∠s", af: "teenoorst. ∠e" }, { en: "of cyclic quad", af: "van kvh" }],
+        decoys: [{ en: "int ∠s", af: "binne-∠e" }, { en: "of Δ", af: "van Δ" }] },
+    ],
+  },
 ];
 
 export const ADVENTURE_BY_ID = Object.fromEntries(ADVENTURES.map(a => [a.id, a]));

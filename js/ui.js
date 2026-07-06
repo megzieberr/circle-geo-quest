@@ -1,5 +1,6 @@
 /* Small DOM helpers + shared chrome (top bar). */
 import { t, getLang, setLang } from "./i18n.js";
+import { showWhy } from "./why.js";
 
 export function el(tag, cls, html) {
   const e = document.createElement(tag);
@@ -33,6 +34,11 @@ export function renderChrome(app) {
     right.appendChild(xp);
     if (app.state.rank) right.appendChild(el("span", "pill rank", `#${app.state.rank}`));
   }
+  // "why are we doing this?" explainer — the class rule is to always ask why
+  const why = el("button", "pill why", `❓ ${t("whyBtn")}`);
+  why.title = t("whyBtn");
+  why.addEventListener("click", showWhy);
+  right.appendChild(why);
   // language toggle
   const lang = el("button", "pill lang", getLang() === "en" ? "AF" : "EN");
   lang.title = t("language");

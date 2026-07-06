@@ -47,7 +47,8 @@ export function renderAdventures(app, host) {
     const tag = a.type === "reasons" ? `📝 ${t("fillReasons")}`
               : a.type === "values" ? `🔢 ${t("fillValues")}`
               : a.type === "mixed" ? `🎯 ${t("fillBoth")}`
-              : a.type === "proofgap" ? `🧩 ${t("completeProof")}` : `🔍 ${t("spotError")}`;
+              : a.type === "proofgap" ? `🧩 ${t("completeProof")}`
+              : a.type === "sayit" ? `🗣️ ${t("sayIt")}` : `🔍 ${t("spotError")}`;
     card.innerHTML = `
       <div class="rc-top"><span class="rc-kind">${tag}</span>${done ? '<span class="rc-badge" title="Done">✓</span>' : ""}</div>
       <h3>${tx(a.title)}</h3>
@@ -79,7 +80,7 @@ export function renderAdventure(app, host, params) {
   const screen = el("div", "play adventure");
   screen.style.setProperty("--accent", adv.accent);
 
-  const tag = adv.type === "reasons" ? "📝" : adv.type === "values" ? "🔢" : adv.type === "mixed" ? "🎯" : adv.type === "proofgap" ? "🧩" : "🔍";
+  const tag = adv.type === "reasons" ? "📝" : adv.type === "values" ? "🔢" : adv.type === "mixed" ? "🎯" : adv.type === "proofgap" ? "🧩" : adv.type === "sayit" ? "🗣️" : "🔍";
   const top = el("div", "play-top");
   top.innerHTML = `<button class="link-btn quit">✕</button>
     <div class="play-title">${tx(adv.title)}</div>
@@ -94,7 +95,8 @@ export function renderAdventure(app, host, params) {
   const hintText = adv.type === "reasons" ? t("advReasonsHint")
                  : adv.type === "values" ? t("advValuesHint")
                  : adv.type === "mixed" ? t("advMixedHint")
-                 : adv.type === "proofgap" ? t("advProofHint") : t("advSpotHint");
+                 : adv.type === "proofgap" ? t("advProofHint")
+                 : adv.type === "sayit" ? t("advSayHint") : t("advSpotHint");
   screen.appendChild(el("p", "adv-instr", hintText));
   if (adv.given) screen.appendChild(el("div", "adv-given", "📌 " + tx(adv.given)));
   if (alreadyPassed) screen.appendChild(el("div", "replay-note", "🔁 " + t("replayNoXp")));
@@ -104,7 +106,108 @@ export function renderAdventure(app, host, params) {
 
   if (adv.type === "spoterror") renderSpot(app, adv, screen, foot, alreadyPassed);
   else if (adv.type === "proofgap") renderProofGap(app, adv, screen, foot, alreadyPassed);
+  else if (adv.type === "sayit") renderSayIt(app, adv, screen, foot, alreadyPassed);
   else renderTable(app, adv, screen, foot, alreadyPassed);
+}
+
+/* ---------- say it like the examiner: build each reason from fragments ----------
+   The statement is given; the learner assembles the CAPS reason word-for-word
+   by tapping fragment chips IN ORDER. Chips are the row's true parts plus
+   decoy fragments (converses and classic wrong wordings), shuffled once.
+   Tapping a placed fragment returns it to the bank. A row is correct only if
+   the assembled sequence matches `parts` exactly. */
+function renderSayIt(app, adv, screen, foot, alreadyPassed) {
+  // chips carry their origin so grading is by identity: part j must sit in slot j
+  const rows = adv.rows.map((def, i) => ({
+    def, i,
+    chips: shuffled([
+      ...def.parts.map((p, j) => ({ frag: p, part: j })),
+      ...(def.decoys || []).map(p => ({ frag: p, part: -1 })),
+    ]),
+    sel: [],                       // placed chips, in order
+  }));
+  let active = 0;
+  let locked = false;
+
+  const list = el("div", "adv-table say-list");
+  const inputArea = el("div", "adv-input");
+  const checkBtn = el("button", "btn primary big", t("check"));
+  checkBtn.disabled = true;
+  foot.appendChild(checkBtn);
+  mount(screen, list, inputArea, foot);
+
+  const rowFilled = r => r.sel.length === r.def.parts.length;
+  const rowOK = r => rowFilled(r) && r.sel.every((c, j) => c.part === j);
+  const allFilled = () => rows.every(rowFilled);
+  const phrase = def => def.parts.map(tx).join(" ");
+
+  function renderRows() {
+    list.innerHTML = "";
+    rows.forEach(r => {
+      const isActive = !locked && r.i === active;
+      const row = el("div", "adv-row say-row" + (isActive ? " active" : "") + (locked ? (rowOK(r) ? " row-ok" : " row-bad") : ""));
+      row.appendChild(el("div", "adv-rowhead", `<span class="adv-stmt">${r.def.s}</span>`));
+      const slots = el("div", "say-slots");
+      r.def.parts.forEach((_, j) => {
+        const c = r.sel[j];
+        const slot = el("button", "say-slot" + (c ? " filled" : " empty"), c ? tx(c.frag) : "…");
+        if (!locked) slot.addEventListener("click", () => {
+          active = r.i;
+          if (c) r.sel.splice(j, 1);       // take the fragment back
+          sync();
+        });
+        slots.appendChild(slot);
+      });
+      row.appendChild(slots);
+      if (locked && !rowOK(r)) row.appendChild(el("div", "adv-correct", "✓ " + phrase(r.def)));
+      if (!locked) row.addEventListener("click", e => { if (e.target === row) { active = r.i; sync(); } });
+      list.appendChild(row);
+    });
+  }
+
+  function renderInput() {
+    inputArea.innerHTML = "";
+    if (locked) return;
+    const r = rows[active];
+    const wrap = el("div", "wordbank say-bank");
+    r.chips.forEach(c => {
+      const used = r.sel.includes(c);
+      const chip = el("button", "wordchip" + (used ? " picked" : ""), tx(c.frag));
+      chip.disabled = used;
+      if (!used) chip.addEventListener("click", () => {
+        if (rowFilled(r)) return;
+        r.sel.push(c);
+        if (rowFilled(r)) { const nx = rows.find(x => !rowFilled(x)); if (nx) active = nx.i; }
+        sync();
+      });
+      wrap.appendChild(chip);
+    });
+    inputArea.appendChild(wrap);
+  }
+
+  function sync() { renderRows(); renderInput(); checkBtn.disabled = !allFilled(); }
+
+  checkBtn.addEventListener("click", async () => {
+    if (locked || !allFilled()) return;
+    locked = true;
+    const total = rows.length;
+    const correct = rows.filter(rowOK).length;
+    let xp = 0, streak = 0;
+    rows.forEach(r => {
+      if (rowOK(r)) { streak++; xp += CONFIG.xpPerCorrect + CONFIG.firstTryBonus + CONFIG.streakStep * Math.min(streak - 1, CONFIG.streakCap); }
+      else streak = 0;
+    });
+    const gained = alreadyPassed ? 0 : xp;
+    renderRows();
+    inputArea.innerHTML = "";
+    checkBtn.remove();
+    const frac = total ? correct / total : 0;
+    try { const s = getSession(); await api.submitRound(s.name, s.password, adv.id, { score: frac, xpGained: gained, total, correct }); } catch { /* offline */ }
+    await app.refreshState();
+    showResult(app, adv, screen, foot, { correct, total, gained, frac, alreadyPassed });
+  });
+
+  sync();
 }
 
 /* ---------- complete the proof: supply each missing reason ---------- */
