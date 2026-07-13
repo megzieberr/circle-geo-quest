@@ -214,16 +214,13 @@ end; $$;
 grant execute on function public.cgg_admin_weekly_results(text) to anon, authenticated;
 
 -- ------------------------------------------------------------
--- 4. Seed this term's first Circle Champion.
---    "on conflict do nothing" => this ONLY sets the pick if none exists,
---    so it will never overwrite a champion the teacher later chooses from
---    the dashboard. To change the champion, use the admin dashboard (or
---    update this row directly).
---    NOTE: the value must EXACTLY match the learner's display_name. If it
---    doesn't line up, just re-pick from the admin dashboard's roster list.
+-- 4. No champion is seeded here on purpose.
+--    This repo is PUBLIC, so no learner names live in it. After running
+--    this file, the teacher picks the first Circle Champion from the admin
+--    dashboard (🏆 card → choose a learner → Award), which calls
+--    cgg_admin_set_champion. That is the single source of truth for the
+--    pick, and it persists until changed.
 -- ------------------------------------------------------------
-insert into public.app_config (key, value) values ('champion_name', 'a learner')
-  on conflict (key) do nothing;
 
 -- ============================================================
 --  ROLLBACK — to undo, re-run phase9.sql (restores cgg_weekly_results and

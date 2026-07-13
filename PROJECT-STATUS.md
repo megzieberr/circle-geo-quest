@@ -14,7 +14,8 @@ steady, all the way through), independent of weekly XP so cramming can't take it
   awards (Star/Improved/On Fire/Perfect Week) all reward bursts, so a slow-and-
   steady learner keeps getting bumped by someone cramming rounds. The champion is
   the teacher's call, set from the admin dashboard (🏆 card → pick a learner).
-  First pick: a learner (seeded in phase10.sql). Stored as app_config key
+  The first pick is chosen by the teacher from the admin dashboard (no name is
+  seeded in the repo — it's public). Stored as app_config key
   `champion_name`; returned by cgg_weekly_results / cgg_admin_weekly_results; set
   via cgg_admin_set_champion. It leads the popup as the hero (gold) chip above Star
   of the Week, which keeps its own gold.
@@ -37,12 +38,12 @@ steady, all the way through), independent of weekly XP so cramming can't take it
 
 ## Pending on Megan
 - Run `supabase/phase10.sql` in the Supabase SQL editor (additive, safe while
-  learners play). It seeds a learner as the first Circle Champion and adds the
-  admin 🏆 picker. Until it's run, the dashboard's champion card shows a reminder.
+  learners play). It adds the admin 🏆 picker; no champion is seeded (the repo
+  is public, so the teacher picks the learner from the dashboard instead).
+  Until it's run, the dashboard's champion card shows a reminder.
   → Do this before Mon 20 Jul so the champion shows in that day's crown popup.
-- After running it, open the admin dashboard, confirm the 🏆 card shows
-  "Current champion: a learner" (the seed name must exactly match her
-  display_name — if not, just pick her from the dropdown and Award).
+- After running it, open the admin dashboard and use the 🏆 card to pick the
+  learner from the dropdown and Award — that sets the first Circle Champion.
 - Run `supabase/phase8.sql` too if not already done (needed for "🌟 Weekly
   winners"). Hard-refresh the admin page (Ctrl+F5) to pick up the new card.
 
