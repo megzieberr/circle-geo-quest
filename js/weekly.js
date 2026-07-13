@@ -37,6 +37,13 @@ const WEEKLY_START = new Date(2026, 6, 3);
 // The very first rally (week of Fri 3 Jul) celebrates the whole game so far, so
 // it shows ALL-TIME XP/standings instead of just this week's. Later rallies are
 // weekly as normal. Anchor = Monday of the week containing WEEKLY_START.
+// CIRCLE CHAMPION is a ONE-TIME reveal, held for the final week's crown only
+// (Mon 20 Jul 2026, the last results day before school restarts on Tue 21 Jul).
+// Even though the champion is set on the server, the learner crown hides it on
+// every other week — so it never shows early and never lingers. (0-indexed month:
+// 6 = July.) Teacher previews (?wk=crown and the admin dashboard) ignore this gate
+// so the announcement can be checked/screenshotted ahead of the day.
+const CHAMPION_REVEAL = new Date(2026, 6, 20);
 
 /* Monday-00:00 anchor of the week containing `d` (mirrors api.js startOfWeek). */
 function startOfWeekTs(d = new Date()) {
@@ -105,6 +112,9 @@ async function fetchAndShowCrown(app, lastWeekId, force) {
     const res = await api.weeklyResults(s.name, s.password);
     if (!res || !res.ok || !Array.isArray(res.board) || !res.board.length || !res.star) return;
     if (!force) { const st = read(app); st.crownAnchor = lastWeekId; write(app, st); }   // mark seen
+    // ONE-TIME reveal: on the genuine learner path, only the final week's crown
+    // carries the Circle Champion. Forced teacher previews keep it (see gate note).
+    if (!force && startOfWeekTs() !== startOfWeekTs(CHAMPION_REVEAL)) res.champion = null;
     showWeeklyModal(app, buildCrown(res, app));
   } catch { /* offline — the crown just won't show */ }
   finally { crownBusy = false; }
