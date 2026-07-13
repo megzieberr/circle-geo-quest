@@ -13,11 +13,17 @@ steady, all the way through), independent of weekly XP so cramming can't take it
 - 2026-07-13: Added Circle Champion — deliberately NOT computed. The four weekly
   awards (Star/Improved/On Fire/Perfect Week) all reward bursts, so a slow-and-
   steady learner keeps getting bumped by someone cramming rounds. The champion is
-  the teacher's call, set from the admin dashboard (🏆 card → pick a learner), and
-  stays until changed. First pick: a learner (seeded in phase10.sql). Stored as
-  app_config key `champion_name`; returned by cgg_weekly_results /
-  cgg_admin_weekly_results; set via cgg_admin_set_champion. It leads the popup as
-  the hero (gold) chip above Star of the Week, which keeps its own gold.
+  the teacher's call, set from the admin dashboard (🏆 card → pick a learner).
+  First pick: a learner (seeded in phase10.sql). Stored as app_config key
+  `champion_name`; returned by cgg_weekly_results / cgg_admin_weekly_results; set
+  via cgg_admin_set_champion. It leads the popup as the hero (gold) chip above Star
+  of the Week, which keeps its own gold.
+- 2026-07-13: ONE-TIME reveal. Even though the champion is set on the server, the
+  learner crown only shows it on the FINAL week's results day — gated in weekly.js
+  to `CHAMPION_REVEAL = Mon 20 Jul 2026` (the last crown before school restarts Tue
+  21 Jul). It is hidden this week and every week after, so it never shows early or
+  lingers. Teacher previews (?wk=crown + admin 🏆 button) ignore the gate for
+  ahead-of-time screenshots. To reuse next term, bump CHAMPION_REVEAL.
 - 2026-07-06: Admin "🌟 Weekly winners" / "🔥 Rally board" buttons reuse the exact
   learner modal (same markup/CSS) so screenshots match what kids see; the
   learner-personal line is swapped for nothing (crown) or a top-3 podium (rally).
