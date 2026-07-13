@@ -10,6 +10,14 @@ for the learner who plays the game the way it's meant to be played (every day,
 steady, all the way through), independent of weekly XP so cramming can't take it.
 
 ## Decisions
+- 2026-07-13 (later): Repo deleted + recreated to purge a learner name that a
+  cloud-dispatch PR had committed into history (phase10 seed + this file). History
+  was rewritten first (git-filter-repo), but GitHub keeps merged-PR refs alive, so
+  only deletion kills the cached commits. ALL pre-scrub commit SHAs are stale; PR
+  history restarted; clean-history bundle at Desktop\circle-geo-quest-CLEAN-2026-07-13.bundle.
+  Rule reaffirmed: no learner names in this repo, ever — the champion pick lives in
+  Supabase app_config only, set from the admin dashboard. Check dispatch PRs for
+  names before merging.
 - 2026-07-13: Added Circle Champion — deliberately NOT computed. The four weekly
   awards (Star/Improved/On Fire/Perfect Week) all reward bursts, so a slow-and-
   steady learner keeps getting bumped by someone cramming rounds. The champion is
