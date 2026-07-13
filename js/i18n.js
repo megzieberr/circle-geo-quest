@@ -241,6 +241,9 @@ const UI = {
   wkAwardImproved:{ en: "Most Improved", af: "Meeste Verbeter" },        // Phase B
   wkAwardStreak:  { en: "On Fire", af: "Aan die Brand" },                // Phase B
   wkAwardPerfect: { en: "Perfect Week", af: "Perfekte Week" },           // everyone with 7/7 dailies — not winner-take-all
+  wkAwardChampion:{ en: "Circle Champion", af: "Sirkel Kampioen" },       // teacher's-choice honour for playing the game the way it's meant to be played
+  wkChampionSub:  { en: "Teacher's honour — for playing the way the game was meant to be played: every day, steady, all the way through.",
+                    af: "Onderwyser se eer — vir speel soos die spel bedoel is: elke dag, standvastig, heelpad deur." },
   dailyPerfectWeek:{ en: "PERFECT WEEK — every single day this week!", af: "PERFEKTE WEEK — elke enkele dag hierdie week!" },
   wkYouAreStar:   { en: "You're the Star of the Week! 🌟", af: "Jy is die Ster van die Week! 🌟" },
   wkFinishedNum:  { en: "You finished", af: "Jy het geëindig" },         // "You finished #4 last week — …"
