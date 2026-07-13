@@ -410,6 +410,7 @@ const LocalBackend = {
       mostImproved: w.mostImproved,
       onFire: w.onFire,
       perfectWeek: w.perfectWeek,
+      champion: read(LS.meta, {}).championName || null,   // teacher's-choice honour
       me: { xp: meAgg.lw, rank: w.lwRank[s.id] },
       prevRank: meAgg.pw > 0 ? w.pwRank[s.id] : null,
       bestPrevXp,
@@ -455,7 +456,18 @@ const LocalBackend = {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
     const w = computeWeeklyAwards(read(LS.students, {}), read(LS.events, []));
-    return { ok: true, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire, perfectWeek: w.perfectWeek };
+    return { ok: true, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire, perfectWeek: w.perfectWeek, champion: read(LS.meta, {}).championName || null };
+  },
+  /* Set (or clear) the teacher's-choice Circle Champion. Pass a learner's
+     display name to award it; pass null/"" to clear it. Mirrors the
+     cgg_admin_set_champion RPC. */
+  async adminSetChampion(adminPassword, name) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const clean = (name || "").trim();
+    meta.championName = clean || null;
+    write(LS.meta, meta);
+    return { ok: true, champion: meta.championName };
   },
   async adminResetWeekly(adminPassword) {
     const meta = read(LS.meta, {});
@@ -526,7 +538,7 @@ const PreviewBackend = {
   async removePush() { return { ok: true }; },
   // read views: empty / benign so nothing from the real class shows or is altered
   async leaderboard() { return { ok: true, weekly: [], allTime: [], myWeekly: null, myAllTime: null }; },
-  async weeklyResults() { return { ok: true, board: [], star: null, mostImproved: null, onFire: null, me: { xp: 0, rank: null }, prevRank: null, bestPrevXp: 0 }; },
+  async weeklyResults() { return { ok: true, board: [], star: null, mostImproved: null, onFire: null, champion: null, me: { xp: 0, rank: null }, prevRank: null, bestPrevXp: 0 }; },
 };
 
 /* ============================================================

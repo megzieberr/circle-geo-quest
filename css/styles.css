@@ -426,7 +426,17 @@ svg.cs-svg{width:100%; max-width:380px; height:auto;}
 .wk-winners{display:flex; flex-direction:column; gap:8px; margin:4px 0 12px;}
 .wk-award{display:flex; align-items:center; gap:11px; text-align:left; border:2px solid var(--ink); border-radius:13px;
   padding:9px 12px; background:#fff; box-shadow:var(--shadow-sm);}
-.wk-award:first-child{background:linear-gradient(180deg,#fff7e0,#fff); border-color:#e0a000;}
+/* Star of the Week keeps its gold whether or not a Circle Champion sits above it. */
+.wk-award.wk-star,
+.wk-winners .wk-award:first-child{background:linear-gradient(180deg,#fff7e0,#fff); border-color:#e0a000;}
+/* Circle Champion — the hero honour: a richer royal-gold chip that outshines the
+   rest, with a trophy-worthy glow. Overrides the star gold when it leads. */
+.wk-award.wk-champion{background:linear-gradient(135deg,#fff2c4 0%,#ffe08a 45%,#f7c948 100%);
+  border-color:#b8860b; border-width:2.5px; padding:12px 13px;
+  box-shadow:0 0 0 3px rgba(247,201,72,.28), var(--shadow-sm);}
+.wk-award.wk-champion .wk-aw-icon{font-size:1.75rem;}
+.wk-award.wk-champion .wk-aw-label{color:#8a5a00;}
+.wk-award.wk-champion .wk-aw-name{font-size:1.22rem;}
 .wk-award.you{box-shadow:3px 3px 0 var(--s4);}
 .wk-aw-body .tag-you{margin-left:6px;}
 .wk-aw-icon{font-size:1.5rem; line-height:1;}

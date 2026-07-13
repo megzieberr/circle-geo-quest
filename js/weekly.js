@@ -37,6 +37,13 @@ const WEEKLY_START = new Date(2026, 6, 3);
 // The very first rally (week of Fri 3 Jul) celebrates the whole game so far, so
 // it shows ALL-TIME XP/standings instead of just this week's. Later rallies are
 // weekly as normal. Anchor = Monday of the week containing WEEKLY_START.
+// CIRCLE CHAMPION is a ONE-TIME reveal, held for the final week's crown only
+// (Mon 20 Jul 2026, the last results day before school restarts on Tue 21 Jul).
+// Even though the champion is set on the server, the learner crown hides it on
+// every other week — so it never shows early and never lingers. (0-indexed month:
+// 6 = July.) Teacher previews (?wk=crown and the admin dashboard) ignore this gate
+// so the announcement can be checked/screenshotted ahead of the day.
+const CHAMPION_REVEAL = new Date(2026, 6, 20);
 
 /* Monday-00:00 anchor of the week containing `d` (mirrors api.js startOfWeek). */
 function startOfWeekTs(d = new Date()) {
@@ -105,6 +112,9 @@ async function fetchAndShowCrown(app, lastWeekId, force) {
     const res = await api.weeklyResults(s.name, s.password);
     if (!res || !res.ok || !Array.isArray(res.board) || !res.board.length || !res.star) return;
     if (!force) { const st = read(app); st.crownAnchor = lastWeekId; write(app, st); }   // mark seen
+    // ONE-TIME reveal: on the genuine learner path, only the final week's crown
+    // carries the Circle Champion. Forced teacher previews keep it (see gate note).
+    if (!force && startOfWeekTs() !== startOfWeekTs(CHAMPION_REVEAL)) res.champion = null;
     showWeeklyModal(app, buildCrown(res, app));
   } catch { /* offline — the crown just won't show */ }
   finally { crownBusy = false; }
@@ -137,7 +147,16 @@ function rallyPersonal(board, me) {
 /* ---------------- crown ---------------- */
 function buildCrown(res, app) {
   const meName = (app && app.state && app.state.student) ? app.state.student.name : null;
-  const winners = [{ icon: "🌟", label: t("wkAwardStar"), name: res.star.name, value: `★ ${res.star.xp}` }];
+  const winners = [];
+  // CIRCLE CHAMPION — a teacher's-choice honour, not a weekly stat. It leads the
+  // board (and takes the hero styling) because it celebrates the long game:
+  // playing every day, steadily, all the way through — the way the game is meant
+  // to be played, which the burst-friendly weekly awards can't capture. It's set
+  // by the teacher (admin dashboard), independent of last week's XP, so a frantic
+  // catch-up day can never take it.
+  if (res.champion)
+    winners.push({ icon: "🏆", label: t("wkAwardChampion"), name: res.champion, value: "", cls: "wk-champion" });
+  winners.push({ icon: "🌟", label: t("wkAwardStar"), name: res.star.name, value: `★ ${res.star.xp}`, cls: "wk-star" });
   if (res.mostImproved)
     winners.push({ icon: "📈", label: t("wkAwardImproved"), name: res.mostImproved.name, value: `+${res.mostImproved.delta} XP` });
   if (res.onFire)
@@ -159,7 +178,7 @@ function buildCrown(res, app) {
     headline: t("wkCrownTitle"),
     winners,
     personalHTML: crownPersonal(res),
-    subHTML: null,
+    subHTML: res.champion ? `🏆 <b>${res.champion}</b> — ${t("wkChampionSub")}` : null,
     primaryLabel: t("wkNice"),
   };
 }
@@ -213,10 +232,10 @@ function showWeeklyModal(app, cfg) {
 
   if (cfg.winners && cfg.winners.length) {
     const strip = el("div", "wk-winners");
-    cfg.winners.forEach(w => strip.appendChild(el("div", "wk-award" + (w.me ? " you" : ""), `
+    cfg.winners.forEach(w => strip.appendChild(el("div", "wk-award" + (w.cls ? " " + w.cls : "") + (w.me ? " you" : ""), `
       <span class="wk-aw-icon">${w.icon}</span>
       <span class="wk-aw-body"><span class="wk-aw-label">${w.label}</span><span class="wk-aw-name">${w.name}${w.me ? ` <span class="tag-you">${t("you")}</span>` : ""}</span></span>
-      <span class="wk-aw-xp">${w.value}</span>`)));
+      ${w.value ? `<span class="wk-aw-xp">${w.value}</span>` : ""}`)));
     m.appendChild(strip);
   }
   if (cfg.personalHTML) m.appendChild(el("div", "wk-personal", cfg.personalHTML));

@@ -76,3 +76,13 @@
 .stuck-card .muted{margin:0 0 10px;}
 .stuck-table{min-width:520px;}
 .stuck-table td.num{font-weight:700;}
+
+/* Circle Champion picker */
+.champion-card{margin:0 0 18px; padding:14px 16px; border-color:#e0a000;
+  background:linear-gradient(180deg,#fffaf0,#fff);}
+.champion-card h2{margin:0 0 4px; font-size:1.15rem;}
+.champion-card .muted{margin:0 0 10px;}
+.champion-current{margin:0 0 10px; font-size:1rem;}
+.champion-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+.champion-select{padding:8px 10px; border:2px solid var(--ink); border-radius:10px;
+  font:inherit; background:#fff; min-width:200px;}

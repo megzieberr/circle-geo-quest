@@ -14,6 +14,7 @@ let adminPw = null;
 let data = null;
 let itemStats = null;
 let feedback = null;
+let championNow = null;   // current teacher's-choice Circle Champion (display name, or null)
 
 const INACTIVE_DAYS = 7;
 const fmtDate = ts => ts ? new Date(ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
@@ -52,6 +53,9 @@ async function load() {
   itemStats = api.adminItemStats ? await api.adminItemStats(adminPw).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
   // anonymous end-of-game feedback (best-effort; needs the Phase-6 RPC)
   feedback = api.adminFeedback ? await api.adminFeedback(adminPw).catch(() => ({ ok: false })) : { ok: false };
+  // current Circle Champion (best-effort; needs the Phase-10 RPC)
+  const wk = api.adminWeeklyResults ? await api.adminWeeklyResults(adminPw).catch(() => ({ ok: false })) : { ok: false };
+  championNow = wk && wk.ok ? (wk.champion || null) : null;
   renderDashboard();
 }
 
@@ -110,6 +114,8 @@ function renderDashboard() {
     <div class="asum ${inactive ? "warn" : ""}"><b>${inactive}</b><span>inactive ${inactiveDays}d+</span></div>
     <div class="asum ${stuck.length ? "warn" : ""}"><b>${stuck.length}</b><span>stuck (2+ tries)</span></div>`;
   root.appendChild(sum);
+
+  renderChampionCard();
 
   if (stuck.length) {
     const sec = el("div", "card stuck-card");
@@ -177,6 +183,44 @@ function renderDashboard() {
   renderItemReport();
 
   root.appendChild(el("p", "muted small center", "Passwords are hidden. If a learner forgets theirs, use “reset pw” to clear it so they pick a new one. Backend: " + BACKEND));
+}
+
+/* ---------- Circle Champion (teacher's-choice honour) ---------- */
+/* A hand-picked award for the learner who plays the game the way it's meant to
+   be played — every day, steady, all the way through — which the burst-friendly
+   weekly awards can't capture. Independent of last week's XP, so a frantic
+   catch-up day can never take it. Shown as the hero chip in the Monday popup. */
+function renderChampionCard() {
+  const sec = el("div", "card champion-card");
+  sec.innerHTML = `<h2>🏆 Circle Champion</h2>
+    <p class="muted small">A hand-picked honour for the learner playing the way the game is meant to be played —
+    every day, steady, all the way through. It leads Monday's Results Day popup and isn't tied to weekly XP,
+    so nobody can cram their way past it. Set it here; it stays until you change it.</p>`;
+  const row = el("div", "champion-row");
+  const current = el("p", "champion-current",
+    championNow ? `Current champion: <b>${escapeHtml(championNow)}</b>` : `<span class="muted">No champion set yet.</span>`);
+  const select = el("select", "champion-select");
+  select.innerHTML = `<option value="">— choose a learner —</option>` +
+    data.rows.map(r => `<option value="${escapeHtml(r.name)}"${r.name === championNow ? " selected" : ""}>${escapeHtml(r.name)}</option>`).join("");
+  const save = el("button", "btn primary small", "Award champion");
+  save.addEventListener("click", () => setChampion(select.value));
+  const clear = el("button", "btn ghost small", "Clear");
+  clear.addEventListener("click", () => setChampion(""));
+  row.appendChild(select); row.appendChild(save); row.appendChild(clear);
+  sec.appendChild(current);
+  sec.appendChild(row);
+  root.appendChild(sec);
+}
+async function setChampion(name) {
+  if (!api.adminSetChampion)
+    return alert("Circle Champion needs the Phase-10 database update — run supabase/phase10.sql in the Supabase SQL editor.");
+  const clean = (name || "").trim();
+  if (clean && !confirm(`Award Circle Champion to ${clean}?`)) return;
+  if (!clean && championNow && !confirm(`Clear the Circle Champion (${championNow})?`)) return;
+  const r = await api.adminSetChampion(adminPw, clean || null).catch(() => ({ ok: false }));
+  if (!r.ok) return alert("Could not set the champion. If this is the live class, make sure supabase/phase10.sql has been run.");
+  championNow = r.champion || (clean || null);
+  renderDashboard();
 }
 
 /* ---------- anonymous feedback report ---------- */
