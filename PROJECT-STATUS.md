@@ -12,6 +12,15 @@ nicknames & avatars (freeform nickname + emoji avatar shown on leaderboards and
 weekly reveals; real names stay authoritative on the admin dashboard, which also
 gained a reset-nickname moderation action; phase12.sql). Both migrations are
 APPLIED to live Supabase; advisors clean (0 errors).
+ALSO NEW 2026-07-18: SOUNDS (js/sound.js — Web Audio pings, no files, mute
+toggle in header, quiet under prefers-reduced-motion) and a SECURITY pass
+(phase13.sql, APPLIED to live): brute-force throttle baked into the auth
+helpers so every RPC path is covered (learner 6 fails/15 min, admin 20/5 min
+on top of bcrypt), friendly lockout message, and a "Worth a look" dashboard
+panel (cgg_admin_integrity) that flags fake-progress signatures (graded round
+passed with 0 questions logged; burst of rounds cleared seconds apart).
+Throttle + detection both verified working (live lockout probe; synthetic
+cheater caught, honest play ignored).
 
 ## Decisions
 - 2026-07-18: Nickname moderation = TEACHER AUTHORITY, no profanity filter.
@@ -31,6 +40,28 @@ APPLIED to live Supabase; advisors clean (0 errors).
   draft of cgg_admin_data was based on schema.sql and would have re-exposed
   learner passwords that phase5 had deliberately removed (caught in review,
   fixed before applying: hasPassword boolean preserved).
+- 2026-07-18 (security): brute-force throttle lives in the auth HELPERS
+  (_cgg_auth / _cgg_admin_ok), NOT only in cgg_login — because every RPC that
+  takes name+password is a password oracle, so rate-limiting just the login
+  endpoint would be theatre. Learner lockout keyed by lowercased name (6
+  fails/15 min); accepted trade-off = a nuisance can lock a specific classmate
+  out for the cooldown (self-heals, visible). Admin throttle deliberately
+  lenient (20 fails/5 min) so a griefer can't lock the teacher out of her own
+  dashboard, and it's only defence-in-depth over the strong bcrypt passphrase.
+- 2026-07-18 (anti-cheat is DETECTION, not prevention): because every question
+  + answer must live client-side for offline play, a valid login can POST a fake
+  score to cgg_submit_round and nothing server-side can truly stop it. So the
+  play is detection: cgg_admin_integrity + the dashboard panel flag the traces
+  (graded round passed with 0 logged questions; a burst of rounds seconds apart)
+  — the same trail that cleared Brooklyn. "Graded round" = a round with a
+  non-empty `questions` array (only those call logItems); intro/watch/discover
+  rounds legitimately log nothing and are excluded.
+- 2026-07-18 (DEFERRED, awaiting Megan): the first-login account-CLAIM hole is
+  NOT closed by phase13 — a not-yet-used account can still be claimed by whoever
+  sets its password first (no password to guess = throttle doesn't help). The
+  clean fix is a class join code (like the shower-schedule family-code gate),
+  required the first time someone claims a name. It's a UX change, so it waits
+  for her explicit yes.
 - 2026-07-13 (later): Repo deleted + recreated to purge a learner name that a
   cloud-dispatch PR had committed into history (phase10 seed + this file). History
   was rewritten first (git-filter-repo), but GitHub keeps merged-PR refs alive, so
@@ -68,8 +99,13 @@ APPLIED to live Supabase; advisors clean (0 errors).
 ## Pending on Megan
 - Eyeball the new features on live (hard-refresh; admin page Ctrl+F5): the
   Customize link on the home screen, the nickname column + "reset nickname"
-  button on the dashboard, and set your teacher-preview nickname if you fancy.
-  Everything is deployed and smoke-tested in local mode; nothing blocks play.
+  button on the dashboard, the 🔊/🔇 mute toggle in the header, and the
+  "⚠️ Worth a look" cheat-detection panel on the dashboard. Everything is
+  deployed and verified; nothing blocks play.
+- DECISION NEEDED: build the class-join-code gate for first login? (Closes the
+  account-claim hole — see Decisions 2026-07-18 DEFERRED. Low friction, one code
+  for the whole class, matches the shower-schedule family-code pattern.) It's the
+  one security item deliberately left unbuilt pending her yes.
 
 ## Next up
 - Screenshot the crown/rally from the admin dashboard for the class WhatsApp
