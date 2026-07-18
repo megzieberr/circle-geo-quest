@@ -1,4 +1,4 @@
-# Project status — updated 2026-07-13
+# Project status — updated 2026-07-18
 
 ## Where we are
 Live on GitHub Pages (megzieberr.github.io/circle-geo-quest) with Supabase backend.
@@ -45,15 +45,10 @@ steady, all the way through), independent of weekly XP so cramming can't take it
 - (Earlier decisions predate this file — see git log and auto-memory.)
 
 ## Pending on Megan
-- Run `supabase/phase10.sql` in the Supabase SQL editor (additive, safe while
-  learners play). It adds the admin 🏆 picker; no champion is seeded (the repo
-  is public, so the teacher picks the learner from the dashboard instead).
-  Until it's run, the dashboard's champion card shows a reminder.
-  → Do this before Mon 20 Jul so the champion shows in that day's crown popup.
-- After running it, open the admin dashboard and use the 🏆 card to pick the
-  learner from the dropdown and Award — that sets the first Circle Champion.
-- Run `supabase/phase8.sql` too if not already done (needed for "🌟 Weekly
-  winners"). Hard-refresh the admin page (Ctrl+F5) to pick up the new card.
+- Nothing. Verified live 2026-07-18: phase8 AND phase10 are both applied
+  (RPCs present in the database) and a Circle Champion has been picked via
+  the admin 🏆 card (name lives in app_config on the server only, as designed).
+  All set for the Mon 20 Jul reveal.
 
 ## Next up
 - Screenshot the crown/rally from the admin dashboard for the class WhatsApp
