@@ -56,12 +56,15 @@ cheater caught, honest play ignored).
   — the same trail that cleared Brooklyn. "Graded round" = a round with a
   non-empty `questions` array (only those call logItems); intro/watch/discover
   rounds legitimately log nothing and are excluded.
-- 2026-07-18 (DEFERRED, awaiting Megan): the first-login account-CLAIM hole is
-  NOT closed by phase13 — a not-yet-used account can still be claimed by whoever
-  sets its password first (no password to guess = throttle doesn't help). The
-  clean fix is a class join code (like the shower-schedule family-code gate),
-  required the first time someone claims a name. It's a UX change, so it waits
-  for her explicit yes.
+- 2026-07-18 (RESOLVED — Megan declined the class-code gate): the first-login
+  account-claim hole is moot for this class — every learner has already claimed
+  their account and set a password, so there are no password-less names left to
+  claim. (If a new learner is ever added mid-term via the admin "add student"
+  button, their name IS claimable until they first log in — tell them to log in
+  the same day.) Future apps don't inherit the issue: the homework hub creates
+  accounts with username+password up front, no pick-your-name list. She also
+  ruled the cheat-detection panel (round completion times) is sufficient — no
+  further anti-cheat wanted.
 - 2026-07-13 (later): Repo deleted + recreated to purge a learner name that a
   cloud-dispatch PR had committed into history (phase10 seed + this file). History
   was rewritten first (git-filter-repo), but GitHub keeps merged-PR refs alive, so
@@ -102,10 +105,6 @@ cheater caught, honest play ignored).
   button on the dashboard, the 🔊/🔇 mute toggle in the header, and the
   "⚠️ Worth a look" cheat-detection panel on the dashboard. Everything is
   deployed and verified; nothing blocks play.
-- DECISION NEEDED: build the class-join-code gate for first login? (Closes the
-  account-claim hole — see Decisions 2026-07-18 DEFERRED. Low friction, one code
-  for the whole class, matches the shower-schedule family-code pattern.) It's the
-  one security item deliberately left unbuilt pending her yes.
 
 ## Next up
 - Screenshot the crown/rally from the admin dashboard for the class WhatsApp
