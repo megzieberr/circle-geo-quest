@@ -54,4 +54,13 @@ steady, all the way through), independent of weekly XP so cramming can't take it
 - Screenshot the crown/rally from the admin dashboard for the class WhatsApp
   group (switch the game's language toggle first if the Afrikaans version is
   wanted).
-- Nothing else agreed; chapter/round content is complete.
+- 2026-07-18: Engagement spec drafted for four features to boost re-engagement
+  before daily quests become term homework — streak milestones, a badge unlock
+  ceremony, and a nickname/avatar system (real names stay admin-only). Written
+  up in `docs/engagement-plan.md`, opened as draft PR #1 for tracking.
+  **Approved by Megan 2026-07-18** with one ruling: nickname input is freeform
+  with NO profanity filter (bilingual class = blocklist false positives, e.g.
+  Afrikaans "vak"); moderation = teacher authority via a new admin
+  reset-nickname action that nulls the nickname back to the real name until
+  the learner picks again. Implementation proceeds per the doc's "Sequencing
+  for parallel agents" section.
