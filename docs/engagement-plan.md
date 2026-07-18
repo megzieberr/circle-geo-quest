@@ -2,7 +2,7 @@
 
 Context: most students are near the end of their rounds; daily quests + adventure
 rounds become term homework next. Weekly "Star of the Week" data shows this game
-is where test-anxious kids (some scored 13% on the June exam) actually shine,
+is where kids who struggle in tests actually shine,
 because there's no public failure. The goal of everything below is to add
 dopamine *without* adding public risk — no new leaderboards that can be lost,
 nothing that exposes a struggling kid to the class.
@@ -167,20 +167,22 @@ avoid two agents editing the same migration).
 rest of the app's visual language (🔥 streak, 🏅 comeback, badge icons already
 emoji). Curated fixed list in `CONFIG`, e.g. 16-24 emoji, not freeform upload.
 
-**Nickname input — needs your decision before building:**
-Freeform text for a class of minors risks inappropriate names with no
-moderation queue in this app. Two options, pick one:
-  - **(a) Freeform with a basic profanity filter** — closer to what you
-    described wanting for yourself (full creative freedom), more for-them
-    work to build/maintain a filter list, small residual risk something
-    slips through.
-  - **(b) Generator + reroll** — pick from adjective + circle-math-themed
-    noun pairs (e.g. "Swift Tangent", "Clever Chord"), tap to reroll, zero
-    moderation risk, still feels personal and on-theme, but not full free text.
+**Nickname input — DECIDED (Megan, 2026-07-18): freeform text, NO profanity
+filter, teacher moderation instead.** An automated blocklist was rejected
+because the class is bilingual and innocent Afrikaans words false-positive
+against English blocklists (e.g. "vak" just means *subject*) — the classic
+Scunthorpe problem. Moderation is the teacher's authority, not an algorithm:
 
-Recommend (b) given the age group and that this ships without a teacher
-review step, but it's your call — the plan supports either; only the input
-widget in the new profile-setup screen changes.
+  - Freeform nickname input in the profile-setup screen (reasonable length
+    cap, trim whitespace; that's the only validation).
+  - Admin dashboard shows each learner's nickname alongside the real name.
+  - New admin action + RPC `cgg_admin_reset_nickname(p_admin_password,
+    student_id)`: **deletes** (nulls) the nickname — never edits it — so the
+    learner falls back to their real `display_name` everywhere until they
+    pick a new one (profile-setup prompt reappears on next login).
+  - Before resetting, log the old nickname to the `events` table
+    (`action = 'nickname_reset'`) so there's a record after it's gone; the
+    teacher screenshots the dashboard first if parents need to see it.
 
 **New UI flow:** first login after this ships (or a "Customize" link from the
 home screen) opens a small profile-setup screen — nickname input/generator +
@@ -192,8 +194,8 @@ design system needed.
 RPC), `js/api.js` + `js/supabase.js` (RPC wrapper + local fallback), `js/auth.js`
 (post-login prompt if profile unset), new `js/profile.js` (setup screen),
 `js/leaderboard.js`, `js/weekly.js`, `js/admin.js` (read nickname/avatar,
-keep real name authoritative), `js/config.js` (avatar list, and the
-adjective/noun word lists if going with option b), `css/styles.css`.
+keep real name authoritative, add the reset-nickname action), `js/config.js`
+(avatar list), `css/styles.css`.
 
 **Acceptance:** a student can set a nickname+avatar once and see it reflected
 on the leaderboard and weekly reveal; the teacher dashboard still shows real
@@ -216,8 +218,9 @@ broken UI.
    - **Agent D** — Nicknames & Avatars (everything in section 3; use
      `supabase/phase12.sql` instead of `phase11.sql` so it doesn't collide
      with Agent C's migration file).
-3. Decide the freeform-vs-generator nickname question **before** kicking off
-   Agent D — it changes the input widget it builds.
+3. The nickname-input question is **decided** (see section 3): freeform text,
+   no filter, teacher reset authority via `cgg_admin_reset_nickname` — Agent D
+   builds exactly that.
 
 Nothing here touches the same file in two workstreams except `js/config.js`
 (C and D both add tunables) and `js/api.js`/`js/supabase.js` (C and D both
