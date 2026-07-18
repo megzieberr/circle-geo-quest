@@ -15,6 +15,7 @@ import { registerServiceWorker } from "./pwa.js";
 import { renderInstall } from "./install.js";
 import { renderSurvey } from "./survey.js";
 import { flushPendingSubmits } from "./sync.js";
+import { renderCustomizeLink } from "./profile.js";
 
 const app = {
   root: null,
@@ -111,7 +112,7 @@ const app = {
     this.root.appendChild(view);
     switch (this.screen) {
       case "login": renderLogin(this, view); break;
-      case "home": renderHome(this, view); break;
+      case "home": renderHome(this, view); renderCustomizeLink(this, view); break;
       case "play": renderPlay(this, view, this.params); break;
       case "discover": renderDiscover(this, view, this.params); break;
       case "cutscene": renderCutscene(this, view, this.params); break;

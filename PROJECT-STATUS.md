@@ -3,13 +3,34 @@
 ## Where we are
 Live on GitHub Pages (megzieberr.github.io/circle-geo-quest) with Supabase backend.
 All 43 rounds shipped; holiday features (hints, Fix-Mistakes, daily streak,
-Star-of-the-Week, Boost mode, PWA + push) are live. First rally fired Fri 3 Jul
-(all-time standings); first crown lands Mon 6 Jul. Latest: a new CIRCLE CHAMPION
-award — a hand-picked teacher's-choice honour that leads the Monday crown popup,
-for the learner who plays the game the way it's meant to be played (every day,
-steady, all the way through), independent of weekly XP so cramming can't take it.
+Star-of-the-Week, Boost mode, PWA + push) are live, plus the CIRCLE CHAMPION
+award (teacher's-choice, reveal Mon 20 Jul — champion picked, phase8+10 applied).
+NEW 2026-07-18: the engagement plan (docs/engagement-plan.md) is BUILT and live —
+shared celebration modal (js/celebrate.js), full-screen badge unlock ceremony,
+streak milestones (day 3/7/14/30, server-side anti-farming via phase11.sql), and
+nicknames & avatars (freeform nickname + emoji avatar shown on leaderboards and
+weekly reveals; real names stay authoritative on the admin dashboard, which also
+gained a reset-nickname moderation action; phase12.sql). Both migrations are
+APPLIED to live Supabase; advisors clean (0 errors).
 
 ## Decisions
+- 2026-07-18: Nickname moderation = TEACHER AUTHORITY, no profanity filter.
+  Blocklists were rejected because the class is bilingual and innocent Afrikaans
+  words false-positive against English lists (e.g. "vak" = subject — the
+  Scunthorpe problem). Freeform input (24-char cap) + admin reset action that
+  NULLS the nickname (never edits it) back to the real name until the learner
+  picks again; the old nickname is logged to `events` (`nickname_reset:<old>`)
+  so a record survives. Avatars are a fixed list of ~20 emoji slugs in CONFIG
+  (validated server-side; unknown ids stored as null) — native emoji, no image
+  assets, nothing hand-drawn.
+- 2026-07-18: The public-repo rule is EXTENDED beyond names: no learner-
+  identifiable data of any kind (real marks, scores, anecdotes about specific
+  kids). A spec doc briefly quoted a real June exam mark; reworded before merge.
+- 2026-07-18 (lesson): when a migration replaces an existing RPC, base it on the
+  LIVE definition (pg_get_functiondef), not on schema.sql — phase12's first
+  draft of cgg_admin_data was based on schema.sql and would have re-exposed
+  learner passwords that phase5 had deliberately removed (caught in review,
+  fixed before applying: hasPassword boolean preserved).
 - 2026-07-13 (later): Repo deleted + recreated to purge a learner name that a
   cloud-dispatch PR had committed into history (phase10 seed + this file). History
   was rewritten first (git-filter-repo), but GitHub keeps merged-PR refs alive, so
@@ -45,22 +66,16 @@ steady, all the way through), independent of weekly XP so cramming can't take it
 - (Earlier decisions predate this file — see git log and auto-memory.)
 
 ## Pending on Megan
-- Nothing. Verified live 2026-07-18: phase8 AND phase10 are both applied
-  (RPCs present in the database) and a Circle Champion has been picked via
-  the admin 🏆 card (name lives in app_config on the server only, as designed).
-  All set for the Mon 20 Jul reveal.
+- Eyeball the new features on live (hard-refresh; admin page Ctrl+F5): the
+  Customize link on the home screen, the nickname column + "reset nickname"
+  button on the dashboard, and set your teacher-preview nickname if you fancy.
+  Everything is deployed and smoke-tested in local mode; nothing blocks play.
 
 ## Next up
 - Screenshot the crown/rally from the admin dashboard for the class WhatsApp
   group (switch the game's language toggle first if the Afrikaans version is
-  wanted).
-- 2026-07-18: Engagement spec drafted for four features to boost re-engagement
-  before daily quests become term homework — streak milestones, a badge unlock
-  ceremony, and a nickname/avatar system (real names stay admin-only). Written
-  up in `docs/engagement-plan.md`, opened as draft PR #1 for tracking.
-  **Approved by Megan 2026-07-18** with one ruling: nickname input is freeform
-  with NO profanity filter (bilingual class = blocklist false positives, e.g.
-  Afrikaans "vak"); moderation = teacher authority via a new admin
-  reset-nickname action that nulls the nickname back to the real name until
-  the learner picks again. Implementation proceeds per the doc's "Sequencing
-  for parallel agents" section.
+  wanted). Champion reveal fires Mon 20 Jul.
+- Watch how the class takes to nicknames in week 1 of term; the remaining
+  big-corp tricks from the brainstorm (variable "double XP" rewards, endowed
+  progress on badge sets, limited-time events) are noted in chat but NOT
+  specced — decide after seeing how these four land.

@@ -4,7 +4,8 @@ import { CONFIG, GROUPS } from "./config.js";
 import { api } from "./api.js";
 import { getSession } from "./session.js";
 import { t, tx, reason } from "./i18n.js";
-import { el, clear, mount, progressBar, shuffled, toast } from "./ui.js";
+import { el, clear, mount, progressBar, shuffled } from "./ui.js";
+import { showCelebration } from "./celebrate.js";
 import { mountQuestion } from "./questions.js";
 import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
 import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
@@ -583,7 +584,14 @@ export function renderResults(app, host, params) {
   }
   host.appendChild(screen);
 
-  if (groupEarned) toast(`${group.icon} ${t("badgeEarned")} ${group.name}`);
+  if (groupEarned) {
+    showCelebration({
+      emoji: group.icon,
+      title: group.name,
+      body: tx(group.blurb),
+      cta: t("continue"),
+    });
+  }
 
   // Finishing the very last round of the quest → one-time anonymous survey popup.
   // (No-ops if they've already given feedback or been prompted before.)

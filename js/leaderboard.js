@@ -4,6 +4,9 @@ import { api } from "./api.js";
 import { getSession } from "./session.js";
 import { t } from "./i18n.js";
 import { el, clear } from "./ui.js";
+import { avatarEmoji, displayName } from "./profile.js";
+
+const escapeHtml = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
 export async function renderLeaderboard(app, host) {
   clear(host);
@@ -48,7 +51,8 @@ export async function renderLeaderboard(app, host) {
     const d = el("div", "lb-row" + (r.me ? " me" : ""));
     d.innerHTML = `
       <span class="lb-rank">${medal}</span>
-      <span class="lb-name">${r.name}${r.me ? ` <span class="tag-you">${t("you")}</span>` : ""}</span>
+      <span class="lb-avatar">${avatarEmoji(r.avatarId)}</span>
+      <span class="lb-name">${escapeHtml(displayName(r))}${r.me ? ` <span class="tag-you">${t("you")}</span>` : ""}</span>
       <span class="lb-xp">★ ${r.xp}</span>`;
     return d;
   }

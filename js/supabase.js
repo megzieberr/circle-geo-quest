@@ -37,11 +37,22 @@ export const SupabaseBackend = {
   submitDaily(name, password, p) {
     return rpc("cgg_submit_daily", { p_name: name, p_password: password, p_day: p.day, p_correct: p.correct, p_total: p.total });
   },
+  // streak milestones (phase11.sql) — server validates p_days against the
+  // fixed 3/7/14/30 list and grants its hardcoded XP at most once ever.
+  awardStreakMilestone(name, password, days) {
+    return rpc("cgg_award_streak_milestone", { p_name: name, p_password: password, p_days: days });
+  },
   logItems(name, password, roundId, items) {
     return rpc("cgg_log_items", { p_name: name, p_password: password, p_round: roundId, p_items: items });
   },
   leaderboard(name, password) { return rpc("cgg_leaderboard", { p_name: name, p_password: password }); },
   weeklyResults(name, password) { return rpc("cgg_weekly_results", { p_name: name, p_password: password }); },
+
+  // nicknames + avatars (phase12.sql) — trims/caps/validates server-side;
+  // see cgg_set_profile for the exact rules (freeform nickname, no filter).
+  setProfile(name, password, nickname, avatarId) {
+    return rpc("cgg_set_profile", { p_name: name, p_password: password, p_nickname: nickname, p_avatar: avatarId });
+  },
 
   // anonymous end-of-game feedback survey
   submitFeedback(name, password, rating, comment) {
@@ -68,4 +79,7 @@ export const SupabaseBackend = {
   adminResetPassword(pw, id) { return rpc("cgg_admin_reset_password", { p_admin_password: pw, p_id: id }); },
   adminWeeklyResults(pw) { return rpc("cgg_admin_weekly_results", { p_admin_password: pw }); },
   adminSetChampion(pw, name) { return rpc("cgg_admin_set_champion", { p_admin_password: pw, p_name: name }); },
+  // nickname moderation (phase12.sql) — nulls (never edits) a learner's
+  // nickname; the server logs the old value to the events table first.
+  adminResetNickname(pw, id) { return rpc("cgg_admin_reset_nickname", { p_admin_password: pw, p_student_id: id }); },
 };

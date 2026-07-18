@@ -19,6 +19,8 @@ import { mountQuestion } from "./questions.js";
 import { addMistake, clearMistake } from "./mistakes.js";
 import { api } from "./api.js";
 import { getSession } from "./session.js";
+import { CONFIG } from "./config.js";
+import { showCelebration } from "./celebrate.js";
 
 const SIZE = 5;
 const keyFor = app => `cgg.daily.${(app && app.state && app.state.student && app.state.student.id) || "anon"}`;
@@ -104,7 +106,12 @@ function todaySet(app) {
   return set;
 }
 
-/* Mark today done and roll the streak forward. Returns the new streak state. */
+/* Mark today done and roll the streak forward. Returns the new streak state,
+   plus a `milestone` entry (from CONFIG.streakMilestones) if this streak
+   value is an exact milestone hit — undefined on every other day. The
+   milestone flag is transient (not persisted to localStorage), so revisiting
+   an already-done day never re-detects it — the celebration only fires once,
+   right when the streak is first reached. */
 function completeDaily(app) {
   const st = read(app);
   const today = localDay();
@@ -112,7 +119,8 @@ function completeDaily(app) {
   const streak = st.lastDay === dayBefore(today) ? st.streak + 1 : 1;
   const next = { ...st, streak, best: Math.max(st.best || 0, streak), lastDay: today, doneDay: today };
   write(app, next);
-  return { ...next, isNew: streak === 1 };
+  const milestone = CONFIG.streakMilestones.find(m => m.days === streak) || null;
+  return { ...next, isNew: streak === 1, milestone };
 }
 
 /* ---------------- DAILY SCREEN ---------------- */
@@ -174,23 +182,35 @@ export function renderDaily(app, host) {
     if (state.i < state.total) { window.scrollTo(0, 0); show(); }
     else {
       next.disabled = true;
-      const res = completeDaily(app);                    // local streak
+      const res = completeDaily(app);                    // local streak (+ milestone flag)
       // claim the daily XP on the server (granted at most once per local day)
       let award = { xpAwarded: 0, alreadyClaimed: true };
+      let milestoneAward = null;
       try {
         const s = getSession();
         award = await api.submitDaily(s.name, s.password, { day: localDay(), correct: state.correct, total: state.total });
+        // streak milestone hit — claim its XP too. Server is source of truth
+        // (idempotent against streak_milestones_awarded), the local `res`
+        // above is only used for the immediate optimistic display.
+        if (res.milestone) {
+          milestoneAward = await api.awardStreakMilestone(s.name, s.password, res.milestone.days);
+        }
       } catch { /* offline — still show the streak result */ }
       await app.refreshState();
-      renderDailyDone(app, host, res, state.correct, state.total, award);
+      renderDailyDone(app, host, res, state.correct, state.total, award, milestoneAward);
     }
   });
 
   show();
 }
 
-/* The "done for today" celebration — also shown if they revisit later. */
-function renderDailyDone(app, host, st, correct, total, award) {
+/* The "done for today" celebration — also shown if they revisit later.
+   `milestoneAward` (the server's cgg_award_streak_milestone response) is only
+   passed in right after a fresh completion; a later same-day revisit reads
+   `st` back from localStorage, which never carries `.milestone`, so the
+   full-screen celebration below only ever fires once, at the moment the
+   milestone is actually reached. */
+function renderDailyDone(app, host, st, correct, total, award, milestoneAward) {
   clear(host);
   const card = el("div", "card center daily-done");
   const xpPill = (award && award.xpAwarded > 0)
@@ -212,4 +232,17 @@ function renderDailyDone(app, host, st, correct, total, award) {
   actions.appendChild(home);
   card.appendChild(actions);
   host.appendChild(card);
+
+  // Streak milestone hit — the full-screen "big moment", ON TOP OF (not
+  // instead of) the inline streak-big number above. Non-milestone days never
+  // reach this branch, so they render exactly as before.
+  if (st.milestone) {
+    const xp = (milestoneAward && milestoneAward.xpAwarded > 0) ? milestoneAward.xpAwarded : st.milestone.xp;
+    showCelebration({
+      emoji: "🔥",
+      title: tx(st.milestone.label),
+      body: `+${xp} XP — ${st.streak} ${t("dayStreak")}`,
+      cta: t("wkNice"),
+    });
+  }
 }

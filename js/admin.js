@@ -7,6 +7,7 @@
 import { api, BACKEND } from "./api.js";
 import { ROUNDS, QUESTION_BY_ID } from "./rounds/index.js";
 import { showCrownPreview, showRallyPreview } from "./weekly.js";
+import { avatarEmoji } from "./profile.js";
 
 const root = document.getElementById("admin");
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -158,9 +159,15 @@ function renderDashboard() {
       const cls = p && p.passed ? "ok" : (p && p.attempts ? "try" : "none");
       return `<span class="rchip ${cls}" title="${rd.n}. ${rd.title.en} — ${p ? best + "%" : "not started"}">${rd.n}</span>`;
     }).join("");
+    // Real display_name is ALWAYS the primary identifier here (hard requirement) —
+    // the nickname, when a learner has set one, only ever rides along in
+    // parentheses next to it, with the avatar emoji in front. Nickname is
+    // freeform (no profanity filter — see docs/engagement-plan.md §3), so it
+    // MUST be escaped; the real name is admin-entered but escaped too for safety.
+    const nickPart = r.nickname ? ` <span class="muted">(${escapeHtml(r.nickname)})</span>` : "";
     tr.innerHTML = `
       <td>${r.rank}</td>
-      <td class="name">${r.name}</td>
+      <td class="name">${avatarEmoji(r.avatarId)} ${escapeHtml(r.name)}${nickPart}</td>
       <td class="pw">${hasPw(r) ? '<span class="pw-set">✓ set</span>' : '<span class="muted">— not set</span>'}</td>
       <td class="num">${r.weeklyXp}</td>
       <td class="num">${r.allTimeXp}</td>
@@ -170,9 +177,16 @@ function renderDashboard() {
     const acts = tr.querySelector(".rowacts");
     const rp = el("button", "mini-btn", "reset pw"); rp.title = "Clear password so they can re-pick it";
     rp.addEventListener("click", () => resetPassword(r));
+    acts.appendChild(rp);
+    if (r.nickname) {
+      const rn = el("button", "mini-btn", "reset nickname");
+      rn.title = "Clear this learner's nickname (moderation) — they fall back to their real name until they pick a new one";
+      rn.addEventListener("click", () => resetNickname(r));
+      acts.appendChild(rn);
+    }
     const rm = el("button", "mini-btn danger", "✕"); rm.title = "Remove learner";
     rm.addEventListener("click", () => removeLearner(r));
-    acts.appendChild(rp); acts.appendChild(rm);
+    acts.appendChild(rm);
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
@@ -346,7 +360,7 @@ async function showWeeklyWinners() {
 function showRallyBoard() {
   const board = data.rows.filter(r => r.weeklyXp > 0)
     .sort((a, b) => b.weeklyXp - a.weeklyXp)
-    .map((r, i) => ({ name: r.name, xp: r.weeklyXp, rank: i + 1 }));
+    .map((r, i) => ({ name: r.name, nickname: r.nickname, avatarId: r.avatarId, xp: r.weeklyXp, rank: i + 1 }));
   if (!board.length) return alert("Nobody has earned XP yet this week — the rally board is still empty.");
   showRallyPreview(board);
 }
@@ -367,6 +381,17 @@ async function resetPassword(row) {
   if (!confirm(`Clear ${row.name}'s password so they re-pick it on next login?`)) return;
   const r = await api.adminResetPassword(adminPw, row.id).catch(() => ({ ok: false }));
   if (!r.ok) alert("Could not reset."); else load();
+}
+/* Nickname moderation: DELETE (null) a learner's nickname, never edit it —
+   they fall back to their real display_name everywhere until they pick a
+   new one. The server logs the old value to the events table first (Phase
+   12 / cgg_admin_reset_nickname) so a record survives the deletion. */
+async function resetNickname(row) {
+  if (!api.adminResetNickname)
+    return alert("Nickname reset needs the Phase-12 database update — run supabase/phase12.sql in the Supabase SQL editor.");
+  if (!confirm(`Clear ${row.name}'s nickname ("${row.nickname}")? They'll show by their real name until they pick a new one.`)) return;
+  const r = await api.adminResetNickname(adminPw, row.id).catch(() => ({ ok: false }));
+  if (!r.ok) alert("Could not reset nickname."); else load();
 }
 async function resetWeekly() {
   if (!confirm("Reset the weekly leaderboard to zero for everyone?")) return;

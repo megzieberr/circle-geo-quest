@@ -27,6 +27,9 @@ import { t, getLang } from "./i18n.js";
 import { el } from "./ui.js";
 import { api } from "./api.js";
 import { getSession } from "./session.js";
+import { avatarEmoji, displayName } from "./profile.js";
+
+const escapeHtml = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
 const RALLY_DAYS = new Set([5, 6, 0]);   // Fri, Sat, Sun  (Date.getDay)
 const CROWN_DAYS = new Set([1, 2]);      // Mon, Tue  (grace day after results day)
@@ -145,6 +148,11 @@ function rallyPersonal(board, me) {
 }
 
 /* ---------------- crown ---------------- */
+/* Every winner name shown here prefers the learner's NICKNAME over their
+   real display_name (Phase 12 / Nicknames & Avatars) — see displayName() in
+   js/profile.js. The "that's you!" highlight still compares REAL names
+   (w.realName), because that's what app.state.student.name and the server's
+   champion/star/etc `name` field always carry — nickname is display-only. */
 function buildCrown(res, app) {
   const meName = (app && app.state && app.state.student) ? app.state.student.name : null;
   const winners = [];
@@ -153,24 +161,41 @@ function buildCrown(res, app) {
   // playing every day, steadily, all the way through — the way the game is meant
   // to be played, which the burst-friendly weekly awards can't capture. It's set
   // by the teacher (admin dashboard), independent of last week's XP, so a frantic
-  // catch-up day can never take it.
+  // catch-up day can never take it. championNickname (Phase 12) is the champion's
+  // OWN nickname if they've set one, looked up server-side — champion (real name)
+  // is kept for the "that's you!" match and as the admin-preview fallback (the
+  // admin RPC doesn't send championNickname on purpose — admin always sees the
+  // real name).
   if (res.champion)
-    winners.push({ icon: "🏆", label: t("wkAwardChampion"), name: res.champion, value: "", cls: "wk-champion" });
-  winners.push({ icon: "🌟", label: t("wkAwardStar"), name: res.star.name, value: `★ ${res.star.xp}`, cls: "wk-star" });
+    winners.push({ icon: "🏆", label: t("wkAwardChampion"), name: res.championNickname || res.champion, realName: res.champion, avatar: null, value: "", cls: "wk-champion" });
+  winners.push({ icon: "🌟", label: t("wkAwardStar"), name: displayName(res.star), realName: res.star.name, avatar: res.star.avatarId, value: `★ ${res.star.xp}`, cls: "wk-star" });
   if (res.mostImproved)
-    winners.push({ icon: "📈", label: t("wkAwardImproved"), name: res.mostImproved.name, value: `+${res.mostImproved.delta} XP` });
+    winners.push({ icon: "📈", label: t("wkAwardImproved"), name: displayName(res.mostImproved), realName: res.mostImproved.name, avatar: res.mostImproved.avatarId, value: `+${res.mostImproved.delta} XP` });
   if (res.onFire)
-    winners.push({ icon: "🔥", label: t("wkAwardStreak"), name: res.onFire.name, value: `${res.onFire.days} ${daysWord(res.onFire.days)}` });
-  winners.forEach(w => { w.me = !!(meName && w.name === meName); });   // highlight a chip the learner won
-  // PERFECT WEEK is not winner-take-all: EVERYONE who did all 7 dailies is named.
-  if (Array.isArray(res.perfectWeek) && res.perfectWeek.length) {
+    winners.push({ icon: "🔥", label: t("wkAwardStreak"), name: displayName(res.onFire), realName: res.onFire.name, avatar: res.onFire.avatarId, value: `${res.onFire.days} ${daysWord(res.onFire.days)}` });
+  winners.forEach(w => { w.me = !!(meName && w.realName === meName); });   // highlight a chip the learner won
+  // PERFECT WEEK is not winner-take-all: EVERYONE who did all 7 dailies is
+  // named. perfectWeekRoster (Phase 12) carries nickname/avatar per learner;
+  // fall back to the plain perfectWeek name array for any RPC that hasn't
+  // picked up phase12.sql yet.
+  if (Array.isArray(res.perfectWeekRoster) && res.perfectWeekRoster.length) {
+    winners.push({
+      icon: "🎯", label: t("wkAwardPerfect"),
+      name: res.perfectWeekRoster.map(displayName).join(", "),
+      realName: null,
+      value: "7/7",
+      me: !!(meName && res.perfectWeekRoster.some(p => p.name === meName)),
+    });
+  } else if (Array.isArray(res.perfectWeek) && res.perfectWeek.length) {
     winners.push({
       icon: "🎯", label: t("wkAwardPerfect"),
       name: res.perfectWeek.join(", "),
+      realName: null,
       value: "7/7",
       me: !!(meName && res.perfectWeek.includes(meName)),
     });
   }
+  const champDisplay = res.champion ? (res.championNickname || res.champion) : null;
   return {
     kind: "crown",
     emoji: "🌟",
@@ -178,7 +203,7 @@ function buildCrown(res, app) {
     headline: t("wkCrownTitle"),
     winners,
     personalHTML: crownPersonal(res),
-    subHTML: res.champion ? `🏆 <b>${res.champion}</b> — ${t("wkChampionSub")}` : null,
+    subHTML: champDisplay ? `🏆 <b>${escapeHtml(champDisplay)}</b> — ${t("wkChampionSub")}` : null,
     primaryLabel: t("wkNice"),
   };
 }
@@ -216,7 +241,7 @@ export function showRallyPreview(board) {
 }
 const MEDALS = ["🥇", "🥈", "🥉"];
 const podiumHTML = board => board.slice(0, 3)
-  .map((r, i) => `${MEDALS[i]} <b>${r.name}</b> — ${r.xp} XP`)
+  .map((r, i) => `${MEDALS[i]} ${avatarEmoji(r.avatarId)} <b>${escapeHtml(displayName(r))}</b> — ${r.xp} XP`)
   .join("<br>");
 
 /* ---------------- modal ---------------- */
@@ -234,7 +259,7 @@ function showWeeklyModal(app, cfg) {
     const strip = el("div", "wk-winners");
     cfg.winners.forEach(w => strip.appendChild(el("div", "wk-award" + (w.cls ? " " + w.cls : "") + (w.me ? " you" : ""), `
       <span class="wk-aw-icon">${w.icon}</span>
-      <span class="wk-aw-body"><span class="wk-aw-label">${w.label}</span><span class="wk-aw-name">${w.name}${w.me ? ` <span class="tag-you">${t("you")}</span>` : ""}</span></span>
+      <span class="wk-aw-body"><span class="wk-aw-label">${w.label}</span><span class="wk-aw-name">${w.avatar ? avatarEmoji(w.avatar) + " " : ""}${escapeHtml(w.name)}${w.me ? ` <span class="tag-you">${t("you")}</span>` : ""}</span></span>
       ${w.value ? `<span class="wk-aw-xp">${w.value}</span>` : ""}`)));
     m.appendChild(strip);
   }

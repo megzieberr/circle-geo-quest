@@ -5,6 +5,7 @@ import { setSession } from "./session.js";
 import { t, tx } from "./i18n.js";
 import { el, clear, toast } from "./ui.js";
 import { installEntryButton } from "./install.js";
+import { showProfileSetup } from "./profile.js";
 
 export async function renderLogin(app, host) {
   clear(host);
@@ -89,6 +90,13 @@ export async function renderLogin(app, host) {
       await app.refreshState();
       toast(`${t("appName")} — ${student.display_name}`);
       app.go("home");
+      // First-ever login (or any login before a profile was ever set) —
+      // offer the nickname/avatar screen. Non-blocking, skippable: the
+      // home screen is already showing underneath, this is just an overlay
+      // on top of it (see js/profile.js).
+      if (app.state && app.state.student && app.state.student.profileSetupNeeded) {
+        try { showProfileSetup(app, { skippable: true }); } catch { /* non-critical */ }
+      }
     }
     go.addEventListener("click", submit);
     [p1, p2].forEach(inp => inp && inp.addEventListener("keydown", e => { if (e.key === "Enter") submit(); }));

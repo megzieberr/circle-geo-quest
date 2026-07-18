@@ -14,7 +14,7 @@
    verifies the password before doing anything — mirroring the
    real RPC security model exactly.
    ============================================================ */
-import { CONFIG } from "./config.js";
+import { CONFIG, AVATARS } from "./config.js";
 import { SupabaseBackend, hasSupabase } from "./supabase.js";
 
 /* ---------- time helpers ---------- */
@@ -47,7 +47,7 @@ function computeWeeklyAwards(students, events) {
   const lwStart = thisWeek - 7 * 864e5, lwEnd = thisWeek, pwStart = thisWeek - 14 * 864e5;
 
   const agg = {};
-  Object.values(students).forEach(st => { agg[st.id] = { id: st.id, name: st.display_name, lw: 0, pw: 0, daySet: new Set(), lastDaily: 0 }; });
+  Object.values(students).forEach(st => { agg[st.id] = { id: st.id, name: st.display_name, nickname: st.nickname || null, avatarId: st.avatar_id || null, lw: 0, pw: 0, daySet: new Set(), lastDaily: 0 }; });
   events.forEach(e => {
     const a = agg[e.studentId]; if (!a) return;
     if (e.ts >= lwStart && e.ts < lwEnd) {
@@ -70,14 +70,20 @@ function computeWeeklyAwards(students, events) {
     .sort((a, b) => b.days - a.days || a.lastDaily - b.lastDaily || tie(a, b))[0] || null;
 
   const board = [...rows].filter(r => r.lw > 0)
-    .sort((a, b) => lwRank[a.id] - lwRank[b.id]).map(r => ({ name: r.name, xp: r.lw, rank: lwRank[r.id] }));
+    .sort((a, b) => lwRank[a.id] - lwRank[b.id])
+    .map(r => ({ name: r.name, nickname: r.nickname, avatarId: r.avatarId, xp: r.lw, rank: lwRank[r.id] }));
+  const perfectRows = rows.filter(r => r.days >= 7).sort((a, b) => a.name.localeCompare(b.name));
 
   return {
     lwStart, agg, lwRank, pwRank, board,
-    star: star ? { name: star.name, xp: star.lw } : null,
-    mostImproved: imp ? { name: imp.name, delta: imp.lw - imp.pw } : null,
-    onFire: fire ? { name: fire.name, days: fire.days } : null,
-    perfectWeek: rows.filter(r => r.days >= 7).map(r => r.name).sort(),
+    star: star ? { name: star.name, nickname: star.nickname, avatarId: star.avatarId, xp: star.lw } : null,
+    mostImproved: imp ? { name: imp.name, nickname: imp.nickname, avatarId: imp.avatarId, delta: imp.lw - imp.pw } : null,
+    onFire: fire ? { name: fire.name, nickname: fire.nickname, avatarId: fire.avatarId, days: fire.days } : null,
+    // 'perfectWeek' (plain names) kept for back-compat with older cached shapes;
+    // 'perfectWeekRoster' (name+nickname+avatarId) is what js/weekly.js prefers —
+    // mirrors 'perfectWeek'/'perfectWeekRoster' on the cgg_weekly_results RPC.
+    perfectWeek: perfectRows.map(r => r.name),
+    perfectWeekRoster: perfectRows.map(r => ({ name: r.name, nickname: r.nickname, avatarId: r.avatarId })),
   };
 }
 
@@ -174,7 +180,11 @@ const LocalBackend = {
     const badges = Object.entries(progress).filter(([, p]) => p.passed).map(([rid]) => rid);
     return {
       ok: true,
-      student: { id: s.id, name: s.display_name },
+      student: {
+        id: s.id, name: s.display_name,
+        nickname: s.nickname || null, avatarId: s.avatar_id || null,
+        profileSetupNeeded: !s.nickname && !s.avatar_id,
+      },
       progress, totalXp, badges,
     };
   },
@@ -252,6 +262,57 @@ const LocalBackend = {
     }
     write(LS.events, events);
     return { ok: true, xpAwarded: xpAward, alreadyClaimed: false, day, perfectWeek, bonusXp };
+  },
+
+  /* Streak-milestone XP — mirrors the cgg_award_streak_milestone RPC
+     (supabase/phase11.sql). Idempotent per student via a small "already
+     awarded" list on the student record itself (streak_milestones_awarded),
+     the same shape as the server column, so wiping localStorage can't
+     replay a milestone: the guard lives on the student, not the streak
+     state read()/write() above. XP is looked up from CONFIG here — never
+     trusted from the caller — mirroring the server hardcoding it too. */
+  async awardStreakMilestone(name, password, days) {
+    const s = this._verify(name, password);
+    if (!s) return { ok: false, error: "auth" };
+    const milestone = CONFIG.streakMilestones.find(m => m.days === Number(days));
+    if (!milestone) return { ok: true, xpAwarded: 0, alreadyAwarded: true };
+    const students = read(LS.students, {});
+    const stu = students[s.id];
+    const awarded = Array.isArray(stu.streak_milestones_awarded) ? stu.streak_milestones_awarded : [];
+    if (awarded.includes(milestone.days)) {
+      this._touch(s.id);
+      return { ok: true, xpAwarded: 0, alreadyAwarded: true };
+    }
+    stu.streak_milestones_awarded = [...awarded, milestone.days];
+    stu.last_active_at = Date.now();
+    write(LS.students, students);
+    const events = read(LS.events, []);
+    events.push({ studentId: s.id, roundId: "streak", xp: milestone.xp, score: null, ts: Date.now() });
+    write(LS.events, events);
+    return { ok: true, xpAwarded: milestone.xp, alreadyAwarded: false };
+  },
+
+  /* Set (or clear) the caller's own nickname + avatar. Mirrors the
+     cgg_set_profile RPC (supabase/phase12.sql): trims + length-caps the
+     nickname (empty string -> null, NO other validation — moderation is
+     the teacher's job, see adminResetNickname below, not an algorithm),
+     and validates the avatar id against the same curated CONFIG.AVATARS
+     list the picker offers (an unrecognised id is ignored, stored as null,
+     rather than rejecting the whole save). */
+  async setProfile(name, password, nickname, avatarId) {
+    const s = this._verify(name, password);
+    if (!s) return { ok: false, error: "auth" };
+    const students = read(LS.students, {});
+    const stu = students[s.id];
+    let nick = String(nickname || "").trim();
+    if (nick.length > 24) nick = nick.slice(0, 24);
+    nick = nick || null;
+    const av = AVATARS.some(a => a.id === avatarId) ? avatarId : null;
+    stu.nickname = nick;
+    stu.avatar_id = av;
+    write(LS.students, students);
+    this._touch(s.id);
+    return { ok: true, nickname: nick, avatarId: av };
   },
 
   /* Per-question results for the teacher's "hardest questions" report.
@@ -373,7 +434,7 @@ const LocalBackend = {
       if (e.ts >= weekStart) weeklyMap[e.studentId] = (weeklyMap[e.studentId] || 0) + e.xp;
     });
     const build = (map) => Object.values(students)
-      .map(st => ({ id: st.id, name: st.display_name, xp: map[st.id] || 0 }))
+      .map(st => ({ id: st.id, name: st.display_name, nickname: st.nickname || null, avatarId: st.avatar_id || null, xp: map[st.id] || 0 }))
       .sort((a, b) => b.xp - a.xp)
       .map((row, i) => ({ ...row, rank: i + 1, me: row.id === s.id }));
 
@@ -394,13 +455,22 @@ const LocalBackend = {
     const s = this._verify(name, password);
     if (!s) return { ok: false, error: "auth" };
     const events = read(LS.events, []);
-    const w = computeWeeklyAwards(read(LS.students, {}), events);
+    const students = read(LS.students, {});
+    const w = computeWeeklyAwards(students, events);
 
     const meAgg = w.agg[s.id];
     const weekSums = {};
     events.filter(e => e.studentId === s.id && e.ts < w.lwStart)
       .forEach(e => { const wk = startOfWeek(e.ts); weekSums[wk] = (weekSums[wk] || 0) + e.xp; });
     const bestPrevXp = Object.values(weekSums).reduce((m, v) => Math.max(m, v), 0);
+
+    // championNickname mirrors cgg_weekly_results (phase12.sql): champion_name
+    // always stores the REAL display_name (the teacher picks a real learner),
+    // so look that student up and prefer their own nickname for the reveal —
+    // falling back to the same real name if they haven't set one.
+    const champName = read(LS.meta, {}).championName || null;
+    const champStudent = champName ? Object.values(students).find(st => st.display_name === champName) : null;
+    const champNick = (champStudent && champStudent.nickname && champStudent.nickname.trim()) || null;
 
     return {
       ok: true,
@@ -410,7 +480,9 @@ const LocalBackend = {
       mostImproved: w.mostImproved,
       onFire: w.onFire,
       perfectWeek: w.perfectWeek,
-      champion: read(LS.meta, {}).championName || null,   // teacher's-choice honour
+      perfectWeekRoster: w.perfectWeekRoster,
+      champion: champName,                                 // teacher's-choice honour (real name)
+      championNickname: champName ? (champNick || champName) : null,
       me: { xp: meAgg.lw, rank: w.lwRank[s.id] },
       prevRank: meAgg.pw > 0 ? w.pwRank[s.id] : null,
       bestPrevXp,
@@ -440,6 +512,8 @@ const LocalBackend = {
     const rows = Object.values(students).map(s => ({
       id: s.id,
       name: s.display_name,
+      nickname: s.nickname || null,
+      avatarId: s.avatar_id || null,
       hasPassword: s.password != null,        // privacy: never expose the actual password
       weeklyXp: weeklyMap[s.id] || 0,
       allTimeXp: allMap[s.id] || 0,
@@ -451,12 +525,30 @@ const LocalBackend = {
   },
   /* Admin view of the Star-of-the-Week results — the same numbers the
      learners' crown popup shows, minus the learner-personal fields.
-     Mirrors the cgg_admin_weekly_results RPC (phase8.sql). */
+     Mirrors the cgg_admin_weekly_results RPC (phase8.sql / phase12.sql).
+     'champion' is left as the real name on purpose (no nickname lookup) —
+     the admin dashboard always shows real names, per the hard rule in
+     docs/engagement-plan.md §3. */
   async adminWeeklyResults(adminPassword) {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
     const w = computeWeeklyAwards(read(LS.students, {}), read(LS.events, []));
-    return { ok: true, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire, perfectWeek: w.perfectWeek, champion: read(LS.meta, {}).championName || null };
+    return { ok: true, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire, perfectWeek: w.perfectWeek, perfectWeekRoster: w.perfectWeekRoster, champion: read(LS.meta, {}).championName || null };
+  },
+  /* Nickname moderation: DELETE (null) a learner's nickname — never edit it —
+     so they fall back to their real display_name until they pick a new one.
+     Mirrors cgg_admin_reset_nickname (phase12.sql). The real backend also
+     logs the old value to the events table for a moderation trail; local
+     mode has no admin-facing events viewer, so that step is a no-op here. */
+  async adminResetNickname(adminPassword, id) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const students = read(LS.students, {});
+    const stu = students[id];
+    if (!stu || !stu.nickname) return { ok: true, reset: false };
+    stu.nickname = null;
+    write(LS.students, students);
+    return { ok: true, reset: true };
   },
   /* Set (or clear) the teacher's-choice Circle Champion. Pass a learner's
      display name to award it; pass null/"" to clear it. Mirrors the
@@ -526,11 +618,17 @@ const PreviewBackend = {
     ROUNDS.forEach(r => {
       progress[r.id] = { best_score: 1, attempts: 1, total_xp: 0, passed: true, last_played_at: null, last_correct: null, last_total: null };
     });
-    return { ok: true, student: { ...PREVIEW_STUDENT }, progress, totalXp: 0, badges: ROUNDS.map(r => r.id) };
+    return {
+      ok: true,
+      student: { ...PREVIEW_STUDENT, nickname: null, avatarId: null, profileSetupNeeded: false },
+      progress, totalXp: 0, badges: ROUNDS.map(r => r.id),
+    };
   },
   // every write is a no-op that reports success, so the game plays normally
   async submitRound() { return { ok: true, passed: true, badgeEarned: false, xpAwarded: 0, alreadyPassed: true }; },
   async submitDaily() { return { ok: true, xpAwarded: 0, alreadyClaimed: true }; },
+  async awardStreakMilestone() { return { ok: true, xpAwarded: 0, alreadyAwarded: true }; },
+  async setProfile() { return { ok: true, nickname: null, avatarId: null }; },   // never persisted in preview
   async logItems() { return { ok: true, logged: 0 }; },
   async submitFeedback() { return { ok: true }; },
   async getMyFeedback() { return { ok: true, rating: null, comment: "" }; },
@@ -538,7 +636,13 @@ const PreviewBackend = {
   async removePush() { return { ok: true }; },
   // read views: empty / benign so nothing from the real class shows or is altered
   async leaderboard() { return { ok: true, weekly: [], allTime: [], myWeekly: null, myAllTime: null }; },
-  async weeklyResults() { return { ok: true, board: [], star: null, mostImproved: null, onFire: null, champion: null, me: { xp: 0, rank: null }, prevRank: null, bestPrevXp: 0 }; },
+  async weeklyResults() {
+    return {
+      ok: true, board: [], star: null, mostImproved: null, onFire: null,
+      perfectWeek: [], perfectWeekRoster: [], champion: null, championNickname: null,
+      me: { xp: 0, rank: null }, prevRank: null, bestPrevXp: 0,
+    };
+  },
 };
 
 /* ============================================================
