@@ -73,6 +73,9 @@ export const SupabaseBackend = {
   adminData(pw) { return rpc("cgg_admin_data", { p_admin_password: pw }); },
   adminItemStats(pw) { return rpc("cgg_admin_item_stats", { p_admin_password: pw }); },
   adminFeedback(pw) { return rpc("cgg_admin_feedback", { p_admin_password: pw }); },
+  // cheat-detection readout (phase13.sql) — per learner, every passed round
+  // with how many per-question events were logged (qcount) + when last played.
+  adminIntegrity(pw) { return rpc("cgg_admin_integrity", { p_admin_password: pw }); },
   adminResetWeekly(pw) { return rpc("cgg_admin_reset_weekly", { p_admin_password: pw }); },
   adminAddStudent(pw, name) { return rpc("cgg_admin_add_student", { p_admin_password: pw, p_name: name }); },
   adminRemoveStudent(pw, id) { return rpc("cgg_admin_remove_student", { p_admin_password: pw, p_id: id }); },

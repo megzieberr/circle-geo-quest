@@ -731,3 +731,13 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .streak-big .flame{font-size:1.6rem;}
 .streak-big b{font-family:"Bricolage Grotesque",sans-serif; font-size:2rem; line-height:1; color:#a07500;}
 .streak-big span{font-weight:700; color:#9a5a05;}
+
+/* ── Admin: "Worth a look" cheat-detection panel (phase13) ── */
+.admin-integrity .integrity-flag{
+  border:2px solid var(--ink); border-radius:14px; padding:12px 16px; margin:12px 0;
+  background:#fff7ed; box-shadow:var(--shadow-sm);}
+.admin-integrity .flag-title{margin:0 0 4px; font-family:"Bricolage Grotesque",sans-serif; font-size:.98rem; color:var(--ink);}
+.admin-integrity .flag-list{margin:8px 0 0; padding-left:20px; display:grid; gap:4px;}
+.admin-integrity .flag-list li{line-height:1.4;}
+.admin-integrity .integrity-fyi{margin-top:12px; padding:10px 14px; border-radius:12px; background:rgba(37,42,74,.05);}
+.admin-integrity .ok-line{padding:8px 0;}

@@ -10,14 +10,18 @@
    js/install.js for the house pattern this mirrors).
 
    Pure client-side: no server round-trip, no imports of other app
-   modules. All learner-visible text comes from the CALLER — this
-   file hardcodes nothing except a language-neutral CTA fallback,
-   so it works the same in the English and Afrikaans surfaces.
+   modules besides sound.js (a self-contained synthesized sfx
+   engine, no assets). All learner-visible text comes from the
+   CALLER — this file hardcodes nothing except a language-neutral
+   CTA fallback, so it works the same in the English and Afrikaans
+   surfaces.
    ============================================================ */
+import { sfx } from "./sound.js";
 
 /* emoji/title/body/cta are all caller-supplied. Dismiss on backdrop
    click, CTA click, or Escape. */
 export function showCelebration({ emoji = "", title = "", body = "", cta = "OK" } = {}) {
+  sfx.celebrate();
   document.querySelectorAll(".celebrate-overlay").forEach(n => n.remove());   // never stack
 
   const ov = document.createElement("div");

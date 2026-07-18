@@ -21,6 +21,7 @@ import { api } from "./api.js";
 import { getSession } from "./session.js";
 import { CONFIG } from "./config.js";
 import { showCelebration } from "./celebrate.js";
+import { sfx } from "./sound.js";
 
 const SIZE = 5;
 const keyFor = app => `cgg.daily.${(app && app.state && app.state.student && app.state.student.id) || "anon"}`;
@@ -169,8 +170,8 @@ export function renderDaily(app, host) {
     const qbox = el("div");
     qhost.appendChild(qbox);
     mountQuestion(qbox, entry.q, (isCorrect) => {
-      if (isCorrect) { state.correct++; clearMistake(app, entry.q.id); note.classList.add("good"); note.textContent = "✓ " + t("correct"); }
-      else { addMistake(app, entry.q.id, entry.roundId); note.classList.add("bad"); note.textContent = t("notQuite"); }
+      if (isCorrect) { sfx.correct(); state.correct++; clearMistake(app, entry.q.id); note.classList.add("good"); note.textContent = "✓ " + t("correct"); }
+      else { sfx.wrong(); addMistake(app, entry.q.id, entry.roundId); note.classList.add("bad"); note.textContent = t("notQuite"); }
       next.hidden = false;
       next.textContent = state.i + 1 < state.total ? t("next") : t("finish");
       next.focus();
@@ -178,6 +179,7 @@ export function renderDaily(app, host) {
   }
 
   next.addEventListener("click", async () => {
+    sfx.tick();
     state.i++;
     if (state.i < state.total) { window.scrollTo(0, 0); show(); }
     else {

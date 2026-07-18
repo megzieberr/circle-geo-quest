@@ -7,6 +7,7 @@ import { t, tx, reason } from "./i18n.js";
 import { el, clear, mount, progressBar, shuffled } from "./ui.js";
 import { showCelebration } from "./celebrate.js";
 import { mountQuestion } from "./questions.js";
+import { sfx } from "./sound.js";
 import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
 import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
@@ -413,6 +414,7 @@ export function renderPlay(app, host, params) {
       let gained = 0;
       const lines = [];
       if (isCorrect) {
+        sfx.correct();
         state.correct++;
         state.streak++;
         if (!alreadyPassed) {
@@ -425,6 +427,7 @@ export function renderPlay(app, host, params) {
         }
         xpline.classList.add("good");
       } else if (score > 0) {
+        sfx.correct();
         state.streak = 0;
         if (!alreadyPassed) {
           gained += Math.round(CONFIG.xpPerCorrect * score);
@@ -434,6 +437,7 @@ export function renderPlay(app, host, params) {
         }
         xpline.classList.add("good");
       } else {
+        sfx.wrong();
         state.streak = 0;
         xpline.classList.add("bad");
         lines.push(t("notQuite"));
@@ -447,6 +451,7 @@ export function renderPlay(app, host, params) {
   }
 
   next.addEventListener("click", async () => {
+    sfx.tick();
     state.i++;
     if (state.i < state.total) showQuestion();
     else {

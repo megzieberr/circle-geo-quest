@@ -5,7 +5,7 @@
    admin password server-side. No service-role key in the client.
    ============================================================ */
 import { api, BACKEND } from "./api.js";
-import { ROUNDS, QUESTION_BY_ID } from "./rounds/index.js";
+import { ROUNDS, ROUND_BY_ID, QUESTION_BY_ID } from "./rounds/index.js";
 import { showCrownPreview, showRallyPreview } from "./weekly.js";
 import { avatarEmoji } from "./profile.js";
 
@@ -15,9 +15,25 @@ let adminPw = null;
 let data = null;
 let itemStats = null;
 let feedback = null;
+let integrity = null;     // cheat-detection readout (phase13.sql cgg_admin_integrity)
 let championNow = null;   // current teacher's-choice Circle Champion (display name, or null)
 
 const INACTIVE_DAYS = 7;
+
+/* GRADED rounds = the multiple-choice "play" rounds that log a per-question
+   event for each answer (js/game.js calls api.logItems for these). They are
+   exactly the rounds carrying a non-empty `questions` array; cutscene/discover
+   rounds carry `panels` instead, never call logItems, and so legitimately have
+   qcount 0 — which is why FLAG A only looks at this set. Same predicate the app
+   uses to build QUESTION_BANK (rounds/index.js), so it can't drift out of sync. */
+const GRADED_ROUND_IDS = new Set(
+  ROUNDS.filter(r => Array.isArray(r.questions) && r.questions.length > 0).map(r => r.id)
+);
+/* FLAG B tuning — a burst of many graded rounds cleared seconds apart is the
+   signature of an automated "pass everything" script (a human can't answer and
+   pass a whole round every few seconds). */
+const BURST_MIN_ROUNDS = 5;      // at least this many graded passes in the run
+const BURST_MAX_GAP_MS = 20000;  // each ≤ ~20s after the previous one
 const fmtDate = ts => ts ? new Date(ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 const daysSince = ts => ts ? Math.floor((Date.now() - new Date(ts).getTime()) / 86400000) : Infinity;
 // Whether a learner has set a password — WITHOUT ever revealing it. Works with
@@ -57,6 +73,8 @@ async function load() {
   // current Circle Champion (best-effort; needs the Phase-10 RPC)
   const wk = api.adminWeeklyResults ? await api.adminWeeklyResults(adminPw).catch(() => ({ ok: false })) : { ok: false };
   championNow = wk && wk.ok ? (wk.champion || null) : null;
+  // cheat-detection readout (best-effort; needs the Phase-13 RPC)
+  integrity = api.adminIntegrity ? await api.adminIntegrity(adminPw).catch(() => ({ ok: false })) : { ok: false };
   renderDashboard();
 }
 
@@ -195,6 +213,7 @@ function renderDashboard() {
 
   renderFeedbackReport();
   renderItemReport();
+  renderIntegrityReport();
 
   root.appendChild(el("p", "muted small center", "Passwords are hidden. If a learner forgets theirs, use “reset pw” to clear it so they pick a new one. Backend: " + BACKEND));
 }
@@ -347,6 +366,127 @@ function renderItemReport() {
   root.appendChild(section);
 }
 const truncate = (s, n) => { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
+
+/* ---------- "Worth a look" — light-touch cheat-detection ----------
+   Because every question + answer lives in the client (needed for offline
+   play), the server can't PREVENT a fake "pass" submitted straight to
+   cgg_submit_round — the defence is DETECTION. cgg_admin_integrity (phase13)
+   hands us, per learner, every PASSED round with how many per-question events
+   were logged (qcount) and when it was last played (at). We flag only two
+   patterns; a clean class shows a single reassuring line, not a wall of noise.
+   This is a heads-up to eyeball, explicitly NOT an accusation. */
+const roundLabel = rid => {
+  const rd = ROUND_BY_ID[rid];
+  return rd ? `${rd.n}. ${rd.title && rd.title.en ? rd.title.en : rid}` : rid;
+};
+const fmtDateTime = ts => {
+  const t2 = typeof ts === "number" ? ts : Date.parse(ts);
+  return Number.isFinite(t2) ? new Date(t2).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+};
+const fmtSpan = ms => {
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  return `${m}m ${s % 60}s`;
+};
+function renderIntegrityReport() {
+  const section = el("div", "admin-report admin-integrity");
+  section.appendChild(el("h2", "report-title", "⚠️ Worth a look"));
+
+  if (!integrity || !integrity.ok) {
+    section.appendChild(el("p", "muted small", "This heads-up needs the Phase-13 database update (run supabase/phase13.sql). It's optional — nothing else on the dashboard depends on it."));
+    root.appendChild(section);
+    return;
+  }
+
+  section.appendChild(el("p", "muted small",
+    "A calm heads-up, not an accusation. These are just patterns worth eyeballing — a learner might have a totally innocent reason. The game keeps its questions on the phone (so it works offline), so this is how we spot a round that was “passed” without actually being played."));
+
+  const students = integrity.students || [];
+
+  // FLAG A — a GRADED multiple-choice round marked passed, but with zero
+  // logged questions. A real graded pass logs one event per question; zero
+  // means the pass was submitted without playing. Non-graded intro/watch/
+  // discover rounds legitimately log nothing, so they're skipped entirely.
+  const flagA = [];
+  students.forEach(s => {
+    const bad = (s.rounds || []).filter(r => GRADED_ROUND_IDS.has(r.round) && (r.qcount || 0) === 0);
+    if (bad.length) flagA.push({ name: s.name, rounds: bad.map(r => r.round) });
+  });
+
+  // FLAG B — many graded rounds cleared within seconds of each other. Sort a
+  // learner's graded passes by time and find the longest run where each pass
+  // is ≤ BURST_MAX_GAP_MS after the previous; flag runs of BURST_MIN_ROUNDS+.
+  // Taxonomy-light: needs only the timestamps, so it fires even if FLAG A's
+  // round set were ever wrong. This is the signal that catches a bulk script.
+  const flagB = [];
+  students.forEach(s => {
+    const times = (s.rounds || [])
+      .filter(r => GRADED_ROUND_IDS.has(r.round) && r.at)
+      .map(r => Date.parse(r.at))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+    if (times.length < BURST_MIN_ROUNDS) return;
+    let runStart = 0;
+    let best = null;
+    for (let i = 1; i <= times.length; i++) {
+      if (i < times.length && times[i] - times[i - 1] <= BURST_MAX_GAP_MS) continue;
+      const len = i - runStart;
+      if (len >= BURST_MIN_ROUNDS && (!best || len > best.count)) {
+        best = { count: len, start: times[runStart], end: times[i - 1] };
+      }
+      runStart = i;
+    }
+    if (best) flagB.push({ name: s.name, ...best });
+  });
+
+  // Currently locked-out learners (FYI: the throttle fired) — never in local
+  // mode (lockedUntil is always null there), only on the live server.
+  const lockedNow = students
+    .filter(s => s.lockedUntil && Date.parse(s.lockedUntil) > Date.now())
+    .map(s => ({ name: s.name, until: s.lockedUntil }));
+
+  if (!flagA.length && !flagB.length) {
+    section.appendChild(el("p", "muted small ok-line", "Nothing unusual — every passed round has the play history you'd expect. 👍"));
+  }
+
+  if (flagA.length) {
+    const box = el("div", "integrity-flag");
+    box.appendChild(el("h3", "flag-title", "Cleared a graded round with no work logged"));
+    box.appendChild(el("p", "muted small", "These graded rounds show as passed but logged zero answered questions — as if the pass arrived without the round being played."));
+    const list = el("ul", "flag-list");
+    flagA.forEach(f => {
+      const li = el("li");
+      li.innerHTML = `<b>${escapeHtml(f.name)}</b> — ${f.rounds.map(r => escapeHtml(roundLabel(r))).join(", ")}`;
+      list.appendChild(li);
+    });
+    box.appendChild(list);
+    section.appendChild(box);
+  }
+
+  if (flagB.length) {
+    const box = el("div", "integrity-flag");
+    box.appendChild(el("h3", "flag-title", "Cleared many rounds in seconds"));
+    box.appendChild(el("p", "muted small", `Several graded rounds passed in one very short burst (${BURST_MIN_ROUNDS}+ rounds, each within ${Math.round(BURST_MAX_GAP_MS / 1000)}s of the last) — faster than the rounds can really be played.`));
+    const list = el("ul", "flag-list");
+    flagB.forEach(f => {
+      const li = el("li");
+      li.innerHTML = `<b>${escapeHtml(f.name)}</b> — ${f.count} rounds in ${escapeHtml(fmtSpan(f.end - f.start))} <span class="muted">(around ${escapeHtml(fmtDateTime(f.start))})</span>`;
+      list.appendChild(li);
+    });
+    box.appendChild(list);
+    section.appendChild(box);
+  }
+
+  if (lockedNow.length) {
+    const box = el("div", "integrity-fyi");
+    box.appendChild(el("p", "muted small",
+      `FYI — the login throttle is currently active for: ${lockedNow.map(l => `${escapeHtml(l.name)} (until ${escapeHtml(fmtDateTime(l.until))})`).join(", ")}. It clears itself; if it's the real learner, they can just wait or you can reset nothing — it lifts on its own.`));
+    section.appendChild(box);
+  }
+
+  root.appendChild(section);
+}
 
 /* ---------- weekly announcement previews (screenshot for the class group) ---------- */
 async function showWeeklyWinners() {

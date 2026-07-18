@@ -7,6 +7,15 @@ import { el, clear, toast } from "./ui.js";
 import { installEntryButton } from "./install.js";
 import { showProfileSetup } from "./profile.js";
 
+/* Whole minutes remaining until an ISO lockout expiry, floored at 1 so the
+   message never reads "wait 0 min". Falls back to a sensible default if the
+   timestamp is missing or unparseable (matches the server's 15-min window). */
+function minutesUntil(iso) {
+  const until = iso ? Date.parse(iso) : NaN;
+  if (!Number.isFinite(until)) return 15;
+  return Math.max(1, Math.ceil((until - Date.now()) / 60000));
+}
+
 export async function renderLogin(app, host) {
   clear(host);
   const wrap = el("div", "login");
@@ -84,7 +93,14 @@ export async function renderLogin(app, host) {
       } else {
         if (!pw) return showErr(t("wrongPassword"));
         const r = await api.login(student.display_name, pw);
-        if (!r.ok) return showErr(t("wrongPassword"));
+        if (!r.ok) {
+          // Brute-force throttle tripped (phase13): show a friendly "wait a
+          // few minutes" without ever revealing whether the account exists —
+          // the server locks on the name-key before checking existence, so
+          // "locked" leaks nothing that "wrong password" wouldn't.
+          if (r.error === "locked") return showErr(t("loginLocked").replace("{n}", minutesUntil(r.lockedUntil)));
+          return showErr(t("wrongPassword"));
+        }
       }
       setSession(student.display_name, pw);
       await app.refreshState();

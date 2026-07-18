@@ -420,6 +420,40 @@ const LocalBackend = {
     return { ok: true, rows };
   },
 
+  /* Cheat-detection raw material for the admin "Worth a look" section.
+     Mirrors cgg_admin_integrity (phase13.sql): for EVERY learner, each PASSED
+     round with how many per-question events were logged (qcount) and when it
+     was last played (at, ISO). qcount comes from the same item store logItems
+     writes to, so a fake "pass" submitted straight to submitRound (which never
+     logs items) shows qcount 0 on a graded round. lockedUntil is always null
+     here — the brute-force throttle only exists on the real server. */
+  async adminIntegrity(adminPassword) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const students = read(LS.students, {});
+    const progress = read(LS.progress, {});
+    const items = read(LS.items, []);
+    // qcount per (studentId, roundId): total logged per-question events.
+    const qcount = {};
+    items.forEach(it => {
+      const k = it.studentId + "|" + it.roundId;
+      qcount[k] = (qcount[k] || 0) + 1;
+    });
+    const list = Object.values(students).map(s => {
+      const sp = progress[s.id] || {};
+      const rounds = Object.entries(sp)
+        .filter(([, p]) => p && p.passed)
+        .map(([roundId, p]) => ({
+          round: roundId,
+          qcount: qcount[s.id + "|" + roundId] || 0,
+          at: p.last_played_at ? new Date(p.last_played_at).toISOString() : null,
+        }))
+        .sort((a, b) => (a.at || "").localeCompare(b.at || ""));
+      return { name: s.display_name, lockedUntil: null, rounds };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+    return { ok: true, students: list };
+  },
+
   async leaderboard(name, password) {
     const s = this._verify(name, password);
     if (!s) return { ok: false, error: "auth" };
@@ -630,6 +664,7 @@ const PreviewBackend = {
   async awardStreakMilestone() { return { ok: true, xpAwarded: 0, alreadyAwarded: true }; },
   async setProfile() { return { ok: true, nickname: null, avatarId: null }; },   // never persisted in preview
   async logItems() { return { ok: true, logged: 0 }; },
+  async adminIntegrity() { return { ok: true, students: [] }; },
   async submitFeedback() { return { ok: true }; },
   async getMyFeedback() { return { ok: true, rating: null, comment: "" }; },
   async savePush() { return { ok: true }; },

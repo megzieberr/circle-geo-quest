@@ -52,6 +52,7 @@ const UI = {
   back:           { en: "Back", af: "Terug" },
   logOut:         { en: "Log out", af: "Teken uit" },
   wrongPassword:  { en: "That password isn't right. Try again, or ask your teacher.", af: "Daardie wagwoord is verkeerd. Probeer weer, of vra jou onderwyser." },
+  loginLocked:    { en: "Too many tries — wait {n} min and try again, or ask your teacher.", af: "Te veel probeerslae — wag {n} minute en probeer weer, of vra jou onderwyser." },
   passwordsDiffer:{ en: "The two passwords don't match.", af: "Die twee wagwoorde stem nie ooreen nie." },
   passwordTooShort:{ en: "Use at least 4 characters.", af: "Gebruik ten minste 4 karakters." },
   offline:        { en: "Can't reach the server. Check your connection.", af: "Kan nie die bediener bereik nie. Kontroleer jou verbinding." },

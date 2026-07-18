@@ -1,6 +1,7 @@
 /* Small DOM helpers + shared chrome (top bar). */
-import { t, getLang, setLang } from "./i18n.js";
+import { t, tx, getLang, setLang } from "./i18n.js";
 import { showWhy } from "./why.js";
+import { sfx } from "./sound.js";
 
 export function el(tag, cls, html) {
   const e = document.createElement(tag);
@@ -44,6 +45,17 @@ export function renderChrome(app) {
   lang.title = t("language");
   lang.addEventListener("click", () => { setLang(getLang() === "en" ? "af" : "en"); });
   right.appendChild(lang);
+  // sound mute toggle — per-device, persisted in sound.js (localStorage)
+  const mute = el("button", "pill ghost mute", sfx.isMuted() ? "🔇" : "🔊");
+  mute.title = tx({ en: sfx.isMuted() ? "Sound off — tap to turn on" : "Sound on — tap to mute",
+                     af: sfx.isMuted() ? "Klank af — tik om aan te skakel" : "Klank aan — tik om te demp" });
+  mute.addEventListener("click", () => {
+    sfx.setMuted(!sfx.isMuted());
+    mute.textContent = sfx.isMuted() ? "🔇" : "🔊";
+    mute.title = tx({ en: sfx.isMuted() ? "Sound off — tap to turn on" : "Sound on — tap to mute",
+                       af: sfx.isMuted() ? "Klank af — tik om aan te skakel" : "Klank aan — tik om te demp" });
+  });
+  right.appendChild(mute);
 
   if (app.state && app.state.student) {
     const who = el("span", "pill who", app.state.student.name);
