@@ -16,6 +16,7 @@ import { installEntryButton, maybeShowInstallPopup } from "./install.js";
 import { maybeShowBoostAnnounce } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
 import { submitRoundReliable } from "./sync.js";
+import { initPiMascot, piCameo } from "./pi.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -76,6 +77,7 @@ export function renderHome(app, host) {
   stats.appendChild(lb);
   head.appendChild(stats);
   host.appendChild(head);
+  initPiMascot(head);   // Pi the mascot idles in the head's open corner (js/pi.js)
 
   // "Continue your quest" — a one-tap jump to the current round, right at the
   // top, so a learner never has to scroll the map to find where they're up to.
@@ -533,6 +535,11 @@ export function renderResults(app, host, params) {
 
   const frac = (params.frac != null) ? params.frac : (params.total ? params.correct / params.total : 0);
   const passed = params.discovery || params.alreadyPassed || frac >= CONFIG.passThreshold;
+  // Pi's one purposeful cameo: a thumbs-up on a passed graded round
+  if (passed && !params.discovery) {
+    const card = screen.querySelector(".result-card");
+    if (card) piCameo(card);
+  }
   // Only advance once the SERVER has the pass. The graded path sets saved:false
   // when the submit could only be queued — advancing on that is exactly what let
   // an unsaved round get skipped before.

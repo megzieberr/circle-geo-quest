@@ -63,35 +63,80 @@ export const BASE_RANK = "Newcomer";
 /* ============================================================
    AVATARS — the curated emoji picker for the nickname/avatar
    profile (js/profile.js). Fixed list, no freeform upload, so it
-   stays school-appropriate and gender-neutral (animals / space /
-   nature / sport / music — no flags, no skin-toned faces). The ids
-   here are mirrored server-side in supabase/phase12.sql
+   stays school-appropriate and gender-neutral (animals / creatures /
+   space / nature / sport / music — no flags, no skin-toned faces).
+   The ids here are mirrored server-side in supabase/phase14.sql
    (cgg_set_profile validates p_avatar against the same list) — if
    you add an avatar here, add its id to that allow-list too.
    "circle" doubles as the neutral DEFAULT_AVATAR: what a learner
    who skips profile setup gets, and the fallback for any student
    row with no avatar_id yet (pre-migration or never set).
+   Each avatar carries a `cat` id; AVATAR_CATS below drives the
+   grouped headings in the picker (js/profile.js) — display only,
+   the server never sees categories.
    ============================================================ */
+export const AVATAR_CATS = [
+  { id: "animals",   label: { en: "Animals",           af: "Diere" } },
+  { id: "creatures", label: { en: "Creatures & robots", af: "Wesens & robotte" } },
+  { id: "space",     label: { en: "Space",             af: "Ruimte" } },
+  { id: "nature",    label: { en: "Nature",            af: "Natuur" } },
+  { id: "sport",     label: { en: "Sport & games",     af: "Sport & speletjies" } },
+  { id: "fun",       label: { en: "Music & food",      af: "Musiek & kos" } },
+];
 export const AVATARS = [
-  { id: "fox",        emoji: "🦊", label: { en: "Fox",        af: "Jakkals" } },
-  { id: "owl",         emoji: "🦉", label: { en: "Owl",        af: "Uil" } },
-  { id: "otter",       emoji: "🦦", label: { en: "Otter",      af: "Otter" } },
-  { id: "panda",       emoji: "🐼", label: { en: "Panda",      af: "Panda" } },
-  { id: "koala",       emoji: "🐨", label: { en: "Koala",      af: "Koala" } },
-  { id: "comet",       emoji: "☄️", label: { en: "Comet",      af: "Komeet" } },
-  { id: "rocket",      emoji: "🚀", label: { en: "Rocket",     af: "Vuurpyl" } },
-  { id: "star",        emoji: "⭐", label: { en: "Star",       af: "Ster" } },
-  { id: "planet",      emoji: "🪐", label: { en: "Planet",     af: "Planeet" } },
-  { id: "leaf",        emoji: "🍃", label: { en: "Leaf",       af: "Blaar" } },
-  { id: "sprout",      emoji: "🌱", label: { en: "Sprout",     af: "Saailing" } },
-  { id: "wave",        emoji: "🌊", label: { en: "Wave",       af: "Golf" } },
-  { id: "football",    emoji: "⚽", label: { en: "Football",   af: "Sokker" } },
-  { id: "basketball",  emoji: "🏀", label: { en: "Basketball", af: "Basketbal" } },
-  { id: "tennis",      emoji: "🎾", label: { en: "Tennis",     af: "Tennis" } },
-  { id: "medal",       emoji: "🏅", label: { en: "Medal",      af: "Medalje" } },
-  { id: "guitar",      emoji: "🎸", label: { en: "Guitar",     af: "Kitaar" } },
-  { id: "drum",        emoji: "🥁", label: { en: "Drum",       af: "Trom" } },
-  { id: "trumpet",     emoji: "🎺", label: { en: "Trumpet",    af: "Trompet" } },
-  { id: "circle",      emoji: "🔵", label: { en: "Circle",     af: "Sirkel" } },
+  { id: "fox",        emoji: "🦊", cat: "animals", label: { en: "Fox",        af: "Jakkals" } },
+  { id: "owl",         emoji: "🦉", cat: "animals", label: { en: "Owl",        af: "Uil" } },
+  { id: "otter",       emoji: "🦦", cat: "animals", label: { en: "Otter",      af: "Otter" } },
+  { id: "panda",       emoji: "🐼", cat: "animals", label: { en: "Panda",      af: "Panda" } },
+  { id: "koala",       emoji: "🐨", cat: "animals", label: { en: "Koala",      af: "Koala" } },
+  { id: "cat",         emoji: "🐱", cat: "animals", label: { en: "Cat",        af: "Kat" } },
+  { id: "dog",         emoji: "🐶", cat: "animals", label: { en: "Dog",        af: "Hond" } },
+  { id: "lion",        emoji: "🦁", cat: "animals", label: { en: "Lion",       af: "Leeu" } },
+  { id: "tiger",       emoji: "🐯", cat: "animals", label: { en: "Tiger",      af: "Tier" } },
+  { id: "frog",        emoji: "🐸", cat: "animals", label: { en: "Frog",       af: "Padda" } },
+  { id: "monkey",      emoji: "🐵", cat: "animals", label: { en: "Monkey",     af: "Aap" } },
+  { id: "penguin",     emoji: "🐧", cat: "animals", label: { en: "Penguin",    af: "Pikkewyn" } },
+  { id: "shark",       emoji: "🦈", cat: "animals", label: { en: "Shark",      af: "Haai" } },
+  { id: "dolphin",     emoji: "🐬", cat: "animals", label: { en: "Dolphin",    af: "Dolfyn" } },
+  { id: "turtle",      emoji: "🐢", cat: "animals", label: { en: "Turtle",     af: "Skilpad" } },
+  { id: "octopus",     emoji: "🐙", cat: "animals", label: { en: "Octopus",    af: "Seekat" } },
+  { id: "butterfly",   emoji: "🦋", cat: "animals", label: { en: "Butterfly",  af: "Skoenlapper" } },
+  { id: "bee",         emoji: "🐝", cat: "animals", label: { en: "Bee",        af: "By" } },
+  { id: "parrot",      emoji: "🦜", cat: "animals", label: { en: "Parrot",     af: "Papegaai" } },
+  { id: "hedgehog",    emoji: "🦔", cat: "animals", label: { en: "Hedgehog",   af: "Krimpvarkie" } },
+  { id: "unicorn",     emoji: "🦄", cat: "creatures", label: { en: "Unicorn",  af: "Eenhoring" } },
+  { id: "dragon",      emoji: "🐉", cat: "creatures", label: { en: "Dragon",   af: "Draak" } },
+  { id: "trex",        emoji: "🦖", cat: "creatures", label: { en: "T-rex",    af: "T-rex" } },
+  { id: "robot",       emoji: "🤖", cat: "creatures", label: { en: "Robot",    af: "Robot" } },
+  { id: "alien",       emoji: "👾", cat: "creatures", label: { en: "Alien",    af: "Ruimtewese" } },
+  { id: "ghost",       emoji: "👻", cat: "creatures", label: { en: "Ghost",    af: "Spook" } },
+  { id: "comet",       emoji: "☄️", cat: "space", label: { en: "Comet",      af: "Komeet" } },
+  { id: "rocket",      emoji: "🚀", cat: "space", label: { en: "Rocket",     af: "Vuurpyl" } },
+  { id: "star",        emoji: "⭐", cat: "space", label: { en: "Star",       af: "Ster" } },
+  { id: "planet",      emoji: "🪐", cat: "space", label: { en: "Planet",     af: "Planeet" } },
+  { id: "moon",        emoji: "🌙", cat: "space", label: { en: "Moon",       af: "Maan" } },
+  { id: "ufo",         emoji: "🛸", cat: "space", label: { en: "UFO",        af: "Ruimteskip" } },
+  { id: "circle",      emoji: "🔵", cat: "space", label: { en: "Circle",     af: "Sirkel" } },
+  { id: "leaf",        emoji: "🍃", cat: "nature", label: { en: "Leaf",       af: "Blaar" } },
+  { id: "sprout",      emoji: "🌱", cat: "nature", label: { en: "Sprout",     af: "Saailing" } },
+  { id: "wave",        emoji: "🌊", cat: "nature", label: { en: "Wave",       af: "Golf" } },
+  { id: "rainbow",     emoji: "🌈", cat: "nature", label: { en: "Rainbow",    af: "Reënboog" } },
+  { id: "lightning",   emoji: "⚡", cat: "nature", label: { en: "Lightning",  af: "Weerlig" } },
+  { id: "snowflake",   emoji: "❄️", cat: "nature", label: { en: "Snowflake",  af: "Sneeuvlokkie" } },
+  { id: "cactus",      emoji: "🌵", cat: "nature", label: { en: "Cactus",     af: "Kaktus" } },
+  { id: "football",    emoji: "⚽", cat: "sport", label: { en: "Football",   af: "Sokker" } },
+  { id: "basketball",  emoji: "🏀", cat: "sport", label: { en: "Basketball", af: "Basketbal" } },
+  { id: "tennis",      emoji: "🎾", cat: "sport", label: { en: "Tennis",     af: "Tennis" } },
+  { id: "medal",       emoji: "🏅", cat: "sport", label: { en: "Medal",      af: "Medalje" } },
+  { id: "target",      emoji: "🎯", cat: "sport", label: { en: "Target",     af: "Teiken" } },
+  { id: "dice",        emoji: "🎲", cat: "sport", label: { en: "Dice",       af: "Dobbelsteen" } },
+  { id: "gamepad",     emoji: "🎮", cat: "sport", label: { en: "Gamepad",    af: "Speletjie" } },
+  { id: "skateboard",  emoji: "🛹", cat: "sport", label: { en: "Skateboard", af: "Skaatsplank" } },
+  { id: "guitar",      emoji: "🎸", cat: "fun", label: { en: "Guitar",     af: "Kitaar" } },
+  { id: "drum",        emoji: "🥁", cat: "fun", label: { en: "Drum",       af: "Trom" } },
+  { id: "trumpet",     emoji: "🎺", cat: "fun", label: { en: "Trumpet",    af: "Trompet" } },
+  { id: "pizza",       emoji: "🍕", cat: "fun", label: { en: "Pizza",      af: "Pizza" } },
+  { id: "donut",       emoji: "🍩", cat: "fun", label: { en: "Donut",      af: "Donut" } },
+  { id: "watermelon",  emoji: "🍉", cat: "fun", label: { en: "Watermelon", af: "Waatlemoen" } },
 ];
 export const DEFAULT_AVATAR = AVATARS.find(a => a.id === "circle");

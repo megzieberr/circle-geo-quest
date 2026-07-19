@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!-- Sound lab — NOT part of the game. Open on the dev server
+     (http://localhost:5180/sound-lab.html), click around, and tell
+     Claude which letter you want for each row (e.g. "correct = C,
+     wrong = current, celebrate = B, tick = D"). Every candidate is
+     synthesized with the same Web Audio approach js/sound.js uses —
+     no audio files, so any pick keeps the PWA offline-safe. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Circle Quest sound lab</title>
+<style>
+  body{font-family:system-ui,sans-serif; background:#faf7f0; margin:0; padding:24px; max-width:760px; margin-inline:auto;}
+  h1{font-size:1.3rem; color:#3b2d70;}
+  p.note{color:#666; font-size:.9rem;}
+  .row{background:#fff; border:2px solid #222; border-radius:16px; padding:14px 16px; margin:14px 0;
+       box-shadow:4px 4px 0 rgba(34,34,34,.15);}
+  .row h2{margin:0 0 4px; font-size:1.05rem;}
+  .row p{margin:0 0 10px; color:#555; font-size:.85rem;}
+  .btns{display:flex; flex-wrap:wrap; gap:8px;}
+  button{padding:8px 14px; border:2px solid #222; border-radius:10px; background:#fff;
+         font-weight:700; cursor:pointer; font-size:.9rem;}
+  button.cur{background:#eef2ff; border-color:#7c5cff;}
+  button:active{transform:translate(1px,1px);}
+</style>
+</head>
+<body>
+<h1>🔊 Circle Quest sound lab</h1>
+<p class="note">Click to hear each option. "current" = what's live now. Tell Claude your pick per row.</p>
+<div id="rows"></div>
+<script>
+let ctx = null;
+function c() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; }
+function note(a, { freq, dur = 0.14, type = "sine", peak = 0.18, at = 0, glide = null }) {
+  const t0 = a.currentTime + at;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t0);
+  if (glide) o.frequency.exponentialRampToValueAtTime(glide, t0 + dur);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(peak, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0 + dur + 0.02);
+}
+
+const LAB = {
+  correct: {
+    blurb: "After a right answer — the one you hear most, worth getting right.",
+    options: {
+      "current": a => { note(a,{freq:587.33,dur:.11,type:"triangle",peak:.16}); note(a,{freq:880,dur:.16,type:"triangle",peak:.18,at:.09}); },
+      "B — marimba pluck": a => { note(a,{freq:783.99,dur:.16,type:"sine",peak:.22}); note(a,{freq:1567.98,dur:.09,type:"sine",peak:.07}); },
+      "C — warm pop": a => { note(a,{freq:330,glide:660,dur:.12,type:"sine",peak:.22}); },
+      "D — coin sparkle": a => { note(a,{freq:987.77,dur:.07,type:"square",peak:.06}); note(a,{freq:1318.5,dur:.18,type:"square",peak:.07,at:.06}); },
+      "E — soft chime dyad": a => { note(a,{freq:659.25,dur:.22,type:"triangle",peak:.12}); note(a,{freq:987.77,dur:.26,type:"triangle",peak:.10,at:.02}); },
+      "F — thock + ping": a => { note(a,{freq:180,dur:.04,type:"square",peak:.12}); note(a,{freq:880,dur:.16,type:"sine",peak:.16,at:.05}); },
+    },
+  },
+  wrong: {
+    blurb: "After a wrong answer — deliberately gentle, never a buzzer.",
+    options: {
+      "current": a => { note(a,{freq:220,dur:.16,type:"sine",peak:.10}); },
+      "B — two soft steps down": a => { note(a,{freq:329.63,dur:.10,type:"sine",peak:.10}); note(a,{freq:261.63,dur:.14,type:"sine",peak:.09,at:.09}); },
+      "C — bloop": a => { note(a,{freq:280,glide:170,dur:.16,type:"sine",peak:.11}); },
+      "D — soft thud": a => { note(a,{freq:110,dur:.09,type:"sine",peak:.14}); },
+      "E — hmm (wobble)": a => { note(a,{freq:233.08,dur:.09,type:"triangle",peak:.08}); note(a,{freq:220,dur:.12,type:"triangle",peak:.08,at:.08}); },
+    },
+  },
+  celebrate: {
+    blurb: "Badge / streak-milestone modal — the big-moment sparkle.",
+    options: {
+      "current": a => { [523.25,659.25,783.99,1046.5].forEach((f,i)=>note(a,{freq:f,dur:.18,type:"triangle",peak:.15,at:i*.07})); },
+      "B — pentatonic run": a => { [523.25,587.33,659.25,783.99,880].forEach((f,i)=>note(a,{freq:f,dur:.14,type:"triangle",peak:.13,at:i*.055})); },
+      "C — chord swell": a => { [523.25,659.25,783.99].forEach(f=>note(a,{freq:f,dur:.5,type:"triangle",peak:.09})); note(a,{freq:1046.5,dur:.4,type:"triangle",peak:.10,at:.12}); },
+      "D — rising sparkle": a => { [659.25,880,1318.5].forEach((f,i)=>note(a,{freq:f,dur:.16,type:"triangle",peak:.13,at:i*.09})); note(a,{freq:2637,dur:.12,type:"sine",peak:.05,at:.3}); },
+    },
+  },
+  tick: {
+    blurb: "Next / page advance — quiet on purpose.",
+    options: {
+      "current": a => { note(a,{freq:1200,dur:.035,type:"square",peak:.03}); },
+      "B — soft click": a => { note(a,{freq:800,dur:.025,type:"sine",peak:.06}); },
+      "C — woodblock": a => { note(a,{freq:500,dur:.045,type:"triangle",peak:.08}); },
+      "D — pip up": a => { note(a,{freq:1000,glide:1400,dur:.04,type:"sine",peak:.04}); },
+    },
+  },
+};
+
+const rows = document.getElementById("rows");
+Object.entries(LAB).forEach(([name, def]) => {
+  const row = document.createElement("div"); row.className = "row";
+  row.innerHTML = `<h2>${name}</h2><p>${def.blurb}</p>`;
+  const btns = document.createElement("div"); btns.className = "btns";
+  Object.entries(def.options).forEach(([label, fn]) => {
+    const b = document.createElement("button");
+    b.textContent = label; if (label === "current") b.classList.add("cur");
+    b.addEventListener("click", () => { try { fn(c()); } catch(e) {} });
+    btns.appendChild(b);
+  });
+  row.appendChild(btns); rows.appendChild(row);
+});
+</script>
+</body>
+</html>

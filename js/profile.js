@@ -30,7 +30,7 @@ import { api } from "./api.js";
 import { getSession } from "./session.js";
 import { t, tx } from "./i18n.js";
 import { el, toast } from "./ui.js";
-import { AVATARS, DEFAULT_AVATAR } from "./config.js";
+import { AVATARS, AVATAR_CATS, DEFAULT_AVATAR } from "./config.js";
 
 const NICK_MAX = 24;
 
@@ -85,21 +85,31 @@ export function showProfileSetup(app, { skippable = true } = {}) {
   modal.appendChild(nickWrap);
 
   modal.appendChild(el("label", "profile-label", tx({ en: "Avatar", af: "Avatar" })));
-  const grid = el("div", "avatar-grid");
+  // One shared scroll area; each category gets a small heading + its own
+  // grid so 50+ options read as sections, not a wall of emoji. Selection
+  // still works across the whole area (one `picked`, one .sel at a time).
+  const gridWrap = el("div", "avatar-grid-wrap");
   let picked = student.avatarId || DEFAULT_AVATAR.id;
-  AVATARS.forEach(a => {
-    const b = el("button", "avatar-btn" + (a.id === picked ? " sel" : ""), a.emoji);
-    b.type = "button";
-    b.title = tx(a.label);
-    b.setAttribute("aria-label", tx(a.label));
-    b.addEventListener("click", () => {
-      picked = a.id;
-      grid.querySelectorAll(".avatar-btn").forEach(x => x.classList.remove("sel"));
-      b.classList.add("sel");
+  AVATAR_CATS.forEach(cat => {
+    const avatars = AVATARS.filter(a => a.cat === cat.id);
+    if (!avatars.length) return;
+    gridWrap.appendChild(el("p", "avatar-cat-label", tx(cat.label)));
+    const grid = el("div", "avatar-grid");
+    avatars.forEach(a => {
+      const b = el("button", "avatar-btn" + (a.id === picked ? " sel" : ""), a.emoji);
+      b.type = "button";
+      b.title = tx(a.label);
+      b.setAttribute("aria-label", tx(a.label));
+      b.addEventListener("click", () => {
+        picked = a.id;
+        gridWrap.querySelectorAll(".avatar-btn").forEach(x => x.classList.remove("sel"));
+        b.classList.add("sel");
+      });
+      grid.appendChild(b);
     });
-    grid.appendChild(b);
+    gridWrap.appendChild(grid);
   });
-  modal.appendChild(grid);
+  modal.appendChild(gridWrap);
 
   const errLine = el("p", "err"); errLine.hidden = true; modal.appendChild(errLine);
 

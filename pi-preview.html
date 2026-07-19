@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!-- Pi mascot preview — NOT part of the game. Open on the dev server
+     (e.g. http://localhost:5180/pi-preview.html) to judge frame timing.
+     Each card plays one animation; the slider changes its fps live.
+     The in-game defaults are marked on each slider. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pi preview</title>
+<style>
+  body{font-family:system-ui,sans-serif; background:#faf7f0; margin:0; padding:24px;
+       display:flex; flex-wrap:wrap; gap:20px; justify-content:center;}
+  h1{width:100%; text-align:center; font-size:1.3rem; color:#3b2d70; margin:0 0 4px;}
+  p.note{width:100%; text-align:center; margin:0 0 10px; color:#666; font-size:.9rem;}
+  .card{background:#fff; border:2px solid #222; border-radius:16px; padding:16px;
+        width:240px; text-align:center; box-shadow:4px 4px 0 rgba(34,34,34,.15);}
+  .stage{height:190px; display:flex; align-items:flex-end; justify-content:center;}
+  .pi{background-repeat:no-repeat;}
+  label{display:block; font-size:.85rem; margin-top:10px; color:#333;}
+  input[type=range]{width:100%;}
+  button{margin-top:8px; padding:6px 14px; border:2px solid #222; border-radius:10px;
+         background:#7c5cff; color:#fff; font-weight:700; cursor:pointer;}
+</style>
+</head>
+<body>
+<h1>Pi — animation preview</h1>
+<p class="note">Slider = speed (frames per second). The default the game will use is in brackets. Tap ▶ to replay.</p>
+<script>
+const BASE = "assets/pi/";
+const DEFAULTS = { wave: 6, thumbs: 6, hang: 6, bounce: 7 };
+const H = 160;
+fetch(BASE + "meta.json").then(r => r.json()).then(meta => {
+  Object.keys(meta).forEach(name => {
+    const m = meta[name];
+    const card = document.createElement("div"); card.className = "card";
+    const stage = document.createElement("div"); stage.className = "stage";
+    const pi = document.createElement("div"); pi.className = "pi";
+    const s = H / m.h, w = Math.round(m.w * s);
+    pi.style.width = w + "px"; pi.style.height = H + "px";
+    pi.style.backgroundImage = `url(${BASE}${name}.png)`;
+    pi.style.backgroundSize = `${Math.round(m.w * m.frames * s)}px ${H}px`;
+    stage.appendChild(pi); card.appendChild(stage);
+    const lab = document.createElement("label");
+    lab.textContent = `${name} — ${DEFAULTS[name]} fps (default)`;
+    const slider = document.createElement("input");
+    slider.type = "range"; slider.min = 4; slider.max = 16; slider.value = DEFAULTS[name];
+    const btn = document.createElement("button"); btn.textContent = "▶ play";
+    card.appendChild(lab); card.appendChild(slider); card.appendChild(btn);
+    document.body.appendChild(card);
+    let timer = null;
+    function play() {
+      if (timer) clearInterval(timer);
+      let i = 0;
+      pi.style.backgroundPosition = "0 0";
+      timer = setInterval(() => {
+        i = (i + 1) % m.frames;
+        pi.style.backgroundPosition = `-${i * w}px 0`;
+        if (i === 0) { clearInterval(timer); timer = null; }
+      }, 1000 / Number(slider.value));
+    }
+    slider.addEventListener("input", () => { lab.textContent = `${name} — ${slider.value} fps (default ${DEFAULTS[name]})`; play(); });
+    btn.addEventListener("click", play);
+    play();
+  });
+});
+</script>
+</body>
+</html>

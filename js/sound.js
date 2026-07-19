@@ -78,21 +78,25 @@ function play(build) {
 }
 
 export const sfx = {
-  /* Bright rising two-note "ping!" — a pleasant major-6th up reads
-     as an unambiguous "yes" without being shrill. */
+  /* "Coin sparkle" — two quick quiet square-wave notes a fourth
+     apart, video-game-coin style. Megan's pick from the sound lab
+     (option D, 2026-07-19), replacing the original two-note
+     triangle ping she found unsatisfying. */
   correct() {
     play(c => {
-      note(c, { freq: 587.33, dur: 0.11, type: "triangle", peak: 0.16 });                 // D5
-      note(c, { freq: 880.00, dur: 0.16, type: "triangle", peak: 0.18, at: 0.09 });        // A5
+      note(c, { freq: 987.77,  dur: 0.07, type: "square", peak: 0.06 });                   // B5
+      note(c, { freq: 1318.50, dur: 0.18, type: "square", peak: 0.07, at: 0.06 });         // E6
     });
   },
 
-  /* Soft, short low blip — deliberately gentle, not a buzzer. Kids
-     who already struggle in tests use this app; a harsh "wrong"
-     sound would punish exactly the learners it should encourage. */
+  /* Two soft steps down (E4→C4) — deliberately gentle, not a buzzer.
+     Kids who already struggle in tests use this app; a harsh "wrong"
+     sound would punish exactly the learners it should encourage.
+     Megan's pick from the sound lab (option B, 2026-07-19). */
   wrong() {
     play(c => {
-      note(c, { freq: 220.00, dur: 0.16, type: "sine", peak: 0.10 });
+      note(c, { freq: 329.63, dur: 0.10, type: "sine", peak: 0.10 });                      // E4
+      note(c, { freq: 261.63, dur: 0.14, type: "sine", peak: 0.09, at: 0.09 });            // C4
     });
   },
 

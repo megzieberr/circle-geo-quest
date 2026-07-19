@@ -89,7 +89,18 @@ h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",sans-serif; line-he
 .name-btn:hover,.name-btn:focus-visible{transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--accent); outline:none;}
 
 /* ---------- home / progress map ---------- */
+.home-head{position:relative;}   /* anchor for Pi the mascot */
 .home-head h1{font-size:2rem; margin:2px 0 12px;}
+
+/* Pi the mascot (js/pi.js) — sprite-strip button; JS drives width/height/
+   background per animation frame. Sits in the head's open bottom-right
+   corner (the gap beside the stat cards), behind nothing clickable. */
+.pi-mascot{border:0; padding:0; background-color:transparent; background-repeat:no-repeat;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;}
+.pi-mascot:focus-visible{outline:2px dashed var(--ink); outline-offset:4px; border-radius:8px;}
+.pi-home{position:absolute; right:4px; bottom:-6px; z-index:1;}
+.pi-cameo{display:block; margin:6px auto 0;}
+@media (prefers-reduced-motion: reduce){ .pi-mascot{display:none;} }
 .home-stats{display:flex; gap:10px; flex-wrap:wrap; align-items:stretch; margin-bottom:22px;}
 .hstat{background:#fff; border:2px solid var(--ink); border-radius:14px; padding:10px 16px; box-shadow:var(--shadow-sm); min-width:88px;}
 .hstat b{display:block; font-family:"Bricolage Grotesque",sans-serif; font-size:1.5rem; line-height:1;}
@@ -708,6 +719,12 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .profile-count{text-align:right; margin:-2px 0 0;}
 .avatar-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin:8px 0 4px;}
 @media (max-width:420px){ .avatar-grid{grid-template-columns:repeat(4, 1fr);} }
+/* 50+ avatars: one scrollable area with small category headings, so the
+   modal stays the same height it was with 20 options */
+.avatar-grid-wrap{max-height:42vh; overflow-y:auto; padding-right:4px; margin:4px 0;}
+.avatar-cat-label{font-size:.74rem; font-weight:800; text-transform:uppercase;
+  letter-spacing:.06em; opacity:.65; margin:10px 0 0;}
+.avatar-grid-wrap .avatar-cat-label:first-child{margin-top:0;}
 .avatar-btn{cursor:pointer; font-size:1.5rem; line-height:1; padding:9px 0; text-align:center;
   border:2px solid var(--ink); border-radius:12px; background:#fff; transition:transform .1s ease, box-shadow .1s ease;}
 .avatar-btn:hover,.avatar-btn:focus-visible{transform:translate(-1px,-1px); box-shadow:2px 2px 0 var(--ink); outline:none;}
