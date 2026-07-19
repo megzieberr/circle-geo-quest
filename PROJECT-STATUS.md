@@ -150,6 +150,14 @@ picks from sound-lab.html, kept in-repo for future re-tuning).
   deployed + verified live (HTTP 200 on the new assets); nothing blocks.
 
 ## Next up
+- 📌 REMINDER — surface this to Megan on her next login (left 2026-07-19, for
+  tomorrow onward): she wants to build a NEW SYSTEM where learners can log the
+  DAYS + TIMES they have SPORT EVENTS, so she can pick OPTIMAL CLASS TIMES from
+  what they enter. Goal is to KILL THE WHATSAPP POLL (it's gotten tiring). Not
+  yet specced — when you catch her up, raise this and scope it together: who
+  logs (learners themselves?), recurring practices vs one-off matches, how
+  "optimal" is decided (fewest clashes? most learners free?), and where it
+  lives (its own tool/page, or a tab in the existing app). Then plan + build.
 - Screenshot the crown/rally from the admin dashboard for the class WhatsApp
   group (switch the game's language toggle first if the Afrikaans version is
   wanted). Champion reveal fires Mon 20 Jul.
