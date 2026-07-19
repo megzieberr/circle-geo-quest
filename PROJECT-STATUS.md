@@ -1,4 +1,4 @@
-# Project status — updated 2026-07-18
+# Project status — updated 2026-07-19
 
 ## Where we are
 Live on GitHub Pages (megzieberr.github.io/circle-geo-quest) with Supabase backend.
@@ -21,6 +21,16 @@ panel (cgg_admin_integrity) that flags fake-progress signatures (graded round
 passed with 0 questions logged; burst of rounds cleared seconds apart).
 Throttle + detection both verified working (live lockout probe; synthetic
 cheater caught, honest play ignored).
+NEW 2026-07-19: (1) AVATARS expanded 20 → 54 in 6 category groups
+(phase12's list was "a basketball and a fox"-sparse; Kahoot-style variety
+now) — phase14.sql APPLIED to live via MCP + verified. (2) PI THE MASCOT:
+Megan's own sprite sheets (pi-mascot/, sliced by slice_pi.py into
+assets/pi/) — idles on the home screen, random/tappable tricks (wave,
+bounce, thumbs, hang — the hanging sprite brings its own pull-up bar),
+thumbs-up cameo on passed rounds; pure amusement by design, hidden under
+prefers-reduced-motion. Timing preview page: pi-preview.html.
+(3) SOUNDS: correct = coin sparkle, wrong = two soft steps down (her
+picks from sound-lab.html, kept in-repo for future re-tuning).
 
 ## Decisions
 - 2026-07-18: Nickname moderation = TEACHER AUTHORITY, no profanity filter.
@@ -99,12 +109,39 @@ cheater caught, honest play ignored).
   later rallies weekly as normal.
 - (Earlier decisions predate this file — see git log and auto-memory.)
 
+- 2026-07-19: Avatar categories are DISPLAY-ONLY (grouped headings in the
+  picker) — the server still validates bare ids; the two lists that must
+  stay in sync are CONFIG.AVATARS (js/config.js) and `allowed` in
+  cgg_set_profile (supabase/phase14.sql now, not phase12). NOTE: the
+  circle-geometry-game Supabase project IS on the MCP account — phase14
+  was fetched-from-live (pg_get_functiondef), applied and verified via
+  MCP, no manual SQL-editor step needed.
+- 2026-07-19: Pi the mascot is PURE AMUSEMENT — no gameplay, no XP, no
+  sounds of his own, one purposeful cameo (thumbs-up on a passed graded
+  round). Built from Megan's supplied sheets (never redraw him). Animated
+  with setInterval, NOT rAF — the preview pane never fires rAF and its
+  page is visibility:hidden so intervals throttle there too; he looks
+  frozen in the pane and that is NOT a bug. 6-7 fps per her review
+  ("over before I can see it" at 8-12).
+- 2026-07-19: Sound replacement went through a pick-from-lab flow
+  (sound-lab.html, kept in repo): correct = "coin sparkle" (B5→E6 quiet
+  squares), wrong = "two soft steps down" (E4→C4 sines); celebrate and
+  tick kept. Everything stays synthesized — no audio files in this PWA.
+- 2026-07-19: sw.js deliberately caches NOTHING in this app (network-
+  always so pushes deploy instantly) — there is no cache version to bump
+  here, unlike her other quest apps.
+
 ## Pending on Megan
 - Eyeball the new features on live (hard-refresh; admin page Ctrl+F5): the
   Customize link on the home screen, the nickname column + "reset nickname"
   button on the dashboard, the 🔊/🔇 mute toggle in the header, and the
   "⚠️ Worth a look" cheat-detection panel on the dashboard. Everything is
   deployed and verified; nothing blocks play.
+- 2026-07-19 batch: on your phone, hard-refresh the live app and eyeball
+  Pi on the home screen (tap him for a trick), open Customize to see the
+  54-avatar grouped picker, and play any round to hear the new
+  correct/wrong sounds + Pi's thumbs-up on the results screen. All
+  deployed + verified live (HTTP 200 on the new assets); nothing blocks.
 
 ## Next up
 - Screenshot the crown/rally from the admin dashboard for the class WhatsApp
