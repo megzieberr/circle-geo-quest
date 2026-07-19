@@ -20,7 +20,7 @@
 # Alignment: wave/thumbs anchor feet to the union bottom (no jitter),
 # hang anchors the bar top, bounce keeps band-absolute vertical offsets
 # because the vertical travel IS the animation.
-import json, os, sys
+import colorsys, json, os, sys
 from collections import deque
 from PIL import Image
 
@@ -28,6 +28,17 @@ SRC = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(SRC, "..", "assets", "pi")
 TARGET_H = 260
 HOLE_MAX_FRAC = 0.02
+# Megan's pick (2026-07-19): the sheets' purple clashed with the app, so
+# every output frame is hue-shifted to the app's pink (--s1 in styles.css).
+# Saturated pixels only — white gloves/eyes and grey stay; the dark outline
+# is purple-tinted so it shifts too, staying a matching dark. Set to None
+# to keep the sheets' original colour.
+TINT = "#e64980"
+TINT_SAT_MIN = 0.18
+# Only shift pixels that are actually purple/blue (the body + its tinted
+# outline). Without this window the red mouth interiors are saturated
+# enough to ride along and come out yellow (spotted on the bounce row).
+TINT_HUE_LO, TINT_HUE_HI = 180/360, 330/360
 MIN_COMP = 1500          # px; below this = annotation noise, dropped
 FLAT_H = 60              # comp bbox height below this = shadow/bar-shaped
 GAP = 18                 # px x-gap that separates two frame clusters
@@ -107,6 +118,34 @@ def build_frame(band, mask_pts, x0, y0, x1, y1):
             for x, y in hole: opx[x, y] = (255, 255, 255, 255)
     return out
 
+def tint_delta(frames):
+    """Hue delta from the art's dominant saturated hue to TINT's hue."""
+    hues = []
+    for img in frames:
+        px = img.load()
+        for y in range(0, img.height, 3):
+            for x in range(0, img.width, 3):
+                r, g, b, a = px[x, y]
+                if a < 128: continue
+                h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+                if s > 0.3 and v > 0.3: hues.append(h)
+    hues.sort()
+    base = hues[len(hues)//2]
+    t = TINT.lstrip("#")
+    th, _, _ = colorsys.rgb_to_hsv(int(t[0:2],16)/255, int(t[2:4],16)/255, int(t[4:6],16)/255)
+    return th - base
+
+def apply_tint(img, dh):
+    px = img.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = px[x, y]
+            if a < 10: continue
+            h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+            if s < TINT_SAT_MIN or not (TINT_HUE_LO <= h <= TINT_HUE_HI): continue
+            nr, ng, nb = colorsys.hsv_to_rgb((h + dh) % 1.0, s, v)
+            px[x, y] = (round(nr*255), round(ng*255), round(nb*255), a)
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     anims = {}   # key -> list of (frame_img, band_y_offset_of_top, align)
@@ -140,6 +179,10 @@ def main():
             bx0, by0, bx1, by1 = cl["bb"]
             frame = build_frame(band, cl["pts"], bx0, by0, bx1, by1)
             anims.setdefault(key, []).append((frame, by0, align))
+    if TINT:
+        dh = tint_delta([f[0] for fr in anims.values() for f in fr])
+        for fr in anims.values():
+            for img, _, _ in fr: apply_tint(img, dh)
     meta = {}
     for name, frames in anims.items():
         align = frames[0][2]

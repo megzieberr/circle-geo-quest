@@ -38,8 +38,8 @@ const ANIMS = {
 };
 const IDLE_ANIM = "wave";          // frame 0 of wave = arms down, standing
 const TRICKS = ["wave", "bounce", "hang", "thumbs"];
-const HOME_H = 96;                 // on-screen height, px (home)
-const CAMEO_H = 72;                //  … results cameo
+const HOME_H = 72;                 // on-screen height, px (home) — kept smol
+const CAMEO_H = 56;                //  … results cameo             (Clawd rule)
 const TRICK_MIN = 18000, TRICK_MAX = 40000;
 
 let meta = null, metaPromise = null;

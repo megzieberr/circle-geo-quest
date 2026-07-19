@@ -130,6 +130,12 @@ picks from sound-lab.html, kept in-repo for future re-tuning).
 - 2026-07-19: sw.js deliberately caches NOTHING in this app (network-
   always so pushes deploy instantly) — there is no cache version to bump
   here, unlike her other quest apps.
+- 2026-07-19 (later): Pi recoloured purple → the app's PINK (--s1
+  #e64980) after seeing him live — baked into the slicer (TINT in
+  slice_pi.py; hue-window so the red mouths don't ride along and go
+  yellow), source sheets stay purple. Also shrunk 96→72px home / 72→56px
+  cameo ("Clawd works because he's so smol"). Recolour = rerun the
+  slicer, never Canva.
 
 ## Pending on Megan
 - Eyeball the new features on live (hard-refresh; admin page Ctrl+F5): the
