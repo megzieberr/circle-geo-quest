@@ -1,4 +1,4 @@
-# Project status — updated 2026-07-19
+# Project status — updated 2026-07-20
 
 ## Where we are
 Live on GitHub Pages (megzieberr.github.io/circle-geo-quest) with Supabase backend.
@@ -31,6 +31,14 @@ thumbs-up cameo on passed rounds; pure amusement by design, hidden under
 prefers-reduced-motion. Timing preview page: pi-preview.html.
 (3) SOUNDS: correct = coin sparkle, wrong = two soft steps down (her
 picks from sound-lab.html, kept in-repo for future re-tuning).
+NEW 2026-07-20: ATTEMPT TRAJECTORY + LIVE LEARNER TIMELINE (phase15.sql,
+APPLIED to live via MCP + verified). The dashboard kept only a per-round
+SUMMARY (best score / attempts / passed), which made a learner climbing
+(40→60→65→100) and a learner stuck on one wrong idea (65→65→65) render
+identically. Now: click any learner's name → a panel with EVERY attempt,
+self-refreshing every 15s; and "Needs a hand" gained an "Every try"
+column with a trend arrow. Verified live end-to-end (panel updated itself
+in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
 - 2026-07-18: Nickname moderation = TEACHER AUTHORITY, no profanity filter.
@@ -137,6 +145,39 @@ picks from sound-lab.html, kept in-repo for future re-tuning).
   cameo ("Clawd works because he's so smol"). Recolour = rerun the
   slicer, never Canva.
 
+- 2026-07-20 (THE RULE THIS DAY BOUGHT — worth keeping for next term):
+  a stuck learner's ATTEMPT TRAJECTORY, not their best score, says what the
+  teacher should do. Rising (40→60→65) = productive struggle; leave them
+  alone, because interrupting takes the win off them. Flat or falling
+  (65→65→65) = the attempts have stopped teaching and they're rehearsing
+  the error; that's when to step in. This came out of a real case: a
+  learner sat on 65% for four tries at rline, was told only to slow down
+  and read, and cleared it at 100% ~18 minutes later unaided — then went
+  from round 5 to round 13 in half an hour. Every scaffold that had been
+  proposed (worked examples, a booked call, dropping the pass mark) would
+  have landed inside those 18 minutes and stolen it. The dashboard now
+  shows the arrows so the call can be made from data, not vibes.
+- 2026-07-20 (analytics lesson): do NOT read the Daily Challenge as
+  evidence of a learner's reasoning ability. daily.js draws from
+  `passedQuestionPool` — questions from rounds they have ALREADY PASSED —
+  so an early learner's dailies are pure recall from r1 (parts of a
+  circle). A strong daily average next to a failing round is not a
+  contradiction and is not proof of anxiety-over-ability. Only the
+  bonus bank (daily-extra.js) carries real theorem riders, and it
+  unlocks only after every round is passed.
+- 2026-07-20: the timeline panel is DELIBERATELY generic (click any
+  learner) rather than pinned to the one learner it was built for —
+  this repo is public, so no learner name goes in the source, ever
+  (the 2026-07-13 rule). phase15's RPC takes a student id or null for
+  the whole class; the class-wide call is what feeds the arrows.
+- 2026-07-20 (bug worth remembering): graded rounds in the timeline must
+  merge across the WHOLE history, not just consecutive events. Grouping
+  only consecutive runs split a learner's chain whenever they played the
+  Daily Challenge between two attempts — which is exactly what the real
+  case did — fragmenting the climb the panel exists to show. Also: don't
+  use "→" as both the chain separator and the plateau arrow (a flat
+  learner read as "65% → 65% →", like a missing value).
+
 ## Pending on Megan
 - Eyeball the new features on live (hard-refresh; admin page Ctrl+F5): the
   Customize link on the home screen, the nickname column + "reset nickname"
@@ -149,7 +190,19 @@ picks from sound-lab.html, kept in-repo for future re-tuning).
   correct/wrong sounds + Pi's thumbs-up on the results screen. All
   deployed + verified live (HTTP 200 on the new assets); nothing blocks.
 
+- 2026-07-20: Ctrl+F5 the admin page and click a learner's name to see the
+  new timeline panel (it self-refreshes every 15s while open), plus the new
+  "Every try" column on "Needs a hand". Deployed + verified live; nothing
+  blocks play and phase15 is already applied — no SQL waiting for you.
+
 ## Next up
+- Term starts Tue 21 Jul: the holiday homework was PRE-teaching (this
+  content gets taught in class from day 1), so read the round data as
+  "who has met this yet", not "who is behind".
+- Watch the "Needs a hand" arrows in week 1 — the panel now distinguishes
+  climbing from stuck, so it should be actionable rather than just a list
+  of people who tried twice. If a learner shows flat/falling, that's the
+  one to talk to.
 - Screenshot the crown/rally from the admin dashboard for the class WhatsApp
   group (switch the game's language toggle first if the Afrikaans version is
   wanted). Champion reveal fires Mon 20 Jul.
