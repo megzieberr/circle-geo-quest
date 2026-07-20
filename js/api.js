@@ -454,6 +454,36 @@ const LocalBackend = {
     return { ok: true, students: list };
   },
 
+  /* Per-ATTEMPT history for the teacher's learner-timeline panel and the
+     trajectory arrows in "Needs a hand". Mirrors cgg_admin_timeline
+     (phase15.sql): every xp_event, oldest first, with the learner's name.
+     Pass an id for one learner, or null for the whole class.
+
+     The point of this — as opposed to adminData's per-round summary — is the
+     SHAPE of the attempts. 40→60→65→100 (learning) and 65→65→65 (stuck on the
+     same error) both collapse to the same "best %, N attempts" in the summary,
+     and they call for opposite responses from the teacher. */
+  async adminTimeline(adminPassword, id, limit) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const students = read(LS.students, {});
+    const lim = Math.min(Math.max(Number(limit) || 400, 1), 2000);
+    const rows = read(LS.events, [])
+      .filter(e => !id || e.studentId === id)
+      .sort((a, b) => b.ts - a.ts)
+      .slice(0, lim)
+      .map(e => ({
+        studentId: e.studentId,
+        name: (students[e.studentId] || {}).display_name || "—",
+        roundId: e.roundId,
+        score: e.score != null ? e.score : null,
+        xp: e.xp,
+        at: new Date(e.ts).toISOString(),
+      }))
+      .sort((a, b) => a.at.localeCompare(b.at));
+    return { ok: true, rows, serverNow: new Date().toISOString() };
+  },
+
   async leaderboard(name, password) {
     const s = this._verify(name, password);
     if (!s) return { ok: false, error: "auth" };
@@ -665,6 +695,7 @@ const PreviewBackend = {
   async setProfile() { return { ok: true, nickname: null, avatarId: null }; },   // never persisted in preview
   async logItems() { return { ok: true, logged: 0 }; },
   async adminIntegrity() { return { ok: true, students: [] }; },
+  async adminTimeline() { return { ok: true, rows: [] }; },
   async submitFeedback() { return { ok: true }; },
   async getMyFeedback() { return { ok: true, rating: null, comment: "" }; },
   async savePush() { return { ok: true }; },

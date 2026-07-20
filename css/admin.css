@@ -86,3 +86,49 @@
 .champion-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
 .champion-select{padding:8px 10px; border:2px solid var(--ink); border-radius:10px;
   font:inherit; background:#fff; min-width:200px;}
+
+/* ---------- attempt trajectory + live learner timeline (phase15) ----------
+   The dashboard used to show only a learner's BEST score per round, which
+   hides the one thing that says what to do: whether the tries are climbing
+   (leave them — they're getting there) or flat (step in — the tries have
+   stopped teaching them anything). */
+.linkish{font:inherit; color:inherit; background:none; border:0; padding:0;
+  cursor:pointer; font-weight:inherit; text-decoration:underline;
+  text-decoration-style:dotted; text-underline-offset:3px;}
+.linkish:hover{color:var(--s4); text-decoration-style:solid;}
+
+.tchain{display:inline-flex; align-items:center; gap:3px; flex-wrap:wrap;}
+.tstep{font-variant-numeric:tabular-nums; font-weight:700; font-size:.82rem;
+  padding:1px 6px; border-radius:99px; background:#eef0f7; color:#556;}
+.tstep.last{background:var(--ink); color:#fff;}
+.tarrow{color:#99a; font-size:.75rem;}
+.tcell{white-space:nowrap;}
+
+.ttrend{font-weight:800; white-space:nowrap;}
+.ttrend.climbing{color:#0a8a5f;}
+.ttrend.plateau{color:#c25a00;}
+.ttrend.sliding{color:#c52e6c;}
+.ttrend.single{color:#99a;}
+.ttrend .muted{font-weight:600;}
+
+.timeline-card{margin:0 0 18px; padding:14px 16px; border-color:var(--s4);}
+.timeline-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px;}
+.timeline-head h2{margin:0; font-size:1.15rem; flex:1; min-width:200px;}
+.timeline-meta{display:flex; align-items:center; gap:6px;}
+.live-dot{width:9px; height:9px; border-radius:50%; background:#0a8a5f;
+  box-shadow:0 0 0 0 rgba(10,138,95,.6); animation:livePulse 2s infinite;}
+@keyframes livePulse{
+  70%{box-shadow:0 0 0 7px rgba(10,138,95,0);}
+  100%{box-shadow:0 0 0 0 rgba(10,138,95,0);}
+}
+@media (prefers-reduced-motion: reduce){ .live-dot{animation:none;} }
+
+.timeline-list{display:flex; flex-direction:column; gap:6px; margin-top:10px;}
+.trun{display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  background:#fff; border:2px solid var(--ink); border-radius:12px; padding:8px 11px;}
+.trun.cleared{border-color:#0a8a5f; background:#f2fbf7;}
+.trun.open{border-color:#f7b32b; background:#fffdf4;}
+.trun.minor{border-style:dashed; border-color:#ccd; background:#fafbfe; padding:5px 11px;}
+.trun .tlabel{font-weight:700; flex:1; min-width:180px;}
+.trun.minor .tlabel{font-weight:600; color:#778; font-size:.88rem;}
+.trun .ttime{flex:none; margin-left:auto;}

@@ -76,6 +76,13 @@ export const SupabaseBackend = {
   // cheat-detection readout (phase13.sql) — per learner, every passed round
   // with how many per-question events were logged (qcount) + when last played.
   adminIntegrity(pw) { return rpc("cgg_admin_integrity", { p_admin_password: pw }); },
+  // per-ATTEMPT history (phase15.sql). Pass a student id for one learner's full
+  // timeline, or null for the whole class's recent attempts. This is what makes
+  // a climb (40→60→65→100) distinguishable from a plateau (65→65→65) — the
+  // summary in cgg_admin_data keeps only the best score and loses the shape.
+  adminTimeline(pw, id, limit) {
+    return rpc("cgg_admin_timeline", { p_admin_password: pw, p_student_id: id || null, p_limit: limit || 400 });
+  },
   adminResetWeekly(pw) { return rpc("cgg_admin_reset_weekly", { p_admin_password: pw }); },
   adminAddStudent(pw, name) { return rpc("cgg_admin_add_student", { p_admin_password: pw, p_name: name }); },
   adminRemoveStudent(pw, id) { return rpc("cgg_admin_remove_student", { p_admin_password: pw, p_id: id }); },

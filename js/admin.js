@@ -18,7 +18,17 @@ let feedback = null;
 let integrity = null;     // cheat-detection readout (phase13.sql cgg_admin_integrity)
 let championNow = null;   // current teacher's-choice Circle Champion (display name, or null)
 
+/* Per-ATTEMPT history (phase15.sql cgg_admin_timeline). `timelineAll` is the
+   whole class's recent attempts, loaded once per dashboard load to draw the
+   trajectory arrows in "Needs a hand". `timelineOne` is the currently-open
+   learner panel, which refreshes itself on a timer while it's open. */
+let timelineAll = null;
+let timelineOne = null;      // { id, name, rows, at }  — the open panel
+let timelineTimer = null;    // live-refresh interval handle
+let timelineBusy = false;    // guards against overlapping refreshes
+
 const INACTIVE_DAYS = 7;
+const LIVE_MS = 15000;       // how often the open learner panel re-fetches
 
 /* GRADED rounds = the multiple-choice "play" rounds that log a per-question
    event for each answer (js/game.js calls api.logItems for these). They are
@@ -75,6 +85,8 @@ async function load() {
   championNow = wk && wk.ok ? (wk.champion || null) : null;
   // cheat-detection readout (best-effort; needs the Phase-13 RPC)
   integrity = api.adminIntegrity ? await api.adminIntegrity(adminPw).catch(() => ({ ok: false })) : { ok: false };
+  // class-wide attempt history for the trajectory arrows (best-effort; Phase-15 RPC)
+  timelineAll = api.adminTimeline ? await api.adminTimeline(adminPw, null, 400).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
   renderDashboard();
 }
 
@@ -111,7 +123,7 @@ function renderDashboard() {
   const refresh = el("button", "btn ghost small", "⟳ Refresh");
   refresh.addEventListener("click", load);
   const out = el("button", "btn ghost small", "Log out");
-  out.addEventListener("click", () => { adminPw = null; renderLogin(); });
+  out.addEventListener("click", () => { stopLive(); timelineOne = null; adminPw = null; renderLogin(); });
   [preview, previewBoost, winners, rally, add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
   head.appendChild(tools);
   root.appendChild(head);
@@ -134,28 +146,45 @@ function renderDashboard() {
     <div class="asum ${stuck.length ? "warn" : ""}"><b>${stuck.length}</b><span>stuck (2+ tries)</span></div>`;
   root.appendChild(sum);
 
+  // the live learner-timeline panel renders into here (kept as its own node so
+  // the refresh timer can repaint it without rebuilding the whole dashboard)
+  root.appendChild(el("div", "", '<div id="timeline-host"></div>'));
+
   renderChampionCard();
 
   if (stuck.length) {
     const sec = el("div", "card stuck-card");
     sec.innerHTML = `<h2>🛟 Needs a hand</h2>
       <p class="muted small">Stuck on their current round after 2+ tries. From the 3rd try the game switches them
-      to <b>Boost mode</b> automatically (hints open by themselves + a second chance per question, half credit).</p>`;
+      to <b>Boost mode</b> automatically (hints open by themselves + a second chance per question, half credit).</p>
+      <p class="muted small">Read the <b>arrow</b> before stepping in: <span class="ttrend climbing">↗ climbing</span> means they're
+      getting there on their own and an interruption would take the win off them; <span class="ttrend plateau">→ flat</span> or
+      <span class="ttrend sliding">↘ sliding</span> means the tries have stopped teaching them anything and they're
+      practising the same wrong idea. Click any name for the full attempt history.</p>`;
     const tbl = el("table", "admin-table stuck-table");
-    tbl.innerHTML = `<thead><tr><th>Name</th><th>Stuck on</th><th>Tries</th><th>Best</th><th>Last active</th></tr></thead>`;
+    tbl.innerHTML = `<thead><tr><th>Name</th><th>Stuck on</th><th>Tries</th><th>Every try</th><th>Best</th><th>Last active</th></tr></thead>`;
     const tb = el("tbody");
     stuck.forEach(({ r, rd, p }) => {
+      const seq = attemptChain(timelineAll && timelineAll.rows, r.id, rd.id);
+      const t = trajectory(seq);
       const tr = el("tr");
       tr.innerHTML = `
-        <td class="name">${r.name}</td>
+        <td class="name"><button class="linkish" type="button">${escapeHtml(r.name)}</button></td>
         <td>${rd.n}. ${rd.title.en}</td>
         <td class="num">${p.attempts}</td>
+        <td class="tcell">${seq.length
+          ? `<span class="tchain">${chainHtml(seq)}</span> <span class="ttrend ${t.key}">${t.arrow}</span>`
+          : '<span class="muted small">—</span>'}</td>
         <td class="num">${Math.round((p.best_score || 0) * 100)}%</td>
         <td>${fmtDate(r.lastActive)}</td>`;
+      tr.querySelector(".linkish").addEventListener("click", () => openTimeline(r));
       tb.appendChild(tr);
     });
     tbl.appendChild(tb);
     sec.appendChild(tbl);
+    if (timelineAll && !timelineAll.ok) {
+      sec.appendChild(el("p", "muted small", "The per-try history needs the Phase-15 database update (run supabase/phase15.sql) — the rest of this panel works without it."));
+    }
     root.appendChild(sec);
   }
 
@@ -185,13 +214,14 @@ function renderDashboard() {
     const nickPart = r.nickname ? ` <span class="muted">(${escapeHtml(r.nickname)})</span>` : "";
     tr.innerHTML = `
       <td>${r.rank}</td>
-      <td class="name">${avatarEmoji(r.avatarId)} ${escapeHtml(r.name)}${nickPart}</td>
+      <td class="name">${avatarEmoji(r.avatarId)} <button class="linkish" type="button" title="Show every attempt, live">${escapeHtml(r.name)}</button>${nickPart}</td>
       <td class="pw">${hasPw(r) ? '<span class="pw-set">✓ set</span>' : '<span class="muted">— not set</span>'}</td>
       <td class="num">${r.weeklyXp}</td>
       <td class="num">${r.allTimeXp}</td>
       <td class="${stale ? "flag" : ""}">${fmtDate(r.lastActive)}${stale && r.lastActive ? ' <span class="dot"></span>' : (r.lastActive ? "" : ' <span class="dot"></span>')}</td>
       <td class="chips"><div class="rgrid">${chips}</div></td>
       <td class="rowacts"></td>`;
+    tr.querySelector(".name .linkish").addEventListener("click", () => openTimeline(r));
     const acts = tr.querySelector(".rowacts");
     const rp = el("button", "mini-btn", "reset pw"); rp.title = "Clear password so they can re-pick it";
     rp.addEventListener("click", () => resetPassword(r));
@@ -216,6 +246,181 @@ function renderDashboard() {
   renderIntegrityReport();
 
   root.appendChild(el("p", "muted small center", "Passwords are hidden. If a learner forgets theirs, use “reset pw” to clear it so they pick a new one. Backend: " + BACKEND));
+}
+
+/* ============================================================
+   ATTEMPT TRAJECTORY  (phase15)
+   ------------------------------------------------------------
+   The dashboard summary (best %, N attempts) cannot tell these apart:
+
+     40 → 60 → 65 → 100   a learner climbing out of it themselves
+     65 → 65 → 65 → 65    a learner re-running the same wrong idea
+
+   Both read as "65%+, 4 tries". They call for opposite responses:
+   the first wants to be LEFT ALONE (interrupting steals the win), the
+   second wants a teacher. So we show the shape, not the maximum.
+
+   The arrow reports the LAST STEP only — it's a hint. The full chain
+   is always printed next to it, because the chain is the real answer
+   and a single arrow can't carry a plateau-after-a-climb.
+   ============================================================ */
+const pctOf = score => (score == null ? null : Math.round(Number(score) * 100));
+
+/* Every attempt a learner made at one round, oldest first, as percentages. */
+function attemptChain(rows, studentId, roundId) {
+  return (rows || [])
+    .filter(e => e.studentId === studentId && e.roundId === roundId)
+    .map(e => pctOf(e.score))
+    .filter(v => v != null);
+}
+function trajectory(seq) {
+  if (!seq || seq.length < 2) return { key: "single", arrow: "", label: "first try" };
+  const last = seq[seq.length - 1], prev = seq[seq.length - 2];
+  const gain = last - seq[0];
+  if (last > prev)  return { key: "climbing", arrow: "↗", label: `climbing (+${last - prev} last try, +${gain} overall)` };
+  if (last < prev)  return { key: "sliding",  arrow: "↘", label: `sliding (${last - prev} last try)` };
+  return { key: "plateau", arrow: "→", label: gain > 0 ? `plateau after +${gain}` : "flat — same score again" };
+}
+/* Separator is a light chevron, NOT an arrow: the trend arrows (↗ → ↘) sit
+   right after the chain, and a plateau's "→" next to a chain of "→"s reads as
+   a missing value ("65% → 65% →"). */
+const chainHtml = seq => seq.map((v, i) =>
+  `<span class="tstep${i === seq.length - 1 ? " last" : ""}">${v}%</span>`).join('<span class="tarrow">›</span>');
+
+/* ---------- learner timeline panel (live) ---------- */
+function stopLive() {
+  if (timelineTimer) { clearInterval(timelineTimer); timelineTimer = null; }
+}
+function closeTimeline() {
+  stopLive();
+  timelineOne = null;
+  paintTimeline();
+}
+async function openTimeline(row) {
+  timelineOne = { id: row.id, name: row.name, rows: null, at: null };
+  paintTimeline();
+  await refreshTimeline();
+  stopLive();
+  timelineTimer = setInterval(refreshTimeline, LIVE_MS);
+  paintTimeline();          // repaint so the "live" dot appears (the timer only exists now)
+}
+async function refreshTimeline() {
+  if (!timelineOne || !api.adminTimeline || timelineBusy) return;
+  timelineBusy = true;
+  const id = timelineOne.id;
+  const r = await api.adminTimeline(adminPw, id, 400).catch(() => ({ ok: false }));
+  timelineBusy = false;
+  if (!timelineOne || timelineOne.id !== id) return;   // panel changed while in flight
+  if (r && r.ok) { timelineOne.rows = r.rows || []; timelineOne.at = Date.now(); }
+  else if (timelineOne.rows == null) timelineOne.rows = [];
+  paintTimeline();
+}
+
+/* Collapse the raw event stream into readable runs.
+
+   GRADED rounds merge across the WHOLE timeline, not just consecutive events
+   — a learner who fails a round, wanders off to do the Daily Challenge, then
+   comes back and retries must still show as ONE chain. Grouping only
+   consecutive events split exactly that case into two fragments and destroyed
+   the climb the panel exists to show. Each merged entry is placed at its LAST
+   attempt, so the newest activity stays at the bottom.
+
+   Cutscene/discovery rounds and dailies stay chronological, grouped only when
+   consecutive: they legitimately log several zero-XP events as the learner
+   clicks through the panels, so they collapse to one "explored" line instead
+   of a wall of 100%s — but two dailies on different days stay two lines. */
+function timelineRuns(rows) {
+  const runs = [];
+  const gradedRun = {};                       // roundId -> its single merged entry
+  (rows || []).forEach(e => {
+    if (GRADED_ROUND_IDS.has(e.roundId)) {
+      const hit = gradedRun[e.roundId];
+      if (hit) { hit.events.push(e); hit.end = e.at; return; }
+      const run = { roundId: e.roundId, events: [e], start: e.at, end: e.at };
+      gradedRun[e.roundId] = run;
+      runs.push(run);
+      return;
+    }
+    const prev = runs[runs.length - 1];
+    if (prev && prev.roundId === e.roundId) { prev.events.push(e); prev.end = e.at; return; }
+    runs.push({ roundId: e.roundId, events: [e], start: e.at, end: e.at });
+  });
+  return runs.sort((a, b) => String(a.end).localeCompare(String(b.end)));
+}
+function paintTimeline() {
+  const host = document.getElementById("timeline-host");
+  if (!host) return;
+  host.innerHTML = "";
+  if (!timelineOne) return;
+
+  const sec = el("div", "card timeline-card");
+  const head = el("div", "timeline-head");
+  const live = timelineTimer ? `<span class="live-dot" title="Refreshing every ${LIVE_MS / 1000}s"></span><span class="muted small">live</span>` : "";
+  head.innerHTML = `<h2>📈 ${escapeHtml(timelineOne.name)} — every attempt</h2>
+    <div class="timeline-meta">${live}${timelineOne.at ? `<span class="muted small">updated ${new Date(timelineOne.at).toLocaleTimeString()}</span>` : ""}</div>`;
+  const close = el("button", "btn ghost small", "✕ Close");
+  close.addEventListener("click", closeTimeline);
+  head.appendChild(close);
+  sec.appendChild(head);
+
+  if (timelineOne.rows == null) {
+    sec.appendChild(el("p", "muted small", "Loading…"));
+    host.appendChild(sec);
+    return;
+  }
+  if (!api.adminTimeline) {
+    sec.appendChild(el("p", "muted small", "The attempt timeline needs the Phase-15 database update (run supabase/phase15.sql)."));
+    host.appendChild(sec);
+    return;
+  }
+  if (!timelineOne.rows.length) {
+    sec.appendChild(el("p", "muted small", "No attempts recorded yet."));
+    host.appendChild(sec);
+    return;
+  }
+
+  sec.appendChild(el("p", "muted small",
+    "Newest at the bottom. Every attempt is shown — including the failed ones — because the shape of the climb is the thing the best score hides."));
+
+  const list = el("div", "timeline-list");
+  timelineRuns(timelineOne.rows).forEach(run => {
+    const rd = ROUND_BY_ID[run.roundId];
+    const graded = GRADED_ROUND_IDS.has(run.roundId);
+    const item = el("div", "trun");
+
+    if (run.roundId === "daily") {
+      const pcts = run.events.map(e => pctOf(e.score)).filter(v => v != null);
+      item.className = "trun minor";
+      item.innerHTML = `<span class="tlabel">🔥 Daily challenge</span>
+        <span class="tchain">${pcts.length ? chainHtml(pcts) : ""}</span>
+        <span class="ttime muted small">${fmtDateTime(run.end)}</span>`;
+    } else if (run.roundId === "streak" || run.roundId === "perfectweek") {
+      item.className = "trun minor";
+      item.innerHTML = `<span class="tlabel">🎁 ${run.roundId === "streak" ? "Streak milestone" : "Perfect week"}</span>
+        <span class="tchain muted small">+${run.events.reduce((a, e) => a + (e.xp || 0), 0)} XP</span>
+        <span class="ttime muted small">${fmtDateTime(run.end)}</span>`;
+    } else if (!graded) {
+      item.className = "trun minor";
+      item.innerHTML = `<span class="tlabel">👁️ ${escapeHtml(roundLabel(run.roundId))}</span>
+        <span class="tchain muted small">explored</span>
+        <span class="ttime muted small">${fmtDateTime(run.end)}</span>`;
+    } else {
+      const pcts = run.events.map(e => pctOf(e.score)).filter(v => v != null);
+      const t = trajectory(pcts);
+      const best = Math.max(...pcts);
+      const cleared = best >= 80;
+      item.className = `trun ${cleared ? "cleared" : "open"}`;
+      item.innerHTML = `
+        <span class="tlabel">${cleared ? "✅" : "🛟"} ${escapeHtml(roundLabel(run.roundId))}</span>
+        <span class="tchain">${chainHtml(pcts)}</span>
+        <span class="ttrend ${t.key}">${t.arrow} <span class="muted small">${escapeHtml(t.label)}</span></span>
+        <span class="ttime muted small">${fmtDateTime(run.end)}</span>`;
+    }
+    list.appendChild(item);
+  });
+  sec.appendChild(list);
+  host.appendChild(sec);
+  sec.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 /* ---------- Circle Champion (teacher's-choice honour) ---------- */
