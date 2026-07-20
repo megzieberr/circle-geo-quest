@@ -6,6 +6,7 @@
    ============================================================ */
 import { api, BACKEND } from "./api.js";
 import { ROUNDS, ROUND_BY_ID, QUESTION_BY_ID } from "./rounds/index.js";
+import { ADVENTURES, ADVENTURE_BY_ID } from "./adventures/index.js";
 import { showCrownPreview, showRallyPreview } from "./weekly.js";
 import { avatarEmoji } from "./profile.js";
 
@@ -39,6 +40,21 @@ const LIVE_MS = 15000;       // how often the open learner panel re-fetches
 const GRADED_ROUND_IDS = new Set(
   ROUNDS.filter(r => Array.isArray(r.questions) && r.questions.length > 0).map(r => r.id)
 );
+/* SCORED = "this event carries a percentage worth showing on the timeline".
+   ------------------------------------------------------------------------
+   Adventures (Grand Master bonus, js/adventures/) are genuinely scored — they
+   submit a real score through api.submitRound exactly like a round — but they
+   live outside ROUNDS, so they are NOT in GRADED_ROUND_IDS and were rendering
+   on the timeline as unscored "explored" lines with their percentages thrown
+   away.
+
+   These MUST stay two separate sets. GRADED_ROUND_IDS means "logs a
+   per-question event for every answer", which is what the cheat-detection
+   FLAG A relies on (passed + zero logged questions = suspicious). Adventures
+   never call logItems, so folding them into GRADED_ROUND_IDS would flag every
+   learner who played one as a possible cheat — punishing exactly the learners
+   who did the most work. */
+const SCORED_ROUND_IDS = new Set([...GRADED_ROUND_IDS, ...ADVENTURES.map(a => a.id)]);
 /* FLAG B tuning — a burst of many graded rounds cleared seconds apart is the
    signature of an automated "pass everything" script (a human can't answer and
    pass a whole round every few seconds). */
@@ -333,7 +349,7 @@ function timelineRuns(rows) {
   const runs = [];
   const gradedRun = {};                       // roundId -> its single merged entry
   (rows || []).forEach(e => {
-    if (GRADED_ROUND_IDS.has(e.roundId)) {
+    if (SCORED_ROUND_IDS.has(e.roundId)) {
       const hit = gradedRun[e.roundId];
       if (hit) { hit.events.push(e); hit.end = e.at; return; }
       const run = { roundId: e.roundId, events: [e], start: e.at, end: e.at };
@@ -384,8 +400,8 @@ function paintTimeline() {
 
   const list = el("div", "timeline-list");
   timelineRuns(timelineOne.rows).forEach(run => {
-    const rd = ROUND_BY_ID[run.roundId];
-    const graded = GRADED_ROUND_IDS.has(run.roundId);
+    const scored = SCORED_ROUND_IDS.has(run.roundId);
+    const isAdv = !!ADVENTURE_BY_ID[run.roundId];
     const item = el("div", "trun");
 
     if (run.roundId === "daily") {
@@ -399,7 +415,7 @@ function paintTimeline() {
       item.innerHTML = `<span class="tlabel">🎁 ${run.roundId === "streak" ? "Streak milestone" : "Perfect week"}</span>
         <span class="tchain muted small">+${run.events.reduce((a, e) => a + (e.xp || 0), 0)} XP</span>
         <span class="ttime muted small">${fmtDateTime(run.end)}</span>`;
-    } else if (!graded) {
+    } else if (!scored) {
       item.className = "trun minor";
       item.innerHTML = `<span class="tlabel">👁️ ${escapeHtml(roundLabel(run.roundId))}</span>
         <span class="tchain muted small">explored</span>
@@ -409,9 +425,12 @@ function paintTimeline() {
       const t = trajectory(pcts);
       const best = Math.max(...pcts);
       const cleared = best >= 80;
-      item.className = `trun ${cleared ? "cleared" : "open"}`;
+      // Adventures are BONUS challenges with no pass gate, so they never wear
+      // the 🛟 "needs a hand" marker — a low score there is a learner going
+      // beyond the game, not a learner stuck in it.
+      item.className = `trun ${isAdv ? (cleared ? "cleared" : "") : (cleared ? "cleared" : "open")}`;
       item.innerHTML = `
-        <span class="tlabel">${cleared ? "✅" : "🛟"} ${escapeHtml(roundLabel(run.roundId))}</span>
+        <span class="tlabel">${isAdv ? "🗺️" : (cleared ? "✅" : "🛟")} ${escapeHtml(roundLabel(run.roundId))}</span>
         <span class="tchain">${chainHtml(pcts)}</span>
         <span class="ttrend ${t.key}">${t.arrow} <span class="muted small">${escapeHtml(t.label)}</span></span>
         <span class="ttime muted small">${fmtDateTime(run.end)}</span>`;
@@ -582,7 +601,12 @@ const truncate = (s, n) => { s = String(s || ""); return s.length > n ? s.slice(
    This is a heads-up to eyeball, explicitly NOT an accusation. */
 const roundLabel = rid => {
   const rd = ROUND_BY_ID[rid];
-  return rd ? `${rd.n}. ${rd.title && rd.title.en ? rd.title.en : rid}` : rid;
+  if (rd) return `${rd.n}. ${rd.title && rd.title.en ? rd.title.en : rid}`;
+  // Grand Master bonus challenges carry no round number — name them, so the
+  // timeline never falls back to a raw id like "adv-algebra-centre".
+  const adv = ADVENTURE_BY_ID[rid];
+  if (adv) return adv.title && adv.title.en ? adv.title.en : rid;
+  return rid;
 };
 const fmtDateTime = ts => {
   const t2 = typeof ts === "number" ? ts : Date.parse(ts);
