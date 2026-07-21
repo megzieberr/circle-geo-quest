@@ -210,3 +210,21 @@ in 13s with no reload; deploy confirmed serving the new code).
   big-corp tricks from the brainstorm (variable "double XP" rewards, endowed
   progress on badge sets, limited-time events) are noted in chat but NOT
   specced — decide after seeing how these four land.
+
+- 2026-07-21 (to discuss next session — NOT decided yet):
+  1. Bump the Daily Challenge from its current count to 10 questions/day,
+     skewed harder (more advanced) — the goal is daily drilling for kids who
+     are already ahead, not just recall from passed rounds (see the
+     2026-07-20 analytics-lesson note above re: daily.js and
+     passedQuestionPool — a harder/bigger daily pool changes what the
+     dashboard can infer from it, revisit that read once this ships).
+  2. Migrate circle-geo-quest to "blipwork". Open question to resolve
+     together: can learners keep their existing progress (accounts/XP/
+     round history), or is it simpler to just copy the question bank over
+     to blipwork fresh and treat it as an open revision resource (no
+     carried progress)? No decision yet either way.
+  3. Blipwork itself is ON HOLD until stats are ready there — do not roll
+     it out to the kids before then. Plan for the next ~3 weeks (from
+     2026-07-21): circle geometry keeps being taught in class as normal,
+     and circle-geo-quest stays the daily revision tool. Blipwork migration
+     work should not disrupt that in the meantime.
