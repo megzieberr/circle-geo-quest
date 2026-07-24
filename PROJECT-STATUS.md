@@ -1,6 +1,31 @@
-# Project status — updated 2026-07-20
+# Project status — updated 2026-07-24
 
 ## Where we are
+SHIPPED 2026-07-24: the Daily Challenge overhaul + the diagram-label fix are
+COMMITTED AND PUSHED (GitHub Pages, no cache bump — sw.js caches nothing). Megan
+reviewed the diagrams; the angle-label distance is fixed and five label
+collisions in the apex-at-O riders were cleared (see 2026-07-24 decision).
+
+NEW 2026-07-23: THE DAILY CHALLENGE IS NOW A HARD, EXAM-STYLE 10-QUESTION SET.
+It was 5 tap-the-option questions drawn from rounds the learner had already
+passed (pure recall). It is now 10 typed-answer riders per day — 5 multi-step
++ 5 single-step — served to everyone (the whole class has finished all 43
+rounds). Two NEW question types in js/questions.js:
+  • "num"         — type the angle only (multi-step). After answering, the FULL
+                    worked chain renders (every statement + its reason), and the
+                    hint ladder walks it one rung at a time, never revealing the
+                    final answer line.
+  • "num-reason"  — type the angle AND pick the reason, marked SPLIT (½ + ½).
+Bank: js/rounds/daily-riders.js — 31 questions (13 multi, 18 single) built from
+Megan's Gr11 Core Mathematics: Geometry worksheet plus worksheet-style items to
+cover every reason. ALL 31 diagrams verified to scale (66 angles, 0 mismatches)
+via the new verify-daily.html, which doubles as a click-through preview: it
+renders each question with its diagram, answer and reason chain, and lets you
+ANSWER one live. Engine gained optional equal-tick / parallel-arrow chord marks
+({a,b,mk:"t1"|"p1"}) — purely decorative, no angle is affected.
+NOT YET COMMITTED — awaiting Megan's review of verify-daily.html.
+
+
 Live on GitHub Pages (megzieberr.github.io/circle-geo-quest) with Supabase backend.
 All 43 rounds shipped; holiday features (hints, Fix-Mistakes, daily streak,
 Star-of-the-Week, Boost mode, PWA + push) are live, plus the CIRCLE CHAMPION
@@ -178,6 +203,37 @@ in 13s with no reload; deploy confirmed serving the new code).
   use "→" as both the chain separator and the plateau arrow (a flat
   learner read as "65% → 65% →", like a missing value).
 
+- 2026-07-23: the Daily is now HARD FOR EVERYONE and typed, not tapped. Two
+  rulings behind that: (a) the engine's old "no free-text anywhere, every answer
+  is a tap" rule is deliberately reversed for the Daily — typing the number is
+  the whole point of exam realism (you can't reverse-engineer from four options);
+  (b) multi-step riders ask ONLY for the final angle, no reason picking, because
+  a 3-reason chain would be punishing to grade — but the full chain is still
+  SHOWN afterwards, as teaching rather than as marks. Megan's call, 2026-07-23.
+- 2026-07-23: split marking on single-step questions = 1 mark angle + 1 mark
+  reason (both → full, one → ½). The learner sees "Angle ✓ / Reason ✗" and a
+  fractional daily score (8.5/10). The SERVER still receives the count of
+  fully-correct questions, so XP / perfect-week economics are untouched.
+- 2026-07-23 (analytics shift — NB when reading the dashboard): the Daily is no
+  longer pure recall of passed rounds, so a low daily score is now real signal
+  about reasoning, not just retrieval. This retires the 2026-07-20 note that said
+  daily averages could not be read as evidence of ability.
+- 2026-07-23 (bug found, pre-existing): verify.html had been SILENTLY DEAD. It
+  did `ROUNDS.forEach(r => r.questions.forEach(...))`, but 19 of the 43 rounds are
+  cutscene/discovery rounds carrying `panels` and no `questions` array, so it threw
+  on the very first one and the summary sat on "Running…" forever. Guarded; the
+  full-app check now runs and passes (361 diagrams, 698 angles, 0 mismatches).
+  Worth remembering: a verify page that never prints a FAIL is not the same as a
+  verify page that passes — check it actually reports a count.
+- 2026-07-23 (deferred, NOT built): co-interior-angles and four of the figures
+  Megan picked (1B #17, #18, #20 and 1C #9). Co-int needs two parallel lines with
+  an obtuse angle between two rays — but every point in this engine lives on the
+  circle and the renderer only ever draws the ≤180° angle between two legs, so a
+  150°/30° co-interior pair can't be drawn honestly here. 1B #20 and 1C #9 need a
+  secant from an external point, which the engine has no primitive for (`ext` is
+  tangent–tangent only). These need a small non-circle diagram mode; the theorems
+  themselves are all covered by other questions in the bank.
+
 ## Pending on Megan
 - Eyeball the new features on live (hard-refresh; admin page Ctrl+F5): the
   Customize link on the home screen, the nickname column + "reset nickname"
@@ -195,7 +251,32 @@ in 13s with no reload; deploy confirmed serving the new code).
   "Every try" column on "Needs a hand". Deployed + verified live; nothing
   blocks play and phase15 is already applied — no SQL waiting for you.
 
+- 2026-07-24: Daily Challenge overhaul + label fix are SHIPPED (committed + pushed).
+  Eyeball on live when convenient: open the Daily Challenge and play a rider or two,
+  and spot-check the five fixed diagrams (is78/is108/is110/round92/round150) read
+  cleanly on your phone. Nothing blocks play; no SQL was involved.
+
 ## Next up
+- **Homework-hub link is ON PAUSE (Megan's call, 2026-07-24).** The CQ → Maths
+  Homework Quest funnel link is NOT built (confirmed: no reference anywhere in the
+  app code). She'll do it later — don't build it until she says.
+
+<!-- record of the shipped label fix (kept for the decision trail) -->
+- 2026-07-24 (DONE — the label fix): every angle in daily-riders.js now carries an
+  explicit `o.r` (33–46 px). Verified by measuring `hypot(label − vertex)` in the
+  browser (all 64 labels land 33–46 px from their vertex; the bare fallback had let
+  narrow wedges drift to 64–86). A whole-bank pairwise scan then caught FIVE label
+  collisions in the "apex angle at O + a second angle" riders (is78, is108, is110,
+  round92, round150) — the two labels fell on the line between the two vertices and
+  overprinted. Fix: pull both labels in to hug their vertices; for round92/round150
+  the two bisectors were exactly collinear, so P was also moved to another point on
+  the SAME minor arc (∠APB is constant along the arc, so the value and the to-scale
+  check are unchanged — only the picture reads cleaner). Method worth reusing: the
+  pairwise-gap scan over computeGeometry label coords is how you find these; the eye
+  misses the ones on later pages.
+- Still deferred (not built, theorems covered elsewhere): co-interior angles and
+  worksheet figures 1B #17, #18, #20, 1C #9 — they need a non-circle diagram mode
+  / an external-secant primitive. Decide whether they're worth building.
 - Term starts Tue 21 Jul: the holiday homework was PRE-teaching (this
   content gets taught in class from day 1), so read the round data as
   "who has met this yet", not "who is behind".

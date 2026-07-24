@@ -211,8 +211,20 @@ const UI = {
 
   // daily challenge
   dailyChallenge: { en: "Daily Challenge", af: "Daaglikse Uitdaging" },
-  dailyBlurb:     { en: "5 quick questions to keep every theorem fresh.", af: "5 vinnige vrae om elke stelling vars te hou." },
-  dailyStart:     { en: "Start today's 5", af: "Begin vandag se 5" },
+  dailyBlurb:     { en: "10 exam-style riders — find the angle, and know your reason.", af: "10 eksamen-styl vraagstukke — vind die hoek, en ken jou rede." },
+  dailyStart:     { en: "Start today's 10", af: "Begin vandag se 10" },
+  // typed-answer questions (Daily riders)
+  typeAngleLabel: { en: "Your answer", af: "Jou antwoord" },
+  typeAnglePh:    { en: "angle", af: "hoek" },
+  pickReason:     { en: "…and choose the reason:", af: "…en kies die rede:" },
+  pickReasonFirst:{ en: "Choose a reason too, then check.", af: "Kies ook 'n rede, en kontroleer dan." },
+  typeAngleFirst: { en: "Type the angle first.", af: "Tik eers die hoek in." },
+  angleRight:     { en: "Angle ✓", af: "Hoek ✓" },
+  angleWrong:     { en: "Angle ✗", af: "Hoek ✗" },
+  reasonRight:    { en: "Reason ✓", af: "Rede ✓" },
+  reasonWrong:    { en: "Reason ✗", af: "Rede ✗" },
+  halfMark:       { en: "Half marks — one part right.", af: "Halfpunte — een deel reg." },
+  yourScore:      { en: "Your score", af: "Jou telling" },
   dailyDoneToday: { en: "Done for today 🎉 Come back tomorrow!", af: "Klaar vir vandag 🎉 Kom môre terug!" },
   dailyReplay:    { en: "Practise again", af: "Oefen weer" },
   dayStreak:      { en: "day streak", af: "dag-streak" },
@@ -365,6 +377,8 @@ export const REASONS = {
   pythagoras:    { en: "Pythagoras",               af: "Pythagoras" },
   radiiEqual:    { en: "radii equal",              af: "radii" },
   altAngles:     { en: "alt ∠s ; lines ∥",         af: "verw. ∠e ; lyne ∥" },
+  coIntAngles:   { en: "co-int ∠s ; lines ∥",      af: "ko-binne ∠e ; lyne ∥" },
+  correspAngles: { en: "corresp ∠s ; lines ∥",     af: "ooreenk. ∠e ; lyne ∥" },
   diamMidChord:  { en: "line from centre to midpt of chord ⊥ chord", af: "lyn vanuit mdpt ⊥ op koord" },
   // proof-building reasons
   construction:  { en: "construction",        af: "konstruksie" },

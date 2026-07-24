@@ -48,8 +48,9 @@ function check(label, d, accent) {
   gallery.appendChild(wrap);
 }
 
-// app rounds
+// app rounds (cutscene / discovery rounds carry `panels`, not `questions`)
 ROUNDS.forEach(r => {
+  if (!Array.isArray(r.questions)) return;
   r.questions.forEach(q => check(`${r.id} ${q.id}`, q.diagram, q.accent));
 });
 // raw source data (sanity check that the engine port matches the original)

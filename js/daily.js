@@ -12,7 +12,7 @@
    spots resurface. Reward here is the streak itself: no leaderboard
    XP in phase 1, so the server economy is untouched.
    ============================================================ */
-import { ROUNDS, QUESTION_BANK, QUESTION_BY_ID, DAILY_EXTRA } from "./rounds/index.js";
+import { ROUNDS, QUESTION_BANK, QUESTION_BY_ID, DAILY_EXTRA, DAILY_RIDERS, DAILY_RIDERS_MULTI, DAILY_RIDERS_SINGLE } from "./rounds/index.js";
 import { t, tx } from "./i18n.js";
 import { el, clear, mount, shuffled, progressBar } from "./ui.js";
 import { mountQuestion } from "./questions.js";
@@ -23,7 +23,8 @@ import { CONFIG } from "./config.js";
 import { showCelebration } from "./celebrate.js";
 import { sfx } from "./sound.js";
 
-const SIZE = 5;
+const SIZE = 10;      // 10 exam-style riders per day
+const MULTI_N = 5;    // …of which 5 are multi-step (type only) and 5 single-step (type + reason)
 const keyFor = app => `cgg.daily.${(app && app.state && app.state.student && app.state.student.id) || "anon"}`;
 
 /* local calendar day as YYYY-MM-DD (local time, not UTC) */
@@ -83,10 +84,12 @@ function todaySet(app) {
   };
 
   let picks;
-  if (allRoundsPassed(app) && DAILY_EXTRA.length) {
-    const bonus = take(DAILY_EXTRA, Math.min(SIZE - 1, DAILY_EXTRA.length));  // up to 4 fresh bonus riders
-    const review = take(QUESTION_BANK, SIZE - bonus.length);                   // + a review for spaced retrieval
-    picks = shuffled([...bonus, ...review]).slice(0, SIZE);
+  if (allRoundsPassed(app) && DAILY_RIDERS.length >= SIZE) {
+    // Finishers (everyone, this term) get the harder exam-style riders:
+    // 5 multi-step (type the angle) + 5 single-step (type the angle + pick the reason).
+    const multi = take(DAILY_RIDERS_MULTI, Math.min(MULTI_N, DAILY_RIDERS_MULTI.length));
+    const single = take(DAILY_RIDERS_SINGLE, SIZE - multi.length);
+    picks = shuffled([...multi, ...single]).slice(0, SIZE);
   } else {
     // bucket by round, unseen first within each, then round-robin so the 5 spread out
     const byRound = {};
@@ -142,7 +145,10 @@ export function renderDaily(app, host) {
 
   const ids = todaySet(app);
   const items = ids.map(id => QUESTION_BY_ID[id]).filter(Boolean);
-  const state = { i: 0, correct: 0, total: items.length };
+  // `correct` counts fully-correct questions (drives XP / perfect-week on the
+  // server); `score` is the fractional mark shown to the learner — a split
+  // question (angle right, reason wrong) adds ½.
+  const state = { i: 0, correct: 0, score: 0, total: items.length };
 
   const screen = el("div", "play");
   const top = el("div", "play-top");
@@ -169,8 +175,11 @@ export function renderDaily(app, host) {
     clear(qhost);
     const qbox = el("div");
     qhost.appendChild(qbox);
-    mountQuestion(qbox, entry.q, (isCorrect) => {
+    mountQuestion(qbox, entry.q, (isCorrect, score) => {
+      const s = (score == null) ? (isCorrect ? 1 : 0) : score;
+      state.score += s;
       if (isCorrect) { sfx.correct(); state.correct++; clearMistake(app, entry.q.id); note.classList.add("good"); note.textContent = "✓ " + t("correct"); }
+      else if (s > 0) { sfx.correct(); addMistake(app, entry.q.id, entry.roundId); note.classList.add("good"); note.textContent = "½ " + t("halfMark"); }
       else { sfx.wrong(); addMistake(app, entry.q.id, entry.roundId); note.classList.add("bad"); note.textContent = t("notQuite"); }
       next.hidden = false;
       next.textContent = state.i + 1 < state.total ? t("next") : t("finish");
@@ -199,7 +208,7 @@ export function renderDaily(app, host) {
         }
       } catch { /* offline — still show the streak result */ }
       await app.refreshState();
-      renderDailyDone(app, host, res, state.correct, state.total, award, milestoneAward);
+      renderDailyDone(app, host, res, state.correct, state.total, award, milestoneAward, state.score);
     }
   });
 
@@ -212,17 +221,19 @@ export function renderDaily(app, host) {
    `st` back from localStorage, which never carries `.milestone`, so the
    full-screen celebration below only ever fires once, at the moment the
    milestone is actually reached. */
-function renderDailyDone(app, host, st, correct, total, award, milestoneAward) {
+function renderDailyDone(app, host, st, correct, total, award, milestoneAward, score) {
   clear(host);
   const card = el("div", "card center daily-done");
   const xpPill = (award && award.xpAwarded > 0)
     ? `<div class="result-pills"><span class="pill xp">★ +${award.xpAwarded} ${t("xpEarned")}</span></div>` : "";
   const perfect = (award && award.perfectWeek)
     ? `<div class="pw-banner">🎯 <b>${t("dailyPerfectWeek")}</b><br>+${award.bonusXp} XP</div>` : "";
+  // fractional mark: a split question (one part right) counts as ½, so show 8.5/10
+  const shown = (score != null) ? (Number.isInteger(score) ? score : score.toFixed(1)) : correct;
   card.innerHTML = `
     <div class="result-emoji">${award && award.perfectWeek ? "🎯" : "🔥"}</div>
     <h1>${t("dailyComplete")}</h1>
-    ${correct != null ? `<div class="big-score">${correct}/${total}</div>` : ""}
+    ${correct != null ? `<div class="big-score">${shown}/${total}</div>` : ""}
     ${xpPill}
     ${perfect}
     <div class="streak-big"><span class="flame">🔥</span><b>${st.streak}</b> <span>${t("dayStreak")}</span></div>

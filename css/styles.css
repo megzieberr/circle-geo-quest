@@ -177,6 +177,7 @@ h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",sans-serif; line-he
 
 /* diagram core (matches the tan-chord page) */
 svg.diag .ln{stroke:#2b2f4a; stroke-width:2.2; stroke-linecap:round;}
+svg.diag .mk{stroke:#2b2f4a; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; fill:none;}
 svg.diag .sirkel{stroke:#2b2f4a; stroke-width:2.4; fill:none;}
 svg.diag .al{font:700 13.5px "Instrument Sans",sans-serif; text-anchor:middle; dominant-baseline:middle;
   paint-order:stroke; stroke:#fff; stroke-width:4.5px; stroke-linejoin:round;}
@@ -203,6 +204,28 @@ svg.diag .hit.locked{pointer-events:none;}
 .opt:disabled{cursor:default;}
 .opt.is-correct{background:#e8f8f1; border-color:#0ea271; color:#0a6b4c;}
 .opt.is-wrong{background:#fdeef4; border-color:#e64980; color:#9c1f52;}
+
+/* ---------- typed-angle questions (Daily riders) ---------- */
+.q-numrow{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:2px 0 4px;}
+.q-numlabel{font-weight:700; font-size:1rem;}
+.q-numbox{display:inline-flex; align-items:center; gap:2px; border:2px solid var(--ink); border-radius:13px;
+  background:#fff; padding:6px 12px; transition:.12s;}
+.q-numbox:focus-within{box-shadow:3px 3px 0 var(--accent);}
+.q-num{width:3.4em; border:none; outline:none; background:transparent; font:800 1.5rem "Instrument Sans",sans-serif;
+  color:var(--ink); text-align:center; font-variant-numeric:tabular-nums; -moz-appearance:textfield;}
+.q-num::-webkit-outer-spin-button,.q-num::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.q-deg{font:800 1.5rem "Instrument Sans",sans-serif; color:var(--ink-soft);}
+.q-num.right{color:#0a6b4c;} .q-num.wrong{color:#9c1f52;}
+.q-numbox:has(.q-num.right){border-color:#0ea271; background:#e8f8f1;}
+.q-numbox:has(.q-num.wrong){border-color:#e64980; background:#fdeef4;}
+.q-reasonlead{font-weight:700; font-size:.95rem; margin:12px 0 8px; color:var(--ink);}
+.opt.reason-opt{padding:11px 14px; font-size:.95rem;}
+.opt.reason-opt.chosen{border-color:var(--accent); box-shadow:3px 3px 0 var(--accent); background:#fff;}
+.q-submit{margin-top:14px;}
+.fb-parts{display:flex; gap:8px; margin:2px 0 6px; flex-wrap:wrap;}
+.fb-part{font-weight:800; font-size:.82rem; padding:3px 10px; border-radius:20px;}
+.fb-part.ok{background:#d5f2e6; color:#0a6b4c;}
+.fb-part.no{background:#fbdbe8; color:#9c1f52;}
 
 /* feedback */
 .q-feedback{margin-top:14px; border:2px solid var(--ink); border-radius:13px; padding:12px 14px;}

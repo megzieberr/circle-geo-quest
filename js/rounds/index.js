@@ -47,6 +47,7 @@ import { round as r19 } from "./round19-riders-diameter.js";
 import { round as r20 } from "./round20-riders-mixed1.js";
 import { round as r21 } from "./round21-riders-mixed2.js";
 import { round as dailyExtra } from "./daily-extra.js";          // bonus daily bank (not in play order)
+import { round as dailyRiders } from "./daily-riders.js";       // harder exam-style Daily bank (typed answers)
 
 /* ordered play sequence (Group 1 discoveries for centre=2× and semicircle
    are added in the next build step) */
@@ -119,3 +120,15 @@ export const DAILY_EXTRA = (dailyExtra.questions || []).map(q => {
   QUESTION_BY_ID[q.id] = entry;
   return entry;
 });
+
+/* Daily riders — the harder exam-style Daily bank (typed-answer questions).
+   Same registration pattern as DAILY_EXTRA: resolvable by id (for Fix-Mistakes
+   and lookup) but never pushed into QUESTION_BANK or the play order. daily.js
+   draws the 10-question Daily from here (5 multi-step + 5 single-step). */
+export const DAILY_RIDERS = (dailyRiders.questions || []).map(q => {
+  const entry = { q, roundId: dailyRiders.id, roundN: null, title: dailyRiders.title, accent: q.accent || dailyRiders.accent, group: "bonus" };
+  QUESTION_BY_ID[q.id] = entry;
+  return entry;
+});
+export const DAILY_RIDERS_MULTI = DAILY_RIDERS.filter(e => e.q.type === "num");
+export const DAILY_RIDERS_SINGLE = DAILY_RIDERS.filter(e => e.q.type === "num-reason");

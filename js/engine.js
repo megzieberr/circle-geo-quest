@@ -88,6 +88,30 @@ function angleSVG(cx, cy, from, to, text, o, accent, W, H) {
 function lineEl(x1, y1, x2, y2) {
   return `<line class="ln" x1="${N(x1)}" y1="${N(y1)}" x2="${N(x2)}" y2="${N(y2)}"/>`;
 }
+/* Equal-length ticks ("tN") or parallel chevrons ("pN") stamped on a chord's
+   midpoint. Purely decorative — never used to measure an angle — so verified
+   diagrams are unaffected. Chevrons point from a→b, so author parallel chords
+   in the same direction and their arrows line up. */
+function chordMark(c) {
+  if (!c.mk) return "";
+  const kind = c.mk[0], n = parseInt(c.mk.slice(1), 10) || 1;
+  const mx = (c.p1.x + c.p2.x) / 2, my = (c.p1.y + c.p2.y) / 2;
+  const dx = c.p2.x - c.p1.x, dy = c.p2.y - c.p1.y, L = Math.hypot(dx, dy) || 1;
+  const ux = dx / L, uy = dy / L, nx = -uy, ny = ux;   // along-chord and perpendicular units
+  const gap = kind === "p" ? 4.5 : 4.5, start = -(n - 1) / 2 * gap;
+  let out = "";
+  for (let i = 0; i < n; i++) {
+    const o = start + i * gap, bx = mx + ux * o, by = my + uy * o;
+    if (kind === "t") {                 // equal-length tick — short perpendicular stroke
+      const h = 5.5;
+      out += `<line class="mk" x1="${N(bx - nx * h)}" y1="${N(by - ny * h)}" x2="${N(bx + nx * h)}" y2="${N(by + ny * h)}"/>`;
+    } else {                            // parallel arrow — a chevron pointing a→b
+      const w = 4.5, h = 4.5;
+      out += `<path class="mk" fill="none" d="M ${N(bx + nx * h)} ${N(by + ny * h)} L ${N(bx + ux * w)} ${N(by + uy * w)} L ${N(bx - nx * h)} ${N(by - ny * h)}"/>`;
+    }
+  }
+  return out;
+}
 function dot(x, y, col) {
   return `<circle cx="${N(x)}" cy="${N(y)}" r="2.6" fill="${col || INK}"/>`;
 }
@@ -202,7 +226,12 @@ export function computeGeometry(d) {
     });
   });
 
-  const chordSegs = (d.chords || []).map(c => ({ a: c[0], b: c[1], p1: { x: pts[c[0]].x, y: pts[c[0]].y }, p2: { x: pts[c[1]].x, y: pts[c[1]].y } }));
+  const chordSegs = (d.chords || []).map(c => {
+    const a = Array.isArray(c) ? c[0] : c.a;
+    const b = Array.isArray(c) ? c[1] : c.b;
+    const mk = Array.isArray(c) ? null : (c.mk || null);   // "p1"/"p2" parallel arrows · "t1"/"t2"/"t3" equal ticks
+    return { a, b, mk, p1: { x: pts[a].x, y: pts[a].y }, p2: { x: pts[b].x, y: pts[b].y } };
+  });
 
   /* resolve every angle to a vertex, sweep and a clamped label position */
   const angles = (d.angles || []).map((a, i) => {
@@ -261,8 +290,8 @@ export function renderDiagram(d, accent, opts = {}) {
   /* tangent segments from external points */
   g.extTangents.forEach(s => out += lineEl(s.p1.x, s.p1.y, s.p2.x, s.p2.y));
 
-  /* chords */
-  g.chordSegs.forEach(c => out += lineEl(c.p1.x, c.p1.y, c.p2.x, c.p2.y));
+  /* chords (+ optional equal-tick / parallel-arrow marks) */
+  g.chordSegs.forEach(c => { out += lineEl(c.p1.x, c.p1.y, c.p2.x, c.p2.y); out += chordMark(c); });
 
   /* angles */
   g.angles.forEach(a => {

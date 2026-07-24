@@ -37,6 +37,11 @@ function svg(tag, attrs) {
   for (const k in attrs) e.setAttribute(k, attrs[k]);
   return e;
 }
+function shuffleLocal(arr) {
+  const a = (arr || []).slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
 
 export function mountQuestion(container, q, onAnswered, assist = {}) {
   container.innerHTML = "";
@@ -81,7 +86,7 @@ export function mountQuestion(container, q, onAnswered, assist = {}) {
   // when a learner picks that specific distractor, we lead the feedback with it,
   // so even learners who never tap a hint get the misconception addressed.
   // `half` = correct on the second chance → half credit, friendly green feedback.
-  function reveal(isCorrect, answerText, reasonText, chosen, misconception, half) {
+  function reveal(isCorrect, answerText, reasonText, chosen, misconception, half, detailHtml, halfLabel) {
     if (answered) return;
     answered = true;
     if (svgNode) svgNode.querySelectorAll(".q-hl").forEach(n => n.remove());   // clear the hint pulse
@@ -89,8 +94,9 @@ export function mountQuestion(container, q, onAnswered, assist = {}) {
     nudgeEl.hidden = true;
     feedback.hidden = false;
     feedback.classList.add((isCorrect || half) ? "good" : "bad");
-    const head = half ? t("gotItSecond") : (isCorrect ? t("correct") : t("notQuite"));
+    const head = half ? (halfLabel || t("gotItSecond")) : (isCorrect ? t("correct") : t("notQuite"));
     let html = `<div class="fb-head">${(isCorrect || half) ? "✓" : "✗"} ${head}</div>`;
+    if (detailHtml) html += detailHtml;
     if (!isCorrect && !half && misconception) html += `<div class="fb-nudge">💡 ${tx(misconception)}</div>`;
     if (answerText) html += `<div class="fb-ans"><b>${t("theAnswer")}:</b> ${answerText}</div>`;
     if (q.solution && q.solution.length) {
@@ -191,6 +197,88 @@ export function mountQuestion(container, q, onAnswered, assist = {}) {
       opts.appendChild(b);
     });
     root.appendChild(opts);
+  }
+
+  else if (q.type === "num" || q.type === "num-reason") {
+    // Type the angle size (numeric keypad on phones). "num-reason" also asks
+    // the learner to pick the governing reason — marked split (½ angle, ½ reason).
+    const withReason = q.type === "num-reason";
+
+    const numRow = el("div", "q-numrow");
+    numRow.appendChild(el("label", "q-numlabel", t("typeAngleLabel")));
+    const box = el("div", "q-numbox");
+    const field = el("input", "q-num");
+    field.type = "text"; field.inputMode = "numeric"; field.autocomplete = "off"; field.maxLength = 3;
+    field.placeholder = t("typeAnglePh");
+    field.setAttribute("aria-label", t("typeAngleLabel"));
+    box.appendChild(field);
+    box.appendChild(el("span", "q-deg", "°"));
+    numRow.appendChild(box);
+    root.appendChild(numRow);
+
+    let pickedReason = null;
+    const reasonBtns = [];
+    if (withReason) {
+      root.appendChild(el("p", "q-reasonlead", t("pickReason")));
+      const opts = el("div", "q-options q-reasons");
+      shuffleLocal(q.reasonOptions).forEach(o => {
+        const b = el("button", "opt reason-opt", reason(o.code));
+        b.__opt = o;
+        b.addEventListener("click", () => {
+          if (answered) return;
+          reasonBtns.forEach(x => x.classList.remove("chosen"));
+          b.classList.add("chosen");
+          pickedReason = o;
+        });
+        reasonBtns.push(b);
+        opts.appendChild(b);
+      });
+      root.appendChild(opts);
+    }
+
+    root.appendChild(nudgeEl);
+
+    const submit = el("button", "btn primary big q-submit", t("check"));
+    const prompt2 = (msg) => { nudgeEl.hidden = false; nudgeEl.innerHTML = `💡 ${msg}`; };
+
+    const commit = () => {
+      if (answered) return;
+      const raw = (field.value || "").replace(/[^0-9]/g, "");
+      if (raw === "") { prompt2(t("typeAngleFirst")); field.focus(); return; }
+      if (withReason && !pickedReason) { prompt2(t("pickReasonFirst")); return; }
+      nudgeEl.hidden = true;
+      const val = parseInt(raw, 10);
+      const angleRight = (val === q.value);
+      let reasonRight = true, half = false, isCorrect = angleRight;
+      // lock the angle field
+      field.disabled = true;
+      field.classList.add(angleRight ? "right" : "wrong");
+      submit.hidden = true;
+
+      let detail;
+      if (withReason) {
+        reasonRight = !!pickedReason.correct;
+        isCorrect = angleRight && reasonRight;
+        half = (angleRight !== reasonRight);              // exactly one part right
+        reasonBtns.forEach(b => {
+          b.disabled = true;
+          if (b.__opt.correct) b.classList.add("is-correct");
+          else if (b.__opt === pickedReason) b.classList.add("is-wrong");
+        });
+        detail = `<div class="fb-parts">`
+          + `<span class="fb-part ${angleRight ? "ok" : "no"}">${t(angleRight ? "angleRight" : "angleWrong")}</span>`
+          + `<span class="fb-part ${reasonRight ? "ok" : "no"}">${t(reasonRight ? "reasonRight" : "reasonWrong")}</span>`
+          + `</div>`;
+      }
+      const reasonText = withReason ? resolveR((q.reasonOptions.find(o => o.correct) || {}).code) : "";
+      reveal(isCorrect, answerText(), reasonText, String(val), null, half, detail, t("halfMark"));
+    };
+
+    submit.addEventListener("click", commit);
+    field.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); commit(); } });
+    root.appendChild(submit);
+    // deliberately NOT auto-focused: on a phone the keyboard would spring up and
+    // cover the diagram the learner still has to read.
   }
 
   else if (q.type === "tap") {
