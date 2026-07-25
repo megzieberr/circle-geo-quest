@@ -1,4 +1,4 @@
-# Project status — updated 2026-07-24
+# Project status — updated 2026-07-25
 
 ## Where we are
 SHIPPED 2026-07-24: the Daily Challenge overhaul + the diagram-label fix are
@@ -235,31 +235,18 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- Eyeball the new features on live (hard-refresh; admin page Ctrl+F5): the
-  Customize link on the home screen, the nickname column + "reset nickname"
-  button on the dashboard, the 🔊/🔇 mute toggle in the header, and the
-  "⚠️ Worth a look" cheat-detection panel on the dashboard. Everything is
-  deployed and verified; nothing blocks play.
-- 2026-07-19 batch: on your phone, hard-refresh the live app and eyeball
-  Pi on the home screen (tap him for a trick), open Customize to see the
-  54-avatar grouped picker, and play any round to hear the new
-  correct/wrong sounds + Pi's thumbs-up on the results screen. All
-  deployed + verified live (HTTP 200 on the new assets); nothing blocks.
-
-- 2026-07-20: Ctrl+F5 the admin page and click a learner's name to see the
-  new timeline panel (it self-refreshes every 15s while open), plus the new
-  "Every try" column on "Needs a hand". Deployed + verified live; nothing
-  blocks play and phase15 is already applied — no SQL waiting for you.
-
-- 2026-07-24: Daily Challenge overhaul + label fix are SHIPPED (committed + pushed).
-  Eyeball on live when convenient: open the Daily Challenge and play a rider or two,
-  and spot-check the five fixed diagrams (is78/is108/is110/round92/round150) read
-  cleanly on your phone. Nothing blocks play; no SQL was involved.
+- Nothing. (2026-07-25 amnesty: the four "eyeball on live" batches from 19/20/24 Jul
+  were killed on Megan's call — the kids have been playing on those builds for days,
+  so real use has done the eyeballing. Everything was deployed + verified at ship time.)
 
 ## Next up
 - **Homework-hub link is ON PAUSE (Megan's call, 2026-07-24).** The CQ → Maths
   Homework Quest funnel link is NOT built (confirmed: no reference anywhere in the
   app code). She'll do it later — don't build it until she says.
+- **Sequencing ruling (Megan, 2026-07-25): the kids stay on Circle Quest for now.**
+  The order is: she play-tests all Blipwork levels + the store gets upgraded →
+  THEN the class migrates CQ → Blipwork → only then does Blipwork's term
+  setup happen. Nothing on the CQ side until she calls the migration.
 
 <!-- record of the shipped label fix (kept for the decision trail) -->
 - 2026-07-24 (DONE — the label fix): every angle in daily-riders.js now carries an
