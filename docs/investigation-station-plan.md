@@ -137,23 +137,51 @@ Start as a **copy of `js/discover.js`**, then change:
 - `export function renderInvestigate(app, host, params)`
 - Keep `HINT_AFTER = 3`, `REVEAL_AFTER = 5`. **The never-stuck rule is load-bearing** —
   it is what makes an occasionally-wrong text checker safe (see §2.6).
-- Track XP per panel. Award **only on a first-attempt correct**:
-  - `CONFIG.xpPerCorrect` (10) for a first-try correct gated panel.
-  - **No** `firstTryBonus`, **no** streak bonus. Rewards persistence over speed, which is
-    the right incentive for investigation work and stops station XP dwarfing rider XP.
-  - `explore` and `note` panels award 0.
-- On finish, submit the **real** fraction, not a hardcoded 1:
+- **XP is a flat award for finishing the station.** It does not scale with how many
+  attempts each panel took. No per-panel XP, no `firstTryBonus`, no streak bonus.
+
   ```js
-  const frac = gatedTotal ? firstTryCorrect / gatedTotal : 1;
+  // js/config.js
+  investigationXp: 50,   // flat, per station completed
+  ```
+
+  Rationale: the whole point of an investigation is to think it through, not to already
+  know the answer. A learner who struggles through five attempts on every panel has done
+  *more* investigating than one who breezes it, and should not be paid less for it.
+  Struggle is the product here, not the failure mode.
+
+- On finish, submit:
+  ```js
   submitRoundReliable(s.name, s.password, round.id, {
-    score: frac, xpGained: xpEarned, total: gatedTotal, correct: firstTryCorrect
+    score: 1,                       // completing IS passing — badge on completion
+    xpGained: CONFIG.investigationXp,
+    total: gatedTotal,              // real numbers, for the admin timeline only
+    correct: firstTryCorrect,
   });
   ```
-  `CONFIG.passThreshold` (0.8) then governs the badge, consistent with every other round.
-  Because retries are unlimited and the panel only advances once correct, a learner who
-  struggles still *finishes* — they just score lower and earn less XP. That is the
-  intended shape.
+
+  **Why `score: 1` and not the real fraction.** If XP is flat for completing, then gating
+  the badge on `CONFIG.passThreshold` (0.8) creates a contradiction — a learner finishes
+  every panel, gets full XP, and still no badge. Completing is passing. This matches
+  `js/discover.js` exactly.
+
+  `total` and `correct` still carry the **real** first-try numbers. `api.js` stores them
+  as `last_correct` / `last_total` without using them for scoring, so the attempt-trajectory
+  panel in admin keeps its struggle-vs-stuck signal. Megan can still see who found what
+  hard; the learner just isn't punished for it.
+
+- **Anti-farming is already handled.** `api.js` `submitRound` awards `wasPassed ? 0 : xp`,
+  so replaying a completed station earns nothing. Verify this holds via the Supabase
+  `cgg_submit_round` RPC too, not just `LocalBackend`.
 - Add the station accent + 🚂 to the header.
+
+### 1.2b Why the number is 50
+
+Six stations × 50 = **300 XP** for the full line. Round numbers matter here: Megan is
+converting Circle Geo XP into diamonds in Blipwork, and a clean per-station figure
+converts predictably and is easy to explain to a class. Change `investigationXp` in
+`js/config.js` if a different figure suits the conversion rate better — it is one line and
+nothing else depends on it.
 
 ### 1.3 Router
 
@@ -641,11 +669,15 @@ migration.
 - [ ] `ANTHROPIC_API_KEY` unset → function 500s, app degrades to static hints silently
 
 **Rounds**
-- [ ] First-try correct awards 10 XP; a retry-correct awards 0
+- [ ] Finishing a station awards exactly `CONFIG.investigationXp`, **regardless of attempts**
+- [ ] A learner who misses every panel five times still finishes and still gets full XP
 - [ ] 5 wrong attempts reveals the memo and advances — no dead end
 - [ ] "I think my answer was right" advances and writes a `checker_calls` row
-- [ ] Score < 0.8 → no badge; ≥ 0.8 → `g6` badge on all six
-- [ ] Replaying a passed station awards no further XP (existing anti-farming)
+- [ ] Completing a station earns the `g6` badge (no 0.8 threshold to clear)
+- [ ] `last_correct` / `last_total` in `progress` still reflect real first-try counts
+      (admin attempt-trajectory panel must not go flat)
+- [ ] Replaying a passed station awards no further XP — check the Supabase
+      `cgg_submit_round` RPC path, not just `LocalBackend`
 - [ ] Offline: PWA loads, `written` panels fall back to static hints
 - [ ] Every existing round still plays unchanged
 
@@ -670,7 +702,8 @@ migration.
 
 1. **`tan-chord theorem` → `tan chord theorem`** in `REASONS` (Phase 0.1). Change the
    reason entry only, or the prose too? Recommendation: entry only.
-2. **XP per station.** Plan is 10 per first-try-correct panel, ~40–50 per station,
-   ~270 for all six. Roughly one and a half rider rounds' worth. Too generous, too mean?
+2. ~~XP per station~~ — **settled.** Flat 50 per station completed, 300 for all six,
+   independent of attempts (§1.2). Adjust `CONFIG.investigationXp` if the Blipwork
+   diamond conversion wants a different round number.
 3. **School AI-use / POPIA policy** (§2.1) — worth a check before Monday.
 4. **Purge date for `checker_calls.answer`.** Learner-authored text; suggest end of term.
