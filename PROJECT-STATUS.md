@@ -1,6 +1,20 @@
-# Project status — updated 2026-07-25
+# Project status — updated 2026-07-30
 
 ## Where we are
+IN PROGRESS 2026-07-30 on branch `claude/investigation-station-circle-geo-dd1g0a`
+(PR #4): INVESTIGATION STATION 🚂 — six graded "stations" that drill the
+*investigation* skill (conjecture, counterexample, error-spotting, converses,
+explaining) rather than more rider practice. Two things make it unlike every
+other round: it PAYS XP (flat 50 per station, 300 for all six), and it accepts
+TYPED answers, marked by a Supabase edge function calling Claude Haiku.
+**Station 4 "Prove It" is built and plays end to end in both languages.**
+Stations 1, 2, 3, 5, 6 are NOT built yet. Nothing is on `main`; the live site
+is unchanged.
+Also done: the reason bank now matches IEB Appendix G in BOTH languages
+(Megan supplied the English + Afrikaans SAG PDFs), and 34 places in round copy
+that QUOTE a reason as the string to write were corrected to match.
+
+
 SHIPPED 2026-07-24: the Daily Challenge overhaul + the diagram-label fix are
 COMMITTED AND PUSHED (GitHub Pages, no cache bump — sw.js caches nothing). Megan
 reviewed the diagrams; the angle-label distance is fixed and five label
@@ -66,6 +80,42 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-30: the reason bank now follows IEB Appendix G in BOTH languages. The IEB
+  publishes the appendix in Afrikaans too (WISKUNDE SAGs pp.29-32), so the Afrikaans
+  no longer falls back to the DBE list. Settles the open congruency question: the
+  Afrikaans appendix translates the letters (S = sy, H = hoek), so SAS → **SHS** and
+  AAS → **HHS**; SSS is unchanged. Also `∠ in halwe sirkel` (∠ singular, and
+  "halfsirkel" not "semi sirkel"), `raaklyn koord stelling` unhyphenated,
+  `Midpt∠ = 2 × Omtreks∠`, and `midpt` not `mdpt`.
+- 2026-07-30 (the find worth keeping): a reason audit that only edits the REASONS bank
+  is half an audit. 34 places in round copy QUOTE a reason as the string to write
+  ("Rede: <i>lyn vanuit mdpt ⊥ op koord</i>", "die rede is 'binne-∠e van Δ'") and were
+  still teaching pre-Appendix-G wording — which is exactly what the audit exists to
+  prevent, since that is what a learner copies into the exam. Rule going forward:
+  flowing prose that merely NAMES a theorem keeps its natural language in both
+  languages ("the tan-chord theorem" / "die raaklyn-koord-stelling"); only a reason
+  presented as the string to write follows the appendix. `data-tanchord.js` is
+  deliberately never touched — its strings are LEGACY *keys*.
+- 2026-07-30: Investigation Station XP is FLAT per station (50), not per panel and not
+  scaled by attempts. The point of an investigation is to think it through, not to
+  already know the answer — a learner who fights through five attempts per panel has
+  investigated MORE than one who breezes it, and should not be paid less. Struggle is
+  the product. Submitted with `score: 1` (completing IS passing — flat XP plus an 80%
+  badge threshold would mean full XP and no badge), but `total`/`correct` still carry
+  the real first-try numbers so the admin trajectory panel keeps working.
+- 2026-07-30: the checker is a SCAFFOLDER, not a judge. Every failure path — bad key,
+  timeout, cost cap, malformed JSON — degrades to the panel's static hint chain with
+  no error shown, and the 3-wrong-hint / 5-wrong-reveal ladder is untouched. That
+  ladder is what makes an occasionally-wrong text checker safe: the worst a misgrade
+  can cost is one extra attempt, never a blocked learner. Plus an "I think my answer
+  was right" link on every typed panel that always advances and logs for review.
+- 2026-07-30 (bug caught in review, worth remembering): the plan's cost cap was a
+  COUNT-then-INSERT, which does not actually close the race — under READ COMMITTED
+  two concurrent taps both read 19 and both bill, because a count takes no lock.
+  Fixed with a per-learner `pg_advisory_xact_lock`. Same review pass caught that
+  `revoke ... from anon, authenticated` leaves a function callable, because functions
+  are granted to PUBLIC by default — phase15's convention includes `public` and this
+  one now does too.
 - 2026-07-18: Nickname moderation = TEACHER AUTHORITY, no profanity filter.
   Blocklists were rejected because the class is bilingual and innocent Afrikaans
   words false-positive against English lists (e.g. "vak" = subject — the
@@ -235,11 +285,32 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- Nothing. (2026-07-25 amnesty: the four "eyeball on live" batches from 19/20/24 Jul
-  were killed on Megan's call — the kids have been playing on those builds for days,
-  so real use has done the eyeballing. Everything was deployed + verified at ship time.)
+- 💻 5 min **[blocking]**: get an Anthropic API key at console.anthropic.com — your
+  Claude Max plan does NOT include API access, it's a separate pay-as-you-go account.
+  Typed marking can't run without it (everything else works; learners just get the
+  static hints instead of a nudge).
+- 💻 1 min **[blocking]**: say go and I'll apply `supabase/phase16.sql` to live via MCP.
+- 💻 2 min **[whenever]**: worth a word with whoever owns the school's AI-use / POPIA
+  policy before Monday — learner-authored text leaves the school's systems. Only the
+  answer text is sent: no names, no IDs.
+
+(2026-07-25 amnesty still stands for everything before this: the four "eyeball on
+live" batches from 19/20/24 Jul were killed on Megan's call — the kids had been
+playing on those builds for days, so real use did the eyeballing.)
 
 ## Next up
+- **Investigation Station, what's left:** Stations 1 (Measure & Notice), 2 (State the
+  Conjecture), 3 (Break It), 5 (Turn It Around), 6 (Explain It). The plan's own
+  fallback ruling is "if the night runs short, ship Stations 4 and 2 only" — Station 2
+  is the priority, and it's the one that shows same-segment and cyclic-quad are the
+  same theorem in two hats. `ORDER` renumbers automatically, so each lands with no
+  migration; only new memo rows for its typed panels.
+- **Then:** deploy the `check-answer` edge function (needs the Supabase CLI and the
+  ANTHROPIC_API_KEY secret), and work the plan's Phase 7 test checklist — especially
+  "wrong password → 401, nothing billed", "21st call in an hour → static hints, no
+  error", and "checker offline → station still completes".
+- **Purge date for `checker_calls.answer`** (learner-authored text). Suggest end of
+  term; the DELETE is written in a comment at the top of phase16.sql.
 - **Homework-hub link is ON PAUSE (Megan's call, 2026-07-24).** The CQ → Maths
   Homework Quest funnel link is NOT built (confirmed: no reference anywhere in the
   app code). She'll do it later — don't build it until she says.
