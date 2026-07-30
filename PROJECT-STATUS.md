@@ -1,5 +1,43 @@
 # Project status — updated 2026-07-30
 
+## Where we are (THE STREAK FIX — SHIPPED AND LIVE, same day, later session)
+
+**THE DAY-STREAK IS SERVER-COMPUTED NOW.** A learner's written comment
+(2026-07-25: "the streak doesn't count it if it's completed on another device")
+was correct — the streak lived only in localStorage. Commit `c379ce9` on `main`,
+live on Pages and verified serving; **phase19.sql is APPLIED to live** (via MCP,
+migration `streak_server_computed_phase19`) and probed with a throwaway learner
+(created → probed → deleted, cascade clean, 21 real learners untouched).
+
+  · `cgg_get_streak` (phase19) is **READ-ONLY** — counts distinct SA-time days
+    of `round_id='daily'` xp_events rows via gaps-and-islands. streak = run
+    ending today (or yesterday while today is open), best = longest run ever.
+  · Client: `syncStreak()` in daily.js mirrors the server number into
+    localStorage (now only the offline fallback); the Daily screen syncs on
+    entry — a daily done on another device shows as DONE here with the right
+    number; milestones detect on the SERVER streak and skip the celebration if
+    already claimed elsewhere; home card syncs once per page load (game.js).
+  · All four touch points done: RPC · js/supabase.js · BOTH api.js stubs
+    (LocalBackend computes it; PreviewBackend returns ok:false ON PURPOSE so
+    the teacher preview keeps its optimistic display).
+  · **Retroactive by nature** — the history was in xp_events all along, so the
+    reporting learner's streak came back by itself. Known limit (accepted, in
+    the phase19 header): a fully OFFLINE day never reached the server and can't
+    count, exactly as it never earned daily XP or Perfect Week credit.
+  · Verified: offline mirror (streak 3→4 across a wiped "device B", best 5
+    kept, 0 console errors) and live SQL probe (same numbers through the real
+    cgg_submit_daily). verify-node 417/762/0; check-bilingual green; advisors
+    0 errors. Test data cleaned up on both sides.
+
+**The post-squash housekeeping is DONE** (same session): the working branch was
+rebased onto `origin/main` — every duplicate commit dropped as already-upstream
+(the tree was byte-identical, checked before skipping the status-file
+conflicts) — and force-pushed with `--force-with-lease`. The streak commit was
+then pushed to BOTH the branch and `main` (`git push origin HEAD:main`), so the
+two now sit on the SAME commit and no divergence exists to clean up next time.
+Also: preview entry `circle-quest-b` (port 5181) added to the global
+launch.json, because another session held 5180.
+
 ## Where we are (THE DASHBOARD SESSION — SHIPPED AND LIVE)
 
 **NOTHING IS PENDING.** [PR #5](https://github.com/megzieberr/circle-geo-quest/pull/5)
