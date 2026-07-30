@@ -1,5 +1,103 @@
 # Project status — updated 2026-07-30
 
+## Where we are (THE DASHBOARD SESSION — committed, pushed, NOT MERGED)
+
+⚠️ **ONE THING IS PENDING ON MEGAN AND IT IS THE ONLY THING:**
+[PR #5](https://github.com/megzieberr/circle-geo-quest/pull/5) is open and needs
+merging to `main`. GitHub Pages serves `main`, so **until that merge the live site
+has none of tonight's client work** — no dashboard panel, and replays still pay 0.
+
+**The database is ALREADY LIVE and the half-state is safe.** All three migrations
+are applied (phase17, the cap bump, phase18). The currently-published client still
+sends 0 XP for a replay, so the server awards 0 and no learner sees a change. The
+cap of 40 is live and working right now. So there is no rush and nothing is broken
+— but nothing Megan asked for is visible either until the merge.
+
+Three things landed, all verified:
+
+**1 · THE "I DON'T GET IT" PANEL EXISTS.** Every tap has logged to
+`checker_calls` (verdict `stuck`) since this morning with no screen to read it.
+`cgg_admin_stuck` (**phase17.sql**) + a panel in `js/admin.js`, under "Needs a
+hand":
+  · **by panel, most-stuck first** — learners · taps · how many rode it to rung 3
+    · **how many taps arrived with NOTHING typed**. Mostly-blank panels get a
+    red "wording?" flag, gated at 2+ learners so one confused learner can't fire
+    it. That is the s3p4 signature, and catching it is the whole point.
+  · **the marking verdicts for the same panel sit in the same row.** Lots of taps
+    + a healthy spread = a HARD question. Lots of taps + nothing typed = a BADLY
+    WORDED one. Different problems, different fixes.
+  · **click a panel to read the typed text.** Blank taps render as a dashed empty
+    card. Then "Who to sit next to" rolls the same taps up per learner.
+  · ⚠️ **READ-ONLY BY DESIGN.** `checker_calls` is both the log and the meter, so
+    the function has no INSERT/UPDATE/DELETE anywhere and `cgg_checker_claim`'s
+    cap query is untouched. Verified: 0 rows written by it. **Keep it that way.**
+  · All four touch points done, including the third one a fresh session forgets:
+    the RPC · `js/supabase.js` · **BOTH** stubs in `js/api.js` (LocalBackend and
+    PreviewBackend) · the panel.
+  · **The table is genuinely empty today** — her play-test rows went when that
+    throwaway learner was deleted. The panel will honestly say "nobody has tapped
+    it yet" until the class plays.
+
+**2 · MARKING CAP 20 → 40** (her call). One number in `cgg_checker_claim`. The
+edge function passes **no `p_cap`**, so that default IS the live cap — no
+redeploy was needed. Mirrored into phase16.sql.
+
+**3 · REPLAYS PAY AGAIN — two paid replays per round at HALF rate** (her call,
+half chosen over full so revisiting an easy round can never out-earn pushing into
+a new one on the weekly board). **phase18.sql.**
+  · ⚠️ **THE COUNTER IS A COLUMN, NOT A COUNT OF `xp_events`, AND THE LIVE DATA
+    IS WHY.** The obvious version — "count paid xp_events, pay half for the 2nd
+    and 3rd" — is WRONG here. Under the old rules a FAILED attempt on a
+    not-yet-passed round still earned XP, so **60 learner-round pairs across 18
+    of the 21 learners already sat at 3+ paid events** — precisely the rounds
+    each learner found HARDEST. That version would have paid nothing for
+    revisiting exactly the rounds most worth revisiting, and full value for the
+    ones they aced. Caught by checking the real table before shipping, not after.
+    So `progress.paid_replays` counts REPLAYS (a paid play on an already-passed
+    round); it starts at 0, which is historically true, so everyone begins with a
+    clean two goes per round whatever their history. Attempts before a first pass
+    are untouched and still pay in full.
+  · **The ceiling MOVED from the client to the server.** It used to live in
+    `js/game.js`'s `if (!alreadyPassed)` gate — fine while replays pay nothing,
+    useless once they pay something. This closes the gap the 2026-07-30 entry
+    below flagged as "the protection is real but lives one layer up". Consistent
+    with the 2026-07-18 ruling: this does not make faking XP harder, it stops an
+    HONEST learner farming one easy round all evening.
+  · **The results screen now shows the SERVER's `xpAwarded`**, not the client's
+    own estimate, so the number a learner sees is always the number banked.
+    Per-question popups show the halved figure on a replay (one combined figure,
+    because three separately-halved numbers do not visibly add up).
+  · **The Investigation Station submits replays too**, which also closes most of
+    the Chunk D back-pay gap: a learner who finished a station before it gains a
+    panel now gets paid for the longer station when they replay it.
+  · A one-time announcement popup explains it in both languages
+    (`maybeShowReplayAnnounce`, its own storage key so it and the Boost popup
+    never stack and neither burns the other's key).
+  · Verified on live Postgres against a throwaway learner, deleted afterwards:
+    failures before the pass pay full and burn nothing · first pass full ·
+    replays 50, 50, 0 · **a replay earning nothing does not burn a go**. The
+    offline backend matches exactly. Back to 21 learners, 0 checker_calls,
+    0 paid_replays used.
+
+**Checks:** verify-node **417 diagrams / 762 angles / 0 mismatches**;
+audit-options, check-bilingual and check-table-summary all green. Dashboard panel
+walked in all three states (data / empty / migration-missing), no console errors,
+no horizontal overflow.
+
+**Chunk D was DEFERRED, her call** — she is at 75% of her weekly token limit and
+there is no cheap version (one theorem = new panels in two stations, both
+languages, diagrams to verify, possibly new memo rows). It costs less next week
+now that replays pay, because the back-pay gap mostly closes by itself.
+
+⚠️ **The stale-module trap bit again and the fix is NOT what §4 of the chunk-d
+doc says.** The server was serving the new code with correct `no-store` headers
+the whole time — it was the TAB's ES-module registry holding the old modules, and
+`navigate` with `force: true` did not clear it (it also silently dropped the query
+string). What worked: **open a brand-new tab**. A `fetch(url, {cache:'reload'})`
+check comparing the served bytes against the file on disk is the fastest way to
+tell the two apart — if the served bytes are new and the page still behaves old,
+it is the registry, not the cache.
+
 ## Where we are (CHUNK D, session 1 — SHIPPED)
 **THE INVESTIGATION STATION IS LIVE.** `CONFIG.stationsLive` is **true** as of
 2026-07-30 — her call after play-testing the whole line herself ("make it visible
