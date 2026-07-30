@@ -189,3 +189,41 @@ on conflict (panel_id) do update
   set memo       = excluded.memo,
       must_have  = excluded.must_have,
       updated_at = now();
+
+
+-- ------------------------------------------------------------
+--  5. Memo seeds — Station 2 "State the Conjecture" (IEB SBA task type #15)
+-- ------------------------------------------------------------
+--  Shared figure: chord AB in a circle. P and Q both on the arc ABOVE AB, so
+--  angle APB = angle AQB. The last panel drags Q onto the arc BELOW AB, where
+--  the two angles become supplementary instead.
+--
+--  NOTE ON MUST_HAVE WORDING (learned the hard way, 2026-07-30): the checker
+--  marks against must_have and reads memo only as background. So must_have has
+--  to be a MARK SCHEME — the smallest set of ideas that earns the tick — not a
+--  summary of the memo. Anything listed here that the panel did not actually
+--  ask for will get real learners marked down.
+
+insert into public.panel_memos (panel_id, memo, must_have) values
+(
+  's2p4',
+  'Angles subtended by the same chord (or the same arc), at the circumference of the circle and in the same segment, are equal.' || chr(10) ||
+  'The three conditions all earn their place. "At the circumference" keeps out the angle at the centre, which is double rather than equal. "In the same segment" (equivalently: on the same side of the chord) is essential, because an angle on the far arc is supplementary to these, not equal. And the claim is about EVERY position, not the positions that happened to be measured.' || chr(10) ||
+  'The IEB Appendix G short reason is "angle s in the same seg" (Afrikaans: "hoeke in dieselfde segment").',
+  'says the angles are EQUAL' || chr(10) ||
+  'says they stand on / are subtended by the SAME chord or the same arc' || chr(10) ||
+  'says WHERE the angles are. ACCEPT any one of these, and treat them as fully equivalent: "at the circumference" / "on the circle" / "on the circumference" / "in the same segment" / "on the same arc" / "by die omtrek" / "op die sirkel" / "in dieselfde segment" / "op dieselfde boog". Any one of them alone satisfies this line — do not ask for a second one. Count it as MISSING only when the answer''s sole location wording is "on the same side of the chord" (or "aan dieselfde kant"), because the angle at the centre is on that side too and is double.' || chr(10) ||
+  'IGNORE how general the sentence sounds and ignore whether it uses letters; if the three ideas above are present in any wording, in either language, it is got_it'
+),
+(
+  's2p5',
+  'Once Q is dragged onto the other arc, the two angles are SUPPLEMENTARY: angle APB + angle AQB = 180 degrees, no matter where A, B, P and Q are dragged.' || chr(10) ||
+  'The reason is that A, P, B, Q now lie on the circle in that order, so APBQ is a cyclic quadrilateral and angle P and angle Q are its opposite angles. Opposite angles of a cyclic quadrilateral are supplementary.' || chr(10) ||
+  'The teaching point of the panel is that this is the SAME theorem as angles in the same segment, seen from the other side of the chord — not a separate fact.',
+  'says the two angles ADD UP TO 180 degrees, or says they are supplementary (either wording alone is enough)' || chr(10) ||
+  'the learner does NOT have to mention cyclic quadrilaterals, opposite angles, or any theorem name — noticing the sum is the whole ask'
+)
+on conflict (panel_id) do update
+  set memo       = excluded.memo,
+      must_have  = excluded.must_have,
+      updated_at = now();

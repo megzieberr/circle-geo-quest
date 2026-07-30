@@ -48,10 +48,22 @@ function check(label, d, accent) {
   gallery.appendChild(wrap);
 }
 
-// app rounds (cutscene / discovery rounds carry `panels`, not `questions`)
+// graded rounds carry `questions`
 ROUNDS.forEach(r => {
   if (!Array.isArray(r.questions)) return;
   r.questions.forEach(q => check(`${r.id} ${q.id}`, q.diagram, q.accent));
+});
+// cutscene / discovery / investigate rounds carry `panels` instead, and were
+// never checked here at all until 2026-07-30 — so every still diagram in the
+// Investigation Station and in eleven discovery rounds was going out on trust.
+// Draggable panels (`interactive`) are exempt: those compute their angles from
+// live coordinates every frame, so there is no declared value that could be wrong.
+ROUNDS.forEach(r => {
+  if (!Array.isArray(r.panels)) return;
+  r.panels.forEach((p, i) => {
+    check(`${r.id} panel${i + 1}`, p.diagram, r.accent);
+    (p.diagrams || []).forEach((d, j) => check(`${r.id} panel${i + 1}.${j + 1}`, d.diagram, d.accent || r.accent));
+  });
 });
 // raw source data (sanity check that the engine port matches the original)
 SECTIONS.forEach((sec, si) => {

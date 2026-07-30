@@ -12,7 +12,11 @@ const SUB1 = { pts: { A: 200, B: 340, P: 80 }, chords: [["A", "B"], ["A", "P"], 
 const SUB2 = { pts: { A: 205, B: 335, D: 120 }, chords: [["A", "B"], ["A", "D"], ["B", "D"]],
   angles: [{ at: "D", legs: ["A", "B"], t: "•", o: {} }] };
 
-const MODEL = () => ({
+/* Exported so Investigation Station 2 can reuse the exact figure the class
+   already met here, rather than building a second same-segment model that
+   drifts from this one. It is a FACTORY — every caller gets its own object,
+   so nothing this round does can leak into another. */
+export const MODEL = () => ({
   w: 344, h: 296, cx: 172, cy: 150, R: 104,
   fixed: {},
   handles: [

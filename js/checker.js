@@ -19,7 +19,11 @@
 import { SUPABASE } from "./supabase-config.js";
 import { getSession } from "./session.js";
 
-const TIMEOUT_MS = 8000;
+// The plan said 8s. Live testing on 2026-07-30 measured 1.8-4s for a warm
+// function but 6.7s on a cold start and one 8.9s outlier, so 8s would have
+// silently dropped real answers onto the static hints. 12s still feels like
+// "it's thinking" rather than "it's broken".
+const TIMEOUT_MS = 12000;
 
 function functionUrl(name) {
   if (!SUPABASE?.url) return null;

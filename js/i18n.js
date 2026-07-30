@@ -454,6 +454,20 @@ export const WORDS = {
   centre:         { en: "centre",         af: "middelpunt" },
   constant:       { en: "constant",       af: "konstant" },
   changes:        { en: "changes",        af: "verander" },
+  /* Investigation Station 2 — building a PRECISE conjecture. These carry the
+     article ("the centre", "die middelpunt") because they drop into a slot
+     mid-sentence, where the bare adjectives above would read as broken
+     Afrikaans. Kept separate from the chips above so nothing already shipped
+     changes wording. */
+  atCircumference:{ en: "the circumference", af: "die omtrek" },
+  atCentre:       { en: "the centre",        af: "die middelpunt" },
+  atArc:          { en: "the arc",           af: "die boog" },
+  sideSame:       { en: "the same",          af: "dieselfde" },
+  sideOpposite:   { en: "the opposite",      af: "die teenoorgestelde" },
+  sideAlternate:  { en: "the alternate",     af: "die oorstaande" },
+  /* predicate forms — "is altyd gelyk", not the attributive "gelyke" */
+  equalPred:      { en: "equal",             af: "gelyk" },
+  unequalPred:    { en: "unequal",           af: "ongelyk" },
 };
 export function word(id) {
   const o = WORDS[id];
