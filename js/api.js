@@ -195,16 +195,29 @@ const LocalBackend = {
     const { score, xpGained, total, correct } = payload; // score is 0..1 (first-try fraction)
     const allProgress = read(LS.progress, {});
     const p = allProgress[s.id] || {};
-    const prev = p[roundId] || { best_score: 0, attempts: 0, total_xp: 0, passed: false };
+    const prev = p[roundId] || { best_score: 0, attempts: 0, total_xp: 0, passed: false, paid_replays: 0 };
     const wasPassed = prev.passed;
     const passed = score >= CONFIG.passThreshold;
-    // anti-farming: a round already passed earns no more XP; clamp otherwise.
-    const xpAward = wasPassed ? 0 : Math.max(0, Math.min(Math.round(xpGained) || 0, 500));
+    /* Replays pay again (2026-07-30) — mirrors cgg_submit_round (phase18.sql):
+       two paid REPLAYS per round at half rate, then nothing. It counts replays,
+       not plays: everything up to and including the first pass pays in full,
+       because struggling toward a pass was never the thing being limited. */
+    const usedReplays = prev.paid_replays || 0;
+    let xpAward = Math.max(0, Math.min(Math.round(xpGained) || 0, 500));
+    let bump = 0;
+    if (wasPassed) {
+      if (usedReplays >= CONFIG.replayMaxPaid) xpAward = 0;
+      else {
+        xpAward = Math.floor(xpAward * CONFIG.replayXpFactor);
+        if (xpAward > 0) bump = 1;   // a replay earning nothing must not burn a go
+      }
+    }
     p[roundId] = {
       best_score: Math.max(prev.best_score, score),
       attempts: prev.attempts + 1,
       total_xp: prev.total_xp + xpAward,
       passed: prev.passed || passed,
+      paid_replays: (prev.paid_replays || 0) + bump,
       last_played_at: Date.now(),
       last_correct: correct,
       last_total: total,
@@ -219,7 +232,8 @@ const LocalBackend = {
     }
     this._touch(s.id);
 
-    return { ok: true, progress: p[roundId], passed, badgeEarned: passed && !wasPassed, xpAwarded: xpAward, alreadyPassed: wasPassed };
+    return { ok: true, progress: p[roundId], passed, badgeEarned: passed && !wasPassed, xpAwarded: xpAward,
+             replaysLeft: Math.max(0, CONFIG.replayMaxPaid - (usedReplays + bump)), alreadyPassed: wasPassed };
   },
 
   /* Daily Challenge XP — server grants a flat CONFIG.dailyXp, but only ONCE per
@@ -484,6 +498,17 @@ const LocalBackend = {
     return { ok: true, rows, serverNow: new Date().toISOString() };
   },
 
+  /* "I don't get it" taps for the teacher's stuck panel. Mirrors
+     cgg_admin_stuck (phase17.sql) — but offline play never reaches the
+     checker at all (js/checker.js returns null with no backend configured),
+     so nothing is ever logged and the honest answer here is "none". The
+     dashboard renders that as an empty-state line, not as an error. */
+  async adminStuck(adminPassword) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    return { ok: true, days: 30, total: 0, panels: [], marks: [], rows: [], serverNow: new Date().toISOString() };
+  },
+
   async leaderboard(name, password) {
     const s = this._verify(name, password);
     if (!s) return { ok: false, error: "auth" };
@@ -696,6 +721,7 @@ const PreviewBackend = {
   async logItems() { return { ok: true, logged: 0 }; },
   async adminIntegrity() { return { ok: true, students: [] }; },
   async adminTimeline() { return { ok: true, rows: [] }; },
+  async adminStuck() { return { ok: true, days: 30, total: 0, panels: [], marks: [], rows: [] }; },
   async submitFeedback() { return { ok: true }; },
   async getMyFeedback() { return { ok: true, rating: null, comment: "" }; },
   async savePush() { return { ok: true }; },

@@ -150,20 +150,24 @@ export function renderInvestigate(app, host, params) {
      learner sees "+10 XP" flash and then a running total that follows them
      down the station. Nothing is banked until finish() runs.
 
-     It is hidden entirely on a REPLAY, because a replay pays 0 (`alreadyDone`
-     below, and the server agrees). A "+10 XP" that banks nothing is exactly
-     the promise-a-number-you-cannot-keep bug the panel copy rules forbid.
+     On a REPLAY it shows the HALVED rate (2026-07-30: plays 2 and 3 pay half,
+     the 4th onwards nothing). It cannot know which of those a given replay is
+     — only the server holds the paid-play count — so the header is a preview
+     and the results screen shows the server's real figure. Never widen this
+     into a promise: a "+10 XP" that banks nothing is exactly the
+     promise-a-number-you-cannot-keep bug the panel copy rules forbid.
 
      The settle is a setTimeout, not an animation-end event: the preview pane
      never fires rAF, and the total must appear even where nothing animates. */
-  const RATE = CONFIG.investigationXpPerPanel;
+  const RATE = alreadyDone
+    ? Math.round(CONFIG.investigationXpPerPanel * CONFIG.replayXpFactor)
+    : CONFIG.investigationXpPerPanel;
   const countN = top.querySelector(".pc-n");
   const countXp = top.querySelector(".pc-xp");
   let earned = 0;
   let bumpT = null;
-  if (!alreadyDone) countXp.textContent = `★ 0 XP`;
+  countXp.textContent = `★ 0 XP`;
   function tickXp() {
-    if (alreadyDone) return;
     earned += RATE;
     countXp.textContent = `+${RATE} XP`;
     countXp.classList.add("bump");
@@ -196,26 +200,32 @@ export function renderInvestigate(app, host, params) {
     // The one bank, computed from the panels that actually exist — so a station
     // that gains a panel in Chunk D pays for it without anyone editing a number.
     const xpEarned = panels.length * CONFIG.investigationXpPerPanel;
-    let res = { ok: false };
-    if (!alreadyDone) {
-      const s = getSession();
-      res = await submitRoundReliable(s.name, s.password, round.id, {
-        // COMPLETING IS PASSING. XP is paid for finishing, so gating the badge
-        // on CONFIG.passThreshold would be a contradiction — full XP and no
-        // badge. Matches discover.js exactly.
-        score: 1,
-        xpGained: xpEarned,
-        total: gatedTotal || panels.length,
-        correct: firstTryCorrect,
-      });
-    }
+    /* 2026-07-30: a replay is submitted too, because replays pay again (plays 2
+       and 3 at half). The FULL amount is always sent — the server halves it and
+       stops paying after the third play, so the client never has to know which
+       play this is. Side effect worth knowing: this also closes most of the
+       Chunk D back-pay gap, because a learner who finished a station before it
+       gained a panel now gets paid for the longer station when they replay. */
+    const s = getSession();
+    const res = await submitRoundReliable(s.name, s.password, round.id, {
+      // COMPLETING IS PASSING. XP is paid for finishing, so gating the badge
+      // on CONFIG.passThreshold would be a contradiction — full XP and no
+      // badge. Matches discover.js exactly.
+      score: 1,
+      xpGained: xpEarned,
+      total: gatedTotal || panels.length,
+      correct: firstTryCorrect,
+    });
     await app.refreshState();
+    const awarded = (res && res.ok && typeof res.xpAwarded === "number")
+      ? res.xpAwarded
+      : (alreadyDone ? Math.round(xpEarned * CONFIG.replayXpFactor) : xpEarned);
     app.go("results", {
       roundId: round.id,
       discovery: true,
       correct: firstTryCorrect,
       total: gatedTotal || panels.length,
-      xp: alreadyDone ? 0 : xpEarned,
+      xp: awarded,
       frac: 1,
       badgeEarned: !!(res && res.badgeEarned),
       alreadyPassed: alreadyDone,

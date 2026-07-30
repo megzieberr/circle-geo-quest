@@ -106,7 +106,7 @@ revoke all on public.checker_calls from anon, authenticated;
 create or replace function public.cgg_checker_claim(
   p_student_id uuid,
   p_panel_id   text,
-  p_cap        int      default 20,
+  p_cap        int      default 40,
   p_window     interval default interval '1 hour')
 returns jsonb
 language plpgsql security definer set search_path = public, extensions as $$
@@ -120,7 +120,11 @@ begin
   end if;
 
   -- clamp so a bad caller can't raise its own ceiling
-  cap := least(greatest(coalesce(p_cap, 20), 1), 100);
+  -- 2026-07-30: 20 -> 40 (her call). A learner taking several goes at the nine
+  -- typed panels could reach 20 inside a two-hour lesson, and hitting the cap is
+  -- SILENT — the panel drops to static hints and says "Not quite" to a correct
+  -- answer. The edge function passes no p_cap, so this default IS the live cap.
+  cap := least(greatest(coalesce(p_cap, 40), 1), 100);
 
   -- serialise this learner's claims for the rest of the transaction;
   -- released automatically at commit/rollback, so no leak on an error

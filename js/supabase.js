@@ -83,6 +83,13 @@ export const SupabaseBackend = {
   adminTimeline(pw, id, limit) {
     return rpc("cgg_admin_timeline", { p_admin_password: pw, p_student_id: id || null, p_limit: limit || 400 });
   },
+  // "I don't get it" taps (phase17.sql). Read-only over checker_calls: the
+  // stuck rows rolled up per panel and per learner, with what each learner had
+  // typed at the moment they tapped, plus the MARKING verdicts for the same
+  // panels — which is what separates a hard question from a badly worded one.
+  adminStuck(pw, days, limit) {
+    return rpc("cgg_admin_stuck", { p_admin_password: pw, p_days: days || 30, p_limit: limit || 500 });
+  },
   adminResetWeekly(pw) { return rpc("cgg_admin_reset_weekly", { p_admin_password: pw }); },
   adminAddStudent(pw, name) { return rpc("cgg_admin_add_student", { p_admin_password: pw, p_name: name }); },
   adminRemoveStudent(pw, id) { return rpc("cgg_admin_remove_student", { p_admin_password: pw, p_id: id }); },
