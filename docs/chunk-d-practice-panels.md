@@ -14,6 +14,22 @@ never used. The train stays six stops. No new stations, no badge or ladder chang
 
 ---
 
+## 0. The line is HIDDEN from learners until Chunk D is done
+
+`CONFIG.stationsLive` in `js/config.js` is **false** (her call, 2026-07-30: *"can we
+hide it from the learners for a little while more, until we added the other
+panels?"*). While it is false there is no way in — no train strip on the home
+screen, and the `stations` / `investigate` routes bounce back home, so a guessed or
+shared URL cannot reach it either. **Use `?stations=1` to walk it while hidden.**
+
+Two consequences:
+  · **The rest of the app can be pushed whenever she wants.** Chunk C also improved
+    two live discovery rounds and the shared engine; those fixes no longer have to
+    wait for the station. `/ship` is safe with the flag off.
+  · **Flipping the flag to true IS the release.** Do it in the same session as the
+    last checklist tick below, not before — and remember §1: the XP change has to
+    land before learners can bank any station XP.
+
 ## 1. THE XP CHANGE — do this FIRST, and do it BEFORE the push
 
 Her call: a learner should earn XP **per panel**, not a flat 50 for the station.
@@ -195,6 +211,8 @@ be the last word.
 - [ ] **Tan-chord** → Station 4 (the wrong alternate segment), Station 6 (explain
       which segment is which — the one typed panel, if any).
 - [ ] Re-run all four checkers + walk both languages.
+- [ ] **Flip `CONFIG.stationsLive` to true** — that is the release. Confirm the
+      train strip is back for a normal learner (no `?stations=1`).
 - [ ] `/ship`.
 
 ---

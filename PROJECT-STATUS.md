@@ -770,7 +770,14 @@ In order:
   1. **XP per panel — before anything else, and before the push.** See the Decisions
      entry below for why the sequencing matters.
   2. **One theorem per session**, starting with two-tangents-from-a-point.
-  3. **She reads it**, then **`/ship`**.
+  3. **She reads it**, flip `CONFIG.stationsLive` to true, then **`/ship`**.
+
+**THE LINE IS HIDDEN FROM LEARNERS (`CONFIG.stationsLive: false`, her call
+2026-07-30).** No train strip, and the `stations` / `investigate` routes bounce home,
+so a guessed URL cannot reach it. `?stations=1` walks it anyway. Two things follow:
+**the rest of the app is now safe to push at any time** (Chunk C also fixed two live
+discovery rounds, which no longer have to wait for the station), and **flipping the
+flag is the release** — do that with the last Chunk D tick, not before.
 
 (Done 2026-07-30: the `ZZ Toets` row is deleted — cascade took its progress,
 xp_events, events and checker_calls; the 21 real learners were untouched.)
