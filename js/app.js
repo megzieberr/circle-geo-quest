@@ -6,6 +6,7 @@ import { el, clear, renderChrome } from "./ui.js";
 import { renderLogin } from "./auth.js";
 import { renderHome, renderPlay, renderResults } from "./game.js";
 import { renderDiscover } from "./discover.js";
+import { renderInvestigate } from "./investigate.js";
 import { renderCutscene } from "./cutscene.js";
 import { renderLeaderboard } from "./leaderboard.js";
 import { renderAdventures, renderAdventure } from "./adventure.js";
@@ -115,6 +116,7 @@ const app = {
       case "home": renderHome(this, view); renderCustomizeLink(this, view); break;
       case "play": renderPlay(this, view, this.params); break;
       case "discover": renderDiscover(this, view, this.params); break;
+      case "investigate": renderInvestigate(this, view, this.params); break;
       case "cutscene": renderCutscene(this, view, this.params); break;
       case "results": renderResults(this, view, this.params); break;
       case "adventures": renderAdventures(this, view); break;

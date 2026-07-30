@@ -398,6 +398,36 @@ svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display
 .dp-feedback.bad{background:#fdeef4; border-color:#e64980; color:#9c1f52;}
 .dp-feedback.revealed{background:#fff8e6; border-color:#e0a500; color:#8a5a00;}
 .dp-slot.revealed{background:#fff8e6; border-color:#e0a500; color:#8a5a00;}
+
+/* ---- Investigation Station: the typed panel ----
+   The one place in the app a learner types a sentence instead of tapping. */
+.dp-feedback.checking{background:#eef2fb; border-color:#4263eb; color:#26408f;}
+.dp-written{width:100%; box-sizing:border-box; margin:6px 0 10px; padding:11px 13px;
+  border:2px solid var(--ink); border-radius:13px; background:#fff; font:inherit;
+  font-size:1rem; line-height:1.5; resize:vertical; min-height:96px;
+  box-shadow:var(--shadow-sm);}
+.dp-written:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);}
+.dp-written:disabled{background:#f4f3ee; color:var(--ink-soft);}
+/* the prompt keeps its line breaks — panel 5 shows a proof line with a blank */
+.investigate .q-prompt{white-space:pre-wrap;}
+
+.dp-starter-label{margin:2px 0 6px; font-size:.8rem; font-weight:700; color:var(--ink-soft);}
+.dp-starters{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px;}
+.dp-starter{padding:7px 12px; border:2px solid var(--ink); border-radius:999px;
+  background:#fbfaf5; font:inherit; font-size:.86rem; font-weight:600; cursor:pointer;
+  box-shadow:var(--shadow-sm);}
+.dp-starter:hover{background:#fff3d6;}
+
+/* deliberately quiet — an honest escape hatch, not a tempting shortcut */
+.dp-override{display:block; margin:10px 0 2px; font-size:.82rem; color:var(--ink-soft);
+  text-decoration:underline; background:none; border:none; cursor:pointer; padding:0;}
+.dp-override:hover{color:var(--ink);}
+
+.dp-memo{margin:12px 0 4px; padding:12px 15px; border:2px solid #e0a500;
+  border-radius:13px; background:#fff8e6; box-shadow:var(--shadow-sm);}
+.dp-memo-tag{font-size:.68rem; text-transform:uppercase; letter-spacing:.08em;
+  color:#8a5a00; font-weight:800; margin-bottom:5px;}
+.dp-memo-body{font-size:.95rem; line-height:1.55;}
 .dp-note{margin:12px 0 4px; padding:12px 15px; border:2px solid var(--ink); border-radius:13px; background:#fbfaf5; box-shadow:var(--shadow-sm);}
 .dp-reason{margin-bottom:6px;}
 .dp-reason-tag{font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:800; margin-right:4px;}

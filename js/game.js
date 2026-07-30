@@ -22,8 +22,11 @@ import { initPiMascot, piCameo } from "./pi.js";
 function screenFor(round) {
   if (round.kind === "cutscene") return "cutscene";
   if (round.kind === "discover") return "discover";
+  if (round.kind === "investigate") return "investigate";
   return "play";
 }
+// Investigation stations are deliberately NOT "learning" rounds: they pay XP and
+// earn a badge, so they render as scored cards like any graded round.
 const isLearningRound = r => r.kind === "cutscene" || r.kind === "discover";
 
 /* which rounds are unlocked: round 1 always, others when the previous passed */
@@ -151,7 +154,8 @@ export function renderHome(app, host) {
     card.style.setProperty("--accent", r.accent);
     const best = p ? Math.round(p.best_score * 100) : 0;
     const kindTag = r.kind === "cutscene" ? `<span class="rc-kind">▶ ${t("watch")}</span>`
-                  : r.kind === "discover" ? `<span class="rc-kind">🔭 ${t("discover")}</span>` : "";
+                  : r.kind === "discover" ? `<span class="rc-kind">🔭 ${t("discover")}</span>`
+                  : r.kind === "investigate" ? `<span class="rc-kind">🚂 ${tx({ en: "Investigate", af: "Ondersoek" })}</span>` : "";
     card.innerHTML = `
       <div class="rc-top">
         <span class="rc-num">${r.n}</span>

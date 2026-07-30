@@ -22,6 +22,11 @@ export const CONFIG = {
   ],
   // round pass rule
   passThreshold: 0.8,      // 80% correct (first-try) to pass a round and earn its badge
+  // Investigation Station: FLAT XP for finishing a station — not per panel, and
+  // not scaled by attempts. Six stations x 50 = 300 XP for the whole line, which
+  // converts predictably into Blipwork diamonds and is easy to explain to a
+  // class. Nothing else depends on this number; change it here and that's all.
+  investigationXp: 50,
   // struggling-learner support ("Boost mode")
   rescueAfterFails: 2,     // after this many failed attempts, replays get open hints + second chances
   comebackBonus: 40,       // extra XP for finally passing a round on the 3rd+ attempt
@@ -57,6 +62,9 @@ export const GROUPS = [
   { id: "g5", icon: "🏆", name: "Circle Grand Master",
     blurb: { en: "Tough mixed exam-style riders.",
              af: "Moeilike gemengde eksamen-styl vraagstukke." } },
+  { id: "g6", icon: "🚂", name: "Line Inspector",
+    blurb: { en: "Investigation Station — conjecture, counterexample, proof and explanation.",
+             af: "Ondersoekstasie — vermoede, teenvoorbeeld, bewys en verduideliking." } },
 ];
 export const BASE_RANK = "Newcomer";
 
