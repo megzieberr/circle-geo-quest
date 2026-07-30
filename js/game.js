@@ -13,7 +13,7 @@ import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
-import { maybeShowBoostAnnounce } from "./announce.js";
+import { maybeShowBoostAnnounce, maybeShowReplayAnnounce } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
 import { submitRoundReliable } from "./sync.js";
 import { initPiMascot, piCameo } from "./pi.js";
@@ -204,8 +204,11 @@ export function renderHome(app, host) {
   // Never let a popup glitch blank the home screen.
   try { maybeShowWeekly(app); } catch { /* non-critical */ }
 
-  // One-time Boost-mode announcement. Runs last so it politely waits for the
-  // next login whenever the install or weekly popup got there first.
+  /* One-time announcements. Each runs last so it politely waits for the next
+     login whenever the install or weekly popup got there first, and each bails
+     out if a popup is already on screen — so these two can never stack. The
+     replay news goes first because it is the current one. */
+  try { maybeShowReplayAnnounce(app); } catch { /* non-critical */ }
   try { maybeShowBoostAnnounce(app); } catch { /* non-critical */ }
 }
 
@@ -373,7 +376,10 @@ export function renderPlay(app, host, params) {
   const round = ROUND_BY_ID[params.roundId];
   if (!round) return app.go("home");
 
-  // anti-farming: once a round is passed, replays award no XP (badge already won).
+  /* Replays PAY now (2026-07-30). A passed round used to award 0 forever; plays
+     2 and 3 pay half, the 4th onwards nothing. The anti-farming ceiling moved
+     to the server (cgg_submit_round, phase18.sql) because that count is the one
+     an honest learner could otherwise grind — the client only previews it. */
   const prev = (app.state && app.state.progress) ? app.state.progress[round.id] : null;
   const alreadyPassed = !!(prev && prev.passed);
 
@@ -412,7 +418,7 @@ export function renderPlay(app, host, params) {
   next.hidden = true;
   footer.appendChild(xpline); footer.appendChild(next);
   mount(screen, top, bar, qhost, footer);
-  if (alreadyPassed) screen.insertBefore(el("div", "card replay-note", "🔁 " + t("replayNoXp")), qhost);
+  if (alreadyPassed) screen.insertBefore(el("div", "card replay-note", "🔁 " + t("replayHalfXp")), qhost);
   if (boost) screen.insertBefore(el("div", "card boost-banner", `<span class="boost-icon">🛟</span><div><b>${t("boostTitle")}</b><p>${t("boostBlurb")}</p></div>`), qhost);
   const guide = guideCard(round, boost);
   if (guide) screen.insertBefore(guide, qhost);
@@ -441,24 +447,25 @@ export function renderPlay(app, host, params) {
         sfx.correct();
         state.correct++;
         state.streak++;
-        if (!alreadyPassed) {
-          gained += CONFIG.xpPerCorrect; lines.push(`+${CONFIG.xpPerCorrect} ${t("correct").replace("!", "")}`);
-          gained += CONFIG.firstTryBonus; lines.push(`+${CONFIG.firstTryBonus} ${t("firstTry")}`);
-          const sb = CONFIG.streakStep * Math.min(state.streak - 1, CONFIG.streakCap);
-          if (sb > 0) { gained += sb; lines.push(`+${sb} ${t("streak")} ×${state.streak}`); }
+        gained += CONFIG.xpPerCorrect;
+        gained += CONFIG.firstTryBonus;
+        const sb = CONFIG.streakStep * Math.min(state.streak - 1, CONFIG.streakCap);
+        gained += sb;
+        if (alreadyPassed) {
+          // On a replay the breakdown would be three halved numbers that don't
+          // visibly add up, so show the one figure the play is actually worth.
+          lines.push(`+${Math.round(gained * CONFIG.replayXpFactor)} ${t("correct").replace("!", "")}`);
         } else {
-          lines.push("✓ " + t("correct"));
+          lines.push(`+${CONFIG.xpPerCorrect} ${t("correct").replace("!", "")}`);
+          lines.push(`+${CONFIG.firstTryBonus} ${t("firstTry")}`);
+          if (sb > 0) lines.push(`+${sb} ${t("streak")} ×${state.streak}`);
         }
         xpline.classList.add("good");
       } else if (score > 0) {
         sfx.correct();
         state.streak = 0;
-        if (!alreadyPassed) {
-          gained += Math.round(CONFIG.xpPerCorrect * score);
-          lines.push(`+${gained} · ${Math.round(score * 100)}%`);
-        } else {
-          lines.push(`${Math.round(score * 100)}%`);
-        }
+        gained += Math.round(CONFIG.xpPerCorrect * score);
+        lines.push(`+${alreadyPassed ? Math.round(gained * CONFIG.replayXpFactor) : gained} · ${Math.round(score * 100)}%`);
         xpline.classList.add("good");
       } else {
         sfx.wrong();
@@ -494,8 +501,15 @@ export function renderPlay(app, host, params) {
       });
       try { await api.logItems(sess.name, sess.password, round.id, items); } catch { /* analytics is best-effort */ }
       await app.refreshState();
+      /* The SERVER decides what was banked — it holds the paid-play count, so a
+         4th play pays 0 however much the client proposed. Fall back to the
+         client's own figure only when the submit never reached the server (the
+         pass is queued in sync.js), where an estimate beats showing nothing. */
+      const awarded = (res && res.ok && typeof res.xpAwarded === "number")
+        ? res.xpAwarded
+        : (alreadyPassed ? Math.round(state.xp * CONFIG.replayXpFactor) : state.xp);
       app.go("results", {
-        roundId: round.id, correct: state.correct, total: state.total, xp: state.xp, frac,
+        roundId: round.id, correct: state.correct, total: state.total, xp: awarded, frac,
         badgeEarned: !!(res && res.badgeEarned), alreadyPassed,
         comeback, tries: failedTries + 1, prevBest: prev ? (prev.best_score || 0) : 0,
         saved: !!(res && res.ok),       // false → pass is only queued locally, not yet on the server
@@ -537,7 +551,7 @@ export function renderResults(app, host, params) {
         <h1>${isCut ? t("introDone") : t("discoverComplete")}</h1>
         <p class="muted">${tx(round.title)}</p>
         ${xpPill}
-        <div class="result-msg good">${params.alreadyPassed ? t("replayNoXpMsg") : t("discoverUnlocked")}</div>
+        <div class="result-msg good">${params.alreadyPassed ? (params.xp > 0 ? t("replayHalfMsg") : t("replayDoneMsg")) : t("discoverUnlocked")}</div>
         ${groupPop}
         <div class="result-actions"></div>
       </div>`;
@@ -558,7 +572,7 @@ export function renderResults(app, host, params) {
         <div class="result-pills"><span class="pill xp">★ +${params.xp} ${t("xpEarned")}</span>${comebackPill}</div>
         ${comebackMsg}
         <div class="result-msg ${passed ? "good" : "warn"}">${passed ? t("roundPassed") : t("notPassedYet")}</div>
-        ${params.alreadyPassed ? `<div class="result-msg note">🔁 ${t("replayNoXpMsg")}</div>` : ""}
+        ${params.alreadyPassed ? `<div class="result-msg note">🔁 ${params.xp > 0 ? t("replayHalfMsg") : t("replayDoneMsg")}</div>` : ""}
         ${groupPop}
         <div class="result-actions"></div>
       </div>`;

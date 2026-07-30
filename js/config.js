@@ -63,6 +63,16 @@ export const CONFIG = {
   // struggling-learner support ("Boost mode")
   rescueAfterFails: 2,     // after this many failed attempts, replays get open hints + second chances
   comebackBonus: 40,       // extra XP for finally passing a round on the 3rd+ attempt
+  /* Replays pay again (2026-07-30, her call) — a passed round used to pay 0
+     forever, so there was no reason to go back to one. Plays 2 and 3 pay HALF;
+     the 4th onwards pays nothing. Half, not full, so revisiting an easy round
+     can never out-earn pushing into a new one on the weekly board.
+     ⚠️ These two numbers are for DISPLAY. The real rule lives server-side in
+     cgg_submit_round (phase18.sql), because the client is editable and this is
+     the number an honest learner would otherwise be able to farm. The results
+     screen shows the server's `xpAwarded`, never this estimate. */
+  replayXpFactor: 0.5,
+  replayMaxPaid: 2,        // paid REPLAYS per round (so 3 paying plays in all)
   // admin / participation
   inactiveDays: 7,         // learners not active in this many days get flagged in admin
   // weekly leaderboard resets every Monday 00:00 (handled server-side)

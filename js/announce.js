@@ -6,33 +6,53 @@
 import { t } from "./i18n.js";
 import { el } from "./ui.js";
 
-const keyFor = app => `cgg.boostnews.${(app && app.state && app.state.student && app.state.student.id) || "anon"}`;
+const keyFor = (app, slug) => `cgg.${slug}.${(app && app.state && app.state.student && app.state.student.id) || "anon"}`;
 
+/* Boost mode — the original announcement. */
 export function maybeShowBoostAnnounce(app) {
+  showNews(app, "boostnews", {
+    emoji: "🛟",
+    title: t("newsTitle"),
+    intro: t("newsIntro"),
+    items: [["💡", t("news1")], ["🔁", t("news2")], ["🧭", t("news3")], ["🏅", t("news4")]],
+    outro: t("newsOutro"),
+  });
+}
+
+/* Replays pay again (2026-07-30). Its own storage key, so a learner who has
+   already dismissed the Boost popup still sees this one — and vice versa. */
+export function maybeShowReplayAnnounce(app) {
+  showNews(app, "replaynews", {
+    emoji: "🔁",
+    title: t("replayNewsTitle"),
+    intro: t("replayNewsIntro"),
+    items: [["★", t("replayNews1")], ["🔢", t("replayNews2")], ["💪", t("replayNews3")]],
+    outro: t("replayNewsOutro"),
+  });
+}
+
+function showNews(app, slug, copy) {
   const force = (() => { try { return new URLSearchParams(location.search).get("news") === "1"; } catch { return false; } })();
   if (!force) {
     if (document.querySelector(".wk-overlay, .install-overlay")) return;   // another popup is up — wait for next login
     const day = new Date().getDay();
     if (day === 1 || day === 2) return;   // Mon/Tue: the crown popup loads async and could race us — wait
-    try { if (localStorage.getItem(keyFor(app)) === "1") return; } catch { /* ignore */ }
+    try { if (localStorage.getItem(keyFor(app, slug)) === "1") return; } catch { /* ignore */ }
   }
-  try { localStorage.setItem(keyFor(app), "1"); } catch { /* ignore */ }
+  try { localStorage.setItem(keyFor(app, slug), "1"); } catch { /* ignore */ }
 
   const ov = el("div", "install-overlay news-overlay");
   const m = el("div", "install-modal news-modal");
   m.innerHTML = `
     <button class="wk-close" aria-label="Close">✕</button>
-    <div class="install-modal-emoji">🛟</div>
+    <div class="install-modal-emoji">${copy.emoji}</div>
     <span class="eyebrow">${t("newsEyebrow")}</span>
-    <h1>${t("newsTitle")}</h1>
-    <p class="muted small news-intro">${t("newsIntro")}</p>
+    <h1>${copy.title}</h1>
+    <p class="muted small news-intro">${copy.intro}</p>
     <div class="news-list">
-      <div class="news-item"><span class="news-ico">💡</span><span>${t("news1")}</span></div>
-      <div class="news-item"><span class="news-ico">🔁</span><span>${t("news2")}</span></div>
-      <div class="news-item"><span class="news-ico">🧭</span><span>${t("news3")}</span></div>
-      <div class="news-item"><span class="news-ico">🏅</span><span>${t("news4")}</span></div>
+      ${copy.items.map(([ico, text]) => `<div class="news-item"><span class="news-ico">${ico}</span><span>${text}</span></div>`).join("")}
     </div>
-    <p class="news-outro">${t("newsOutro")}</p>`;
+    <p class="news-outro">${copy.outro}</p>`;
 
   const actions = el("div", "wk-actions");
   const close = () => { ov.classList.remove("show"); document.body.style.overflow = ""; document.removeEventListener("keydown", onKey); setTimeout(() => ov.remove(), 200); };

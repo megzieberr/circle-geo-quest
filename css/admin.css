@@ -132,3 +132,29 @@
 .trun .tlabel{font-weight:700; flex:1; min-width:180px;}
 .trun.minor .tlabel{font-weight:600; color:#778; font-size:.88rem;}
 .trun .ttime{flex:none; margin-left:auto;}
+
+/* ---------- "I don't get it" report (phase17) ---------- */
+.idg-table{min-width:760px;}
+.idg-table td.qlabel{max-width:340px;}
+.idg-prompt{margin-top:3px; line-height:1.35; font-weight:400;}
+.idg-flag{margin-left:6px; font-size:.72rem; font-weight:800; color:#c52e6c; white-space:nowrap;}
+.idg-flagged > td{background:#fff6f9;}
+.idg-marks{white-space:nowrap;}
+.idg-mark{display:inline-block; font-size:.76rem; font-weight:800; font-variant-numeric:tabular-nums;
+  border-radius:99px; padding:2px 7px; margin-right:3px; background:#eef0f7; color:#556;}
+.idg-mark.got_it{background:#e3f7ee; color:#0a6a4a;}
+.idg-mark.partly{background:#fff2dd; color:#8a5200;}
+.idg-mark.not_yet{background:#fdeaf1; color:#a01c4e;}
+.idg-mark.other{background:transparent; color:#99a; font-weight:600;}
+
+.idg-detailrow > td{background:#fafbfe; padding:10px 12px;}
+.idg-list{display:flex; flex-direction:column; gap:6px; margin-top:8px;}
+.idg-tap{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  background:#fff; border:2px solid var(--ink); border-radius:12px; padding:7px 11px;}
+.idg-tap.empty{border-style:dashed; border-color:#e0679a; background:#fff8fb;}
+.idg-who{font-weight:700; flex:none; min-width:110px;}
+.idg-rung{flex:none; font-size:.72rem; font-weight:800; color:#556;
+  background:#eef0f7; border-radius:99px; padding:2px 7px;}
+.idg-text{flex:1; min-width:200px; line-height:1.4; overflow-wrap:anywhere;}
+.idg-tap.empty .idg-text{color:#a01c4e;}
+.idg-tap .ttime{flex:none; margin-left:auto;}

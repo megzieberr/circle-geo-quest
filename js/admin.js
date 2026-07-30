@@ -28,6 +28,14 @@ let timelineOne = null;      // { id, name, rows, at }  — the open panel
 let timelineTimer = null;    // live-refresh interval handle
 let timelineBusy = false;    // guards against overlapping refreshes
 
+/* "I don't get it" taps (phase17.sql cgg_admin_stuck) + which panel's detail
+   list is currently expanded. */
+let stuckData = null;
+let openStuckPanel = null;
+
+const STUCK_DAYS = 30;       // how far back the stuck report looks
+const STUCK_LIMIT = 500;     // most recent taps fetched for the detail lists
+
 const INACTIVE_DAYS = 7;
 const LIVE_MS = 15000;       // how often the open learner panel re-fetches
 
@@ -103,6 +111,8 @@ async function load() {
   integrity = api.adminIntegrity ? await api.adminIntegrity(adminPw).catch(() => ({ ok: false })) : { ok: false };
   // class-wide attempt history for the trajectory arrows (best-effort; Phase-15 RPC)
   timelineAll = api.adminTimeline ? await api.adminTimeline(adminPw, null, 400).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
+  // "I don't get it" taps (best-effort; Phase-17 RPC)
+  stuckData = api.adminStuck ? await api.adminStuck(adminPw, STUCK_DAYS, STUCK_LIMIT).catch(() => ({ ok: false })) : { ok: false };
   renderDashboard();
 }
 
@@ -203,6 +213,11 @@ function renderDashboard() {
     }
     root.appendChild(sec);
   }
+
+  // the "I don't get it" report paints into its own host, so expanding a panel
+  // repaints only this section and doesn't scroll the dashboard back to the top
+  root.appendChild(el("div", "", '<div id="stuck-host"></div>'));
+  renderStuckReport();
 
   // table
   const wrap = el("div", "table-wrap");
@@ -545,6 +560,196 @@ function renderFeedbackReport() {
   }
 
   root.appendChild(section);
+}
+
+/* ============================================================
+   "I DON'T GET IT"  (phase17)
+   ------------------------------------------------------------
+   Every tap of the help link on a typed panel writes a checker_calls
+   row with verdict 'stuck', prefixed [stuck:1|2|3] for the rung it
+   walked to (3 = "show me a good answer"). Whatever the learner had
+   typed at that moment rides along — and an EMPTY one is the loudest
+   row in the table, because it means they could not even start.
+
+   A panel with lots of taps AND a healthy spread of marking verdicts
+   is a HARD question. A panel with lots of taps and nothing typed is
+   a badly WORDED one. Those are different problems, so the marking
+   verdicts for the same panel are shown right beside the taps.
+   ============================================================ */
+const PANEL_ROUND = {};
+ROUNDS.forEach(rd => (rd.panels || []).forEach(p => { if (p.panelId) PANEL_ROUND[p.panelId] = { rd, p }; }));
+
+function panelLabel(pid) {
+  const m = /^s(\d+)p(\d+)$/.exec(pid || "");
+  if (!m) return pid || "—";
+  const hit = PANEL_ROUND[pid];
+  const title = hit && hit.rd.title && hit.rd.title.en ? ` · ${hit.rd.title.en}` : "";
+  return `Station ${m[1]}${title} — panel ${m[2]}`;
+}
+const panelPrompt = pid => {
+  const hit = PANEL_ROUND[pid];
+  return hit && hit.p.prompt && hit.p.prompt.en ? hit.p.prompt.en : "";
+};
+
+/* The four verdicts that are a MARK. override/error/nomemo/nokey/rate also
+   live in this column but are plumbing or history, so they're counted as
+   "other" rather than shown as if a learner had earned them. */
+const MARK_VERDICTS = [
+  { key: "got_it",  emoji: "✅", label: "got it" },
+  { key: "partly",  emoji: "◐",  label: "partly" },
+  { key: "not_yet", emoji: "✗",  label: "not yet" },
+  { key: "unclear", emoji: "❓", label: "unclear" },
+];
+/* A panel is flagged when the taps are mostly people who typed NOTHING —
+   that is the "the question isn't asking clearly" signature, and it needs
+   more than one learner before it means anything. */
+const BLANK_LEARNERS_MIN = 2;
+const BLANK_SHARE_MIN = 0.5;
+
+function renderStuckReport() {
+  const host = document.getElementById("stuck-host");
+  if (!host) return;
+  host.innerHTML = "";
+  const section = el("div", "admin-report admin-stuckreport");
+  host.appendChild(section);
+  section.appendChild(el("h2", "report-title", "🙋 “I don’t get it”"));
+
+  if (!stuckData || !stuckData.ok) {
+    section.appendChild(el("p", "muted small", "This panel needs the Phase-17 database update (run supabase/phase17.sql). Nothing else on the dashboard depends on it."));
+    return;
+  }
+
+  const panels = stuckData.panels || [];
+  const rows = stuckData.rows || [];
+  const days = stuckData.days || STUCK_DAYS;
+
+  if (!panels.length) {
+    section.appendChild(el("p", "muted small", `Nobody has tapped “I don’t get it” in the last ${days} days. The link sits on all nine typed panels and is available before a learner has tried anything, so silence here means the questions are landing — or that nobody has reached them yet.`));
+    return;
+  }
+
+  const taps = panels.reduce((a, p) => a + p.taps, 0);
+  const capped = (stuckData.total || taps) > rows.length;
+  section.appendChild(el("p", "muted small",
+    `${taps} tap${taps === 1 ? "" : "s"} in the last ${days} days. Each tap walks the learner one rung further: <b>1</b> a hint, <b>2</b> a bigger hint, <b>3</b> a good answer plus Continue. Tapping is asking for help, not getting an answer wrong — it never counts against them. <b>Click a panel to read what they had typed.</b>`));
+  if (capped) {
+    section.appendChild(el("p", "muted small", `The counts cover every tap; the text below covers the most recent ${rows.length}.`));
+  }
+
+  // ---- by panel, most-stuck first ----
+  const wrap = el("div", "table-wrap");
+  const table = el("table", "admin-table report-table idg-table");
+  table.innerHTML = `<thead><tr>
+      <th>Panel</th><th>Learners</th><th>Taps</th><th>To rung 3</th>
+      <th>Nothing typed</th><th>Marking on the same panel</th>
+    </tr></thead>`;
+  const tbody = el("tbody");
+  panels.forEach(p => {
+    const share = p.taps ? p.blank / p.taps : 0;
+    const flagged = p.blankLearners >= BLANK_LEARNERS_MIN && share >= BLANK_SHARE_MIN;
+    const tr = el("tr", flagged ? "idg-flagged" : "");
+    const prompt = panelPrompt(p.panelId);
+    tr.innerHTML = `
+      <td class="qlabel">
+        <button class="linkish" type="button">${escapeHtml(panelLabel(p.panelId))}</button>
+        ${flagged ? '<span class="idg-flag" title="Most of these taps arrived with nothing typed — worth re-reading the wording">⚠️ wording?</span>' : ""}
+        ${prompt ? `<div class="idg-prompt muted small">${escapeHtml(truncate(prompt, 150))}</div>` : ""}
+      </td>
+      <td class="num">${p.learners}</td>
+      <td class="num">${p.taps}</td>
+      <td class="num">${p.rung3 || 0}</td>
+      <td class="num ${flagged ? "pct-bad" : ""}">${p.blank || 0}${p.blank ? ` <span class="muted">· ${p.blankLearners} learner${p.blankLearners === 1 ? "" : "s"}</span>` : ""}</td>
+      <td class="idg-marks">${marksHtml(p.panelId)}</td>`;
+    tr.querySelector(".linkish").addEventListener("click", () => {
+      openStuckPanel = openStuckPanel === p.panelId ? null : p.panelId;
+      renderStuckReport();
+    });
+    tbody.appendChild(tr);
+
+    if (openStuckPanel === p.panelId) {
+      const det = el("tr", "idg-detailrow");
+      const cell = el("td");
+      cell.colSpan = 6;
+      cell.appendChild(stuckDetail(p.panelId));
+      det.appendChild(cell);
+      tbody.appendChild(det);
+    }
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  section.appendChild(wrap);
+
+  // ---- by learner: who to sit next to ----
+  const byLearner = {};
+  rows.forEach(r => {
+    const g = byLearner[r.studentId] || (byLearner[r.studentId] = {
+      name: r.name, taps: 0, rung3: 0, blank: 0, panels: new Set(), last: r.at,
+    });
+    g.taps++;
+    if (r.rung === 3) g.rung3++;
+    if (!r.text) g.blank++;
+    g.panels.add(r.panelId);
+    if (String(r.at) > String(g.last)) g.last = r.at;
+  });
+  const learners = Object.values(byLearner).sort((a, b) => b.taps - a.taps || b.rung3 - a.rung3);
+  if (learners.length) {
+    section.appendChild(el("h3", "fb-comments-title", "Who to sit next to"));
+    const lwrap = el("div", "table-wrap");
+    const ltable = el("table", "admin-table report-table");
+    ltable.innerHTML = `<thead><tr><th>Name</th><th>Taps</th><th>Panels</th><th>To rung 3</th><th>Nothing typed</th><th>Last asked</th></tr></thead>`;
+    const ltb = el("tbody");
+    learners.forEach(g => {
+      const tr = el("tr");
+      tr.innerHTML = `
+        <td class="name">${escapeHtml(g.name)}</td>
+        <td class="num">${g.taps}</td>
+        <td class="num">${g.panels.size}</td>
+        <td class="num">${g.rung3}</td>
+        <td class="num">${g.blank}</td>
+        <td>${fmtDateTime(g.last)}</td>`;
+      ltb.appendChild(tr);
+    });
+    ltable.appendChild(ltb);
+    lwrap.appendChild(ltable);
+    section.appendChild(lwrap);
+  }
+}
+
+/* The marking verdicts logged against one panel, as small chips. */
+function marksHtml(panelId) {
+  const all = (stuckData.marks || []).filter(m => m.panelId === panelId);
+  if (!all.length) return '<span class="muted small">no answers marked</span>';
+  const chips = MARK_VERDICTS
+    .map(v => ({ v, n: all.filter(m => m.verdict === v.key).reduce((a, m) => a + m.n, 0) }))
+    .filter(x => x.n > 0)
+    .map(x => `<span class="idg-mark ${x.v.key}" title="${x.v.label}">${x.v.emoji} ${x.n}</span>`);
+  const other = all.filter(m => !MARK_VERDICTS.some(v => v.key === m.verdict)).reduce((a, m) => a + m.n, 0);
+  if (other) chips.push(`<span class="idg-mark other" title="override / plumbing verdicts">+${other} other</span>`);
+  return chips.join(" ");
+}
+
+/* What each learner had typed when they tapped. This is the misconception. */
+function stuckDetail(panelId) {
+  const box = el("div", "idg-detail");
+  const mine = (stuckData.rows || []).filter(r => r.panelId === panelId);
+  if (!mine.length) {
+    box.appendChild(el("p", "muted small", "No text captured for this panel in the rows fetched."));
+    return box;
+  }
+  box.appendChild(el("p", "muted small",
+    "What was in the answer box at the moment they asked, newest first. An empty one means they could not start at all."));
+  const list = el("div", "idg-list");
+  mine.forEach(r => {
+    const item = el("div", `idg-tap${r.text ? "" : " empty"}`);
+    item.innerHTML = `
+      <span class="idg-who">${escapeHtml(r.name)}</span>
+      <span class="idg-rung" title="Rung reached">rung ${r.rung == null ? "?" : r.rung}</span>
+      <span class="idg-text">${r.text ? escapeHtml(r.text) : "<i>nothing typed</i>"}</span>
+      <span class="ttime muted small">${fmtDateTime(r.at)}</span>`;
+    list.appendChild(item);
+  });
+  box.appendChild(list);
+  return box;
 }
 
 /* ---------- "hardest questions" report ---------- */

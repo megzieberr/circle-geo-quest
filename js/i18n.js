@@ -96,6 +96,10 @@ const UI = {
   firstTry:       { en: "First try!", af: "Eerste poging!" },
   streak:         { en: "Streak", af: "Streak" },
   replayNoXp:     { en: "Replay — Badge already earned, so no XP this time.", af: "Herhaling — Badge reeds verdien, dus geen XP hierdie keer nie." },
+  /* 2026-07-30: replays pay again. The banner can't promise an amount — the
+     client doesn't know how many paid plays the server has already counted —
+     so it states the RULE, and the results screen shows the real number. */
+  replayHalfXp:   { en: "Second look — a round you've passed pays half XP, for up to three goes.", af: "Tweede kyk — 'n rondte wat jy geslaag het betaal die helfte van die XP, vir tot drie beurte." },
 
   // results
   roundComplete:  { en: "Round complete", af: "Rondte voltooi" },
@@ -105,6 +109,8 @@ const UI = {
   roundPassed:    { en: "Round passed — next round unlocked!", af: "Rondte geslaag — volgende rondte oopgesluit!" },
   notPassedYet:   { en: "So close! Reach 80% to pass and unlock the next round.", af: "So naby! Behaal 80% om te slaag en die volgende rondte oop te sluit." },
   replayNoXpMsg:  { en: "You've already mastered this round, so no XP this time — but great practice! 💪", af: "Jy het hierdie rondte reeds bemeester, dus geen XP hierdie keer nie — maar goeie oefening! 💪" },
+  replayHalfMsg:  { en: "A second look at a round you've passed — half XP. 💪", af: "'n Tweede kyk na 'n rondte wat jy geslaag het — die helfte van die XP. 💪" },
+  replayDoneMsg:  { en: "You've had your paid goes at this one, so no XP this time — but it's still great practice. 💪", af: "Jy het jou betaalde beurte by hierdie een gehad, dus geen XP hierdie keer nie — maar dit bly goeie oefening. 💪" },
   backHome:       { en: "Back to map", af: "Terug na kaart" },
   tryAgain:       { en: "Try again", af: "Probeer weer" },
   nextRound:      { en: "Go to next round →", af: "Gaan na volgende rondte →" },
@@ -188,6 +194,16 @@ const UI = {
   news4:          { en: "Pass a round after a few tries and you earn a <b>+40 comeback bonus</b>.", af: "Slaag 'n rondte ná 'n paar probeerslae en jy verdien 'n <b>+40 terugkeer-bonus</b>." },
   newsOutro:      { en: "Every try makes you stronger — you've got this! 💛", af: "Elke probeerslag maak jou sterker — jy het dit! 💛" },
   newsGo:         { en: "Let's go!", af: "Kom ons gaan!" },
+  /* Replays pay again (2026-07-30). Deliberately does NOT say "half of 25 XP" or
+     any specific number — a round's XP depends on streaks and how you play it,
+     and the server is the one that decides. Promise the rule, show the number
+     on the results screen. */
+  replayNewsTitle:{ en: "Rounds you've passed pay XP again!", af: "Rondtes wat jy geslaag het betaal weer XP!" },
+  replayNewsIntro:{ en: "Going back over a round used to be worth nothing. Not any more — a second look now pays.", af: "Om 'n rondte weer te doen was vroeër niks werd nie. Nie meer nie — 'n tweede kyk betaal nou." },
+  replayNews1:    { en: "Replay a round you've already passed and you earn half XP for it.", af: "Speel 'n rondte weer wat jy reeds geslaag het en jy verdien die helfte van die XP daarvoor." },
+  replayNews2:    { en: "That works for your 2nd and 3rd go at a round. After that it's practice only.", af: "Dit werk vir jou 2de en 3de beurt by 'n rondte. Daarna is dit net oefening." },
+  replayNews3:    { en: "Your badge and your best score stay exactly as they are — a replay can never take them away.", af: "Jou badge en jou beste telling bly presies soos hulle is — 'n herhaling kan dit nooit wegvat nie." },
+  replayNewsOutro:{ en: "Go back to a favourite and see what you remember. 💛", af: "Gaan terug na 'n gunsteling en kyk wat jy onthou. 💛" },
 
   // "Which reason?" guide card (rounds that declare a `guide`)
   guideBtn:       { en: "🧭 Not sure which reason? Open the guide", af: "🧭 Onseker watter rede? Maak die gids oop" },
