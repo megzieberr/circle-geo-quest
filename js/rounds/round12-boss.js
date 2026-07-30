@@ -15,7 +15,7 @@ export const round = {
     { en: "Look for the tell-tale feature: a tangent touching the circle, a diameter through O, a 4-sided cyclic quad, two radii (isosceles), or two angles standing on the same chord.",
       af: "Soek die verklikkende kenmerk: 'n raaklyn wat die sirkel raak, 'n middellyn deur O, 'n 4-sydige koordevierhoek, twee radiusse (gelykbenig), of twee hoeke wat op dieselfde koord staan." },
     { en: "Tangent + chord ⇒ tan-chord. Diameter + angle on the circle ⇒ angle in a semicircle. Tangent + radius ⇒ tan ⊥ radius. Centre angle with a circumference angle ⇒ centre = 2 × circumference. Same chord, same side ⇒ same segment. Cyclic quad: opposite angles ⇒ supplementary, a side extended ⇒ exterior = opposite interior. Two tangents from a point ⇒ equal.",
-      af: "Raaklyn + koord ⇒ raaklyn-koord. Middellyn + hoek op die sirkel ⇒ hoek in 'n semi sirkel. Raaklyn + radius ⇒ raaklyn ⊥ radius. Middelpuntshoek met 'n omtrekshoek ⇒ middelpunt = 2 × omtrek. Selfde koord, selfde kant ⇒ selfde segment. Koordevierhoek: teenoorstaande hoeke ⇒ supplementêr, 'n sy verleng ⇒ buitehoek = teenoorstaande binnehoek. Twee raaklyne vanaf 'n punt ⇒ gelyk." },
+      af: "Raaklyn + koord ⇒ raaklyn-koord. Middellyn + hoek op die sirkel ⇒ hoek in 'n halfsirkel. Raaklyn + radius ⇒ raaklyn ⊥ radius. Middelpuntshoek met 'n omtrekshoek ⇒ middelpunt = 2 × omtrek. Selfde koord, selfde kant ⇒ selfde segment. Koordevierhoek: teenoorstaande hoeke ⇒ supplementêr, 'n sy verleng ⇒ buitehoek = teenoorstaande binnehoek. Twee raaklyne vanaf 'n punt ⇒ gelyk." },
   ],
   questions: [
     { id: "r12q1", type: "reason", accent: AC,
@@ -29,7 +29,7 @@ export const round = {
       prompt: { en: "AB is a diameter. Which theorem gives ∠P = 90°?", af: "AB is 'n middellyn. Watter stelling gee ∠P = 90°?" },
       diagram: { O: true, pts: { A: 180, B: 0, P: 110 }, chords: [["A", "B"], ["A", "P"], ["B", "P"]], angles: [{ at: "P", legs: ["A", "B"], t: "", o: { v: 90, mark: 1 } }] },
       options: [ { code: "semiCircle", correct: true }, { code: "tanRadius" }, { code: "cyclicOpp" }, { code: "centreDouble" } ],
-      answer: { en: "Angle in a semicircle = 90°.", af: "Hoek in 'n semi sirkel = 90°." }, explainReason: "semiCircle" },
+      answer: { en: "Angle in a semicircle = 90°.", af: "Hoek in 'n halfsirkel = 90°." }, explainReason: "semiCircle" },
 
     { id: "r12q3", type: "reason", accent: AC,
       prompt: { en: "Which theorem explains the right angle at T?", af: "Watter stelling verklaar die regte hoek by T?" },
@@ -82,7 +82,7 @@ export const round = {
     { id: "r12q10", type: "yesno", accent: AC,
       prompt: { en: "Does the TAN-CHORD theorem apply to this diagram?", af: "Geld die RAAKLYN-KOORD stelling vir hierdie diagram?" },
       diagram: { O: true, pts: { A: 180, B: 0, P: 110 }, chords: [["A", "B"], ["A", "P"], ["B", "P"]], angles: [{ at: "P", legs: ["A", "B"], t: "", o: { v: 90, mark: 1 } }] },
-      yes: false, answer: { en: "No — there is no tangent here. This is the angle in a semicircle.", af: "Nee — daar is geen raaklyn hier nie. Dit is die hoek in 'n semi sirkel." }, explainReason: "semiCircle" },
+      yes: false, answer: { en: "No — there is no tangent here. This is the angle in a semicircle.", af: "Nee — daar is geen raaklyn hier nie. Dit is die hoek in 'n halfsirkel." }, explainReason: "semiCircle" },
 
     { id: "r12q11", type: "yesno", accent: AC,
       prompt: { en: "Does the ANGLE-IN-SEMICIRCLE theorem apply here (AB through O)?", af: "Geld die HOEK-IN-SEMI-SIRKEL stelling hier (AB deur O)?" },

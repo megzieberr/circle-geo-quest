@@ -22,6 +22,44 @@ export const CONFIG = {
   ],
   // round pass rule
   passThreshold: 0.8,      // 80% correct (first-try) to pass a round and earn its badge
+  // Investigation Station: XP IS PER PANEL — every panel of a station pays this,
+  // whatever the panel type, and NEVER scaled by attempts or by correctness. A
+  // learner who fights through five attempts has investigated MORE, not less;
+  // struggle is the product here. (Her call, 2026-07-30: "they earn XP for each
+  // panel, shame." That reverses the old flat-50-per-station rule and only that
+  // half of it — see js/investigate.js's header for the half that still stands.)
+  //
+  // It is still BANKED ONCE, at the end of the station, as panels.length × this
+  // rate; each panel shows a "+10 XP" tick on the way so it FEELS per-panel.
+  // Her call, asked and answered 2026-07-30: the tick is enough. Genuinely
+  // banking mid-station would need a record of which panels already paid (a
+  // learner who quits always restarts at panel 1 today, so replaying panels 1-5
+  // would pay for them twice), plus resume screens — a build of its own.
+  //
+  // ⚠️ THE STATIONS NOW PAY DIFFERENT AMOUNTS, on purpose: 7/5/5/6/6/5 panels =
+  // 70/50/50/60/60/50 XP, 340 for the line (300 under the old flat rule). Never
+  // hard-code any of those numbers in copy — compute them from panels.length, so
+  // a station that gains a panel in Chunk D cannot start promising the old total.
+  investigationXpPerPanel: 10,
+  // ---- IS THE INVESTIGATION STATION RELEASED TO LEARNERS? ----
+  // false = the line is completely invisible: no train strip on the home screen,
+  // and the `stations` / `investigate` routes bounce back home, so a learner who
+  // guesses a URL still cannot reach it.
+  //
+  // RELEASED 2026-07-30 — her call at the end of the Chunk D session, after she
+  // play-tested the whole line herself: "make it visible for the learners".
+  //
+  // It went live with ONE of Chunk D's four theorems in (two tangents from a
+  // point). Equal chords, tangent-radius and tan-chord are still to come and are
+  // deliberately additive — they add extra practice panels to stations that are
+  // already complete, so nothing a learner meets today is half-built. Adding
+  // them later costs no migration and no re-release; each new panel simply
+  // raises that station's XP, because the total is computed from panels.length.
+  //
+  // Set back to false to hide the line again — no train strip, and the
+  // `stations` / `investigate` routes bounce home, so a guessed URL cannot reach
+  // it. `?stations=1` overrides the flag either way, for previewing.
+  stationsLive: true,
   // struggling-learner support ("Boost mode")
   rescueAfterFails: 2,     // after this many failed attempts, replays get open hints + second chances
   comebackBonus: 40,       // extra XP for finally passing a round on the 3rd+ attempt
@@ -57,7 +95,19 @@ export const GROUPS = [
   { id: "g5", icon: "🏆", name: "Circle Grand Master",
     blurb: { en: "Tough mixed exam-style riders.",
              af: "Moeilike gemengde eksamen-styl vraagstukke." } },
+  // `hidden` = earned and celebrated exactly like the others, but kept OFF the
+  // rank ladder and the badge counter (Megan's ruling, 2026-07-30). The ladder
+  // reads the learner's rank as the LAST earned badge, so letting g6 join it
+  // quietly demoted a finisher from 🏆 Circle Grand Master to 🚂 Line Inspector
+  // and turned the counter into 5/6. Finishing the 43 rounds must still end on
+  // Grand Master, so the station badge lives on the station map instead, and the
+  // train strip shows "N of 6 stations visited".
+  { id: "g6", icon: "🚂", name: "Line Inspector", hidden: true,
+    blurb: { en: "Investigation Station — conjecture, counterexample, proof and explanation.",
+             af: "Ondersoekstasie — vermoede, teenvoorbeeld, bewys en verduideliking." } },
 ];
+/* The badges that count towards the rank ladder and the "x/5 badges" stat. */
+export const LADDER_GROUPS = GROUPS.filter(g => !g.hidden);
 export const BASE_RANK = "Newcomer";
 
 /* ============================================================

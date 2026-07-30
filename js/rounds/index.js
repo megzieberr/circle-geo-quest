@@ -46,6 +46,12 @@ import { round as r18 } from "./round18-riders-twochord.js";
 import { round as r19 } from "./round19-riders-diameter.js";
 import { round as r20 } from "./round20-riders-mixed1.js";
 import { round as r21 } from "./round21-riders-mixed2.js";
+import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
+import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
+import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
+import { round as inv4 } from "./invest04-prove-it.js";          // g6 · Investigation Station
+import { round as inv5 } from "./invest05-turn-around.js";       // g6 · Investigation Station
+import { round as inv6 } from "./invest06-explain-it.js";        // g6 · Investigation Station
 import { round as dailyExtra } from "./daily-extra.js";          // bonus daily bank (not in play order)
 import { round as dailyRiders } from "./daily-riders.js";       // harder exam-style Daily bank (typed answers)
 
@@ -67,6 +73,7 @@ const ORDER = [
   eProveTan,                                             // g3 · prove a tangent
   r12, r14, r15, r16,                                    // g4 · Circle Detective
   r18, r19, r20, r21,                                    // g5 · Circle Grand Master
+  inv1, inv2, inv3, inv4, inv5, inv6,                    // g6 · Investigation Station 🚂
 ];
 
 /* group membership (intro rounds carry no badge) */
@@ -77,6 +84,7 @@ const GROUP = {
   tanintro: "g3", tanchordintro: "g3", dtanchord: "g3", r10: "g3", r10b: "g3", dtanrad: "g3", r9: "g3", dtanpoint: "g3", r11: "g3", eprovetan: "g3",
   r12: "g4", r14: "g4", r15: "g4", r16: "g4",
   r18: "g5", r19: "g5", r20: "g5", r21: "g5",
+  inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
 };
 
 export const ROUNDS = ORDER.map((r, i) => {
@@ -85,6 +93,33 @@ export const ROUNDS = ORDER.map((r, i) => {
   return r;
 });
 export const ROUND_BY_ID = Object.fromEntries(ROUNDS.map(r => [r.id, r]));
+
+/* ------------------------------------------------------------
+   THE MAIN LINE vs THE BRANCH LINE (Megan's ruling, 2026-07-30).
+   The Investigation Station is reached ONLY from the train strip on
+   the home screen, so its six stations come OFF the main round map —
+   no round appears in two places, and the main line goes back to being
+   the 43 rounds. ROUNDS stays the full list, because the unlock chain,
+   ROUND_BY_ID, verify.html and the admin dashboard all still want
+   everything; these two views are what the learner-facing screens
+   render. Membership is by `kind`, not by a hand-kept id list, so a
+   seventh station would need no change here.
+   ------------------------------------------------------------ */
+export const STATIONS = ROUNDS.filter(r => r.kind === "investigate");
+export const MAIN_ROUNDS = ROUNDS.filter(r => r.kind !== "investigate");
+
+/* Which rounds are unlocked: the first always, every other once the
+   round BEFORE it in the play order has been passed. It lives here
+   because the chain is a property of the ORDER above, and both maps
+   (game.js for the main line, stations.js for the branch) read it. */
+export function unlockedIds(progress) {
+  const set = new Set([ROUNDS[0].id]);
+  for (let i = 1; i < ROUNDS.length; i++) {
+    const prev = progress[ROUNDS[i - 1].id];
+    if (prev && prev.passed) set.add(ROUNDS[i].id);
+  }
+  return set;
+}
 
 /* Guiding-hint fallback: a round may set `defaultHints` (a 2-rung ladder that
    names its theorem's angles and the move to make). Apply it to every graded

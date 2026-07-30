@@ -12,13 +12,13 @@ const HINT_PERP = [   // the 90° is GIVEN → conclude it bisects
   { en: "First, what are you GIVEN? The 90° (OM ⊥ AB). Name the reason after the GIVEN — not after what you want to find.",
     af: "Eerstens, wat is GEGEE? Die 90° (OM ⊥ AB). Noem die rede ná die GEGEWE — nie ná wat jy wil kry nie." },
   { en: "Given the ⊥, use “line from centre ⊥ to chord” — it bisects the chord, so AM = MB.",
-    af: "Gegee die ⊥, gebruik “lyn vanuit mdpt ⊥ op koord” — dit halveer die koord, dus AM = MB." },
+    af: "Gegee die ⊥, gebruik “lyn vanuit midpt ⊥ op koord” — dit halveer die koord, dus AM = MB." },
 ];
 const HINT_MID = [    // the midpoint is GIVEN → conclude it is perpendicular
   { en: "First, what are you GIVEN? The midpoint (AM = MB). Name the reason after the GIVEN — not after the answer.",
     af: "Eerstens, wat is GEGEE? Die middelpunt (AM = MB). Noem die rede ná die GEGEWE — nie ná die antwoord nie." },
   { en: "Given the midpoint, use “line from centre to midpt of chord” — it is perpendicular, so OM ⊥ AB.",
-    af: "Gegee die middelpunt, gebruik “lyn vanuit mdpt na mdpt van koord” — dit is loodreg, dus OM ⊥ AB." },
+    af: "Gegee die middelpunt, gebruik “lyn vanuit midpt na midpt van koord” — dit is loodreg, dus OM ⊥ AB." },
 ];
 
 const D_PERP = { O: true, pts: { A: 205, B: 335 }, mid: [{ name: "M", of: ["A", "B"] }],
@@ -37,7 +37,7 @@ const perpQ = (id, d) => ({
   options: [{ code: "centrePerpChord", correct: true },
     { code: "centreMidChord", misconception: { en: "That's the reason for the OTHER direction. You were GIVEN the 90° (⊥) — so name the reason after the ⊥, not after AM = MB (that's what you’re proving).", af: "Dis die rede vir die ANDER rigting. Jy het die 90° (⊥) GEKRY — noem dus die rede ná die ⊥, nie ná AM = MB nie (dít is wat jy bewys)." } },
     { code: "tanRadius" }, { code: "sameSeg" }],
-  answer: { en: "The 90° is given, so use: line from centre ⊥ to chord ⇒ it bisects the chord.", af: "Die 90° is gegee, gebruik dus: lyn vanuit mdpt ⊥ op koord ⇒ dit halveer die koord." },
+  answer: { en: "The 90° is given, so use: line from centre ⊥ to chord ⇒ it bisects the chord.", af: "Die 90° is gegee, gebruik dus: lyn vanuit midpt ⊥ op koord ⇒ dit halveer die koord." },
   explainReason: "centrePerpChord",
 });
 const midQ = (id, d) => ({
@@ -46,7 +46,7 @@ const midQ = (id, d) => ({
   options: [{ code: "centreMidChord", correct: true },
     { code: "centrePerpChord", misconception: { en: "That's the reason for the OTHER direction. You were GIVEN the midpoint (AM = MB) — so name the reason after the midpoint, not after OM ⊥ AB (that's what you’re proving).", af: "Dis die rede vir die ANDER rigting. Jy het die middelpunt (AM = MB) GEKRY — noem dus die rede ná die middelpunt, nie ná OM ⊥ AB nie (dít is wat jy bewys)." } },
     { code: "equalChords" }, { code: "semiCircle" }],
-  answer: { en: "The midpoint is given, so use: line from centre to midpt of chord ⇒ it is perpendicular.", af: "Die middelpunt is gegee, gebruik dus: lyn vanuit mdpt na mdpt van koord ⇒ dit is loodreg." },
+  answer: { en: "The midpoint is given, so use: line from centre to midpt of chord ⇒ it is perpendicular.", af: "Die middelpunt is gegee, gebruik dus: lyn vanuit midpt na midpt van koord ⇒ dit is loodreg." },
   explainReason: "centreMidChord",
 });
 

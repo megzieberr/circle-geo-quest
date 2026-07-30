@@ -69,7 +69,7 @@ export const round = {
         { en: "The circumference angle is half the centre angle. Half of 180 is…?", af: "Die omtrekshoek is die helfte van die middelpuntshoek. Die helfte van 180 is…?" },
       ],
       reason: "semiCircle",
-      note: { en: "∠APB = 90°. The angle in a semicircle (subtended by a diameter) is a right angle. Reason: <i>∠ in semi-circle</i>.", af: "∠APB = 90°. Die hoek in 'n halfsirkel (onderspan deur 'n middellyn) is 'n regte hoek. Rede: <i>∠ in semi sirkel</i>." } },
+      note: { en: "∠APB = 90°. The angle in a semicircle (subtended by a diameter) is a right angle. Reason: <i>∠s in semi-circle</i>.", af: "∠APB = 90°. Die hoek in 'n halfsirkel (onderspan deur 'n middellyn) is 'n regte hoek. Rede: <i>∠ in halwe sirkel</i>." } },
 
     { type: "explore",
       prompt: { en: "Confirm it by dragging", af: "Bevestig dit deur te sleep" },
@@ -81,7 +81,10 @@ export const round = {
       diagram: { O: true, pts: { A: 180, B: 0, P: 65 }, chords: [["A", "B"], ["A", "P"], ["B", "P"]],
         angles: [{ at: "P", legs: ["A", "B"], t: "", o: { v: 90, mark: 1 } }] },
       options: [
-        { text: { en: "AB must be a diameter (it passes through the centre)", af: "AB moet 'n middellyn wees (dit gaan deur die middelpunt)" }, correct: true },
+        // the "(it passes through the centre)" parenthetical came off the correct
+        // option: it made it the longest by half again, and it handed over the
+        // reason the note gives two lines later.
+        { text: { en: "AB must be a diameter", af: "AB moet 'n middellyn wees" }, correct: true },
         { text: { en: "AB is just an ordinary chord", af: "AB is net 'n gewone koord" } },
         { text: { en: "P must be the centre", af: "P moet die middelpunt wees" } },
       ],

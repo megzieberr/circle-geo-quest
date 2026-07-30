@@ -15,7 +15,9 @@
    The diagram spec `d`:
      w,h            canvas size           (default 320 x 254)
      cx,cy,R        circle centre+radius  (default 160,120,80)
-     pts            { label: degreeOnCircle }
+     pts            { label: degreeOnCircle }  or  { label: {x,y} } for a
+                    free point that is NOT on the circle (added 2026-07-30)
+     noCircle       true => do not draw the circle at all (added 2026-07-30)
      O              true => draw the centre dot + "O"
      ext            [{name, t:[contactA, contactB]}]  external point = tangent intersection
      tang           [{at, len, lab:[start,end]}]      full tangent line at a contact point
@@ -168,8 +170,18 @@ export function computeGeometry(d) {
 
   const pts = {};
   for (const k in (d.pts || {})) {
-    const [x, y] = pol(cx, cy, R, d.pts[k]);
-    pts[k] = { x, y, deg: d.pts[k], circ: true, label: k };
+    const v = d.pts[k];
+    // A free point, given as {x,y} instead of a degree. Added 2026-07-30 for
+    // the "four dots and no circle that fits them" figure in Station 3, which
+    // is about points rather than about a circle. `circ: false` keeps it out
+    // of every code path that assumes a point has a `deg` (label placement,
+    // tangent direction, ext intersections), so nothing existing is affected.
+    if (v && typeof v === "object") {
+      pts[k] = { x: v.x, y: v.y, free: true, label: k };
+      continue;
+    }
+    const [x, y] = pol(cx, cy, R, v);
+    pts[k] = { x, y, deg: v, circ: true, label: k };
   }
 
   /* the centre is always addressable as "O" (for radii and centre-to-chord
@@ -268,7 +280,7 @@ export function renderDiagram(d, accent, opts = {}) {
   const g = computeGeometry(d);
   const { W, H, cx, cy, R } = g;
 
-  let out = `<circle class="sirkel" cx="${cx}" cy="${cy}" r="${R}"/>`;
+  let out = d.noCircle ? "" : `<circle class="sirkel" cx="${cx}" cy="${cy}" r="${R}"/>`;
   if (g.O) {
     out += dot(cx, cy);
     out += placeCentreLabel(g);

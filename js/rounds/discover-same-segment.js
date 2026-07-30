@@ -12,7 +12,11 @@ const SUB1 = { pts: { A: 200, B: 340, P: 80 }, chords: [["A", "B"], ["A", "P"], 
 const SUB2 = { pts: { A: 205, B: 335, D: 120 }, chords: [["A", "B"], ["A", "D"], ["B", "D"]],
   angles: [{ at: "D", legs: ["A", "B"], t: "•", o: {} }] };
 
-const MODEL = () => ({
+/* Exported so Investigation Station 2 can reuse the exact figure the class
+   already met here, rather than building a second same-segment model that
+   drifts from this one. It is a FACTORY — every caller gets its own object,
+   so nothing this round does can leak into another. */
+export const MODEL = () => ({
   w: 344, h: 296, cx: 172, cy: 150, R: 104,
   fixed: {},
   handles: [
@@ -64,7 +68,12 @@ export const round = {
       prompt: { en: "You just saw it — which chord subtends the marked angle ∠APB?", af: "Jy het dit pas gesien — watter koord onderspan die gemerkte hoek ∠APB?" },
       diagram: SUB1,
       options: [
-        { text: { en: "AB — it joins the two arms of the angle", af: "AB — dit verbind die twee bene van die hoek" }, correct: true },
+        // bare chord names, matching the next panel: the correct option used to
+        // carry "— it joins the two arms of the angle" while the other two were
+        // two characters long, so it could be picked out without being read
+        // (39 chars against 2 and 2). The explanation is the hint's job and the
+        // note's job, and it is in both already.
+        { text: { en: "AB", af: "AB" }, correct: true },
         { text: { en: "AP", af: "AP" } },
         { text: { en: "BP", af: "BP" } },
       ],

@@ -1,6 +1,236 @@
-# Project status — updated 2026-07-25
+# Project status — updated 2026-07-30
 
-## Where we are
+## Where we are (CHUNK D, session 1 — SHIPPED)
+**THE INVESTIGATION STATION IS LIVE.** `CONFIG.stationsLive` is **true** as of
+2026-07-30 — her call after play-testing the whole line herself ("make it visible
+for the learners"). Committed and pushed.
+
+**It went live with ONE of Chunk D's four theorems in**, which is earlier than the
+original plan said. That is deliberate and safe: the six stations were complete
+before Chunk D started, and the remaining three theorems (equal chords,
+tangent-radius, tan-chord) only ADD practice panels to finished stations. Nothing a
+learner meets today is half-built. Setting the flag back to false hides the whole
+line again in one line.
+
+⚠️ **One consequence of releasing early, for whoever adds the next theorem:** a
+station that gains a panel starts paying more XP automatically (the total is
+`panels.length × rate`), but **a learner who already finished that station is not
+paid the difference — a replay pays 0.** That is exactly the back-pay problem §1's
+sequencing existed to avoid, and it is now live. Per theorem, either add the panels
+to stations the class has not reached yet, or accept the gap knowingly.
+
+The whole session, in order: XP per panel · two tangents from a point (three panels,
+then rebuilt as a drag on her call) · the `s1p4` mark-scheme unfairness · the
+concyclic "why" slide · the override link replaced by "I don't get it". Details in
+the Decisions below.
+
+**1 · XP is per panel now.** `CONFIG.investigationXpPerPanel: 10` replaces
+`investigationXp: 50` (the old key is gone rather than repurposed, so nothing can
+read the new number as the old meaning). `finish()` banks `panels.length × rate`
+ONCE, which keeps the single reliable write; a "+10 XP" tick in the station header
+flashes as each panel clears and settles to a running total. **Her sub-decision,
+asked and answered: the tick is enough**, not genuine mid-station banking — there
+is no resume today, so a learner who quits restarts at panel 1, and paying as you
+go would need a record of which panels already paid plus resume screens.
+Landed while `progress`/`xp_events` are still at 0 rows, which was the whole point
+of the sequencing. Verified end to end: Station 1 banks 70 (7 panels), Station 2
+banks 70 (7 panels), a replay pays 0 and shows no tick at all.
+
+Two things the change turned up, both fixed and both pre-existing:
+  · **The station map promised one number for every stop.** It now states the RATE
+    ("every step you finish pays 10 XP") and each stop card computes its own total
+    from its panels — so a station that gains a panel starts advertising the higher
+    number by itself. No station total is hard-coded anywhere.
+  · **The results screen never mentioned station XP, and never had.** `game.js`'s
+    `params.discovery` branch is marked "no score, no XP" — true of discovery
+    rounds, false of an Investigation Station reusing that branch. So the line had
+    always been banking 50 silently. The pill is now gated on `params.xp > 0`.
+
+**2 · Two tangents from a point — four panels.** Station 1 gains a **drag-and-record**
+panel (her call while play-testing: "I want it to be draggable please") plus the
+choice panel that reads the learner's own tangent table back to them; Station 2
+gains the sentence-build and the four-learners judge, appended after panel 5.
+  · **No new interactive was written.** `discover-tangents-point.js` (`dtanpoint`)
+    already had exactly this figure, so its `MODEL()` is now exported and imported —
+    the same trick Station 1 already uses for the centre-double drag and Station 2
+    for the bowtie. The class therefore sees the identical picture they met on the
+    main line, and the two can never drift apart.
+  · **The letters match across both stations.** Station 2's still figure was
+    relabelled from P/T/S to **A/F/C** to agree with the drag. The stations are
+    played days apart, and meeting AF/AC at Stop 1 then PT/PS at Stop 2 reads as a
+    different theorem.
+  · Defect caught on the way: the readings table defaults a column's unit to `"°"`,
+    so the tangent LENGTHS rendered as "149°". Both tangent columns now carry
+    `unit: ""`. Worth remembering for any future non-angle table.
+  · Station 1's own recorded table proved the dedupe is right, not broken: dragging
+    P along its arc records ONE row, because ∠APB does not change along that arc.
+    Different readings need A or B moved. The counter's "different positions"
+    wording is what explains that to a learner.
+
+**3 · THE STALE-MODULE MYSTERY IS SOLVED, and it was not what the notes said.**
+See the Decisions entry below. Short version: the Preview MCP never reads the
+project's `.claude/launch.json` from these sessions, so Chunk C's fix had never
+once been in effect. Fixed in `C:\Users\megzi\.claude\.claude\launch.json`.
+
+## Where we are (Chunk C, for the trail)
+**CHUNK C IS BUILT AND COMMITTED — all 21 playthrough findings are closed.** The
+line now teaches before it asks, the app records the learner's own readings, the
+options no longer give themselves away, and the two mark schemes that were unfair
+have been fixed and re-probed 13/13 against the live checker.
+
+**The line is deliberately HIDDEN from learners** (`CONFIG.stationsLive: false`) —
+her call: finish the whole build, including Chunk D's extra practice panels, before
+the class meets it. `?stations=1` walks it anyway. Four commits, branch 11 ahead of
+origin, **nothing pushed** and the working tree is clean.
+
+Worth knowing: **pushing is now safe whenever she wants it**, because the flag hides
+the station while everything else goes live. Chunk C also fixed two discovery rounds
+the class plays TODAY (`dsameseg` p1 and `dsemi` p4 had the reason bolted onto the
+correct option — a giveaway and a length tell) plus the shared diagram engine. Those
+fixes are sitting unpushed behind a station they no longer depend on.
+
+What changed, grouped the way the findings were:
+
+**Line-wide**
+  · **N18 — options are shuffled now.** They rendered in source order and the
+    correct one had been written FIRST in 19 of 19 choice panels across
+    `investigate.js` and `discover.js`, so tapping the top one cleared the whole
+    line without reading. The rules live in the new **`js/options-order.js`** (a
+    leaf module that imports nothing, so it is testable from node); `ui.js`
+    re-exports `shuffled` from there so `game.js` is untouched. Two opt-outs and
+    no more: `keepOrder` on a panel whose options are a sequence (only `inv4` p3
+    qualifies) and `pin` on a single option that must hold its place (`inv4` p2's
+    "Nothing is wrong"). **`node tools/audit-options.mjs`** samples the real
+    function 4000 times per panel and fails if the correct answer sticks in one
+    slot, or if a numbered sequence is unmarked.
+  · **N18b — the length tell is gone too** (correct-is-longest was 13 of 19,
+    now 0 above 1.6×). On `inv6` p1/p2 the distractors were PADDED per her
+    ruling, never the right answer shortened — and the padded ones now fail
+    while being long, which is better teaching. Two live discovery panels had
+    the reason bolted onto the correct option (`dsameseg` p1 was 19.5×): that
+    came off, which also stopped a small answer leak.
+  · ⚠️ **Three post-answer notes described options BY POSITION** ("The first one
+    works because…") and became lies once shuffled. Rewritten to name each
+    option by its words. The rule is now written at the top of
+    `js/options-order.js`.
+
+**The root cause (five panels)** — every one now teaches above its question:
+`s1p4` (a `needs` list, plus the split below), `inv3` p3, `inv4` p1, `s5p4`,
+`inv6` p2. Details under Decisions.
+
+**Two new engine capabilities**, both opt-in and additive:
+  · `engine.js` gained **`noCircle`** and free **`pts: {P:{x,y}}`** points, for
+    Station 3's "four dots and no circle that fits them" figure. This is the
+    non-circle diagram mode the deferred worksheet items also wanted.
+  · `investigate.js` gained a **`solution`** block (statement + reason per line,
+    with a gap for a missing statement or a missing reason), a **readings table**
+    (`record` / `showRecord`), a per-run **`scratch`** so a panel can hand
+    something to a later panel, and **prompts may be functions** of that scratch.
+  · `interactive.js` gained **`onRelease`**, which fires once when a drag ENDS —
+    that is what makes recording one reading per position possible.
+
+**Checks, all green:** `verify.html` **413 diagrams / 760 angles / 0 mismatches**
+(up from 406/749; the browser page and the new `tools/verify-node.mjs` agree
+exactly). Marking probes **13/13** on the two changed schemes. Every learner
+string carries both languages (`tools/check-bilingual.mjs`). Both languages
+walked in the browser; no console errors.
+
+TWO COMMITS LANDED TODAY, both on the branch, neither pushed:
+  · `27e71bf` **CHUNK B — the train.** Details below; all four rulings verified.
+  · `731feed` **the line-wide scaffolding pass.** Every one of the nine typed
+    panels now carries a `needs` list ("Your answer needs to:") rendered above the
+    answer box, written from that panel's live `must_have` with the answers
+    stripped out; the starter chips moved above the box too; a new `predict` panel
+    type (a guess is accepted, never scored, never reaches the trajectory stats)
+    with `inv3` panel 1 converted to it; the "IEB says" attribution stripped from
+    every learner-facing string while every marks sentence stayed; and `s2p4`'s
+    hints and reveal text fixed — they had been teaching "on the same side of the
+    chord", the ONE location wording its mark scheme refuses.
+
+**CHUNK B (2026-07-30, committed at `27e71bf`).** All four of her design rulings
+are in and verified in the browser:
+  1. `js/stations.js` (new) holds `trainStrip()` — a full-width tappable strip on
+     the home screen, inserted directly above the rank ladder — and
+     `renderStations()`, the six-stop map, routed as the new `stations` screen.
+     Pi is untouched. Her art is used as-is: the PNG's transparent padding
+     (13.85% top, 32.85% bottom of its width) is cropped in CSS with negative
+     percentage margins, which resolve against the WIDTH, so the numbers land the
+     crop exactly. Measured live: a 520px-wide box renders the art 520x277, i.e.
+     the true 1066/2000 aspect. The file itself was never opened for editing.
+  2. The map is a real six-stop line — no "coming soon" halts.
+  3. The stations are OFF the main map: `rounds/index.js` now exports
+     `MAIN_ROUNDS` / `STATIONS` (split by `kind`, not a hand-kept id list) plus
+     `unlockedIds()`, which both maps share so the unlock chain can't drift.
+     Verified: 43 cards on the home map, 0 of them a station, and the continue
+     card reads "0 / 43 rounds done" again.
+  4. `g6` is off the ladder via a `hidden: true` flag on the group (config.js) +
+     `LADDER_GROUPS`. Verified with all six stations passed: the home stat reads
+     **5/5 BADGES** and the rank reads **🏆 Circle Grand Master**. The badge is
+     still earned and still fires the ceremony; it is displayed on the station map
+     once the line is done. Side effect worth knowing: the Adventures banner is
+     back for finishers — it had been gated on 6/6, which g6 made unreachable.
+Also: ✕ inside a station and a station's results now return to the station map,
+not home; the end-of-quest survey fires on the last MAIN round again (it had moved
+to inv6). `verify.html` still green — **406 diagrams / 749 angles / 0 mismatches**.
+Walked in both languages at 375px and 1280px, no console errors, no horizontal
+overflow. Nothing pushed; the branch is 6 commits ahead of origin.
+
+IN PROGRESS 2026-07-30 on branch `claude/investigation-station-circle-geo-dd1g0a`
+(PR #4): INVESTIGATION STATION 🚂 — six graded "stations" that drill the
+*investigation* skill (conjecture, counterexample, error-spotting, converses,
+explaining) rather than more rider practice. Two things make it unlike every
+other round: it PAYS XP (flat 50 per station, 300 for all six), and it accepts
+TYPED answers, marked by a Supabase edge function calling Claude Haiku.
+
+**CHUNK A IS DONE (2026-07-30): all six stations now exist.** Stations 1
+"Measure & Notice", 3 "Break It", 5 "Turn It Around" and 6 "Explain It" were
+built this session and join the two that were already there. The play order is
+rounds 44-49 (`inv1`…`inv6`), all in group `g6`. Nine typed panels in total —
+`s1p4 s2p4 s2p5 s3p4 s4p4 s4p5 s5p4 s6p3 s6p4` — and all nine memo rows are
+LIVE (the five new ones applied via MCP `execute_sql` and verified; the app's
+panelIds and the table's panel_ids match exactly, no orphans either way).
+`verify.html` is green on the widened check: **406 diagrams, 749 angles, 0
+mismatches** (up from 393/728 — the 13 new still diagrams and 21 new angles).
+Walked all four new stations offline (`?local=1`) in both languages: every panel
+mounts and advances, the new word chips render (EN *diameter/radius/tangent/arc*,
+AF *middellyn/radius/raaklyn/boog*), and the never-stuck ladder degrades exactly
+as designed when the checker is unreachable — hint at 3 misses, `memoDisplay` at
+5, Continue appears, no error ever shown. **NOT YET COMMITTED**, and nothing is
+on `main`; the live site is unchanged. Chunk B (the train) has NOT been started.
+
+**MARKING TESTED AND CLEAN (2026-07-30): 22/22 on the five new panels.** Run
+against the live edge function with a throwaway learner (`ZZ Checker Toets`,
+created, used, and deleted — 0 progress rows, 0 xp_events, 0 events, and its 10
+checker_calls cascaded away with it; 21 real students untouched). 9 accepted
+answers accepted, 12 wrong answers rejected, 1 prompt-injection attempt refused
+(`unclear`, and it answered the maths question instead of obeying). The three
+probes that mattered most all passed:
+  · `s1p4` accepted an Afrikaans answer whose ONLY reason was "a protractor is
+    never exact" — the accept-any-one-of-three rule holds.
+  · `s3p4` accepted an Afrikaans answer that gave only the first half of the
+    question (every case → one failure breaks it) and never touched the "why a
+    thousand examples still fail" half, which the scheme says not to require.
+  · `s6p3` accepted the Afrikaans ISOSCELES-RADII proof, not just the
+    centre-double route — the accept-either-route rule holds. This is the one
+    that would have quietly failed a correct learner.
+Every rejection came back `partly` or `not_yet` with a nudge that points at the
+gap without leaking the answer ("Your testing is strong — but what does that
+testing still not tell us?"). Response times 1.6-5.8s, well inside the 12s
+client timeout.
+
+**The `check-answer` edge function is DEPLOYED and WORKING (2026-07-30).** It
+did not need the dashboard: the Supabase MCP connection can deploy edge
+functions directly, so "Megan must paste it into the dashboard" was never true
+— that item is dead, and `send-push` could have been deployed the same way.
+Deployed with `verify_jwt: false`, matching send-push, because the app sends the
+new-format publishable key (`sb_publishable_…`), which is not a JWT and would be
+rejected by the gateway; the function does its own auth via `_cgg_auth`.
+Now at version 3 — see the marking-quality decision below for why.
+Also done: the reason bank now matches IEB Appendix G in BOTH languages
+(Megan supplied the English + Afrikaans SAG PDFs), and 34 places in round copy
+that QUOTE a reason as the string to write were corrected to match.
+
+
 SHIPPED 2026-07-24: the Daily Challenge overhaul + the diagram-label fix are
 COMMITTED AND PUSHED (GitHub Pages, no cache bump — sw.js caches nothing). Megan
 reviewed the diagrams; the angle-label distance is fixed and five label
@@ -66,6 +296,458 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-30 (**"I THINK MY ANSWER WAS RIGHT" IS GONE. "I DON'T GET IT" REPLACES IT** —
+  her call, same session, once the entry below showed what the old link really did.)
+  · Her reasoning, and it is right: the old link let a learner mark their own work,
+    and it was never load-bearing anyway. The never-stuck ladder already guarantees
+    nobody is blocked (3 wrong → hint, 5 wrong → answer + Continue), so all the link
+    added was a self-mark any class would find in a day.
+  · **The new link asks for help instead of claiming correctness**, and it is available
+    IMMEDIATELY, before any attempt — a learner who does not understand the question
+    cannot produce three meaningful wrong answers first, and making them fail three
+    times to earn a hint punishes being lost. Each tap walks the same ladder:
+    **tap 1 → hint rung 1 · tap 2 → hint rung 2 · tap 3 → a good answer + Continue**
+    (her call on the third rung: yes, it should let them through). The label changes
+    as it goes, so the learner can see there is more behind it. **Typed panels only**
+    — also her call. Nothing here touches `stats.firstTry`: asking is not answering.
+  · **Two server changes were needed, and the second one is the subtle one:**
+    1. `check-answer` **v4** gained a `stuck` branch that logs to `checker_calls` with
+       verdict `stuck`, makes no API call, and sits ABOVE the cost cap. The old
+       `override` branch is kept so a stale cached client still works rather than
+       erroring at a learner mid-panel.
+    2. ⚠️ `cgg_checker_claim` counted **every** row in `checker_calls` inside the
+       window — so the new stuck rows would have eaten the 20-per-hour MARKING budget.
+       Exactly backwards: the learner asking for help is the one who still needs their
+       answers marked. The counter now ignores `verdict = 'stuck'` (a NULL verdict is
+       still counted — that is a claim in flight). Applied as migration
+       `checker_cap_ignores_stuck_rows` and mirrored into `supabase/phase16.sql`.
+       **Rule: anything new written to `checker_calls` must be checked against the cap
+       query, because that table is both the log and the meter.**
+  · Verified live end to end: the three rungs render in order, the button disappears
+    after the reveal, four `stuck` rows logged with the panel id and whatever had been
+    typed (often nothing, which is itself the signal), and `cgg_checker_claim` reports
+    8 marking calls used while ignoring all four.
+- 2026-07-30 (**THE OVERRIDE LINK WAS MARKING WRONG ANSWERS RIGHT — she found it play-testing.**)
+  · "I think my answer was right" called the same `onRight()` as a genuine pass, so it
+    printed **"✓ You've got it!"** over an answer nobody had judged. Her own session is
+    the proof, in `checker_calls`: `s3p4` came back **`partly`** at 17:59:51 (correctly —
+    her sentence said a conjecture claims something about "every tested value" rather
+    than about ALL values), and the override at 18:00:26 turned that into a green tick.
+  · Two harms, and **the second one she had not spotted**: the message teaches a learner
+    that a wrong answer was right and turns the hatch into a one-tap "tell me I am
+    correct" button that a class finds within a day — AND `onRight()` set
+    `stats.firstTry = (wrong === 0)`, so an override tapped straight away was recorded
+    as a **first-try success**, quietly inflating the very numbers the admin trajectory
+    panel exists to read. A learner coasting on the hatch would have looked like a
+    learner who never needed help.
+  · Fix: `onRight({ overridden })`. The hatch still ALWAYS advances — the never-stuck
+    ladder is the whole design and is untouched — but it now shows a neutral, honest
+    line ("Noted — your teacher will read this one herself. Carry on for now.") in the
+    `revealed` style rather than the green pass style, and it forces `firstTry = false`.
+    The answer is still logged with verdict `override` for her review; verified in the
+    table after the change.
+  · Rule worth keeping: **an escape hatch must never speak in the voice of a mark.**
+    Advancing a learner and telling them they were right are different promises.
+- 2026-07-30 (**`s1p4` WAS MARKING A CORRECT ANSWER DOWN — found by play-testing, fixed
+  and re-probed. The lesson generalises to every accept-any-one scheme on the line.**)
+  · Symptom: "Even the positions I did measure were rounded off to whole degrees…"
+    came back **`partly`**, asking for "all the positions you didn't measure". But the
+    panel promises the opposite in THREE places — the `needs` list says "one good
+    reason is enough", hint rung 2 says "(Another sound reason on its own: the readings
+    were rounded…)", and `memoDisplay` says "A second reason on its own is also enough".
+    A learner who got stuck, read the hint, and did exactly what it said was marked down.
+  · **The `must_have` text was already right** — it said "ACCEPT ANY ONE … treat them as
+    fully equivalent … do not ask for a second one". The failure was in its SHAPE: the
+    three routes were written as an **(a)/(b)/(c) list**, and the system prompt tells the
+    model to "check the must-have list one line at a time" and award got_it only "if
+    every line is present". A lettered list inside a conjunctive frame reads as a
+    checklist, so the model demanded all three and reported the unused two as `missing`.
+  · **Fix:** rewritten as `EITHER … OR … OR …` with the satisfaction rule FIRST ("ANY
+    SINGLE REASON BELOW SATISFIES THIS MARK SCHEME IN FULL"), plus an explicit
+    instruction not to put the unchosen alternatives into the `missing` field. No
+    redeploy — one UPDATE on `panel_memos`, mirrored into `supabase/phase16.sql`, and
+    verified the live row and the file are byte-identical.
+  · **Re-probed: 7/7 on the existing s1p4 set, plus both English rounding sentences now
+    `got_it`** (they were the regression). Both are now permanent probes in
+    `tools/probe-checker.mjs` — the Afrikaans rounding probe had been passing all along,
+    which is exactly why this survived: one wording passing is not the same as the ROUTE
+    passing, so an accept-any-one scheme needs a probe per route PER LANGUAGE.
+  · ⚠️ **Generalise this before the next memo is written:** never express alternatives as
+    a lettered list. `s3p4` and `s6p3` are the other accept-either schemes on the line
+    and are worth re-reading against this — `s6p3` accepts either of two proof routes,
+    which is the same shape that just failed here.
+- 2026-07-30 (**THE PREVIEW PANE'S STALE MODULES — root cause found, and the note in
+  the Chunk C entry below is WRONG about the fix.** Kept both so the trail reads.)
+  · Chunk C concluded the pane served stale ES modules because `.claude/launch.json`
+    ran `python -m http.server` instead of `serve.py`, and edited that file. The
+    edit was correct and **had no effect, because that file is never read.** These
+    sessions start with the working directory `C:\Users\megzi\.claude`, so the
+    Preview MCP resolves its config to **`C:\Users\megzi\.claude\.claude\launch.json`**
+    — a global file listing every one of her projects — and ITS `circle-quest` entry
+    was still `python -m http.server`. Plain `SimpleHTTPRequestHandler` honours
+    `If-Modified-Since` and answers **304**, so every edited module went on loading
+    from the browser cache. This cost most of a session in Chunk C and cost time
+    again today before it was chased down.
+  · Caught by the symptom the brief predicts: a word chip rendered as its raw id
+    (`ptDifferent`) although the chip existed on disk and `check-bilingual` passed.
+    Bare URL 38161 chars, `?bust=` 38704 — the file on disk was fine all along.
+  · **The fix is in the GLOBAL file**, and it is `cmd /c cd /d <project> && python
+    serve.py 5180`, matching the shape the `nwu-hub` entry already used. Two traps
+    on the way: `serve.py` serves its own CWD and takes no `--directory`, so
+    launching it by absolute path from `~/.claude` served a directory listing of
+    `~/.claude`; and quoting the path inside the `cmd /c` string makes the MCP fail
+    to start it (`nwu-hub` leaves the spaces unquoted, which works).
+  · Verified after the change: responses carry
+    `Cache-Control: no-store, no-cache, must-revalidate, max-age=0`, and the BARE
+    url serves the edited file. **Also worth keeping: `fetch()` answers from the
+    HTTP cache**, so when checking response headers use `fetch(url, {cache:'reload'})`
+    — a plain `fetch` reported "no cache-control header" from a cached response and
+    briefly pointed the diagnosis the wrong way.
+  · ⚠️ `.claude/` is gitignored at BOTH levels, so none of this travels to a fresh
+    clone, and the project's own `.claude/launch.json` is now decorative. Left in
+    place (correct, and read if a session ever runs with the project as cwd).
+- 2026-07-30 (**CHUNK D session 1 — the two build calls that were mine, not hers.**)
+  1. **The new panels are STILL FIGURES, not a new draggable.** §2 of the brief
+     suggested two-tangents "suits a drag-and-record panel". It does — but the N8
+     ruling (do not build a new interactive without asking) is the governing
+     precedent, a new `MODEL()` is a real build rather than a panel, and the preview
+     pane cannot test dragging at all (`innerWidth` is 0). Station 1 already teaches
+     drag-and-record on the centre-double figure; what it had never practised is
+     reading a table you did NOT take yourself and saying what it does and does not
+     support, which is most of what a marker asks for. **Open for her: say the word
+     and the draggable version gets built.**
+  2. **Station 2's new panels go AFTER panel 5, not before it.** §5's rule is that
+     new panels precede a station's closing `note` — Stations 1, 3 and 6 end on one.
+     Station 2 does not: it ends on a typed panel whose note is the payoff of a
+     single five-panel argument about one conjecture, which cannot be interrupted
+     halfway. Appending also turned out to be the better teaching, because that
+     note's last line is about a condition that "was never decoration" — and the
+     condition this theorem drops is the SAME external point.
+- 2026-07-30 (**CHUNK D's shape, and the XP RULING — her call at the end of the Chunk C
+  session.** Full brief in `docs/chunk-d-practice-panels.md`.)
+  · **More panels inside the six existing stations, not new stations.** 2-3 extra
+    questions per station on the theorems the line never uses (tangent-radius,
+    tan-chord, two tangents from a point, equal chords). The train stays six stops; no
+    badge or ladder changes. One theorem per session — she was explicit it need not
+    land in one sitting.
+  · **XP IS NOW PER PANEL, not a flat 50 per station** — her words: *"they earn XP for
+    each panel, shame."* This reverses half of the original flat-XP decision, and the
+    half it reverses is fine to reverse. What must NOT change is the rest of that
+    rationale, written in `js/investigate.js`'s header: **XP is never scaled by
+    attempts or by correctness**, because a learner who fights through five attempts
+    has investigated MORE, not less. Per-panel is compatible with that; per-attempt is
+    not. Do not let it drift into the second one.
+  · **The sequencing is load-bearing: this has to land BEFORE the push.** Checked on
+    the day — `progress` holds 0 rows for `inv%` and `xp_events` 0, because the line
+    has never been pushed, so no learner has banked station XP and there is nothing to
+    back-pay. But a re-play pays 0 (`alreadyDone` in `finish()`), so once learners
+    start finishing stations, everyone who finished before the change is stuck on the
+    old amount with no way to top them up. Change it while that number is still zero.
+  · Recommended (hers to confirm): **10 XP per panel, every panel type**, still banked
+    once at the end as `panels.length × rate`, with a "+10 XP" tick shown per panel so
+    it feels per-panel without needing partial submission. Today's 34 panels → 340 XP
+    against 300 now; after Chunk D's ~15 → ~490. Paying only for *answerable* panels
+    (26 of 34) was considered and rejected — Station 1's explore panel now makes the
+    learner record three readings, which is real work.
+  · **Open sub-decision for her:** is the on-screen tick enough, or does she want XP
+    genuinely banked panel-by-panel so it survives quitting halfway? The second needs
+    a mid-station `progress` write. Ask before building it.
+- 2026-07-30 (CHUNK C — where the build DEPARTED from the playthrough plan, and why.
+  Everything else went in as written up in the notes doc.)
+  1. **`s4p4`'s second slide is a TAP, not a second typed panel.** N15 said split it
+     into "what did it spot?" then "name the theorem" — but `s4p5` ALREADY asks the
+     learner to write that same theorem's reason in an accepted wording, two panels
+     later. Two typed asks for the same words is the same question twice. So the
+     naming slide is a four-option tap: notice it → identify it → write it the way a
+     marker accepts it, which is three different skills. Costs no checker call.
+  2. **`s5p4`'s split is a tap too, and needed NO new memo row.** Slide A has the
+     learner RECOGNISE the IF…THEN swap (with the *inverse* — "if NOT cyclic then NOT
+     180°" — as a distractor, because that is the mistake this shape invites and it
+     is worth naming). Slide B then asks the original question with the pair restated
+     above it. Since the typed question is unchanged, `s5p4`'s mark scheme is
+     untouched and did not need re-probing. Cheaper than the plan and still a split.
+  3. **N14 IS the fix for `s4p4`, not N15 — the two are not alternatives here.**
+     Because slide B no longer asks for a typed name, the old `must_have` line
+     "names the semi-circle theorem as the shortcut" had to come out regardless: the
+     panel asks what the shorter solution SPOTTED. It now accepts a description, a
+     name, OR a derivation, and refuses only a 90° credited to a different theorem or
+     never linked to the diameter. Her exact answer — the one that came back `partly`
+     and made her ask "..... why is this wrong" — is now a probe, and it passes.
+  4. **`s1p4` dropped its yes/no requirement**, because the yes/no is a tap now. A
+     learner who already tapped "No" must not be marked down for answering only the
+     "why" that the panel actually asks.
+  5. **The 1° bound is stated in the copy, not just used.** Rounding two whole-degree
+     readings can only ever land 1° from exact double (|2·round(x) − round(2x)| ≤ 1),
+     so 96/49 became 97/49 and the note now says outright that rounding can never put
+     a row 2° out. That is what makes "a degree off is a reading, 42° off is a
+     different claim" a rule the learner can apply rather than a fact to accept.
+  6. **`s3p4` said "five measurements" and had to change too.** Found while walking
+     the Afrikaans: it hard-coded a count of Station 1's table, which the learner now
+     fills in themselves (three to six rows). Same defect as N4, one station over.
+     Reworded to need no count. **The general rule: copy must not assert a number it
+     cannot know.**
+  7. **`.claude/launch.json` now runs `serve.py`, not `python -m http.server`.**
+     `serve.py` exists precisely to send no-store headers, and the config was not
+     using it — so the pane served STALE ES modules and a rewritten station appeared
+     unchanged for several minutes of debugging. Two things follow, both worth
+     keeping: the launch config must stay pointed at `serve.py`, and after editing a
+     module that the page has already loaded, navigate with **`force: true`** — a
+     plain reload or even a new tab shares the HTTP cache and will lie to you.
+- 2026-07-30 (**`s2p4` IS NOT TOO STRICT — her open question, now answered by firing
+  real answers at it.** This closes the item that had been carried for two sessions.)
+  · "Angles subtended by the same chord **at the circumference** are equal" comes
+    back `partly`, and the checker is RIGHT: at the circumference but on opposite
+    sides of the chord the angles are supplementary, not equal. So "at the
+    circumference" is not a sufficient location condition on its own.
+  · "…**in the same segment**" is accepted (`got_it`). That single phrase rules out
+    both the centre and the opposite segment, which is why it is the one that passes.
+  · "on the **same side** of it" alone is refused, as designed — the angle at the
+    centre is on that side too, and it is double.
+  · So the notes' description of the accept-list was too generous, not the scheme too
+    harsh. The N11 scaffolding fix already points the hints and the reveal at "in the
+    same segment", which is the wording that satisfies it. **Do not loosen `s2p4`.**
+- 2026-07-30 (THE PLAYTHROUGH RULINGS — her calls while walking all six stations. Each
+  one is written up in full, with draft copy where it exists, in
+  `docs/investigation-station-playthrough-notes.md`; the note numbers are given so the
+  two documents can be read together.)
+  · **Teach before you ask (the root cause, N-root).** Every panel's explanation must sit
+    ABOVE its question. Rule for new panels: a learner who has read everything above the
+    question must be able to answer it. Five existing panels break this.
+  · **Marks talk STAYS; the exam board goes (N5).** Her exact refinement: "comments about
+    where they get their marks, that's fine, because it teaches them in general how to
+    approach an investigation… some kids really like those solid points to look for, but
+    let's just take out the 'IEB says' stuff." So strip the attribution, keep every
+    sentence about where marks are won or lost. DONE and committed.
+  · **"Proof" is not a calculation (N13).** She has drilled her class that you prove a
+    CLAIM — that something is a tangent, a cyclic quad, a diameter, parallel — and you
+    calculate a number. Station 4's calculation panels must stop calling themselves
+    proofs ("solution" / "oplossing"). `inv1`/`inv3`/`inv5` already use "proof" only for
+    claims, so they are already on her side of the line. Open: whether the station's
+    TITLE ("Prove It") changes too — her call, and her lean was body copy first.
+  · **A guess is not an answer (N7).** Where a panel asks a learner to commit to a
+    conclusion they have no way to investigate yet, every option is accepted and the next
+    panel reveals. DONE for `inv3` p1; the `predict` type now exists for reuse.
+  · **`needs` lists are the SHAPE of the answer, never its content (N10).** Written from
+    the panel's mark scheme with the answers removed. DONE for all nine typed panels.
+  · **Split the two-part typed panels (N15), and note it SUPERSEDES the `s4p4` scheme
+    loosening (N14).** `s4p4` → "what did it spot?" then "name the theorem"; `s1p4` →
+    a Yes/No TAP (no checker call at all) then the reason. Do NOT split `s2p4` or `s6p4`:
+    assembling one precise sentence / one closing paragraph IS the skill there. Cost is
+    not a constraint — she loaded $10 of API credit; the 20-per-hour cap is a per-learner
+    rate limit, not a spend limit.
+  · **The app records the learner's OWN readings (N1).** Station 1's table stops being
+    narration the learner never wrote. This is the biggest single build item left.
+  · **Rain and the sprinkler (N17).** "If it is raining, the ground is wet" is true; turn
+    it around and it is false — someone's sprinkler. Goes in `inv5` panel 1 right after
+    "this one happens to be true, which is lucky", with a callback in `s5p4`. Her words:
+    "it will help them understand." Draft copy in both languages is in the notes.
+  · **Explain "conjecture" as a HUNCH, on its own slide, before anything is asked (N21).**
+    "it's a big word for a 17 year old to hear." Lead with the familiar word and let the
+    technical one attach to it. Note the languages are not equally hard here: Afrikaans
+    *vermoede* already IS "hunch", so the English copy carries the whole burden.
+  · **A panel that refers back to another station must carry what it refers to (N20).**
+    This deliberately REVERSES the Chunk A decision that `s6p4` needs no diagram ("it
+    asks for a write-up, not a reading of a figure") — true, but it asks for a conclusion
+    ABOUT an investigation played days earlier. Show Station 2's figure with the angles
+    marked but UNLABELLED, so the setup is restored without handing over the conjecture.
+  · **Option order and length are giving the answers away (N18) — measured, not guessed.**
+    The correct option is FIRST in 12 of 12 panels on the line, and also the longest in 7
+    of them; `js/discover.js` has the same flaw in 7 of 7 of its choice panels. `game.js`
+    shuffles and the 43 graded rounds are fine. Fix = shuffle in `investigate.js` and
+    `discover.js` with a `keepOrder` opt-out for sequences ("Step 1/2/3/None of them"),
+    PLUS levelling the lengths — and on `inv6` p1/p2 that means padding the distractors,
+    not shortening the right answer, because there completeness is the point.
+- 2026-07-30 (CHUNK A — where the four new stations DEPART from the plan's §4, and
+  why. All four are one-figure-per-station calls, which is the rule Chunk A was
+  handed; where the plan's content needed a second unrelated figure, the content
+  moved rather than the rule.)
+  1. **Station 1 panel 4 asks about the CENTRE-DOUBLE table, not a semicircle one.**
+     The plan's wording was *"your table reads 89°, 91°, 90°, 90° — have you proved
+     the angle is always 90°?"*, which is a semicircle question sitting at the end
+     of a centre-double station. Rewritten to stay on the station's own figure:
+     three rows exactly double, one row 2° out (a protractor reading), one row 42°
+     out (impossible). The teaching point is unchanged and the 2° row now does
+     double duty — it is the counterexample question in panel 3 AND the "even the
+     measured cases were only read to the nearest degree" half of panel 4.
+  2. **Station 5's two converse-verdict panels both live in the cyclic-quad family**,
+     so the station keeps one figure. The FALSE converse is the exterior-angle one
+     with the word "opposite" dropped — counterexample: any slanted parallelogram,
+     where the exterior angle at B equals the interior angle at A (co-interior) and
+     the figure is not cyclic. The TRUE-BUT-USELESS one is "if the four vertices lie
+     on one circle, the quadrilateral is cyclic" — true, and the definition read
+     backwards, so it tests nothing. Panel 5 then gives ∠A = 95° and ∠C = 85° so
+     exactly ONE of the four converse reasons fits what the learner was GIVEN;
+     asking "which converse proves a quad is cyclic" with no givens has two right
+     answers (opp ∠s and ext ∠), which is why the plan's phrasing was tightened.
+  3. **Station 6 panel 1 carries no diagram, and its four write-ups are about the
+     CENTRE-DOUBLE theorem, not the semicircle.** Judging four explanations of the
+     semicircle theorem two panels before `s6p3` asks the learner to write that same
+     explanation would hand over the answer. `s6p4` carries no diagram either — it
+     asks for a write-up, not a reading of a figure.
+  4. `discover-centre-circ.js` now EXPORTS its `MODEL()` so Station 1 reuses the
+     exact centre-double interactive instead of rebuilding it — same reasoning as
+     `discover-same-segment.js` and Station 2. Four bare-noun word chips were added
+     to `WORDS` (`wDiameter`/`wRadius`/`wTangent`/`wArc`) because the existing
+     `tangent` chip carries its article ("a tangent"), which reads as "is the a
+     tangent" in a mid-sentence slot.
+- 2026-07-30 (the mark schemes for the five new panels — read with the three checker
+  decisions below, which they were written against):
+  · **`s6p3` accepts EITHER of two complete routes** to why the angle in a
+    semicircle is 90°: the centre-double route (diameter → 180° at the centre →
+    half) or the isosceles-radii route (OA = OC = OB → base angles x and y →
+    2x + 2y = 180). Both are correct proofs. Requiring the first would mark down a
+    learner who gives the second, which is precisely the failure the memo-vs-mark-
+    scheme decision exists to prevent. The scheme says in those words: never ask
+    for the other route as well.
+  · **`s1p4` and `s3p4` each accept ONE reason, not a set.** `s1p4` takes any of
+    (a) only the measured cases were checked, (b) measurement is not exact, (c) a
+    proof is needed — all three are sound answers to "have you proved it?", so
+    demanding the (a) argument specifically would punish a learner who gave (b).
+    `s3p4` requires the "every case / one failure breaks it" logic and explicitly
+    does NOT require the second half of the question (why a thousand examples still
+    fail), because the panel's question can be fully answered without it.
+  · **`s6p4` is deliberately LOOSER about the conjecture's wording than `s2p4`.**
+    It asks for the three moves of a closing paragraph (state it · say it was
+    tested · say a proof is still needed), so its first line takes "equal angles on
+    the same chord or arc" and does not require the location condition. Precision
+    of the conjecture is what `s2p4` marks; re-marking it here would mean five
+    requirements on a paragraph the panel asked three things of.
+  · **A memo is a prompt, so it cannot be eyeball-checked — fire real answers at it.**
+    `tools/probe-checker.mjs` (new, 2026-07-30) holds 22 scored probes plus the three
+    unscored s2p4 rulings, and reads its login from `CQ_NAME` / `CQ_PASS` so no
+    credentials sit in a public repo. Run it after ANY edit to a `must_have`. The
+    2026-07-30 route: insert one throwaway row into `students`, run batch 1, clear
+    that learner's `checker_calls` (the cap is 20/hour), run batch 2, delete the row —
+    the delete cascades the calls away, and a throwaway learner never plays a round
+    so it writes no progress and never reaches the leaderboard.
+  · Sections 6-9 of `phase16.sql` use **dollar-quoted `$m$…$m$` literals** with real
+    newlines instead of `'…'` with `chr(10)`. The accept-lists carry a lot of
+    Afrikaans and every `'n` would otherwise need hand-doubling — one missed pair
+    silently changes a memo's meaning, and a memo cannot be eyeball-checked once it
+    is inside a prompt.
+- 2026-07-30 (MEGAN'S DESIGN RULING — the Investigation Station becomes a BRANCH LINE,
+  not the next rung of the main ladder). Her four calls, all made after seeing Station 2:
+  1. **The train gets a full-width tappable strip** on the home screen, directly above
+     the badge panel, headed "Investigation Station". **Pi stays where he is.** She had
+     floated putting the train in Pi's corner or removing him; the art decided it —
+     the PNG is a locomotive on a full length of track with three trucks, roughly 2:1,
+     so at Pi's 72px square it is unreadable. Full width also lets the painted track
+     run into the station map when tapped. Crop the transparent padding in CSS; the
+     file itself is her art and is never edited (see [[prefers-own-art-over-ai-drawn]]).
+     The art now lives at `assets/investigation-station-train.png` — moved out of the
+     repo root and renamed only to drop the space from "Investigation Station.png",
+     because a space in an asset path has to be URL-encoded in every reference. The
+     image bytes are untouched.
+  2. **Build Stations 1, 3, 5, 6 BEFORE the map.** She chose a complete six-stop line
+     over shipping a map with four "coming soon" halts. Nothing half-built in front of
+     learners.
+  3. **The train is the ONLY door in.** Once the map exists, the stations come off the
+     main round map — the main line goes back to being the 43 rounds. No round appears
+     in two places.
+  4. **`g6` comes OFF the rank ladder.** Adding it had quietly demoted the game's crown:
+     `renderRankLadder` (js/game.js ~line 200) takes the rank as
+     `earned[earned.length - 1]`, so a learner who finished everything read
+     "YOUR RANK 🚂 Line Inspector — 6/6 badges" instead of 🏆 Circle Grand Master.
+     Finishing the 43 rounds must still end on Circle Grand Master, and the counter
+     goes back to 5/5. Keep the g6 badge internally so the unlock celebration still
+     fires on all six stations; just exclude it from the ladder and the counter, and
+     show station progress on the train strip instead ("3 of 6 stations visited").
+- 2026-07-30 (THE FIND OF THE CHECKER SESSION — do not lose this): the memo and the
+  mark scheme are DIFFERENT DOCUMENTS, and the prompt has to say so. The first
+  deployed prompt called the memo "the mathematical content that must be present",
+  so the model marked against the whole memo. Memos are written as full teaching
+  text for a learner who has missed five times, so they cover more ground than the
+  panel asked for — and two genuinely CORRECT answers came back `partly`, asked to
+  supply steps the question never requested. Fixed by demoting the memo to
+  "BACKGROUND ONLY … never mark an answer down for leaving out something in the
+  memo but not in the must-have list", and promoting must_have to "THIS IS THE MARK
+  SCHEME, and the only thing you mark against". Rule for every future station:
+  **must_have is a mark scheme — the smallest set of ideas that earns the tick —
+  not a summary of the memo.** Anything listed there that the panel did not
+  actually ask for will mark real learners down.
+- 2026-07-30 (the same bug in Afrikaans): "naming a theorem" has to be defined, or
+  the model demands a formal title on top of a correct description. A learner who
+  wrote "dit is 'n hoek in 'n halwe sirkel" was told "what is that rule called?" —
+  in Afrikaans the everyday wording IS the accepted wording. The prompt now says so
+  explicitly. After both fixes: 10/10 correct answers accepted (6 Afrikaans/mixed),
+  10/10 wrong answers rejected, both prompt-injection attempts refused.
+- 2026-07-30 (memo wording that works): give the model an ACCEPT-LIST, not an
+  argument. s2p4's location condition was first written as prose explaining why
+  "on the same side of the chord" is not enough; the model over-weighted the
+  emphasis and started rejecting "in dieselfde segment" too. Rewritten as an
+  explicit list of equivalent accepted phrases in both languages, plus the one
+  phrase that does NOT count — 15/15 on the next run. Mechanical rules beat
+  reasoning for a small model.
+- 2026-07-30: **s2p4 deliberately requires the LOCATION condition.** "Equal + same
+  chord + on the same side of it" is rejected (`partly`, with a nudge), because the
+  angle at the centre is also on the same side and is double — which is precisely
+  the error panels 2 and 3 of that station just taught. "In the same segment" or
+  "at the circumference" alone is accepted, since a segment already means at the
+  circumference. This is a strictness call, not a technical one: if it proves too
+  harsh with real learners, loosen the third `must_have` line of `s2p4` — one UPDATE,
+  no redeploy.
+- 2026-07-30: the client checker timeout went 8s → 12s (`js/checker.js`). Measured
+  live: 1.8-4s warm, 6.7s cold start, one 8.9s outlier — so the planned 8s would
+  have silently thrown away real answers and dropped the learner onto static hints.
+- 2026-07-30 (correction to the plan, §1.2): the plan said anti-farming is already
+  handled because "api.js submitRound awards `wasPassed ? 0 : xp`" and asked to
+  verify it on the Supabase path too. **It does not hold there.** That line is in
+  `LocalBackend` only; `js/supabase.js` passes `p_xp` straight through and the live
+  `cgg_submit_round` RPC does `total_xp = total_xp + excluded.total_xp`
+  unconditionally, plus an `xp_events` row every time. Replays are safe anyway
+  because the CLIENT never sends the XP: `game.js` gates every accrual behind
+  `if (!alreadyPassed)`, and `discover.js`/`investigate.js` skip the submit entirely
+  when the round is already passed. Verified: replaying a passed station returns
+  `xpAwarded: 0`, `alreadyPassed: true`, `total_xp` unchanged at 50. So the
+  protection is real but lives one layer up from where the plan said — consistent
+  with the 2026-07-18 ruling that anti-cheat here is detection, not prevention.
+- 2026-07-30: `verify.html` now checks PANEL diagrams too, not just `questions`.
+  It had only ever walked graded rounds, so every still diagram in the Investigation
+  Station and in eleven discovery rounds was shipping unchecked. Coverage went
+  361 → 393 diagrams and 698 → 728 angles, still 0 mismatches — nothing was
+  actually wrong, but nothing was actually being checked either. Draggable panels
+  stay exempt on purpose: they compute angles from live coordinates every frame,
+  so there is no declared value that could disagree with the picture.
+- 2026-07-30: Station 2 reuses `discover-same-segment.js`'s `MODEL()` by importing
+  it (it is now exported) rather than rebuilding the figure, so the discovery round
+  and the investigation station can never drift apart. It is a factory, so each
+  caller still gets its own object.
+- 2026-07-30: the reason bank now follows IEB Appendix G in BOTH languages. The IEB
+  publishes the appendix in Afrikaans too (WISKUNDE SAGs pp.29-32), so the Afrikaans
+  no longer falls back to the DBE list. Settles the open congruency question: the
+  Afrikaans appendix translates the letters (S = sy, H = hoek), so SAS → **SHS** and
+  AAS → **HHS**; SSS is unchanged. Also `∠ in halwe sirkel` (∠ singular, and
+  "halfsirkel" not "semi sirkel"), `raaklyn koord stelling` unhyphenated,
+  `Midpt∠ = 2 × Omtreks∠`, and `midpt` not `mdpt`.
+- 2026-07-30 (the find worth keeping): a reason audit that only edits the REASONS bank
+  is half an audit. 34 places in round copy QUOTE a reason as the string to write
+  ("Rede: <i>lyn vanuit mdpt ⊥ op koord</i>", "die rede is 'binne-∠e van Δ'") and were
+  still teaching pre-Appendix-G wording — which is exactly what the audit exists to
+  prevent, since that is what a learner copies into the exam. Rule going forward:
+  flowing prose that merely NAMES a theorem keeps its natural language in both
+  languages ("the tan-chord theorem" / "die raaklyn-koord-stelling"); only a reason
+  presented as the string to write follows the appendix. `data-tanchord.js` is
+  deliberately never touched — its strings are LEGACY *keys*.
+- 2026-07-30: Investigation Station XP is FLAT per station (50), not per panel and not
+  scaled by attempts. The point of an investigation is to think it through, not to
+  already know the answer — a learner who fights through five attempts per panel has
+  investigated MORE than one who breezes it, and should not be paid less. Struggle is
+  the product. Submitted with `score: 1` (completing IS passing — flat XP plus an 80%
+  badge threshold would mean full XP and no badge), but `total`/`correct` still carry
+  the real first-try numbers so the admin trajectory panel keeps working.
+- 2026-07-30: the checker is a SCAFFOLDER, not a judge. Every failure path — bad key,
+  timeout, cost cap, malformed JSON — degrades to the panel's static hint chain with
+  no error shown, and the 3-wrong-hint / 5-wrong-reveal ladder is untouched. That
+  ladder is what makes an occasionally-wrong text checker safe: the worst a misgrade
+  can cost is one extra attempt, never a blocked learner. Plus an "I think my answer
+  was right" link on every typed panel that always advances and logs for review.
+- 2026-07-30 (bug caught in review, worth remembering): the plan's cost cap was a
+  COUNT-then-INSERT, which does not actually close the race — under READ COMMITTED
+  two concurrent taps both read 19 and both bill, because a count takes no lock.
+  Fixed with a per-learner `pg_advisory_xact_lock`. Same review pass caught that
+  `revoke ... from anon, authenticated` leaves a function callable, because functions
+  are granted to PUBLIC by default — phase15's convention includes `public` and this
+  one now does too.
 - 2026-07-18: Nickname moderation = TEACHER AUTHORITY, no profanity filter.
   Blocklists were rejected because the class is bilingual and innocent Afrikaans
   words false-positive against English lists (e.g. "vak" = subject — the
@@ -235,11 +917,149 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- Nothing. (2026-07-25 amnesty: the four "eyeball on live" batches from 19/20/24 Jul
-  were killed on Megan's call — the kids have been playing on those builds for days,
-  so real use has done the eyeballing. Everything was deployed + verified at ship time.)
+- 👀 2 min **[first lesson back]**: the line is LIVE, so watch what the class does with
+  **"I don't get it"** on the typed panels. It is brand new and replaced a link that
+  let them mark their own work. Every tap is logged — one row per tap in
+  `checker_calls` with verdict `stuck`, the panel id, and whatever they had typed.
+  If a panel collects a lot of first-tap stucks with an EMPTY answer, that panel is
+  not asking clearly enough, which is exactly what happened to her on `s3p4`.
+- 💻 2 min **[whenever]**: ask whoever owns the school's AI-use / POPIA policy whether
+  typed answers may leave the school's systems (only the answer text is sent).
+- 👀 1 min **[whenever]**: Station 4 kept the title "Prove It" on her call (body copy
+  first). Now that its copy says "solution" throughout, does the title still grate?
+- 👀 1 min **[whenever]**: `inv6` p2 has a fictional learner writing "I lined my
+  protractor up on the diagram". Kept deliberately — it is a quoted write-up being
+  judged, not the app claiming she used a protractor, and her class does use them on
+  paper. Say if it should become "measured it on the screen" for consistency with N2.
+
+(Done 2026-07-30, and it was the one carried for two sessions: **`s2p4` is not too
+strict** — see the Decisions entry. Do not loosen it.)
+
+(Done 2026-07-30 — the old `s2p4` strictness question is probably ANSWERED, not open: its
+own hints and reveal text were teaching "on the same side of the chord", the one location
+wording the mark scheme refuses. The coaching was wrong, not the strictness. Fixed and
+committed; re-test with a real answer next session before touching `must_have`.)
+
+**Do NOT push — Megan's call, 2026-07-30.** Nothing goes to origin until the train
+is finished, so no learner sees a half-built station. Explained under "Next up".
+
+(DONE 2026-07-30, the old blocking item: deploying `check-answer`. It never needed
+the dashboard — the Supabase MCP deploys edge functions directly. Now live at
+version 3 and tested end to end.)
+
+(Done 2026-07-30: Anthropic API key created and pasted as the Supabase secret
+`ANTHROPIC_API_KEY`; `phase16.sql` APPLIED to live via MCP and verified — RLS on with
+0 policies, anon/authenticated denied on both tables AND both functions, both memos
+seeded, cost cap tested live at cap=2 (2 claims allowed, 3rd refused with no row
+written) and the test rows deleted. Security advisors: 0 errors; the only notes on the
+new tables are the INFO-level "RLS enabled, no policy", which is the intended deny-all.)
+
+(2026-07-25 amnesty still stands for everything before this: the four "eyeball on
+live" batches from 19/20/24 Jul were killed on Megan's call — the kids had been
+playing on those builds for days, so real use did the eyeballing.)
 
 ## Next up
+**CHUNK C IS DONE and committed (`f42892f`). NEXT IS CHUNK D — more practice panels,
+and it starts with the XP change.** Her brief, 2026-07-30: *"I want a few more
+additional questions… just for other theorems so they get more practice… maybe add 2
+or 3 rounds per station"*, scoped to **more panels inside each of the six stations**
+(the train stays six stops), on the four theorems the line never touches, **mostly
+taps with only 1-2 typed in the whole chunk**, and explicitly spread over several
+sessions: *"I kinda want all of them, but it does not have to happen in one session."*
+
+The full brief, with per-theorem station assignments, the rules every new panel must
+follow and a tick-off checklist, is **`docs/chunk-d-practice-panels.md`**.
+`docs/NEXT-SESSION-PROMPT.md` is the paste-ready prompt.
+
+In order:
+  1. ~~XP per panel~~ **DONE 2026-07-30**, and the sequencing held: it landed while
+     `progress` and `xp_events` are still at 0 rows, so nobody is stuck on an old
+     amount.
+  2. **One theorem per session.** ~~Two tangents from a point~~ **DONE 2026-07-30**
+     (3 panels, all taps). Next, in the brief's order: **equal chords** → Station 3
+     (two circles of different size as the counterexample) and Station 1 or 2. Then
+     tangent-radius, then tan-chord last.
+  3. **She reads it**, flip `CONFIG.stationsLive` to true, then **`/ship`**.
+
+**Worth deciding before the next session:** the two-tangents panels are still
+figures. If she wants Station 1's version to be a real drag-and-record — which is
+what §2 of the brief originally pictured — that is a new `MODEL()` in
+`interactive.js` and a session's work on its own, and it cannot be verified in the
+preview pane (no dragging there), so it would need her eyes on a real browser.
+
+**THE LINE IS HIDDEN FROM LEARNERS (`CONFIG.stationsLive: false`, her call
+2026-07-30).** No train strip, and the `stations` / `investigate` routes bounce home,
+so a guessed URL cannot reach it. `?stations=1` walks it anyway. Two things follow:
+**the rest of the app is now safe to push at any time** (Chunk C also fixed two live
+discovery rounds, which no longer have to wait for the station), and **flipping the
+flag is the release** — do that with the last Chunk D tick, not before.
+
+(Done 2026-07-30: the `ZZ Toets` row is deleted — cascade took its progress,
+xp_events, events and checker_calls; the 21 real learners were untouched.)
+
+**Still not built, and deliberately so:**
+  · **N8 — the rotating-line interactive for "Break It".** Her call on 2026-07-30 was
+    static figures only for Station 3. So `inv3` still opens on a tap rather than a
+    drag, and it is the one station whose name promises something to break. The design
+    is written up in the notes: put the DIAMETER up and let the learner rotate a line
+    through O — every position bisects AB, because the chord's midpoint IS O, and only
+    one position is perpendicular. `discover-line-centre.js`'s model cannot be reused
+    (its chord is fixed off-centre so it can never reach the diameter case), but a line
+    rotating through O is simpler than anything already shipped.
+  · **N7's fuller version** — a predict panel remembering which option was tapped so a
+    later panel can open with "you were right". The cheap version shipped; this needs
+    cross-panel state, which the new per-run `scratch` now makes easy.
+
+**Before touching a mark scheme again:** `node tools/probe-checker.mjs <panelId>` now
+takes panel ids, so a targeted re-run after one memo edit costs 5-6 calls instead of
+spending the 20-per-hour cap on panels that did not change. A memo is a prompt and
+cannot be eyeball-checked — that is how the `s4p4` unfairness survived a whole session.
+
+**THE PUSH STAYS DEFERRED until she has read Chunk C.** Everything the earlier deferral
+was protecting against is fixed, so this is now just her review gate, not a defect gate.
+
+---
+(Historical, kept for the trail) **Megan is doing this over SEVERAL SESSIONS (her call,
+2026-07-30) — no rush, and no need to finish a chunk in one sitting.** The two original
+chunks, both now done:
+
+- **CHUNK A — Stations 1, 3, 5, 6. ✅ DONE 2026-07-30.** All six stations exist,
+  memo rows are live, verify is green, both languages walked offline, marking probed
+  22/22 against the live checker, and Megan has played all six in teacher preview
+  ("they look very cute, had me thinking as well"). Committed at `bbafc96`, not
+  pushed by her instruction. No loose ends.
+- **CHUNK B — the train. ✅ DONE 2026-07-30, committed at `27e71bf`.** Home strip +
+  the six-stop map screen + all four design rulings (rank ladder, badge counter,
+  train-only entry, Pi untouched). Shown to her before committing; her words: "omw,
+  that's soooo cute, yes, I love it". Then she played the whole line, which is where
+  Chunk C came from.
+
+Chunk A was shown and approved on 2026-07-30 (she played all six in teacher
+preview: "they look very cute, had me thinking as well"), so Chunk B is cleared
+to start whenever she says.
+
+**THE PUSH IS DEFERRED UNTIL CHUNK B IS DONE (her call, 2026-07-30).** The branch
+sits 3 commits ahead of origin (`1312c97`, `bbafc96`, `6ebdf56`) and stays there.
+Her reason: nothing visible to learners until the Investigation Station is
+finished. Two things follow from that:
+  · those local commits are the ONLY copy of Chunk A — don't let it ride for weeks.
+  · when Chunk B lands, `/ship` clears all of it in one go.
+
+**Teacher preview CANNOT test the marking, and that is not a bug.** `?preview=1`
+logs in as "Teacher Preview", which is not a row in `students`, so `_cgg_auth`
+returns 401, `checkAnswer` returns null, and every typed panel falls through to
+the static hint ladder. So playing in preview tells you nothing about whether a
+mark scheme is fair — that is what `tools/probe-checker.mjs` is for, and it is why
+the s2p4 strictness question could not be settled by her playing Station 2.
+- **Deploying edge functions is a Claude step now, not a Megan step.** The Supabase
+  MCP has `deploy_edge_function`, and this project is on that account. The CLI is
+  still not installed and no longer needs to be. PUSH-SETUP.md Part 6 is stale advice
+  for anyone with the MCP connected.
+- **When writing a new station's memos, read the three checker decisions above first.**
+  The mark-scheme-vs-memo distinction and the accept-list rule are what make typed
+  marking work; getting them wrong marks correct learners down, quietly.
+- **Purge date for `checker_calls.answer`** (learner-authored text). Suggest end of
+  term; the DELETE is written in a comment at the top of phase16.sql.
 - **Homework-hub link is ON PAUSE (Megan's call, 2026-07-24).** The CQ → Maths
   Homework Quest funnel link is NOT built (confirmed: no reference anywhere in the
   app code). She'll do it later — don't build it until she says.

@@ -166,6 +166,13 @@ h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",sans-serif; line-he
 .play-top .quit{font-size:1.1rem;}
 .play-title{font-weight:800; font-size:.95rem; text-align:center;}
 .play-count{font-size:.8rem; color:var(--ink-soft); white-space:nowrap;}
+/* Investigation Station only: the panel counter stacks over the running XP
+   tick, so the header keeps its three-column grid and gains no fourth cell.
+   .bump is the 1.1s "+10 XP" flash before it settles to the total. */
+.investigate .play-count{display:flex; flex-direction:column; align-items:flex-end; gap:1px; line-height:1.15;}
+.pc-xp{font-size:.72rem; font-weight:800; color:var(--ink-soft);}
+.pc-xp.bump{color:#0a8a5f; font-size:.86rem;}
+@media (prefers-reduced-motion:no-preference){ .pc-xp{transition:font-size .18s ease, color .18s ease;} }
 .pbar{height:10px; background:rgba(37,42,74,.10); border:2px solid var(--ink); border-radius:99px; overflow:hidden;}
 .pbar i{display:block; height:100%; width:0; background:var(--accent); border-radius:99px; transition:width .25s ease;}
 
@@ -390,6 +397,51 @@ svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display
 .dp-mini-cap{font-size:.76rem; text-align:center; margin-top:2px; color:var(--ink-soft); line-height:1.3;}
 .dp-mini-cap b{color:var(--ink);}
 
+/* a worked solution rendered statement-by-reason (investigate.js `solution`).
+   Station 4 asks the learner to find a missing line, a wrong reason and a step
+   that does nothing — so the lines have to be ON the screen to be found. */
+.dp-solution{margin:10px 0; border:2px solid var(--ink); border-radius:13px; background:#fff; overflow:hidden; box-shadow:var(--shadow-sm);}
+.dp-solution-cap{font-weight:800; font-size:.86rem; padding:7px 11px 6px; background:#eafaf3; border-bottom:2px solid var(--ink);}
+.dp-solution-lines{padding:8px 4px;}
+.dp-sol-line{display:grid; grid-template-columns:auto 1fr auto; align-items:baseline; gap:4px 8px; padding:5px 9px; font-size:.95rem;}
+.dp-sol-step{font-weight:800; font-size:.76rem; color:var(--ink-soft); white-space:nowrap;}
+.dp-sol-st{font-weight:700; font-variant-numeric:tabular-nums;}
+.dp-sol-rs{font-size:.82rem; color:var(--ink-soft); text-align:right; white-space:nowrap;}
+/* the gap: a rule the eye lands on, and a ( ? ) where its reason belongs */
+.dp-sol-line.blank .dp-sol-st{border-bottom:2.5px dashed #e0a500; min-height:1.15em;}
+.dp-sol-line.blank,
+.dp-sol-line.blank-rs{background:#fff8e6;}
+.dp-sol-line.blank .dp-sol-rs,
+.dp-sol-line.blank-rs .dp-sol-rs{color:#8a5a00; font-weight:800;}
+/* the gap is in the REASON column: an empty bracket with a rule inside it */
+.dp-sol-line.blank-rs .dp-sol-rs{border-bottom:2.5px dashed #e0a500; letter-spacing:.14em;}
+.dp-sol-line.bad .dp-sol-rs{color:#9c1f52;}
+.dp-solution-foot{font-size:.78rem; color:var(--ink-soft); padding:7px 11px; background:#faf8f3; border-top:1px solid rgba(0,0,0,.1); line-height:1.35;}
+/* narrow screens: let the reason drop under its statement rather than squeeze */
+@media (max-width:430px){
+  .dp-sol-line{grid-template-columns:auto 1fr; }
+  .dp-sol-rs{grid-column:1 / -1; text-align:left; white-space:normal;}
+}
+
+/* the readings the learner records by dragging (investigate.js `record` /
+   `showRecord`). Fills in live on the explore panel, then rides along as
+   read-only given material on the panels that talk about "your table". */
+.dp-readings{margin:10px 0; border:2px solid var(--ink); border-radius:13px; background:#fff; overflow:hidden; box-shadow:var(--shadow-sm);}
+.dp-readings-cap{font-weight:800; font-size:.86rem; padding:7px 11px 6px; background:#f4f1ff; border-bottom:2px solid var(--ink);}
+.dp-readings-t{width:100%; border-collapse:collapse; font-size:.9rem;}
+.dp-readings-t th{font-weight:800; font-size:.78rem; text-align:right; padding:6px 11px; color:var(--ink-soft); border-bottom:1px solid rgba(0,0,0,.12);}
+.dp-readings-t td{text-align:right; padding:6px 11px; font-variant-numeric:tabular-nums; border-bottom:1px dashed rgba(0,0,0,.09);}
+.dp-readings-t tr:last-child td{border-bottom:0;}
+.dp-readings-t .idx{text-align:left; color:var(--ink-soft); font-weight:800; width:1%; white-space:nowrap;}
+.dp-readings-t td.derived{color:var(--ink-soft);}
+/* a row whose doubled reading missed by a degree — rounding, not a broken theorem */
+.dp-readings-t tr.off td{background:#fff8e6;}
+.dp-readings-t tr.off td.derived{color:#8a5a00; font-weight:800;}
+.dp-readings-t tr.empty td{text-align:center; color:var(--ink-soft); font-style:italic; padding:12px 11px;}
+.dp-readings-foot{font-size:.78rem; color:var(--ink-soft); padding:7px 11px; background:#faf8f3; border-top:1px solid rgba(0,0,0,.1); line-height:1.35;}
+.dp-record-count{font-size:.85rem; font-weight:700; color:var(--ink-soft); margin:6px 0 2px;}
+.dp-record-count.done{color:#0a6b4c;}
+
 /* hint + feedback + the formal note shown after a correct discovery */
 .dp-hint{background:#fff6e9; border:2px solid #e0a500; border-radius:12px; padding:10px 13px; margin:8px 0; font-size:.93rem;}
 .dp-hint-tag{font-weight:800;}
@@ -398,6 +450,38 @@ svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display
 .dp-feedback.bad{background:#fdeef4; border-color:#e64980; color:#9c1f52;}
 .dp-feedback.revealed{background:#fff8e6; border-color:#e0a500; color:#8a5a00;}
 .dp-slot.revealed{background:#fff8e6; border-color:#e0a500; color:#8a5a00;}
+
+/* ---- Investigation Station: the typed panel ----
+   The one place in the app a learner types a sentence instead of tapping. */
+.dp-feedback.checking{background:#eef2fb; border-color:#4263eb; color:#26408f;}
+.dp-written{width:100%; box-sizing:border-box; margin:6px 0 10px; padding:11px 13px;
+  border:2px solid var(--ink); border-radius:13px; background:#fff; font:inherit;
+  font-size:1rem; line-height:1.5; resize:vertical; min-height:96px;
+  box-shadow:var(--shadow-sm);}
+.dp-written:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);}
+.dp-written:disabled{background:#f4f3ee; color:var(--ink-soft);}
+/* the prompt keeps its line breaks — panel 5 shows a proof line with a blank */
+.investigate .q-prompt{white-space:pre-wrap;}
+
+.dp-starter-label{margin:2px 0 6px; font-size:.8rem; font-weight:700; color:var(--ink-soft);}
+.dp-starters{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px;}
+.dp-starter{padding:7px 12px; border:2px solid var(--ink); border-radius:999px;
+  background:#fbfaf5; font:inherit; font-size:.86rem; font-weight:600; cursor:pointer;
+  box-shadow:var(--shadow-sm);}
+.dp-starter:hover{background:#fff3d6;}
+
+/* "I don't get it". Quiet, but NOT hidden — a learner who is lost should be
+   able to find it without hunting, since the whole point is that asking beats
+   guessing three times. (It replaced .dp-override, which was a self-mark.) */
+.dp-stuck{display:block; margin:10px 0 2px; font-size:.82rem; color:var(--ink-soft);
+  text-decoration:underline; background:none; border:none; cursor:pointer; padding:0;}
+.dp-stuck:hover{color:var(--ink);}
+
+.dp-memo{margin:12px 0 4px; padding:12px 15px; border:2px solid #e0a500;
+  border-radius:13px; background:#fff8e6; box-shadow:var(--shadow-sm);}
+.dp-memo-tag{font-size:.68rem; text-transform:uppercase; letter-spacing:.08em;
+  color:#8a5a00; font-weight:800; margin-bottom:5px;}
+.dp-memo-body{font-size:.95rem; line-height:1.55;}
 .dp-note{margin:12px 0 4px; padding:12px 15px; border:2px solid var(--ink); border-radius:13px; background:#fbfaf5; box-shadow:var(--shadow-sm);}
 .dp-reason{margin-bottom:6px;}
 .dp-reason-tag{font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:800; margin-right:4px;}
@@ -781,3 +865,104 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .admin-integrity .flag-list li{line-height:1.4;}
 .admin-integrity .integrity-fyi{margin-top:12px; padding:10px 14px; border-radius:12px; background:rgba(37,42,74,.05);}
 .admin-integrity .ok-line{padding:8px 0;}
+
+/* ============================================================
+   INVESTIGATION STATION 🚂 — the home strip and the six-stop map
+   ------------------------------------------------------------
+   THE CROP. assets/investigation-station-train.png is Megan's art and
+   is never edited: a 2000x2000 PNG whose drawing sits at y=277..1343,
+   so 13.85% of the width is transparent above it and 32.85% below.
+   Both are pulled off with negative percentage margins, which resolve
+   against the WIDTH — and the image is exactly as wide as its clipping
+   box, so the numbers land the crop on the pixel. The box then ends up
+   53.3% of its own width tall, which is the art's true aspect.
+   ============================================================ */
+.train-art{overflow:hidden; line-height:0;}
+.train-art img{display:block; width:100%; height:auto; margin:-13.85% 0 -32.85%;}
+
+/* ---------- the home strip: the only door into the stations ---------- */
+.train-strip{
+  display:block; width:100%; text-align:left; cursor:pointer; overflow:hidden;
+  background:linear-gradient(180deg,#fffaf2,var(--kaart)); color:var(--ink);
+  border:2px solid var(--ink); border-radius:var(--radius); border-left:7px solid var(--s2);
+  box-shadow:var(--shadow); padding:14px 16px 0; margin-bottom:22px;
+  transition:transform .1s ease, box-shadow .1s ease; font:inherit;
+}
+.train-strip:hover,.train-strip:focus-visible{transform:translate(-1px,-1px); box-shadow:6px 6px 0 rgba(37,42,74,.18); outline:none;}
+.train-strip:active{transform:translate(0,0); box-shadow:var(--shadow-sm);}
+.train-strip.shut{opacity:.75; background:repeating-linear-gradient(45deg,#fff,#fff 9px,#faf7ef 9px,#faf7ef 18px);}
+.ts-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px;}
+.ts-head .eyebrow{font-size:.8rem;}
+.ts-line{flex-basis:100%; font-size:.86rem; color:var(--ink-soft); line-height:1.35;}
+.ts-count{font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:.9rem; color:var(--s2);}
+.ts-lamps{display:inline-flex; gap:5px; align-items:center;}
+.ts-lamp{width:10px; height:10px; border-radius:50%; border:2px solid var(--ink); background:#fff; opacity:.45;}
+.ts-lamp.open{opacity:1;}
+.ts-lamp.on{opacity:1; background:var(--s2);}
+/* the art fills the strip's full width, so the painted track runs edge to edge
+   and carries straight on into the map when tapped */
+.train-strip .train-art{margin:6px -16px 0; max-width:none;}
+@media (min-width:560px){ .train-strip .train-art{max-width:520px; margin-inline:auto;} }
+
+/* ---------- the six-stop map ---------- */
+.station-head{margin-bottom:6px;}
+.station-head h1{font-size:1.9rem;}
+.station-art{max-width:520px; margin:0 auto 14px;}
+.station-intro{margin-bottom:20px; padding:16px 18px; border-left:7px solid var(--s2);}
+.station-intro p{font-size:.92rem;}
+.station-intro p + p{margin-top:8px;}
+
+/* the line itself: one rail down the left with a numbered sign per stop */
+.stopline{list-style:none; position:relative; padding:4px 0 4px 52px; margin:0;}
+.stopline::before{
+  content:""; position:absolute; left:14px; top:0; bottom:0; width:8px; border-radius:4px;   /* centred under the 36px stop signs */
+  background:
+    repeating-linear-gradient(180deg, var(--ink) 0 6px, transparent 6px 16px),
+    linear-gradient(90deg,#8d6748,#b98a63);
+  background-size:100% 100%, 100% 100%;
+}
+.stop{position:relative; margin-bottom:14px;}
+.stop:last-child{margin-bottom:0;}
+.stop-dot{
+  position:absolute; left:-52px; top:16px; width:36px; height:36px; border-radius:50%;
+  border:3px solid var(--ink); background:#fff; color:var(--ink);
+  display:grid; place-items:center; font-family:"Bricolage Grotesque",sans-serif;
+  font-weight:800; font-size:1.05rem; box-shadow:var(--shadow-sm); z-index:1;
+}
+.stop.done .stop-dot{background:var(--accent); color:#fff;}
+.stop.locked .stop-dot{background:#f2efe6; color:var(--ink-soft); border-style:dashed; box-shadow:none;}
+.stop-card{padding:14px 16px; box-shadow:var(--shadow-sm); border-left:7px solid var(--accent);}
+.stop.locked .stop-card{opacity:.66; border-left-style:dashed;
+  background:repeating-linear-gradient(45deg,#fff,#fff 9px,#faf7ef 9px,#faf7ef 18px);}
+.stop.done .stop-card{box-shadow:5px 5px 0 var(--accent);}
+.stop-eyebrow{font-weight:800; letter-spacing:.1em; font-size:.68rem; text-transform:uppercase; color:var(--accent);}
+.stop-card h3{font-size:1.08rem; margin:4px 0 5px;}
+.stop-card p{font-size:.85rem; color:var(--ink-soft);}
+.stop-foot{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px;}
+.stop-foot .btn{margin-left:auto;}
+.stop-done{font-size:.78rem; font-weight:700; color:var(--accent);}
+.stop-xp{font-size:.78rem; font-weight:700; color:var(--ink-soft);}
+
+/* the station badge, once the whole line is done — it lives here rather than on
+   the home rank ladder, which stays the five-badge climb to Grand Master */
+.station-badge{display:flex; align-items:center; gap:14px; margin-top:22px; border-left:7px solid var(--s3);}
+.station-badge .sb-icon{font-size:2.5rem; line-height:1;}
+.station-badge .sb-text{flex:1;}
+.station-badge .sb-text h3{font-size:1.2rem; margin:1px 0 3px;}
+.station-back{margin-top:20px;}
+
+/* ---------- Investigation Station: typed-panel scaffolding (2026-07-30) ----------
+   "Your answer needs to:" — the SHAPE of the answer, above the box along with the
+   sentence openers. Both used to sit below the textarea, where a learner in the
+   middle of writing never saw them. */
+.dp-needs{margin:4px 0 12px; padding:11px 14px; border:2px dashed var(--ink);
+  border-radius:13px; background:#f6f8ff;}
+.dp-needs-tag{font-size:.7rem; text-transform:uppercase; letter-spacing:.08em;
+  font-weight:800; color:var(--ink-soft); margin-bottom:5px;}
+.dp-needs-list{margin:0; padding-left:20px; display:grid; gap:4px;}
+.dp-needs-list li{font-size:.92rem; line-height:1.45; font-weight:600;}
+
+/* a prediction panel: the tap that was accepted, and the bridge into the reveal */
+.q-options.predict .opt.is-picked{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);}
+.dp-feedback.predict{background:#eef2fb; border-color:#4263eb; color:#26408f;}
+.dp-after{margin:10px 0 2px; font-size:.93rem; line-height:1.5; color:var(--ink-soft);}

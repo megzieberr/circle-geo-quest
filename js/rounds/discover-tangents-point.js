@@ -15,7 +15,12 @@ function contacts(A, ctx) {
   return { F: ctx.pol(th + a), C: ctx.pol(th - a), dist };
 }
 
-const MODEL = () => ({
+/* EXPORTED (2026-07-30) so Investigation Station 1 can drag the very same
+   figure instead of rebuilding one — the same reasoning as
+   discover-centre-circ.js and discover-same-segment.js. It is a factory, so
+   each caller still gets its own object and the two rounds cannot share state.
+   Do not change its geometry without re-walking `dtanpoint` too. */
+export const MODEL = () => ({
   w: 344, h: 300, cx: 150, cy: 150, R: 92,
   fixed: { O: true },
   handles: [{ id: "A", kind: "free", init: { x: 264, y: 92 },
@@ -82,6 +87,6 @@ export const round = {
         { en: "However you move A, the two tangent lengths are always the same — equal.", af: "Hoe jy A ook al beweeg, die twee raaklyn-lengtes is altyd dieselfde — gelyk." },
       ],
       reason: "tansCommonPt",
-      note: { en: "Two tangents from the same external point are equal in length (AF = AC). Reason: <i>tans from same pt</i>.", af: "Twee raaklyne vanuit dieselfde buitepunt is gelyk in lengte (AF = AC). Rede: <i>raaklyne vanuit dieselfde punt</i>." } },
+      note: { en: "Two tangents from the same external point are equal in length (AF = AC). Reason: <i>tans from same pt</i>.", af: "Twee raaklyne vanuit dieselfde buitepunt is gelyk in lengte (AF = AC). Rede: <i>raaklyne vanaf dieselfde punt</i>." } },
   ],
 };

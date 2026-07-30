@@ -8,6 +8,8 @@
      • frame(pos, ctx)   -> what to draw for the current handles
      • measure(pos, ctx) -> the numbers the question will test
      • readouts(measure) -> the live number panel rows
+     • onChange(m,pos,ctx)  -> every frame, while dragging
+     • onRelease(m,pos,ctx) -> once, when a drag ends
 
    The component owns pointer dragging (mouse + touch), redraws
    every frame, and reports measures back through model.onChange so
@@ -276,7 +278,17 @@ export function mountInteractive(host, model) {
     e.preventDefault();
   });
   stage.addEventListener("pointermove", e => { if (dragging) { moveTo(dragging, clientToSvg(e)); e.preventDefault(); } });
-  const end = e => { if (dragging) { dragging = null; wrap.classList.remove("grabbing"); try { stage.releasePointerCapture(e.pointerId); } catch {} } };
+  /* onRelease fires once when a drag ENDS, not on every frame like onChange.
+     That is what makes "the app records the learner's own readings" possible
+     (Megan, 2026-07-30): one reading per position the learner actually stopped
+     at, instead of hundreds per drag. See `record` in js/investigate.js. */
+  const end = e => {
+    if (!dragging) return;
+    dragging = null;
+    wrap.classList.remove("grabbing");
+    try { stage.releasePointerCapture(e.pointerId); } catch {}
+    if (model.onRelease) model.onRelease(measures, pos(), ctx);
+  };
   stage.addEventListener("pointerup", end);
   stage.addEventListener("pointercancel", end);
 

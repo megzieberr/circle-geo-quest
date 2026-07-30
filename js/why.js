@@ -35,7 +35,7 @@ const CARDS = [
     title: { en: "Step 2 — NAME the pattern", af: "Stap 2 — BENOEM die patroon" },
     body: {
       en: "Every pattern has an official name — the <b>reason</b> the exam wants word for word, like <i>“line from centre ⊥ to chord”</i>. Seeing the pattern earns half the marks; naming it earns the other half. If you can see answers but the words don't come yet, you're at step 2 of 3 — that's completely normal. Train it in the <b>Say it like the examiner</b> Adventures! 🗺️",
-      af: "Elke patroon het 'n amptelike naam — die <b>rede</b> wat die eksamen woord vir woord wil hê, soos <i>“lyn vanuit mdpt ⊥ op koord”</i>. Om die patroon te sien verdien die helfte van die punte; om dit te benoem verdien die ander helfte. As jy antwoorde kan sien maar die woorde kom nog nie, is jy by stap 2 van 3 — dis heeltemal normaal. Oefen dit in die <b>Sê dit soos die eksaminator</b>-Avonture! 🗺️",
+      af: "Elke patroon het 'n amptelike naam — die <b>rede</b> wat die eksamen woord vir woord wil hê, soos <i>“lyn vanuit midpt ⊥ op koord”</i>. Om die patroon te sien verdien die helfte van die punte; om dit te benoem verdien die ander helfte. As jy antwoorde kan sien maar die woorde kom nog nie, is jy by stap 2 van 3 — dis heeltemal normaal. Oefen dit in die <b>Sê dit soos die eksaminator</b>-Avonture! 🗺️",
     },
   },
   {

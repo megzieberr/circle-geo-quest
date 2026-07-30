@@ -75,7 +75,7 @@ export const round = {
         { en: "At 90°, compare AM and MB in the panel. Are they the same size?", af: "By 90°, vergelyk AM en MB in die paneel. Is hulle dieselfde grootte?" },
       ],
       reason: "centrePerpChord",
-      note: { en: "So when the right angle is <b>given</b>, the line from the centre <b>bisects</b> the chord (AM = MB). Reason: <i>line from centre ⊥ to chord</i>.", af: "So wanneer die regte hoek <b>gegee</b> is, <b>halveer</b> die lyn vanaf die middelpunt die koord (AM = MB). Rede: <i>lyn vanuit mdpt ⊥ op koord</i>." } },
+      note: { en: "So when the right angle is <b>given</b>, the line from the centre <b>bisects</b> the chord (AM = MB). Reason: <i>line from centre ⊥ to chord</i>.", af: "So wanneer die regte hoek <b>gegee</b> is, <b>halveer</b> die lyn vanaf die middelpunt die koord (AM = MB). Rede: <i>lyn vanuit midpt ⊥ op koord</i>." } },
 
     { type: "blank",
       prompt: { en: "Now turn it around", af: "Draai dit nou om" },
@@ -92,13 +92,13 @@ export const round = {
         { en: "At the midpoint the line stands at 90° — that is what 'perpendicular' means.", af: "By die middelpunt staan die lyn teen 90° — dit is wat 'loodreg' beteken." },
       ],
       reason: "centreMidChord",
-      note: { en: "So when the bisecting is <b>given</b> (M is the midpoint), the line from the centre is <b>perpendicular</b> to the chord. Reason: <i>line from centre to midpt of chord</i>.", af: "So wanneer die halvering <b>gegee</b> is (M is die middelpunt), is die lyn vanaf die middelpunt <b>loodreg</b> op die koord. Rede: <i>lyn vanuit mdpt na mdpt van koord</i>." } },
+      note: { en: "So when the bisecting is <b>given</b> (M is the midpoint), the line from the centre is <b>perpendicular</b> to the chord. Reason: <i>line from centre to midpt of chord</i>.", af: "So wanneer die halvering <b>gegee</b> is (M is die middelpunt), is die lyn vanaf die middelpunt <b>loodreg</b> op die koord. Rede: <i>lyn vanuit midpt na midpt van koord</i>." } },
 
     { type: "note",
       prompt: { en: "Two reasons — pick by what you are GIVEN", af: "Twee redes — kies volgens wat GEGEE is" },
       diagrams: [
-        { diagram: CASE_PERP, caption: { en: "<b>Given 90°</b> → it bisects<br><i>line from centre ⊥ to chord</i>", af: "<b>Gegee 90°</b> → dit halveer<br><i>lyn vanuit mdpt ⊥ op koord</i>" } },
-        { diagram: CASE_MID, caption: { en: "<b>Given AM = MB</b> → it is ⊥<br><i>line from centre to midpt of chord</i>", af: "<b>Gegee AM = MB</b> → dit is ⊥<br><i>lyn vanuit mdpt na mdpt van koord</i>" } },
+        { diagram: CASE_PERP, caption: { en: "<b>Given 90°</b> → it bisects<br><i>line from centre ⊥ to chord</i>", af: "<b>Gegee 90°</b> → dit halveer<br><i>lyn vanuit midpt ⊥ op koord</i>" } },
+        { diagram: CASE_MID, caption: { en: "<b>Given AM = MB</b> → it is ⊥<br><i>line from centre to midpt of chord</i>", af: "<b>Gegee AM = MB</b> → dit is ⊥<br><i>lyn vanuit midpt na midpt van koord</i>" } },
       ],
       note: { en: "Read what the question GIVES you, then pick the matching reason. Next you'll practise spotting which one to use.", af: "Lees wat die vraag vir jou GEE, kies dan die passende rede. Volgende oefen jy om te herken watter een om te gebruik." } },
   ],

@@ -7,7 +7,10 @@
 const AC = "#f76707";
 const ORANGE = "#f76707", BLUE = "#4263eb", INK = "#252a4a";
 
-const MODEL = () => ({
+/* exported so Investigation Station 1 can reuse this exact figure instead of
+   rebuilding it — same reasoning as discover-same-segment.js. It is a factory,
+   so every caller still gets its own object. */
+export const MODEL = () => ({
   w: 340, h: 304, cx: 168, cy: 152, R: 100,
   fixed: { O: true },
   handles: [
@@ -94,6 +97,6 @@ export const round = {
         { en: "Centre = 2 × circumference. Work out 2 × 40.", af: "Middelpunt = 2 × omtrek. Bereken 2 × 40." },
       ],
       reason: "centreDouble",
-      note: { en: "Centre = 2 × 40° = 80°. Reason: ∠ at centre = 2 × ∠ at circumference.", af: "Middelpunt = 2 × 40° = 80°. Rede: middelpuntshoek = 2 × omtrekshoek." } },
+      note: { en: "Centre = 2 × 40° = 80°. Reason: ∠ at centre = 2 × ∠ at circumference.", af: "Middelpunt = 2 × 40° = 80°. Rede: Midpt∠ = 2 × Omtreks∠." } },
   ],
 };

@@ -426,7 +426,7 @@ export const ADVENTURES = [
   {
     id: "adv-algebra-tanchord", type: "values", accent: ACCENTS[0], unit: "",
     title: { en: "Solve for x: Tangent–Chord", af: "Los op vir x: Raaklyn–Koord" },
-    blurb: { en: "The tan-chord theorem makes two angles equal.", af: "Die raaklyn–koord-stelling maak twee hoeke gelyk." },
+    blurb: { en: "The tan-chord theorem makes two angles equal.", af: "Die raaklyn-koord-stelling maak twee hoeke gelyk." },
     given: { en: "The tangent–chord angle is 2x and the angle in the alternate segment is (x + 25). (Hint: tan-chord makes them equal.)", af: "Die raaklyn–koord-hoek is 2x en die hoek in die oorstaande segment is (x + 25). (Wenk: raaklyn–koord maak hulle gelyk.)" },
     diagram: ALG_TC,
     rows: [
@@ -462,7 +462,7 @@ export const ADVENTURES = [
       { s: "∠PBA = 55°", r: "cyclicOpp" },
     ],
     badLine: 2,
-    fix: { en: "The value 55° is correct, but the reason is wrong. ∠PBA = 180° − 90° − 35° comes from the angle sum of △APB, so the reason is “int ∠s of Δ”, not “opp ∠s of cyclic quad”.", af: "Die waarde 55° is reg, maar die rede is verkeerd. ∠PBA = 180° − 90° − 35° kom van die hoeksom van △APB, dus is die rede “binne-∠e van Δ”, nie “teenoorst. ∠e van kvh” nie." },
+    fix: { en: "The value 55° is correct, but the reason is wrong. ∠PBA = 180° − 90° − 35° comes from the angle sum of △APB, so the reason is “Int ∠s Δ”, not “opp ∠s of cyclic quad”.", af: "Die waarde 55° is reg, maar die rede is verkeerd. ∠PBA = 180° − 90° − 35° kom van die hoeksom van △APB, dus is die rede “binne ∠e Δ”, nie “teenoorst. ∠e van kvh” nie." },
   },
 
   /* ===== NEW TYPE: say it like the examiner (build the reason from pieces) =====
@@ -482,11 +482,11 @@ export const ADVENTURES = [
         parts: [{ en: "given", af: "gegee" }],
         decoys: [{ en: "construction", af: "konstruksie" }, { en: "tan ⊥ radius", af: "raaklyn ⊥ radius" }] },
       { s: "AM = MB",
-        parts: [{ en: "line from centre", af: "lyn vanuit mdpt" }, { en: "⊥", af: "⊥" }, { en: "to chord", af: "op koord" }],
+        parts: [{ en: "line from centre", af: "lyn vanuit midpt" }, { en: "⊥", af: "⊥" }, { en: "to chord", af: "op koord" }],
         decoys: [{ en: "line from midpt", af: "lyn vanuit koord" }, { en: "∥", af: "∥" }] },
       { s: "OA² = OM² + AM²",
         parts: [{ en: "Pythagoras", af: "Pythagoras" }],
-        decoys: [{ en: "line from centre ⊥ to chord", af: "lyn vanuit mdpt ⊥ op koord" }, { en: "radii", af: "radii" }] },
+        decoys: [{ en: "line from centre ⊥ to chord", af: "lyn vanuit midpt ⊥ op koord" }, { en: "radii", af: "radii" }] },
     ],
   },
   {
