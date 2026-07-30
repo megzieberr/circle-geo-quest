@@ -1,12 +1,21 @@
 # Project status — updated 2026-07-30
 
 ## Where we are
-**CHUNK C IS BUILT — all 21 playthrough findings are closed.** The line now
-teaches before it asks, the app records the learner's own readings, the options
-no longer give themselves away, and the two mark schemes that were unfair have
-been fixed and re-probed 13/13 against the live checker. Still on the branch,
-**still not pushed** (her standing instruction). Nothing is committed yet either
-— see "Pending on Megan".
+**CHUNK C IS BUILT AND COMMITTED — all 21 playthrough findings are closed.** The
+line now teaches before it asks, the app records the learner's own readings, the
+options no longer give themselves away, and the two mark schemes that were unfair
+have been fixed and re-probed 13/13 against the live checker.
+
+**The line is deliberately HIDDEN from learners** (`CONFIG.stationsLive: false`) —
+her call: finish the whole build, including Chunk D's extra practice panels, before
+the class meets it. `?stations=1` walks it anyway. Four commits, branch 11 ahead of
+origin, **nothing pushed** and the working tree is clean.
+
+Worth knowing: **pushing is now safe whenever she wants it**, because the flag hides
+the station while everything else goes live. Chunk C also fixed two discovery rounds
+the class plays TODAY (`dsameseg` p1 and `dsemi` p4 had the reason bolted onto the
+correct option — a giveaway and a length tell) plus the shared diagram engine. Those
+fixes are sitting unpushed behind a station they no longer depend on.
 
 What changed, grouped the way the findings were:
 
