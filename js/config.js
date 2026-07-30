@@ -26,7 +26,24 @@ export const CONFIG = {
   // not scaled by attempts. Six stations x 50 = 300 XP for the whole line, which
   // converts predictably into Blipwork diamonds and is easy to explain to a
   // class. Nothing else depends on this number; change it here and that's all.
+  // ⚠️ CHANGING TO PER-PANEL in Chunk D (her call 2026-07-30) — see
+  // docs/chunk-d-practice-panels.md §1, and do it BEFORE the line goes live.
   investigationXp: 50,
+  // ---- IS THE INVESTIGATION STATION RELEASED TO LEARNERS? ----
+  // false = the line is completely invisible: no train strip on the home screen,
+  // and the `stations` / `investigate` routes bounce back home, so a learner who
+  // guesses a URL still cannot reach it.
+  //
+  // Her call, 2026-07-30: "can we hide it from the learners for a little while
+  // more, until we added the other panels?" The line is finished and tested; she
+  // wants Chunk D's extra practice questions in before the class meets it. This
+  // flag exists so the REST of the app can be pushed safely in the meantime —
+  // Chunk C also improved two live discovery rounds, and those fixes should not
+  // have to wait for the station.
+  //
+  // Flip to true to release it. `?stations=1` overrides the flag for previewing,
+  // so it can still be walked while hidden.
+  stationsLive: false,
   // struggling-learner support ("Boost mode")
   rescueAfterFails: 2,     // after this many failed attempts, replays get open hints + second chances
   comebackBonus: 40,       // extra XP for finally passing a round on the 3rd+ attempt

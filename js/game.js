@@ -112,7 +112,10 @@ export function renderHome(app, host) {
 
   // The Investigation Station 🚂 — a full-width tappable strip, and the only
   // way in. It sits directly above the badge panel (Megan's ruling, 2026-07-30).
-  host.appendChild(trainStrip(app));
+  // Null while the line is hidden from learners (CONFIG.stationsLive), and
+  // appendChild(null) throws, so this is guarded rather than inlined.
+  const strip = trainStrip(app);
+  if (strip) host.appendChild(strip);
 
   const ladder = renderRankLadder(progress);
   if (ladder) host.appendChild(ladder);            // hidden until the first badge is earned

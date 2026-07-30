@@ -7,7 +7,7 @@ import { renderLogin } from "./auth.js";
 import { renderHome, renderPlay, renderResults } from "./game.js";
 import { renderDiscover } from "./discover.js";
 import { renderInvestigate } from "./investigate.js";
-import { renderStations } from "./stations.js";
+import { renderStations, stationsVisible } from "./stations.js";
 import { renderCutscene } from "./cutscene.js";
 import { renderLeaderboard } from "./leaderboard.js";
 import { renderAdventures, renderAdventure } from "./adventure.js";
@@ -117,8 +117,16 @@ const app = {
       case "home": renderHome(this, view); renderCustomizeLink(this, view); break;
       case "play": renderPlay(this, view, this.params); break;
       case "discover": renderDiscover(this, view, this.params); break;
-      case "stations": renderStations(this, view); break;
-      case "investigate": renderInvestigate(this, view, this.params); break;
+      // Both station routes bounce home while the line is hidden from learners
+      // (CONFIG.stationsLive) — the train strip is already gone, and this closes
+      // the other way in, so a guessed or shared URL cannot reach an unreleased
+      // station either. `?stations=1` opens them again for review.
+      case "stations":
+        if (!stationsVisible()) { renderHome(this, view); renderCustomizeLink(this, view); break; }
+        renderStations(this, view); break;
+      case "investigate":
+        if (!stationsVisible()) { renderHome(this, view); renderCustomizeLink(this, view); break; }
+        renderInvestigate(this, view, this.params); break;
       case "cutscene": renderCutscene(this, view, this.params); break;
       case "results": renderResults(this, view, this.params); break;
       case "adventures": renderAdventures(this, view); break;

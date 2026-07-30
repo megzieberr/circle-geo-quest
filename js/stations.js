@@ -67,6 +67,23 @@ function trainArt() {
   return box;
 }
 
+/* ---------------- is the line released yet? ----------------
+   The whole Investigation Station can be hidden from learners with one flag
+   (CONFIG.stationsLive) — see the note beside it in js/config.js. When it is
+   false there is NO way in: `trainStrip` returns null so the home screen has no
+   entry, and app.js bounces the `stations` and `investigate` routes back home so
+   a guessed URL cannot reach it either.
+
+   `?stations=1` overrides the flag, so the line can still be walked and reviewed
+   while the class cannot see it. Deliberately its own switch and not folded into
+   `?preview=1`: teacher preview is for showing the app to somebody, and this is
+   for working on an unreleased part of it. */
+export function stationsVisible() {
+  if (CONFIG.stationsLive) return true;
+  try { return new URLSearchParams(location.search).get("stations") === "1"; }
+  catch { return false; }
+}
+
 /* Per-stop state. `passed` comes from progress; unlocking follows the same
    play-order chain as the main map (rounds/index.js), so station 1 opens when
    the last main round is passed and each later stop opens on the one before. */
@@ -81,8 +98,11 @@ export function stationStatus(app) {
   }));
 }
 
-/* ---------------- the home-screen strip ---------------- */
+/* ---------------- the home-screen strip ----------------
+   Returns null while the line is hidden — the caller in js/game.js guards for
+   it, because appendChild(null) throws. */
 export function trainStrip(app) {
+  if (!stationsVisible()) return null;
   const rows = stationStatus(app);
   const visited = rows.filter(r => r.passed).length;
   const open = rows.some(r => r.unlocked);
