@@ -177,6 +177,14 @@ in 13s with no reload; deploy confirmed serving the new code).
     the same chord or arc" and does not require the location condition. Precision
     of the conjecture is what `s2p4` marks; re-marking it here would mean five
     requirements on a paragraph the panel asked three things of.
+  · **A memo is a prompt, so it cannot be eyeball-checked — fire real answers at it.**
+    `tools/probe-checker.mjs` (new, 2026-07-30) holds 22 scored probes plus the three
+    unscored s2p4 rulings, and reads its login from `CQ_NAME` / `CQ_PASS` so no
+    credentials sit in a public repo. Run it after ANY edit to a `must_have`. The
+    2026-07-30 route: insert one throwaway row into `students`, run batch 1, clear
+    that learner's `checker_calls` (the cap is 20/hour), run batch 2, delete the row —
+    the delete cascades the calls away, and a throwaway learner never plays a round
+    so it writes no progress and never reaches the leaderboard.
   · Sections 6-9 of `phase16.sql` use **dollar-quoted `$m$…$m$` literals** with real
     newlines instead of `'…'` with `chr(10)`. The accept-lists carry a lot of
     Afrikaans and every `'n` would otherwise need hand-doubling — one missed pair
@@ -474,17 +482,13 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- ⏸️ **NOT A TASK — Megan's call, 2026-07-30: DO NOT PUSH until the train is done.**
-  Chunk A is committed locally (`bbafc96`) and the branch sits 2 ahead of origin
-  (`1312c97` too). She does not want any of it visible to learners until the
-  Investigation Station is finished, so the push waits for Chunk B. Nothing is on
-  `main` either way. Local commits are the only backup — don't leave it longer than
-  the next session or two.
-- 💻 2 min **[whenever]**: worth a word with whoever owns the school's AI-use / POPIA
-  policy before Monday — learner-authored text leaves the school's systems. Only the
-  answer text is sent: no names, no IDs.
-- 👀 **[whenever]**: play Station 2 and say whether s2p4 is too strict (see the
-  strictness decision above). It is one SQL UPDATE to loosen.
+- 💻 2 min **[whenever]**: ask whoever owns the school's AI-use / POPIA policy whether
+  typed answers may leave the school's systems (only the answer text is sent).
+- 👀 5 min **[whenever]**: decide whether `s2p4` is too strict — Claude runs
+  `node tools/probe-checker.mjs 3` and you read the three verdicts.
+
+**Do NOT push — Megan's call, 2026-07-30.** Nothing goes to origin until the train
+is finished, so no learner sees a half-built station. Explained under "Next up".
 
 (DONE 2026-07-30, the old blocking item: deploying `check-answer`. It never needed
 the dashboard — the Supabase MCP deploys edge functions directly. Now live at
@@ -514,8 +518,23 @@ need to finish a chunk in one sitting.** Two chunks remain, in this order:
   rulings above (rank ladder, badge counter, train-only entry). Do NOT start this
   until all six stations exist; that was the whole point of ruling 2.
 
-Show her Chunk A before starting Chunk B. She reviews between chunks and asked
-specifically not to be handed a half-built map.
+Chunk A was shown and approved on 2026-07-30 (she played all six in teacher
+preview: "they look very cute, had me thinking as well"), so Chunk B is cleared
+to start whenever she says.
+
+**THE PUSH IS DEFERRED UNTIL CHUNK B IS DONE (her call, 2026-07-30).** The branch
+sits 3 commits ahead of origin (`1312c97`, `bbafc96`, `6ebdf56`) and stays there.
+Her reason: nothing visible to learners until the Investigation Station is
+finished. Two things follow from that:
+  · those local commits are the ONLY copy of Chunk A — don't let it ride for weeks.
+  · when Chunk B lands, `/ship` clears all of it in one go.
+
+**Teacher preview CANNOT test the marking, and that is not a bug.** `?preview=1`
+logs in as "Teacher Preview", which is not a row in `students`, so `_cgg_auth`
+returns 401, `checkAnswer` returns null, and every typed panel falls through to
+the static hint ladder. So playing in preview tells you nothing about whether a
+mark scheme is fair — that is what `tools/probe-checker.mjs` is for, and it is why
+the s2p4 strictness question could not be settled by her playing Station 2.
 - **Deploying edge functions is a Claude step now, not a Megan step.** The Supabase
   MCP has `deploy_edge_function`, and this project is on that account. The CLI is
   still not installed and no longer needs to be. PUSH-SETUP.md Part 6 is stale advice

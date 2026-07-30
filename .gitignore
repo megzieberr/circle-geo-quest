@@ -5,3 +5,8 @@ Thumbs.db
 .vscode/
 .idea/
 .claude/
+
+# Megan's reference PDFs (IEB / KZN past papers and memos). Working material,
+# never repo content: this repo is PUBLIC. Two of these were swept in by a
+# `git add -A` on 2026-07-30 and taken straight back out before any push.
+inspiration questions/
