@@ -78,12 +78,7 @@ export function progressBar(frac) {
   return b;
 }
 
-/* Fisher–Yates shuffle (returns a new array). */
-export function shuffled(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
+/* Fisher–Yates shuffle. It LIVES in js/options-order.js — a leaf module that
+   imports nothing, so the option-order rules can be tested from node — and is
+   re-exported here so js/game.js keeps importing it from where it always has. */
+export { shuffled } from "./options-order.js";

@@ -52,6 +52,13 @@
    admin attempt-trajectory numbers. So a predict panel accepts every
    option, says something back, and lets the NEXT panel do the reveal.
    It is deliberately NOT gated — nothing it does reaches the stats.
+
+   OPTIONS ARE SHUFFLED (added 2026-07-30 — the correct one had been
+   written first in 19 of 19 panels, so tapping the top one cleared the
+   line without reading). The rules, the two opt-outs (`keepOrder` on a
+   panel, `pin` on an option) and the authoring warning all live in
+   js/options-order.js — read that before adding a choice panel, and
+   run `node tools/audit-options.mjs` after.
    ============================================================ */
 import { ROUND_BY_ID } from "./rounds/index.js";
 import { submitRoundReliable } from "./sync.js";
@@ -59,6 +66,7 @@ import { getSession } from "./session.js";
 import { CONFIG } from "./config.js";
 import { t, tx, getLang, reason as reasonText, REASONS, word as wordText } from "./i18n.js";
 import { el, clear, mount } from "./ui.js";
+import { orderedOptions } from "./options-order.js";
 import { mountInteractive } from "./interactive.js";
 import { renderDiagram } from "./engine.js";
 import { checkAnswer, acceptOverride } from "./checker.js";
@@ -76,6 +84,12 @@ const UI = {
   writeMore:   { en: "Write a little more first",     af: "Skryf eers 'n bietjie meer" },
   memoLabel:   { en: "One good answer",               af: "Een goeie antwoord" },
   needsLabel:  { en: "Your answer needs to:",         af: "Jou antwoord moet:" },
+  recordMore:  { en: "{n} recorded — stop at {min} or more different positions.",
+                 af: "{n} aangeteken — stop by {min} of meer verskillende posisies." },
+  recordEnough:{ en: "{n} readings recorded. Drag to a few more if you like, then carry on.",
+                 af: "{n} lesings aangeteken. Sleep na 'n paar meer as jy wil, en gaan dan voort." },
+  recordEmpty: { en: "Nothing recorded yet — drag a point and let go.",
+                 af: "Nog niks aangeteken nie — sleep 'n punt en laat los." },
 };
 
 export function renderInvestigate(app, host, params) {
@@ -108,12 +122,19 @@ export function renderInvestigate(app, host, params) {
   let gatedTotal = 0;
   let firstTryCorrect = 0;
 
+  /* Per-run scratch, shared by every panel of this station and thrown away when
+     the learner leaves. It exists so a panel can hand something to a LATER
+     panel — currently the readings the learner records by dragging (`record` /
+     `showRecord` below). Nothing here is persisted or submitted: it is not
+     progress, it is what happened on this screen just now. */
+  const scratch = {};
+
   let i = 0;
   function show() {
     top.querySelector(".play-count").textContent = `${i + 1} / ${panels.length}`;
     bar.querySelector("i").style.width = Math.round((i / panels.length) * 100) + "%";
     clear(stepHost);
-    mountPanel(stepHost, panels[i], round.accent, (stats) => {
+    mountPanel(stepHost, panels[i], round.accent, scratch, (stats) => {
       if (stats && stats.gated) {
         gatedTotal++;
         if (stats.firstTry) firstTryCorrect++;
@@ -156,10 +177,19 @@ export function renderInvestigate(app, host, params) {
 }
 
 /* ---------------- one panel ---------------- */
-function mountPanel(host, panel, accent, onDone) {
+function mountPanel(host, panel, accent, scratch, onDone) {
   const root = el("div", "dp");
   root.style.setProperty("--accent", accent);
-  if (panel.prompt) root.appendChild(el("p", "q-prompt", tx(panel.prompt)));
+  // A prompt may be a FUNCTION of the scratch, so a panel can describe what the
+  // learner actually did rather than what the author guessed they would do.
+  // s1p4 uses it to count the recorded rows: the old prompt narrated "five
+  // positions, three exactly double, one 2° out" over a table that did not
+  // exist, and the numbers did not match the four rows that did (N4). A
+  // sentence generated from the rows cannot disagree with them.
+  if (panel.prompt) {
+    const p = typeof panel.prompt === "function" ? panel.prompt(scratch) : panel.prompt;
+    if (p) root.appendChild(el("p", "q-prompt", tx(p)));
+  }
 
   let iv = null;
   if (panel.interactive) {
@@ -182,6 +212,17 @@ function mountPanel(host, panel, accent, onDone) {
     root.appendChild(row);
   }
 
+  // A read-only copy of readings recorded on an EARLIER panel, shown as part of
+  // the given material. Every later mention of "your table" used to be fiction.
+  if (panel.showRecord) {
+    const t2 = readingsTable(panel.showRecord);
+    t2.render(scratch[panel.showRecord.key] || []);
+    root.appendChild(t2.node);
+  }
+
+  // The worked solution the panel is asking about, ON THE SCREEN.
+  if (panel.solution) root.appendChild(solutionBlock(panel.solution));
+
   const body = el("div", "dp-body");
   root.appendChild(body);
   const foot = el("div", "play-foot");
@@ -196,6 +237,45 @@ function mountPanel(host, panel, accent, onDone) {
   if (panel.type === "explore") {
     if (panel.instruction) body.appendChild(el("p", "dp-instruction", "👉 " + tx(panel.instruction)));
     cont.textContent = t("continue");
+
+    /* THE APP RECORDS THE LEARNER'S OWN READINGS (Megan, 2026-07-30: "can we
+       have the app record their own readings please"). One row per position the
+       learner STOPS at — that is why interactive.js gained onRelease, which
+       fires when a drag ends rather than on every frame. The rows go into the
+       station's scratch, and later panels show them with `showRecord`. */
+    if (panel.record && iv) {
+      const spec = panel.record;
+      const rows = scratch[spec.key] = scratch[spec.key] || [];
+      const min = spec.min ?? 3, max = spec.max ?? 6;
+      const tbl = readingsTable(spec);
+      body.appendChild(tbl.node);
+
+      const counter = el("p", "dp-record-count");
+      body.appendChild(counter);
+      const paint = () => {
+        tbl.render(rows);
+        const done = rows.length >= min;
+        counter.className = "dp-record-count" + (done ? " done" : "");
+        counter.textContent = tx(done ? UI.recordEnough : UI.recordMore)
+          .replace("{n}", rows.length).replace("{min}", min);
+        cont.disabled = !done;
+        cont.classList.toggle("waiting", !done);
+      };
+
+      panel.interactive.onRelease = wrap(panel.interactive.onRelease, (m) => {
+        if (rows.length >= max) return;
+        const r = spec.cols.map(c => c.from(m));
+        // A release with no real movement is not a new position. Compared
+        // against EVERY row, not just the last, so dragging back to a position
+        // already in the table does not add it twice.
+        if (rows.some(x => x.every((v, k) => v === r[k]))) return;
+        rows.push(r);
+        paint();
+      });
+      paint();
+      iv.refresh();
+    }
+
     if (panel.until && iv) {
       cont.disabled = true;
       cont.classList.add("waiting");
@@ -221,7 +301,7 @@ function mountPanel(host, panel, accent, onDone) {
     const opts = el("div", "q-options predict");
     const react = el("div", "dp-feedback predict"); react.hidden = true;
     let locked = false;
-    panel.options.forEach(o => {
+    orderedOptions(panel).forEach(o => {
       const b = el("button", "opt", tx(o.text));
       b.addEventListener("click", () => {
         if (locked) return;
@@ -319,7 +399,9 @@ function mountPanel(host, panel, accent, onDone) {
   else if (panel.type === "choice") {
     const opts = el("div", "q-options");
     let locked = false;
-    panel.options.forEach(o => {
+    // the shuffled order, kept so the reveal below can find the right button
+    const list = orderedOptions(panel);
+    list.forEach(o => {
       const b = el("button", "opt", tx(o.text));
       b.addEventListener("click", () => {
         if (locked) return;
@@ -334,7 +416,7 @@ function mountPanel(host, panel, accent, onDone) {
     revealAnswer = () => {
       if (locked) return;
       locked = true;
-      [...opts.children].forEach((b, i) => { b.disabled = true; if (panel.options[i].correct) b.classList.add("is-correct"); });
+      [...opts.children].forEach((b, i) => { b.disabled = true; if (list[i].correct) b.classList.add("is-correct"); });
       showRevealed();
     };
   }
@@ -472,6 +554,99 @@ function mountPanel(host, panel, accent, onDone) {
 }
 
 function wrap(orig, extra) { return (m, p, c) => { if (orig) orig(m, p, c); extra(m, p, c); }; }
+
+/* ---------------- a worked solution, statement by statement ----------------
+   Added 2026-07-30 for N12. Megan on inv4 panel 1: "and which part is left out
+   exactly? again, this is vague." The panel said "a learner wrote this proof,
+   but one line fell out — which line is missing?" and NO PROOF WAS RENDERED.
+   The only route through was to reverse-engineer it out of the four options,
+   and its own hint gave the intent away: "read the proof as a chain: 90° …
+   then what? … then 40°" — there was no chain on screen to read.
+
+   `solution: { caption?, lines: [...] }` where a line is
+     { st, rs? }         a statement and its reason ("∠ACB = 90°", "∠s in semi-circle")
+     { st, rs, bad:1 }   drawn as suspect — for "this reason is wrong" panels
+     { blank: 1 }        a whole MISSING STATEMENT, drawn ______ with ( ? )
+     { st, blankRs: 1 }  a statement whose REASON is missing, drawn ( ______ )
+     { st, step }        `step` prints a "Step 1" label in the margin
+
+   Statements are plain text, NOT html: they are content, and the ∠ / ° / −
+   characters are literal. Every panel in Station 4 renders its solution this
+   way now, so all three read alike — panels 2 and 3 used to smuggle theirs
+   into the option list, which is why only panel 1 was unanswerable. */
+function solutionBlock(spec) {
+  const box = el("div", "dp-solution");
+  if (spec.caption) box.appendChild(el("div", "dp-solution-cap", tx(spec.caption)));
+  const list = el("div", "dp-solution-lines");
+  (spec.lines || []).forEach(ln => {
+    const row = el("div", "dp-sol-line"
+      + (ln.blank ? " blank" : "") + (ln.blankRs ? " blank-rs" : "") + (ln.bad ? " bad" : ""));
+    if (ln.step) row.appendChild(el("span", "dp-sol-step", tx(ln.step)));
+    const st = el("span", "dp-sol-st");
+    st.textContent = ln.blank ? " " : (ln.st || "");
+    row.appendChild(st);
+    const rs = el("span", "dp-sol-rs");
+    // A missing STATEMENT shows ( ? ) where its reason would be. A statement
+    // whose REASON is missing shows an empty bracket to write into. A line with
+    // neither (the final answer) shows nothing at all.
+    if (ln.blank) rs.textContent = "( ? )";
+    else if (ln.blankRs) rs.textContent = "(      )";
+    else if (ln.rs) rs.textContent = "(" + tx(ln.rs) + ")";
+    row.appendChild(rs);
+    list.appendChild(row);
+  });
+  box.appendChild(list);
+  if (spec.footnote) box.appendChild(el("div", "dp-solution-foot", tx(spec.footnote)));
+  return box;
+}
+
+/* ---------------- the readings table ----------------
+   Shared by `record` (a panel that fills it in as the learner drags) and
+   `showRecord` (a later panel that shows what they collected). The spec:
+
+     cols   [{ label, from(measures), unit? }]   the recorded columns. The SAME
+            array must be handed to record and to showRecord, so define it once
+            in the round file — two copies would drift and the second panel
+            would silently mislabel the first panel's numbers.
+     extra  [{ label, of(row), unit? }]          columns DERIVED from a row, for
+            a later panel only (e.g. "2 × ∠APB" once "double" has been taught).
+     flag   (row) => boolean                     row gets the `off` class.
+     caption / footnote                          copy above / below the table.  */
+function readingsTable(spec) {
+  const node = el("div", "dp-readings");
+  if (spec.caption) node.appendChild(el("div", "dp-readings-cap", tx(spec.caption)));
+  const table = el("table", "dp-readings-t");
+  node.appendChild(table);
+  if (spec.footnote) node.appendChild(el("div", "dp-readings-foot", tx(spec.footnote)));
+
+  const extra = spec.extra || [];
+  const cell = (v, c) => String(v) + (c.unit ?? "°");
+
+  function render(rows) {
+    table.replaceChildren();
+    const head = el("tr");
+    head.appendChild(el("th", "idx", "#"));
+    [...spec.cols, ...extra].forEach(c => head.appendChild(el("th", null, tx(c.label))));
+    table.appendChild(head);
+
+    if (!rows.length) {
+      const tr = el("tr", "empty");
+      const td = el("td", null, tx(UI.recordEmpty));
+      td.setAttribute("colspan", String(1 + spec.cols.length + extra.length));
+      tr.appendChild(td);
+      table.appendChild(tr);
+      return;
+    }
+    rows.forEach((r, i) => {
+      const tr = el("tr", spec.flag && spec.flag(r) ? "off" : null);
+      tr.appendChild(el("td", "idx", String(i + 1)));
+      spec.cols.forEach((c, k) => tr.appendChild(el("td", null, cell(r[k], c))));
+      extra.forEach(c => tr.appendChild(el("td", "derived", cell(c.of(r), c))));
+      table.appendChild(tr);
+    });
+  }
+  return { node, render };
+}
 
 function noteBlock(panel) {
   const box = el("div", "dp-note");

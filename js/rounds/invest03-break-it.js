@@ -20,9 +20,21 @@
                 Angle DOB is measured between the radius to D and the radius
                 to B: 300 - 20 = 280, so the angle drawn is 360 - 280 = 80.  ✓
 
-   Panel 3 leaves the figure behind on purpose — the three-points-versus-four
-   question is about points, not chords, and a picture of four concyclic points
-   would answer it before the learner did.
+   Panel 3 gets TWO figures, and they are the only ones on the line that are
+   not about this circle (Megan, 2026-07-30: "let's add a diagram here" — she
+   could not parse the panel without one). It used to carry no figure at all,
+   on the reasoning that a picture of four concyclic points would answer the
+   question early. True, so neither figure shows one:
+     FIG_THREE — three dots with the one circle through them drawn. One
+                 instance of the three-dot case working; the claim is about
+                 EVERY case, which the learner still has to judge.
+     FIG_FOUR  — the SAME three dots plus a fourth, and NO circle drawn. The
+                 dots are deliberately not concyclic (D sits 22px inside the
+                 circle through A, B and C, and every other choice of three
+                 misses the fourth by 27-69px) but nothing on screen says so.
+   Both use the engine's `noCircle` / free-{x,y}-point support, added the same
+   day for exactly this figure. Neither carries an angle, so verify.html counts
+   them as diagrams with nothing to check.
 
    The panelId MUST match panel_memos.panel_id in phase16.sql. The memo lives
    server-side — a learner with devtools must not be able to read the answer
@@ -40,6 +52,23 @@ const FIG_CHORD = {
   angles: [
     { at: "M", legs: ["O", "B"], t: "", o: { v: 90, mark: 1 } },
   ],
+};
+
+/* panel 3's pair. A, B and C sit at the same three angles in both, so the
+   second figure reads as "those three dots, plus one more". */
+const DOTS3 = { A: 200, B: 340, C: 60 };
+
+const FIG_THREE = {
+  pts: DOTS3,
+  chords: [["A", "B"], ["B", "C"], ["C", "A"]],
+  angles: [],
+};
+
+const FIG_FOUR = {
+  noCircle: true,
+  pts: { ...DOTS3, D: { x: 112, y: 88 } },
+  chords: [["A", "D"], ["D", "C"], ["C", "B"], ["B", "A"]],
+  angles: [],
 };
 
 /* the one case that breaks it: AB is a diameter, so its midpoint IS O, and
@@ -103,9 +132,13 @@ export const round = {
     /* ---------- 2 · name the counterexample ---------- */
     {
       type: "blank",
+      // "counterexample" is defined HERE, at first use, with the thing itself
+      // on the screen — not in a note after the answer. (N21's ruling: define
+      // the big words in the prompt before they are needed. `conjecture` gets
+      // the same treatment on inv1 panel 1, `converse` on inv5 panel 1.)
       prompt: {
-        en: "Here is the chord that breaks it. AB now runs right through O, and OD is a line from the centre that bisects AB — yet ∠DOB is 80°, not 90°. Name the chord.",
-        af: "Hier is die koord wat dit breek. AB loop nou reg deur O, en OD is 'n lyn vanuit die middelpunt wat AB halveer — tog is ∠DOB 80°, nie 90° nie. Benoem die koord.",
+        en: "Here is the chord that breaks it. AB now runs right through O, and OD is a line from the centre that bisects AB — yet ∠DOB is 80°, not 90°. One case like this, that makes an \"always\" claim false, is called a COUNTEREXAMPLE. Name the chord.",
+        af: "Hier is die koord wat dit breek. AB loop nou reg deur O, en OD is 'n lyn vanuit die middelpunt wat AB halveer — tog is ∠DOB 80°, nie 90° nie. Een geval soos hierdie, wat 'n \"altyd\"-bewering onwaar maak, word 'n TEENVOORBEELD genoem. Benoem die koord.",
       },
       diagram: FIG_DIAM,
       sentence: [
@@ -126,22 +159,43 @@ export const round = {
       },
     },
 
-    /* ---------- 3 · three points are free, four are not ---------- */
+    /* ---------- 3 · three points are free, four are not ----------
+       REWRITTEN 2026-07-30. Megan on the old version: "am i stupid? i don't
+       understand exactly what this question is asking of me." Three faults were
+       stacked, and all three are fixed here:
+         1 · "ANY three points lie on a circle" was ambiguous — meant as "given
+              any three, a circle through them exists", it reads just as easily
+              as "three points are generally on a circle", which sounds like a
+              description of a figure that was not on the screen. Gone: the
+              claim is now a thing you DO, on paper, with dots.
+         2 · no figure, on a panel making a claim about pictures. Now two.
+         3 · the correct option REPAIRED the claim — claim (A) said nothing
+              about collinearity and option (A) added "as long as they are not
+              in a straight line", so the right answer carried information the
+              question withheld. That condition is now in the prompt, where it
+              belongs, and no option adds anything to its claim.
+       The lettered (A)/(B) options are gone too, which is what had made this
+       panel a `keepOrder` case: the four options are now four independent
+       verdicts and shuffle safely. */
     {
       type: "choice",
       prompt: {
-        en: "One of these two claims is true and the other is false. (A) Any three points lie on a circle. (B) Any four points lie on a circle. Which one is true?",
-        af: "Een van hierdie twee bewerings is waar en die ander is onwaar. (A) Enige drie punte lê op 'n sirkel. (B) Enige vier punte lê op 'n sirkel. Watter een is waar?",
+        en: "That diameter was a counterexample: one case, and the claim was finished. Here is a claim whose counterexamples are almost everywhere — and it is the whole reason cyclic quadrilaterals are worth a theorem.\n\nMark some dots on a page, no three of them in a straight line, and try to draw ONE circle that passes through all of them. Which can you ALWAYS do?",
+        af: "Daardie middellyn was 'n teenvoorbeeld: een geval, en die bewering was klaar. Hier is 'n bewering waarvan die teenvoorbeelde amper oral is — en dit is die hele rede waarom koordevierhoeke 'n stelling werd is.\n\nMerk 'n paar kolletjies op 'n bladsy, geen drie van hulle in 'n reguit lyn nie, en probeer EEN sirkel teken wat deur al van hulle gaan. Wat kan jy ALTYD doen?",
       },
+      diagrams: [
+        { diagram: FIG_THREE, caption: { en: "Three dots, with a circle drawn through all three.", af: "Drie kolletjies, met 'n sirkel deur al drie geteken." } },
+        { diagram: FIG_FOUR,  caption: { en: "Four dots. Can one circle pass through all four?", af: "Vier kolletjies. Kan een sirkel deur al vier gaan?" } },
+      ],
       options: [
-        { text: { en: "(A) — three points always lie on a circle, as long as they are not in a straight line.",
-                  af: "(A) — drie punte lê altyd op 'n sirkel, solank hulle nie in 'n reguit lyn is nie." }, correct: true },
-        { text: { en: "(B) — four points always lie on a circle.",
-                  af: "(B) — vier punte lê altyd op 'n sirkel." } },
-        { text: { en: "Both are true — you can always draw a big enough circle.",
-                  af: "Albei is waar — jy kan altyd 'n groot genoeg sirkel teken." } },
-        { text: { en: "Neither is true — it depends on where the points are every time.",
-                  af: "Nie een is waar nie — dit hang elke keer af waar die punte lê." } },
+        { text: { en: "Always with three dots; with four, only sometimes.",
+                  af: "Altyd met drie kolletjies; met vier, net soms." }, correct: true },
+        { text: { en: "Always with four dots; with three, only sometimes.",
+                  af: "Altyd met vier kolletjies; met drie, net soms." } },
+        { text: { en: "Always with three dots, and always with four as well.",
+                  af: "Altyd met drie kolletjies, en altyd met vier ook." } },
+        { text: { en: "Neither is guaranteed — it depends where the dots land.",
+                  af: "Nie een is gewaarborg nie — dit hang af waar die kolletjies val." } },
       ],
       hints: [
         { en: "Try it on paper. Mark three dots anywhere and draw a circle through all three. Now add a fourth dot wherever you like and try to draw one circle through all four.",
@@ -150,8 +204,8 @@ export const round = {
           af: "Drie kolletjies bepaal 'n sirkel volledig — daar is presies een sirkel deur hulle. Die vierde kolletjie moet dan op 'n sirkel land wat reeds vasgestel is, en byna elke posisie mis dit." },
       ],
       note: {
-        en: "Three points that are not in a line always lie on exactly one circle, so \"these three points are concyclic\" is never worth saying. Four points are a real condition, and that is precisely why cyclic quadrilaterals are worth a theorem: a four-sided figure whose corners all reach one circle is special, and you have to PROVE a quadrilateral is cyclic before you may use the cyclic-quad theorems on it. Every counterexample to (B) is a quadrilateral you are not allowed to use them on.",
-        af: "Drie punte wat nie in 'n lyn lê nie, lê altyd op presies een sirkel, dus is \"hierdie drie punte is konsiklies\" nooit die moeite werd om te sê nie. Vier punte is 'n werklike voorwaarde, en dit is juis hoekom koordevierhoeke 'n stelling werd is: 'n vierhoek wie se hoekpunte almal een sirkel bereik, is besonders, en jy moet BEWYS 'n vierhoek is koordies voordat jy die koordevierhoek-stellings daarop mag gebruik. Elke teenvoorbeeld vir (B) is 'n vierhoek waarop jy hulle nie mag gebruik nie.",
+        en: "Three dots that are not in a line always lie on exactly one circle, so \"these three points are concyclic\" is never worth saying — it is free. Four is a real condition, and that is exactly why cyclic quadrilaterals get a theorem of their own: a four-cornered figure whose corners all reach one circle is special. In the second picture above, D sits just inside the circle through A, B and C — close enough that no eye could call it, which is the point. <b>So you have to PROVE a quadrilateral is cyclic before you may use the cyclic-quad theorems on it.</b> Every four dots that miss are a quadrilateral you are not allowed to use them on.",
+        af: "Drie kolletjies wat nie in 'n lyn lê nie, lê altyd op presies een sirkel, dus is \"hierdie drie punte is konsiklies\" nooit die moeite werd om te sê nie — dit is verniet. Vier is 'n werklike voorwaarde, en dit is juis hoekom koordevierhoeke hul eie stelling kry: 'n vierhoekige figuur wie se hoekpunte almal een sirkel bereik, is besonders. In die tweede prent hierbo lê D net binne die sirkel deur A, B en C — naby genoeg dat geen oog dit kan uitmaak nie, en dit is die punt. <b>Jy moet dus BEWYS 'n vierhoek is koordies voordat jy die koordevierhoek-stellings daarop mag gebruik.</b> Elke vier kolletjies wat mis, is 'n vierhoek waarop jy hulle nie mag gebruik nie.",
       },
     },
 
@@ -159,9 +213,13 @@ export const round = {
     {
       type: "written",
       panelId: "s3p4",
+      // "five measurements" was a hard-coded count of a table the learner now
+      // fills in themselves (N1 — it holds three to six rows, whatever they
+      // dragged). Same defect as N4, one station over: copy must not assert a
+      // number it cannot know. Reworded to need no count at all.
       prompt: {
-        en: "One chord was enough to bring that theorem's wording down. But in Station 1, five measurements were not enough to prove a conjecture — and a thousand would not have been either. Why is one counterexample enough to destroy a claim when a thousand examples cannot prove one?",
-        af: "Een koord was genoeg om daardie stelling se bewoording te laat val. Maar in Stasie 1 was vyf metings nie genoeg om 'n vermoede te bewys nie — en duisend sou ook nie gewees het nie. Hoekom is een teenvoorbeeld genoeg om 'n bewering te vernietig terwyl duisend voorbeelde nie een kan bewys nie?",
+        en: "One chord was enough to bring that theorem's wording down. But back in Station 1, a whole table of your own readings was not enough to prove a conjecture — and a thousand rows would not have been either. Why is one counterexample enough to destroy a claim when a thousand examples cannot prove one?",
+        af: "Een koord was genoeg om daardie stelling se bewoording te laat val. Maar terug in Stasie 1 was 'n hele tabel van jou eie lesings nie genoeg om 'n vermoede te bewys nie — en duisend rye sou ook nie gewees het nie. Hoekom is een teenvoorbeeld genoeg om 'n bewering te vernietig terwyl duisend voorbeelde nie een kan bewys nie?",
       },
       diagram: FIG_DIAM,
       minChars: 25,

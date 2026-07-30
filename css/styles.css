@@ -390,6 +390,51 @@ svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display
 .dp-mini-cap{font-size:.76rem; text-align:center; margin-top:2px; color:var(--ink-soft); line-height:1.3;}
 .dp-mini-cap b{color:var(--ink);}
 
+/* a worked solution rendered statement-by-reason (investigate.js `solution`).
+   Station 4 asks the learner to find a missing line, a wrong reason and a step
+   that does nothing — so the lines have to be ON the screen to be found. */
+.dp-solution{margin:10px 0; border:2px solid var(--ink); border-radius:13px; background:#fff; overflow:hidden; box-shadow:var(--shadow-sm);}
+.dp-solution-cap{font-weight:800; font-size:.86rem; padding:7px 11px 6px; background:#eafaf3; border-bottom:2px solid var(--ink);}
+.dp-solution-lines{padding:8px 4px;}
+.dp-sol-line{display:grid; grid-template-columns:auto 1fr auto; align-items:baseline; gap:4px 8px; padding:5px 9px; font-size:.95rem;}
+.dp-sol-step{font-weight:800; font-size:.76rem; color:var(--ink-soft); white-space:nowrap;}
+.dp-sol-st{font-weight:700; font-variant-numeric:tabular-nums;}
+.dp-sol-rs{font-size:.82rem; color:var(--ink-soft); text-align:right; white-space:nowrap;}
+/* the gap: a rule the eye lands on, and a ( ? ) where its reason belongs */
+.dp-sol-line.blank .dp-sol-st{border-bottom:2.5px dashed #e0a500; min-height:1.15em;}
+.dp-sol-line.blank,
+.dp-sol-line.blank-rs{background:#fff8e6;}
+.dp-sol-line.blank .dp-sol-rs,
+.dp-sol-line.blank-rs .dp-sol-rs{color:#8a5a00; font-weight:800;}
+/* the gap is in the REASON column: an empty bracket with a rule inside it */
+.dp-sol-line.blank-rs .dp-sol-rs{border-bottom:2.5px dashed #e0a500; letter-spacing:.14em;}
+.dp-sol-line.bad .dp-sol-rs{color:#9c1f52;}
+.dp-solution-foot{font-size:.78rem; color:var(--ink-soft); padding:7px 11px; background:#faf8f3; border-top:1px solid rgba(0,0,0,.1); line-height:1.35;}
+/* narrow screens: let the reason drop under its statement rather than squeeze */
+@media (max-width:430px){
+  .dp-sol-line{grid-template-columns:auto 1fr; }
+  .dp-sol-rs{grid-column:1 / -1; text-align:left; white-space:normal;}
+}
+
+/* the readings the learner records by dragging (investigate.js `record` /
+   `showRecord`). Fills in live on the explore panel, then rides along as
+   read-only given material on the panels that talk about "your table". */
+.dp-readings{margin:10px 0; border:2px solid var(--ink); border-radius:13px; background:#fff; overflow:hidden; box-shadow:var(--shadow-sm);}
+.dp-readings-cap{font-weight:800; font-size:.86rem; padding:7px 11px 6px; background:#f4f1ff; border-bottom:2px solid var(--ink);}
+.dp-readings-t{width:100%; border-collapse:collapse; font-size:.9rem;}
+.dp-readings-t th{font-weight:800; font-size:.78rem; text-align:right; padding:6px 11px; color:var(--ink-soft); border-bottom:1px solid rgba(0,0,0,.12);}
+.dp-readings-t td{text-align:right; padding:6px 11px; font-variant-numeric:tabular-nums; border-bottom:1px dashed rgba(0,0,0,.09);}
+.dp-readings-t tr:last-child td{border-bottom:0;}
+.dp-readings-t .idx{text-align:left; color:var(--ink-soft); font-weight:800; width:1%; white-space:nowrap;}
+.dp-readings-t td.derived{color:var(--ink-soft);}
+/* a row whose doubled reading missed by a degree — rounding, not a broken theorem */
+.dp-readings-t tr.off td{background:#fff8e6;}
+.dp-readings-t tr.off td.derived{color:#8a5a00; font-weight:800;}
+.dp-readings-t tr.empty td{text-align:center; color:var(--ink-soft); font-style:italic; padding:12px 11px;}
+.dp-readings-foot{font-size:.78rem; color:var(--ink-soft); padding:7px 11px; background:#faf8f3; border-top:1px solid rgba(0,0,0,.1); line-height:1.35;}
+.dp-record-count{font-size:.85rem; font-weight:700; color:var(--ink-soft); margin:6px 0 2px;}
+.dp-record-count.done{color:#0a6b4c;}
+
 /* hint + feedback + the formal note shown after a correct discovery */
 .dp-hint{background:#fff6e9; border:2px solid #e0a500; border-radius:12px; padding:10px 13px; margin:8px 0; font-size:.93rem;}
 .dp-hint-tag{font-weight:800;}

@@ -170,9 +170,11 @@ export const round = {
         { en: "One reports what happened while dragging (that is an observation, not a conjecture). One is only about the letters in THIS picture. One forgot that an angle at the centre also stands on chord AB — and it is double, not equal.",
           af: "Een rapporteer wat tydens die sleep gebeur het (dis 'n waarneming, nie 'n vermoede nie). Een gaan net oor die letters in HIERDIE prent. Een het vergeet dat 'n hoek by die middelpunt ook op koord AB staan — en dit is dubbel, nie gelyk nie." },
       ],
+      // Describes each option by its WORDS, never by its position — the
+      // options are shuffled now. See js/options-order.js.
       note: {
-        en: "A conjecture is a claim about EVERY case, written so a stranger can test it. \"∠APB = ∠AQB\" is an answer about one picture. \"When I dragged…\" is an observation — true, but it claims nothing beyond what was measured. \"Any two angles…\" quietly includes the angle at the centre, which is double. Only the first one survives a reader who wants to prove you wrong.",
-        af: "'n Vermoede is 'n bewering oor ELKE geval, so geskryf dat 'n vreemdeling dit kan toets. \"∠APB = ∠AQB\" is 'n antwoord oor een prent. \"Toe ek gesleep het…\" is 'n waarneming — waar, maar dit beweer niks buite wat gemeet is nie. \"Enige twee hoeke…\" sluit stilweg die hoek by die middelpunt in, wat dubbel is. Net die eerste een oorleef 'n leser wat jou verkeerd wil bewys.",
+        en: "A conjecture is a claim about EVERY case, written so a stranger can test it. \"∠APB = ∠AQB\" is an answer about one picture. \"When I dragged…\" is an observation — true, but it claims nothing beyond what was measured. \"Any two angles…\" quietly includes the angle at the centre, which is double. Only the one that names the chord, the circumference AND the side survives a reader who wants to prove you wrong.",
+        af: "'n Vermoede is 'n bewering oor ELKE geval, so geskryf dat 'n vreemdeling dit kan toets. \"∠APB = ∠AQB\" is 'n antwoord oor een prent. \"Toe ek gesleep het…\" is 'n waarneming — waar, maar dit beweer niks buite wat gemeet is nie. \"Enige twee hoeke…\" sluit stilweg die hoek by die middelpunt in, wat dubbel is. Net die een wat die koord, die omtrek EN die kant noem, oorleef 'n leser wat jou verkeerd wil bewys.",
       },
     },
 

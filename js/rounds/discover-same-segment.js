@@ -68,7 +68,12 @@ export const round = {
       prompt: { en: "You just saw it — which chord subtends the marked angle ∠APB?", af: "Jy het dit pas gesien — watter koord onderspan die gemerkte hoek ∠APB?" },
       diagram: SUB1,
       options: [
-        { text: { en: "AB — it joins the two arms of the angle", af: "AB — dit verbind die twee bene van die hoek" }, correct: true },
+        // bare chord names, matching the next panel: the correct option used to
+        // carry "— it joins the two arms of the angle" while the other two were
+        // two characters long, so it could be picked out without being read
+        // (39 chars against 2 and 2). The explanation is the hint's job and the
+        // note's job, and it is in both already.
+        { text: { en: "AB", af: "AB" }, correct: true },
         { text: { en: "AP", af: "AP" } },
         { text: { en: "BP", af: "BP" } },
       ],

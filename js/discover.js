@@ -21,6 +21,13 @@
      "text"
      { kind:"word", answer:"right", options:[6+ words], accept?:[…] }
      { kind:"num",  answer:90, unit:"°" }
+
+   CHOICE OPTIONS ARE SHUFFLED (added 2026-07-30). They used to render
+   in source order, and all 7 choice panels across the discovery rounds
+   had been authored with the correct option written first — so tapping
+   the top one cleared every single one without reading. The rules and
+   the two opt-outs live in js/options-order.js; read that before adding
+   a choice panel, and run `node tools/audit-options.mjs` after.
    ============================================================ */
 import { ROUND_BY_ID } from "./rounds/index.js";
 import { api } from "./api.js";
@@ -28,6 +35,7 @@ import { submitRoundReliable } from "./sync.js";
 import { getSession } from "./session.js";
 import { t, tx, reason as reasonText, REASONS, word as wordText } from "./i18n.js";
 import { el, clear, mount } from "./ui.js";
+import { orderedOptions } from "./options-order.js";
 import { mountInteractive } from "./interactive.js";
 import { renderDiagram } from "./engine.js";
 
@@ -211,7 +219,9 @@ function mountPanel(host, panel, accent, onDone) {
   else if (panel.type === "choice") {
     const opts = el("div", "q-options");
     let locked = false;
-    panel.options.forEach(o => {
+    // the shuffled order, kept so the reveal below can find the right button
+    const list = orderedOptions(panel);
+    list.forEach(o => {
       const b = el("button", "opt", tx(o.text));
       b.addEventListener("click", () => {
         if (locked) return;
@@ -226,7 +236,7 @@ function mountPanel(host, panel, accent, onDone) {
     revealAnswer = () => {
       if (locked) return;
       locked = true;
-      [...opts.children].forEach((b, i) => { b.disabled = true; if (panel.options[i].correct) b.classList.add("is-correct"); });
+      [...opts.children].forEach((b, i) => { b.disabled = true; if (list[i].correct) b.classList.add("is-correct"); });
       showRevealed();
     };
   }

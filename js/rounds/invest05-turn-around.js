@@ -62,9 +62,16 @@ export const round = {
       type: "note",
       prompt: { en: "Swap the two halves and you have a different theorem", af: "Ruil die twee helftes om en jy het 'n ander stelling" },
       diagram: FIG_OPP,
+      /* THE SPRINKLER (N17). Megan: "I think we should include this… that makes
+         a lot of sense here, it will help them understand." It goes exactly
+         here, straight after "which is lucky" — the rain pair IS the unlucky
+         case that sentence sets up. A non-circle example is on topic rather
+         than a digression: this station is about converses in general, and the
+         whole difficulty is that the asymmetry is a LOGICAL one, not a
+         geometric one. `s5p4` calls back to it. */
       note: {
-        en: "Every theorem has the shape <b>IF this, THEN that</b>.<br><br>\"<b>If</b> ABCD is a cyclic quadrilateral, <b>then</b> ∠A + ∠C = 180°.\" You start from cyclic and you end at 180°.<br><br>Its <b>converse</b> swaps the halves: \"<b>If</b> ∠A + ∠C = 180°, <b>then</b> ABCD is a cyclic quadrilateral.\" Now you start from 180° and you end at cyclic.<br><br>That is not the same sentence rearranged — it is a different claim, going the other way, and it needs its own proof. This one happens to be true, which is lucky, because it is how every \"prove that ABCD is cyclic\" question in the paper gets done. The next two panels show what else can happen.",
-        af: "Elke stelling het die vorm <b>AS dit, DAN dat</b>.<br><br>\"<b>As</b> ABCD 'n koordevierhoek is, <b>dan</b> is ∠A + ∠C = 180°.\" Jy begin by koordies en eindig by 180°.<br><br>Sy <b>omgekeerde</b> ruil die helftes om: \"<b>As</b> ∠A + ∠C = 180°, <b>dan</b> is ABCD 'n koordevierhoek.\" Nou begin jy by 180° en eindig by koordies.<br><br>Dit is nie dieselfde sin herrangskik nie — dit is 'n ander bewering, in die ander rigting, en dit het sy eie bewys nodig. Hierdie een is gelukkig waar, want dit is hoe elke \"bewys dat ABCD koordies is\"-vraag in die vraestel gedoen word. Die volgende twee panele wys wat nog kan gebeur.",
+        en: "Every theorem has the shape <b>IF this, THEN that</b>.<br><br>\"<b>If</b> ABCD is a cyclic quadrilateral, <b>then</b> ∠A + ∠C = 180°.\" You start from cyclic and you end at 180°.<br><br>Its <b>converse</b> swaps the halves: \"<b>If</b> ∠A + ∠C = 180°, <b>then</b> ABCD is a cyclic quadrilateral.\" Now you start from 180° and you end at cyclic.<br><br>That is not the same sentence rearranged — it is a different claim, going the other way, and it needs its own proof. This one happens to be true, which is lucky, because it is how every \"prove that ABCD is cyclic\" question in the paper gets done.<br><br>It does not always work out that way. \"If it is raining, the ground is wet\" is true. Turn it around — \"if the ground is wet, it is raining\" — and it is false: someone's sprinkler was on. Same shape, opposite verdicts. That is why a converse has to earn its own proof.<br><br>The next two panels show what else can happen.",
+        af: "Elke stelling het die vorm <b>AS dit, DAN dat</b>.<br><br>\"<b>As</b> ABCD 'n koordevierhoek is, <b>dan</b> is ∠A + ∠C = 180°.\" Jy begin by koordies en eindig by 180°.<br><br>Sy <b>omgekeerde</b> ruil die helftes om: \"<b>As</b> ∠A + ∠C = 180°, <b>dan</b> is ABCD 'n koordevierhoek.\" Nou begin jy by 180° en eindig by koordies.<br><br>Dit is nie dieselfde sin herrangskik nie — dit is 'n ander bewering, in die ander rigting, en dit het sy eie bewys nodig. Hierdie een is gelukkig waar, want dit is hoe elke \"bewys dat ABCD koordies is\"-vraag in die vraestel gedoen word.<br><br>Dit werk nie altyd so uit nie. \"As dit reën, is die grond nat\" is waar. Draai dit om — \"as die grond nat is, reën dit\" — en dit is onwaar: iemand se sproeier was aan. Dieselfde vorm, teenoorgestelde uitkomste. Daarom moet 'n omgekeerde sy eie bewys verdien.<br><br>Die volgende twee panele wys wat nog kan gebeur.",
       },
     },
 
@@ -129,13 +136,56 @@ export const round = {
       },
     },
 
-    /* ---------- 4 · typed: why one direction never carries the other ---------- */
+    /* ---------- 4 · build the IF…THEN pair before reasoning about it ----------
+       THE FIRST HALF OF THE s5p4 SPLIT (N15, her call: "Split it"). Made a TAP
+       rather than a second typed panel on purpose: it needs no checker call, no
+       12-second wait and NO NEW MEMO ROW, and recognising the swap is exactly
+       the scaffolding N16 found missing. The inverse ("if NOT cyclic then NOT
+       180°") is in there as a distractor because it is the mistake this shape
+       actually invites, and it is worth a name. */
+    {
+      type: "choice",
+      prompt: {
+        en: "One step before the hard question. Here is the theorem in the IF…THEN shape:\n\nIF the quadrilateral is cyclic, THEN its opposite ∠s add up to 180°.\n\nWhich of these is its CONVERSE?",
+        af: "Een stap voor die moeilike vraag. Hier is die stelling in die AS…DAN-vorm:\n\nAS die vierhoek koordies is, DAN tel sy teenoorstaande ∠e op tot 180°.\n\nWatter een hiervan is sy OMGEKEERDE?",
+      },
+      diagram: FIG_OPP,
+      options: [
+        { text: { en: "IF its opposite ∠s add up to 180°, THEN the quadrilateral is cyclic.",
+                  af: "AS sy teenoorstaande ∠e tot 180° optel, DAN is die vierhoek koordies." }, correct: true },
+        { text: { en: "IF the quadrilateral is not cyclic, THEN its opposite ∠s do not add up to 180°.",
+                  af: "AS die vierhoek nie koordies is nie, DAN tel sy teenoorstaande ∠e nie tot 180° op nie." } },
+        { text: { en: "IF the quadrilateral is cyclic, THEN its opposite ∠s are equal to each other.",
+                  af: "AS die vierhoek koordies is, DAN is sy teenoorstaande ∠e gelyk aan mekaar." } },
+        { text: { en: "IF its opposite ∠s add up to 180°, THEN its other two ∠s do as well.",
+                  af: "AS sy teenoorstaande ∠e tot 180° optel, DAN doen sy ander twee ∠e dit ook." } },
+      ],
+      hints: [
+        { en: "A converse swaps the two halves round and changes nothing else. Which sentence has the IF half and the THEN half in the other order, with the same words in them?",
+          af: "'n Omgekeerde ruil die twee helftes om en verander niks anders nie. Watter sin het die AS-helfte en die DAN-helfte in die ander orde, met dieselfde woorde daarin?" },
+        { en: "Take the words after IF and the words after THEN and trade their places — that is the converse. One option puts \"not\" into both halves instead, which is a different thing altogether; the other two quietly change what the THEN half says.",
+          af: "Vat die woorde ná AS en die woorde ná DAN en ruil hul plekke om — dit is die omgekeerde. Een opsie sit eerder \"nie\" in albei helftes, wat 'n heeltemal ander ding is; die ander twee verander stilweg wat die DAN-helfte sê." },
+      ],
+      reason: "cyclicOppConv",
+      note: {
+        en: "That is the converse: the same two halves, traded round. The one that put \"not\" into both halves is a different sentence with its own name — the <b>inverse</b> — and it is not what a converse means, so watch for it. The other two changed the THEN half, which makes them new claims rather than a turn-around of this one.<br><br>You now have the pair. The next panel asks the question the whole station is built on, and you will need both sentences side by side to answer it.",
+        af: "Dit is die omgekeerde: dieselfde twee helftes, omgeruil. Die een wat \"nie\" in albei helftes gesit het, is 'n ander sin met sy eie naam — die <b>inverse</b> — en dit is nie wat 'n omgekeerde beteken nie, dus hou dit dop. Die ander twee het die DAN-helfte verander, wat hulle nuwe bewerings maak eerder as 'n omdraai van hierdie een.<br><br>Jy het nou die paar. Die volgende paneel vra die vraag waarop die hele stasie gebou is, en jy sal albei sinne langs mekaar nodig hê om dit te antwoord.",
+      },
+    },
+
+    /* ---------- 5 · typed: why one direction never carries the other ----------
+       N16. Megan: "I swear, I am not lazy, I just don't know what to answer
+       here." The panel asked a general question while panels 1-3 gave three
+       CONCRETE converses and none of them was on screen any more, and the frame
+       that makes it answerable sat in panel 1, three panels back, with hint
+       rung 1 holding the rest — three misses away. The pair is now restated on
+       the panel itself, with the sprinkler callback next to it. */
     {
       type: "written",
       panelId: "s5p4",
       prompt: {
-        en: "You have now seen a converse that is true, one that is false, and one that is true but no use. So here is the underlying question: why does proving a theorem not prove its converse as well?",
-        af: "Jy het nou 'n omgekeerde gesien wat waar is, een wat onwaar is, en een wat waar maar nutteloos is. Hier is dus die onderliggende vraag: hoekom bewys die bewys van 'n stelling nie ook sy omgekeerde nie?",
+        en: "Here is the pair again, side by side:\n\nTheorem:   IF ABCD is cyclic, THEN ∠A + ∠C = 180°.\nConverse:  IF ∠A + ∠C = 180°, THEN ABCD is cyclic.\n\nAnd remember the sprinkler: the rain sentence was true and its turn-around was false, with no change to the shape at all.\n\nYou have now seen a converse that is true, one that is false, and one that is true but no use. So here is the underlying question: why does proving a theorem not prove its converse as well?",
+        af: "Hier is die paar weer, langs mekaar:\n\nStelling:    AS ABCD koordies is, DAN is ∠A + ∠C = 180°.\nOmgekeerde:  AS ∠A + ∠C = 180°, DAN is ABCD koordies.\n\nEn onthou die sproeier: die reënsin was waar en sy omdraai was onwaar, met glad geen verandering aan die vorm nie.\n\nJy het nou 'n omgekeerde gesien wat waar is, een wat onwaar is, en een wat waar maar nutteloos is. Hier is dus die onderliggende vraag: hoekom bewys die bewys van 'n stelling nie ook sy omgekeerde nie?",
       },
       diagram: FIG_OPP,
       minChars: 25,
@@ -156,14 +206,14 @@ export const round = {
         { en: "So it is a different claim, which means…", af: "Dus is dit 'n ander bewering, wat beteken…" },
       ],
       hints: [
-        { en: "Write the theorem out as IF … THEN …, then write the converse under it the same way. Compare where each one starts and where each one finishes.",
-          af: "Skryf die stelling uit as AS … DAN …, en skryf die omgekeerde daaronder op dieselfde manier. Vergelyk waar elkeen begin en waar elkeen eindig." },
-        { en: "The given and the conclusion have changed places, so the second sentence is not the first one in different words — it is a new claim, and panel 2 showed that a new claim can turn out false.",
-          af: "Die gegewe en die gevolgtrekking het plekke geruil, dus is die tweede sin nie die eerste een in ander woorde nie — dit is 'n nuwe bewering, en paneel 2 het gewys 'n nuwe bewering kan onwaar blyk te wees." },
+        { en: "Look at the two sentences above and compare where each one STARTS and where each one FINISHES. What has moved?",
+          af: "Kyk na die twee sinne hierbo en vergelyk waar elkeen BEGIN en waar elkeen EINDIG. Wat het geskuif?" },
+        { en: "The given and the conclusion have changed places, so the second sentence is not the first one in different words — it is a new claim. A proof of the first one starts from \"cyclic\" and works towards 180°, so not one of its steps is available to somebody who has only been handed the 180°. And a new claim can turn out false, as the sprinkler and the parallelogram both showed.",
+          af: "Die gegewe en die gevolgtrekking het plekke geruil, dus is die tweede sin nie die eerste een in ander woorde nie — dit is 'n nuwe bewering. 'n Bewys van die eerste een begin by \"koordies\" en werk na 180° toe, dus is nie een van sy stappe beskikbaar vir iemand wat net die 180° gekry het nie. En 'n nuwe bewering kan onwaar blyk te wees, soos die sproeier en die parallelogram albei gewys het." },
       ],
       memoDisplay: {
-        en: "Because the converse swaps what is GIVEN with what is CONCLUDED, so it is a different claim and needs its own proof. \"If AB is a diameter, then ∠ACB = 90°\" starts at a diameter and ends at 90°; its converse starts at 90° and ends at a diameter. Proving one direction says nothing at all about the other — and sometimes the other direction is simply false, as the parallelogram counterexample showed.",
-        af: "Omdat die omgekeerde die GEGEWE met die GEVOLGTREKKING omruil, dus is dit 'n ander bewering en het dit sy eie bewys nodig. \"As AB 'n middellyn is, dan is ∠ACB = 90°\" begin by 'n middellyn en eindig by 90°; sy omgekeerde begin by 90° en eindig by 'n middellyn. Om die een rigting te bewys sê glad niks oor die ander nie — en soms is die ander rigting eenvoudig onwaar, soos die parallelogram-teenvoorbeeld gewys het.",
+        en: "Because the converse swaps what is GIVEN with what is CONCLUDED, so it is a different claim and needs its own proof. \"If AB is a diameter, then ∠ACB = 90°\" starts at a diameter and ends at 90°; its converse starts at 90° and ends at a diameter.<br><br>And here is why you cannot just run the original proof backwards: that proof STARTS FROM the given and uses it at every step to reach the conclusion. The converse hands you the conclusion and asks for the given, so none of those steps is available to you — it is a different journey, not the same journey in reverse. Sometimes the other direction is simply false, as the sprinkler and the parallelogram both showed.",
+        af: "Omdat die omgekeerde die GEGEWE met die GEVOLGTREKKING omruil, dus is dit 'n ander bewering en het dit sy eie bewys nodig. \"As AB 'n middellyn is, dan is ∠ACB = 90°\" begin by 'n middellyn en eindig by 90°; sy omgekeerde begin by 90° en eindig by 'n middellyn.<br><br>En hier is hoekom jy nie die oorspronklike bewys net agteruit kan laat loop nie: daardie bewys BEGIN BY die gegewe en gebruik dit by elke stap om die gevolgtrekking te bereik. Die omgekeerde gee jou die gevolgtrekking en vra vir die gegewe, dus is nie een van daardie stappe vir jou beskikbaar nie — dit is 'n ander reis, nie dieselfde reis agteruit nie. Soms is die ander rigting eenvoudig onwaar, soos die sproeier en die parallelogram albei gewys het.",
       },
       note: {
         en: "This is why every converse on the reason list carries the word <i>converse</i> in front of it, and why writing the plain theorem's name where a converse is needed loses the mark: the marker cannot tell whether you knew which direction you were travelling.",
@@ -171,7 +221,7 @@ export const round = {
       },
     },
 
-    /* ---------- 5 · pick the converse that fits what you were given ---------- */
+    /* ---------- 6 · pick the converse that fits what you were given ---------- */
     {
       type: "choice",
       prompt: {

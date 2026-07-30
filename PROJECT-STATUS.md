@@ -1,20 +1,58 @@
 # Project status — updated 2026-07-30
 
 ## Where we are
-**THE LINE NOW NEEDS AN EDITING PASS, AND THE FINDINGS ARE ALL WRITTEN DOWN.**
-Megan played the whole Investigation Station on 2026-07-30 and produced 21
-findings — see **`docs/investigation-station-playthrough-notes.md`**, which is the
-hand-off document for the next session and the primary thing to read. Nothing
-from it is built except the line-wide scaffolding pass (below): her instruction
-was to keep notes and build the Station 1-3 corrections next session.
+**CHUNK C IS BUILT — all 21 playthrough findings are closed.** The line now
+teaches before it asks, the app records the learner's own readings, the options
+no longer give themselves away, and the two mark schemes that were unfair have
+been fixed and re-probed 13/13 against the live checker. Still on the branch,
+**still not pushed** (her standing instruction). Nothing is committed yet either
+— see "Pending on Megan".
 
-**The root cause, and the reason so many panels felt vague to her: the panels were
-written as ASSESSMENT when the station is INSTRUCTION — the teaching is filed
-AFTER the answer instead of before it.** Five of the findings are instances of that
-one fault, and the notes doc opens with the table. She said some version of "I
-don't know what to answer here" five times while knowing the mathematics cold, and
-in every case the explanation existed and arrived too late to use. Fix it as one
-editing pass, not five patches.
+What changed, grouped the way the findings were:
+
+**Line-wide**
+  · **N18 — options are shuffled now.** They rendered in source order and the
+    correct one had been written FIRST in 19 of 19 choice panels across
+    `investigate.js` and `discover.js`, so tapping the top one cleared the whole
+    line without reading. The rules live in the new **`js/options-order.js`** (a
+    leaf module that imports nothing, so it is testable from node); `ui.js`
+    re-exports `shuffled` from there so `game.js` is untouched. Two opt-outs and
+    no more: `keepOrder` on a panel whose options are a sequence (only `inv4` p3
+    qualifies) and `pin` on a single option that must hold its place (`inv4` p2's
+    "Nothing is wrong"). **`node tools/audit-options.mjs`** samples the real
+    function 4000 times per panel and fails if the correct answer sticks in one
+    slot, or if a numbered sequence is unmarked.
+  · **N18b — the length tell is gone too** (correct-is-longest was 13 of 19,
+    now 0 above 1.6×). On `inv6` p1/p2 the distractors were PADDED per her
+    ruling, never the right answer shortened — and the padded ones now fail
+    while being long, which is better teaching. Two live discovery panels had
+    the reason bolted onto the correct option (`dsameseg` p1 was 19.5×): that
+    came off, which also stopped a small answer leak.
+  · ⚠️ **Three post-answer notes described options BY POSITION** ("The first one
+    works because…") and became lies once shuffled. Rewritten to name each
+    option by its words. The rule is now written at the top of
+    `js/options-order.js`.
+
+**The root cause (five panels)** — every one now teaches above its question:
+`s1p4` (a `needs` list, plus the split below), `inv3` p3, `inv4` p1, `s5p4`,
+`inv6` p2. Details under Decisions.
+
+**Two new engine capabilities**, both opt-in and additive:
+  · `engine.js` gained **`noCircle`** and free **`pts: {P:{x,y}}`** points, for
+    Station 3's "four dots and no circle that fits them" figure. This is the
+    non-circle diagram mode the deferred worksheet items also wanted.
+  · `investigate.js` gained a **`solution`** block (statement + reason per line,
+    with a gap for a missing statement or a missing reason), a **readings table**
+    (`record` / `showRecord`), a per-run **`scratch`** so a panel can hand
+    something to a later panel, and **prompts may be functions** of that scratch.
+  · `interactive.js` gained **`onRelease`**, which fires once when a drag ENDS —
+    that is what makes recording one reading per position possible.
+
+**Checks, all green:** `verify.html` **413 diagrams / 760 angles / 0 mismatches**
+(up from 406/749; the browser page and the new `tools/verify-node.mjs` agree
+exactly). Marking probes **13/13** on the two changed schemes. Every learner
+string carries both languages (`tools/check-bilingual.mjs`). Both languages
+walked in the browser; no console errors.
 
 TWO COMMITS LANDED TODAY, both on the branch, neither pushed:
   · `27e71bf` **CHUNK B — the train.** Details below; all four rulings verified.
@@ -177,6 +215,60 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-30 (CHUNK C — where the build DEPARTED from the playthrough plan, and why.
+  Everything else went in as written up in the notes doc.)
+  1. **`s4p4`'s second slide is a TAP, not a second typed panel.** N15 said split it
+     into "what did it spot?" then "name the theorem" — but `s4p5` ALREADY asks the
+     learner to write that same theorem's reason in an accepted wording, two panels
+     later. Two typed asks for the same words is the same question twice. So the
+     naming slide is a four-option tap: notice it → identify it → write it the way a
+     marker accepts it, which is three different skills. Costs no checker call.
+  2. **`s5p4`'s split is a tap too, and needed NO new memo row.** Slide A has the
+     learner RECOGNISE the IF…THEN swap (with the *inverse* — "if NOT cyclic then NOT
+     180°" — as a distractor, because that is the mistake this shape invites and it
+     is worth naming). Slide B then asks the original question with the pair restated
+     above it. Since the typed question is unchanged, `s5p4`'s mark scheme is
+     untouched and did not need re-probing. Cheaper than the plan and still a split.
+  3. **N14 IS the fix for `s4p4`, not N15 — the two are not alternatives here.**
+     Because slide B no longer asks for a typed name, the old `must_have` line
+     "names the semi-circle theorem as the shortcut" had to come out regardless: the
+     panel asks what the shorter solution SPOTTED. It now accepts a description, a
+     name, OR a derivation, and refuses only a 90° credited to a different theorem or
+     never linked to the diameter. Her exact answer — the one that came back `partly`
+     and made her ask "..... why is this wrong" — is now a probe, and it passes.
+  4. **`s1p4` dropped its yes/no requirement**, because the yes/no is a tap now. A
+     learner who already tapped "No" must not be marked down for answering only the
+     "why" that the panel actually asks.
+  5. **The 1° bound is stated in the copy, not just used.** Rounding two whole-degree
+     readings can only ever land 1° from exact double (|2·round(x) − round(2x)| ≤ 1),
+     so 96/49 became 97/49 and the note now says outright that rounding can never put
+     a row 2° out. That is what makes "a degree off is a reading, 42° off is a
+     different claim" a rule the learner can apply rather than a fact to accept.
+  6. **`s3p4` said "five measurements" and had to change too.** Found while walking
+     the Afrikaans: it hard-coded a count of Station 1's table, which the learner now
+     fills in themselves (three to six rows). Same defect as N4, one station over.
+     Reworded to need no count. **The general rule: copy must not assert a number it
+     cannot know.**
+  7. **`.claude/launch.json` now runs `serve.py`, not `python -m http.server`.**
+     `serve.py` exists precisely to send no-store headers, and the config was not
+     using it — so the pane served STALE ES modules and a rewritten station appeared
+     unchanged for several minutes of debugging. Two things follow, both worth
+     keeping: the launch config must stay pointed at `serve.py`, and after editing a
+     module that the page has already loaded, navigate with **`force: true`** — a
+     plain reload or even a new tab shares the HTTP cache and will lie to you.
+- 2026-07-30 (**`s2p4` IS NOT TOO STRICT — her open question, now answered by firing
+  real answers at it.** This closes the item that had been carried for two sessions.)
+  · "Angles subtended by the same chord **at the circumference** are equal" comes
+    back `partly`, and the checker is RIGHT: at the circumference but on opposite
+    sides of the chord the angles are supplementary, not equal. So "at the
+    circumference" is not a sufficient location condition on its own.
+  · "…**in the same segment**" is accepted (`got_it`). That single phrase rules out
+    both the centre and the opposite segment, which is why it is the one that passes.
+  · "on the **same side** of it" alone is refused, as designed — the angle at the
+    centre is on that side too, and it is double.
+  · So the notes' description of the accept-list was too generous, not the scheme too
+    harsh. The N11 scaffolding fix already points the hints and the reveal at "in the
+    same segment", which is the wording that satisfies it. **Do not loosen `s2p4`.**
 - 2026-07-30 (THE PLAYTHROUGH RULINGS — her calls while walking all six stations. Each
   one is written up in full, with draft copy where it exists, in
   `docs/investigation-station-playthrough-notes.md`; the note numbers are given so the
@@ -588,14 +680,26 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- 🌐 1 min **[blocking-ish]**: nothing to run — just say at the START of next session
-  whether to delete or keep the `ZZ Toets` test learner. It is a real row on the live
-  database and the class can see it on the login list; Claude has the delete and the
-  recreate SQL ready either way.
+- 🌐 1 min **[do this first]**: say the word and the `ZZ Toets` learner gets deleted.
+  She chose on 2026-07-30 to keep it for the day so the marking probes could run —
+  they have, 13/13 — so its reason to exist has expired, but it is STILL A REAL ROW on
+  the live database and the class can see it on the login list. Claude has both
+  statements ready; re-creating it later is one INSERT.
+- 👀 5 min **[whenever]**: read Chunk C in the app and say whether it lands. The three
+  things most worth her eye: Station 1's recorded readings table (does the gate at
+  three positions feel right, or should it be two?), the conjecture-as-a-hunch slide,
+  and the padded distractors on `inv6` p1 — those are deliberately long-and-wrong.
 - 💻 2 min **[whenever]**: ask whoever owns the school's AI-use / POPIA policy whether
   typed answers may leave the school's systems (only the answer text is sent).
-- 👀 3 min **[whenever]**: decide whether Station 4 keeps the title "Prove It" once its
-  body copy stops calling a calculation a proof.
+- 👀 1 min **[whenever]**: Station 4 kept the title "Prove It" on her call (body copy
+  first). Now that its copy says "solution" throughout, does the title still grate?
+- 👀 1 min **[whenever]**: `inv6` p2 has a fictional learner writing "I lined my
+  protractor up on the diagram". Kept deliberately — it is a quoted write-up being
+  judged, not the app claiming she used a protractor, and her class does use them on
+  paper. Say if it should become "measured it on the screen" for consistency with N2.
+
+(Done 2026-07-30, and it was the one carried for two sessions: **`s2p4` is not too
+strict** — see the Decisions entry. Do not loosen it.)
 
 (Done 2026-07-30 — the old `s2p4` strictness question is probably ANSWERED, not open: its
 own hints and reveal text were teaching "on the same side of the chord", the one location
@@ -621,35 +725,36 @@ live" batches from 19/20/24 Jul were killed on Megan's call — the kids had bee
 playing on those builds for days, so real use did the eyeballing.)
 
 ## Next up
-**NEXT SESSION = CHUNK C, the corrections pass.** Her instruction, verbatim: "imma build
-it in the next session with the rest of the station 1-3 corrections, you just keep notes
-to hand off at the end." So the next session BUILDS from
-`docs/investigation-station-playthrough-notes.md`. Read that file first; it is ordered by
-station, each finding carries its status (🔴 to decide / 🟡 agreed / ✅ built), and the
-root-cause table is at the top.
+**CHUNK C IS DONE. The next session is her review, then `/ship`.** All 21 findings in
+`docs/investigation-station-playthrough-notes.md` are closed; that file's index now
+shows what was built and where the build departed from the plan.
 
-Suggested order for that session, cheapest-first inside each group:
-  1. **The line-wide fixes**, because they touch every station: shuffle the options in
-     `investigate.js` + `discover.js` with the `keepOrder` opt-out (N18), then the
-     teach-before-you-ask pass over the five panels in the root-cause table.
-  2. **Station 1**: the readings table the app records for itself (N1 — the big one),
-     which then drags along the protractor→rounding rewrite (N2, and remember rounding
-     can only ever be 1° out, so 96/49 becomes 97/49) and the row count (N4). Add the
-     conjecture-as-a-hunch slide (N21).
-  3. **Station 3**: the diagram + rewrite on the three-points-vs-four panel (N7b), and
-     the rotating-line interactive if she wants Break It to have something to break (N8).
-  4. **Station 4**: the proof block on screen (N12), "to find x" in the prompt (N12b),
-     "solution" not "proof" (N13), and the `s4p4` split (N15 — which settles N14, so do
-     NOT also loosen the mark scheme).
-  5. **Stations 5 and 6**: the IF…THEN restatement + rain/sprinkler (N16, N17), the
-     "conclusion" definition (N19), and the carried-forward figures (N20).
-Anything touching a `must_have` needs `node tools/probe-checker.mjs` re-run afterwards
-with the throwaway login — a memo is a prompt and cannot be eyeball-checked.
+In order:
+  1. **Delete the `ZZ Toets` row** (one statement, top of Pending).
+  2. **She reads Chunk C** — the three things worth her eye are listed in Pending.
+  3. **`/ship`** clears the branch. It will be 8 commits ahead once Chunk C is
+     committed; nothing has gone to origin since before Chunk A.
 
-**THE PUSH STAYS DEFERRED.** Her original reason (nothing visible to learners until the
-line is finished) now has a second one: the line exists but has 21 known defects, five of
-them "a learner cannot tell what this panel wants". `/ship` clears everything when Chunk C
-lands.
+**Still not built, and deliberately so:**
+  · **N8 — the rotating-line interactive for "Break It".** Her call on 2026-07-30 was
+    static figures only for Station 3. So `inv3` still opens on a tap rather than a
+    drag, and it is the one station whose name promises something to break. The design
+    is written up in the notes: put the DIAMETER up and let the learner rotate a line
+    through O — every position bisects AB, because the chord's midpoint IS O, and only
+    one position is perpendicular. `discover-line-centre.js`'s model cannot be reused
+    (its chord is fixed off-centre so it can never reach the diameter case), but a line
+    rotating through O is simpler than anything already shipped.
+  · **N7's fuller version** — a predict panel remembering which option was tapped so a
+    later panel can open with "you were right". The cheap version shipped; this needs
+    cross-panel state, which the new per-run `scratch` now makes easy.
+
+**Before touching a mark scheme again:** `node tools/probe-checker.mjs <panelId>` now
+takes panel ids, so a targeted re-run after one memo edit costs 5-6 calls instead of
+spending the 20-per-hour cap on panels that did not change. A memo is a prompt and
+cannot be eyeball-checked — that is how the `s4p4` unfairness survived a whole session.
+
+**THE PUSH STAYS DEFERRED until she has read Chunk C.** Everything the earlier deferral
+was protecting against is fixed, so this is now just her review gate, not a defect gate.
 
 ---
 (Historical, kept for the trail) **Megan is doing this over SEVERAL SESSIONS (her call,

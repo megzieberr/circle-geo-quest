@@ -1,40 +1,59 @@
 # Investigation Station — Megan's playthrough notes (2026-07-30)
 
-Running list of what she finds while playing all six stations. **Nothing here is
-built yet** — her instruction: play through everything first, keep notes, then
-agree one final game plan. Chunk B (the train) is committed at `27e71bf`; the
-branch is 5 commits ahead of origin and still unpushed.
+Her findings from playing all six stations, and the record of how each one was
+fixed. **CHUNK C IS BUILT: every finding below is closed except N8, which she
+ruled out of scope on the day.** The body of this file is the original
+diagnosis — left as written, because the reasoning is why the fixes look the way
+they do. Where the build departed from the plan, the index says so and
+PROJECT-STATUS "Decisions" carries the full reason.
 
-Status key: 🔴 to decide · 🟡 agreed in principle · ✅ built
+Status key: ✅ built · ⛔ deliberately not built
 
 ## Index (the body is ordered BY STATION, not by number)
 | # | what | status |
 |---|---|---|
-| root | teaching filed after the answer, not before — five instances | 🔴 |
-| N1 | app records the learner's own readings (Station 1) | 🟡 |
-| N2 | protractor → the screen rounds to whole degrees; 96/49 → 97/49 | 🔴 |
+| root | teaching filed after the answer, not before — five instances | ✅ all five |
+| N1 | app records the learner's own readings (Station 1) | ✅ |
+| N2 | protractor → the screen rounds to whole degrees; 96/49 → 97/49 | ✅ |
 | N3 | `s1p4` needed the shape of the answer — she got stuck here | ✅ |
 | N3b | starter chips below the fold | ✅ |
 | N3c | `s1p4` rung 2 asked instead of telling | ✅ |
-| N4 | the row count does not match the table | 🔴 |
+| N4 | the row count does not match the table | ✅ generated, cannot drift |
 | N5 | exam-board attribution out, marks talk stays (absorbed N6) | ✅ |
-| N7 | `predict` panel — a guess is not an answer | ✅ |
-| N7b | three-points-vs-four panel is unreadable; needs a figure | 🔴 |
-| N8 | "Break It" has nothing to break — rotating line from O | 🟡 |
+| N7 | `predict` panel — a guess is not an answer | ✅ cheap version |
+| N7b | three-points-vs-four panel is unreadable; needs a figure | ✅ two figures |
+| N8 | "Break It" has nothing to break — rotating line from O | ⛔ her call: static figures only |
 | N9 | typed panel taller than a screen (minor, mine) | ✅ |
 | N10 | typed panels never model the answer they ask for | ✅ |
 | N11 | `s2p4`'s hints taught the wording its scheme refuses | ✅ |
-| N12 | the proof is not on the screen (`inv4` p1) | 🔴 |
-| N12b | `inv4` p1 never says the proof is finding x | 🔴 |
-| N13 | "proof" ≠ a calculation (her classroom convention) | 🟡 |
-| N14 | `s4p4` demands a theorem name it never asked for | superseded by N15 |
-| N15 | split the two-part typed panels | 🟡 |
-| N16 | `s5p4` hides the IF…THEN frame | 🔴 |
-| N17 | rain / sprinkler example | 🟡 |
-| N18 | correct option is FIRST in 12/12 (+7/7 discovery) | 🔴 |
-| N19 | `inv6` p2 defines "observation" but not "conclusion" | 🔴 |
-| N20 | panels must carry the station they refer back to | 🟡 |
-| N21 | define "conjecture" as a HUNCH, on its own slide | 🟡 |
+| N12 | the proof is not on the screen (`inv4` p1) | ✅ all 3 panels |
+| N12b | `inv4` p1 never says the proof is finding x | ✅ "to find x" |
+| N13 | "proof" ≠ a calculation (her classroom convention) | ✅ title kept, her call |
+| N14 | `s4p4` demands a theorem name it never asked for | ✅ — NOT superseded, see below |
+| N15 | split the two-part typed panels | ✅ both splits are TAPS |
+| N16 | `s5p4` hides the IF…THEN frame | ✅ |
+| N17 | rain / sprinkler example | ✅ |
+| N18 | correct option is FIRST in 12/12 (+7/7 discovery) | ✅ 19/19, now shuffled |
+| N19 | `inv6` p2 defines "observation" but not "conclusion" | ✅ |
+| N20 | panels must carry the station they refer back to | ✅ both panels |
+| N21 | define "conjecture" as a HUNCH, on its own slide | ✅ |
+
+### Three corrections to this document, found while building
+1. **N14 was NOT superseded by N15.** The table above used to say it was. Because
+   `s4p4`'s second slide became a TAP (a typed one would have duplicated `s4p5`,
+   which already asks for the reason in an accepted wording), the panel still asks
+   only for a description — so the "names the semi-circle theorem" line had to come
+   out of its mark scheme anyway. Both were needed. Her exact answer is now a probe
+   and it passes.
+2. **`s2p4` is not too strict, and the accept-list described here was too generous.**
+   "At the circumference" alone is NOT a sufficient location condition — at the
+   circumference but on the far side of the chord the angles are supplementary. Only
+   "in the same segment" satisfies it, which is what the N11 fix already teaches.
+   Probed live. Do not loosen it.
+3. **A fourth panel had the N4 defect:** `s3p4` said "in Station 1, five measurements
+   were not enough", hard-coding a count of a table the learner now fills in
+   themselves. Reworded to need no count. The general rule that came out of it:
+   **copy must not assert a number it cannot know.**
 
 ---
 
@@ -731,7 +750,11 @@ TWO SEPARATE FIXES, both needed:
 
 ---
 
-## ⚠️ LIVE DATA TO CLEAN UP — do this before the next session ends
+## ⚠️ LIVE DATA TO CLEAN UP — STILL THERE as of the end of Chunk C
+**Her call on 2026-07-30 was to keep it for the day so the marking probes could run.
+They have (13/13 on the two changed schemes, plus the three `s2p4` rulings), so its
+reason to exist has expired — it just needs the word.**
+
 A throwaway learner exists in the LIVE database so Megan could test the typed panels
 with real marking (teacher preview cannot: "Teacher Preview" is not a row in `students`,
 so `_cgg_auth` 401s and every typed answer falls through to the hint ladder).

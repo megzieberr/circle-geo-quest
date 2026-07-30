@@ -175,14 +175,29 @@ revoke all on function public.cgg_checker_record(bigint, text, text)       from 
 --  Shared figure for both typed panels:
 --    AB is a DIAMETER of the circle with centre O. C is on the circle.
 --    Angle ABC = 50 degrees. Both learners correctly find angle BAC = 40 degrees.
+--
+--  s4p4 STOPPED REQUIRING A THEOREM NAME on 2026-07-30 (N14/N15). The old
+--  line 2 was "names the semi-circle theorem as the shortcut, however it is
+--  worded" — and the panel never asked the learner to name anything, it asked
+--  what the shorter solution SPOTTED. Megan's own answer derived the 90 degrees
+--  from the centre-double theorem (180 at the centre, halved) instead of naming
+--  the semi-circle one and came back `partly`: "..... why is this wrong". It was
+--  not wrong. A derivation is a STRONGER answer than a name — naming shows
+--  recognition, deriving shows understanding.
+--
+--  This is the same rule the s6p3 decision already set ("never ask for a
+--  theorem name on top of a correct description"); it had simply never been
+--  applied here. The naming is now a separate TAP panel in the app, and s4p5
+--  below is where writing an accepted wording is marked. Do NOT put a name
+--  requirement back into this panel unless the panel starts asking for one.
 
 insert into public.panel_memos (panel_id, memo, must_have) values
 (
   's4p4',
-  'The shorter proof spotted that AB is a diameter, so angle ACB is an angle in a semi-circle and is 90 degrees in ONE step. From there only the angle sum of triangle ABC is needed: angle BAC = 180 - 90 - 50 = 40 degrees.' || chr(10) ||
-  'The longer proof reached the same 90 degrees the slow way: it drew the radius OC, used OB = OC and OA = OC (radii) to make two isosceles triangles, found their base angles, and added them. Same answer, three extra steps, three extra places to lose a mark.',
-  'says the shorter proof used the fact that AB is a diameter, OR that angle ACB = 90 degrees' || chr(10) ||
-  'names the semi-circle theorem as the shortcut (angle in a semi-circle / diameter subtends a right angle), however it is worded'
+  'The shorter solution spotted that AB is a diameter, so angle ACB is 90 degrees in ONE step. From there only the angle sum of triangle ABC is needed: angle BAC = 180 - 90 - 50 = 40 degrees.' || chr(10) ||
+  'The longer solution reached the same 90 degrees the slow way: it drew the radius OC, used OB = OC and OA = OC (radii) to make two isosceles triangles, found their base angles, and added them. Same answer, three extra statements, three extra places to lose a mark.',
+  'links the DIAMETER to the 90 degrees at C. ACCEPT any wording that makes that link: a plain description ("AB is a diameter so angle C is 90"), the theorem''s name in any accepted form, OR a DERIVATION of it - the centre-double route (a diameter gives 180 degrees at the centre, and the angle at the circumference is half of it) or the isosceles-radii route. All of those are correct and complete answers to what this panel asked.' || chr(10) ||
+  'Do NOT require a formal theorem name on top of a correct description, and do NOT require the learner to mention the angle sum of the triangle. Count this line as MISSING only when the 90 degrees is credited to a DIFFERENT theorem (angles in the same segment, tan chord, equal chords), or when the diameter is never linked to the 90 degrees at all.'
 ),
 (
   's4p5',
@@ -244,25 +259,39 @@ on conflict (panel_id) do update
 -- ------------------------------------------------------------
 --  Figure: chord AB in a circle, centre O, with P on the major arc, so the
 --  angle AOB at the centre is double the angle APB at the circumference. The
---  learner has dragged it, written the conjecture down, and read a table of
---  five measured pairs — three exactly double, one 2 degrees out (a protractor
---  reading), one impossible.
+--  learner has DRAGGED THE FIGURE AND THE APP RECORDED THEIR OWN READINGS into
+--  a table on screen, then judged a row that cannot be real, then tapped
+--  yes-or-no. This panel is the "now say why" step.
 --
---  MARK SCHEME, NOT A SUMMARY. The panel asks two things only: yes-or-no, and
---  one reason. It does NOT ask for a proof, for a theorem name, or for the
---  "infinitely many cases" argument specifically — so any one sound reason
---  takes the tick. Listing more here would mark down learners who answered
---  exactly what was asked.
+--  TWO CHANGES ON 2026-07-30, both from Megan's playthrough:
+--
+--  (1) NO PROTRACTOR. Nobody in the game holds one — the app measures for the
+--  learner — and she found that framing confusing on its own terms. The honest
+--  reason a row can look slightly off double is that BOTH readouts are rounded
+--  to whole degrees. Note the arithmetic: rounding two whole-degree readings
+--  can only ever land 1 degree from exact double, never 2, because
+--  |2*round(x) - round(2x)| <= 1. So the old "96 and 49, 2 degrees out" example
+--  is now "97 and 49, 1 degree out", which is what the app itself shows.
+--
+--  (2) THE YES/NO IS NO LONGER ASKED HERE. It is a tap on the previous panel
+--  now (instant, and no checker call), so this panel asks for the REASON only.
+--  Requiring the word "no" from a learner who already tapped one would mark
+--  down an answer that did exactly what was asked.
+--
+--  MARK SCHEME, NOT A SUMMARY. The panel asks ONE thing: one reason. It does
+--  NOT ask for a proof, a theorem name, or the "endlessly many cases" argument
+--  specifically — so any one sound reason takes the tick. Listing more here
+--  would mark down learners who answered exactly what was asked.
 
 insert into public.panel_memos (panel_id, memo, must_have) values
 (
   's1p4',
-  $m$No. Measuring can only ever check the positions that were actually measured. A, B and P can be dragged to endlessly many other positions, so a table of five rows - or five hundred - leaves out all the rest, and the conjecture is a claim about every one of them.
-On top of that, every protractor reading carries error. The row reading 96 degrees and 49 degrees is 2 degrees away from exactly double, which is what reading to the nearest degree does. So even the measured cases were only "double as far as I could read it".
-Only a proof covers every position at once. The IEB Subject Assessment Guidelines put it in one line: numerous specific examples supporting a conjecture do not constitute a general proof.$m$,
-  $m$says NO - the measurements have not proved it. ACCEPT any wording that answers no: "no", "not proved", "not yet proved", "you have only tested it", "nee", "dit is nie bewys nie", "nog nie bewys nie", "jy het dit net getoets".
-gives ONE reason why measuring is not a proof. ACCEPT ANY ONE of the following, and treat them as fully equivalent: (a) only the measured cases or positions have been checked, or there are infinitely many other positions, or you cannot measure them all - "net die gevalle wat gemeet is", "daar is oneindig baie posisies", "jy kan nie almal meet nie"; (b) measurement is not exact, the protractor has error, or the 2 degrees out shows the reading was approximate - "meting is nie presies nie", "die gradeboog is nie akkuraat nie"; (c) a proof is needed to cover every case - "n bewys is nodig", "n bewys wat vir elke geval geld". Any ONE of (a), (b) or (c) alone satisfies this line - do not ask for a second one.
-IGNORE whether the learner names a theorem, writes any proof, or mentions the IEB. Two short sentences carrying a no and one reason are got_it.$m$
+  $m$Measuring can only ever check the positions that were actually measured. A, B and P can be dragged to endlessly many other positions, so a table of five rows - or five hundred - leaves out all the rest, and the conjecture is a claim about every one of them.
+On top of that, both angles on the screen are rounded to whole degrees. Doubling one rounded reading can land a degree away from the other, which is why a row like 97 degrees and 49 degrees shows up: double 49 is 98, and the screen shows 97. So even the measured rows were only "double as far as the readings could show". One degree is the most that rounding can ever cost.
+Only a proof covers every position at once. No number of specific examples that support a conjecture adds up to a general proof.$m$,
+  $m$gives ONE reason why the measuring has not proved the conjecture. ACCEPT ANY ONE of the following, and treat them as fully equivalent: (a) only the measured cases or positions have been checked, or there are endlessly many other positions, or you cannot measure them all - "net die gevalle wat gemeet is", "daar is oneindig baie posisies", "jy kan nie almal meet nie"; (b) the readings are not exact - the angles on screen are rounded to whole degrees, or the row that is a degree out shows the reading was approximate - "die lesings is afgerond", "meting is nie presies nie", "dit is net tot die naaste graad"; (c) a proof is needed to cover every case - "n bewys is nodig", "n bewys wat vir elke geval geld". Any ONE of (a), (b) or (c) alone satisfies this line - do not ask for a second one.
+The learner ALREADY answered yes-or-no by tapping on the previous panel, so do NOT require the word "no" here and do NOT mark down an answer that gives the reason on its own. An answer that also says "no" is equally fine.
+IGNORE whether the learner names a theorem or writes any proof. ONE sentence carrying one sound reason is got_it.$m$
 )
 on conflict (panel_id) do update
   set memo       = excluded.memo,
