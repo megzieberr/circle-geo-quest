@@ -215,6 +215,35 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-30 (**CHUNK D's shape, and the XP RULING — her call at the end of the Chunk C
+  session.** Full brief in `docs/chunk-d-practice-panels.md`.)
+  · **More panels inside the six existing stations, not new stations.** 2-3 extra
+    questions per station on the theorems the line never uses (tangent-radius,
+    tan-chord, two tangents from a point, equal chords). The train stays six stops; no
+    badge or ladder changes. One theorem per session — she was explicit it need not
+    land in one sitting.
+  · **XP IS NOW PER PANEL, not a flat 50 per station** — her words: *"they earn XP for
+    each panel, shame."* This reverses half of the original flat-XP decision, and the
+    half it reverses is fine to reverse. What must NOT change is the rest of that
+    rationale, written in `js/investigate.js`'s header: **XP is never scaled by
+    attempts or by correctness**, because a learner who fights through five attempts
+    has investigated MORE, not less. Per-panel is compatible with that; per-attempt is
+    not. Do not let it drift into the second one.
+  · **The sequencing is load-bearing: this has to land BEFORE the push.** Checked on
+    the day — `progress` holds 0 rows for `inv%` and `xp_events` 0, because the line
+    has never been pushed, so no learner has banked station XP and there is nothing to
+    back-pay. But a re-play pays 0 (`alreadyDone` in `finish()`), so once learners
+    start finishing stations, everyone who finished before the change is stuck on the
+    old amount with no way to top them up. Change it while that number is still zero.
+  · Recommended (hers to confirm): **10 XP per panel, every panel type**, still banked
+    once at the end as `panels.length × rate`, with a "+10 XP" tick shown per panel so
+    it feels per-panel without needing partial submission. Today's 34 panels → 340 XP
+    against 300 now; after Chunk D's ~15 → ~490. Paying only for *answerable* panels
+    (26 of 34) was considered and rejected — Station 1's explore panel now makes the
+    learner record three readings, which is real work.
+  · **Open sub-decision for her:** is the on-screen tick enough, or does she want XP
+    genuinely banked panel-by-panel so it survives quitting halfway? The second needs
+    a mid-station `progress` write. Ask before building it.
 - 2026-07-30 (CHUNK C — where the build DEPARTED from the playthrough plan, and why.
   Everything else went in as written up in the notes doc.)
   1. **`s4p4`'s second slide is a TAP, not a second typed panel.** N15 said split it
@@ -725,15 +754,26 @@ live" batches from 19/20/24 Jul were killed on Megan's call — the kids had bee
 playing on those builds for days, so real use did the eyeballing.)
 
 ## Next up
-**CHUNK C IS DONE. The next session is her review, then `/ship`.** All 21 findings in
-`docs/investigation-station-playthrough-notes.md` are closed; that file's index now
-shows what was built and where the build departed from the plan.
+**CHUNK C IS DONE and committed (`f42892f`). NEXT IS CHUNK D — more practice panels,
+and it starts with the XP change.** Her brief, 2026-07-30: *"I want a few more
+additional questions… just for other theorems so they get more practice… maybe add 2
+or 3 rounds per station"*, scoped to **more panels inside each of the six stations**
+(the train stays six stops), on the four theorems the line never touches, **mostly
+taps with only 1-2 typed in the whole chunk**, and explicitly spread over several
+sessions: *"I kinda want all of them, but it does not have to happen in one session."*
+
+The full brief, with per-theorem station assignments, the rules every new panel must
+follow and a tick-off checklist, is **`docs/chunk-d-practice-panels.md`**.
+`docs/NEXT-SESSION-PROMPT.md` is the paste-ready prompt.
 
 In order:
-  1. **Delete the `ZZ Toets` row** (one statement, top of Pending).
-  2. **She reads Chunk C** — the three things worth her eye are listed in Pending.
-  3. **`/ship`** clears the branch. It will be 8 commits ahead once Chunk C is
-     committed; nothing has gone to origin since before Chunk A.
+  1. **XP per panel — before anything else, and before the push.** See the Decisions
+     entry below for why the sequencing matters.
+  2. **One theorem per session**, starting with two-tangents-from-a-point.
+  3. **She reads it**, then **`/ship`**.
+
+(Done 2026-07-30: the `ZZ Toets` row is deleted — cascade took its progress,
+xp_events, events and checker_calls; the 21 real learners were untouched.)
 
 **Still not built, and deliberately so:**
   · **N8 — the rotating-line interactive for "Break It".** Her call on 2026-07-30 was
