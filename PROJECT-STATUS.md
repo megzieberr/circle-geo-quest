@@ -1,8 +1,35 @@
 # Project status — updated 2026-07-30
 
 ## Where we are
-**CHUNK B IS BUILT (2026-07-30), NOT YET COMMITTED, awaiting Megan's look at the
-train.** All four of her design rulings are in and verified in the browser:
+**THE LINE NOW NEEDS AN EDITING PASS, AND THE FINDINGS ARE ALL WRITTEN DOWN.**
+Megan played the whole Investigation Station on 2026-07-30 and produced 21
+findings — see **`docs/investigation-station-playthrough-notes.md`**, which is the
+hand-off document for the next session and the primary thing to read. Nothing
+from it is built except the line-wide scaffolding pass (below): her instruction
+was to keep notes and build the Station 1-3 corrections next session.
+
+**The root cause, and the reason so many panels felt vague to her: the panels were
+written as ASSESSMENT when the station is INSTRUCTION — the teaching is filed
+AFTER the answer instead of before it.** Five of the findings are instances of that
+one fault, and the notes doc opens with the table. She said some version of "I
+don't know what to answer here" five times while knowing the mathematics cold, and
+in every case the explanation existed and arrived too late to use. Fix it as one
+editing pass, not five patches.
+
+TWO COMMITS LANDED TODAY, both on the branch, neither pushed:
+  · `27e71bf` **CHUNK B — the train.** Details below; all four rulings verified.
+  · `731feed` **the line-wide scaffolding pass.** Every one of the nine typed
+    panels now carries a `needs` list ("Your answer needs to:") rendered above the
+    answer box, written from that panel's live `must_have` with the answers
+    stripped out; the starter chips moved above the box too; a new `predict` panel
+    type (a guess is accepted, never scored, never reaches the trajectory stats)
+    with `inv3` panel 1 converted to it; the "IEB says" attribution stripped from
+    every learner-facing string while every marks sentence stayed; and `s2p4`'s
+    hints and reveal text fixed — they had been teaching "on the same side of the
+    chord", the ONE location wording its mark scheme refuses.
+
+**CHUNK B (2026-07-30, committed at `27e71bf`).** All four of her design rulings
+are in and verified in the browser:
   1. `js/stations.js` (new) holds `trainStrip()` — a full-width tappable strip on
      the home screen, inserted directly above the rank ladder — and
      `renderStations()`, the six-stop map, routed as the new `stations` screen.
@@ -27,7 +54,7 @@ Also: ✕ inside a station and a station's results now return to the station map
 not home; the end-of-quest survey fires on the last MAIN round again (it had moved
 to inv6). `verify.html` still green — **406 diagrams / 749 angles / 0 mismatches**.
 Walked in both languages at 375px and 1280px, no console errors, no horizontal
-overflow. Nothing pushed; the branch stays 4 commits ahead of origin.
+overflow. Nothing pushed; the branch is 6 commits ahead of origin.
 
 IN PROGRESS 2026-07-30 on branch `claude/investigation-station-circle-geo-dd1g0a`
 (PR #4): INVESTIGATION STATION 🚂 — six graded "stations" that drill the
@@ -150,6 +177,57 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-30 (THE PLAYTHROUGH RULINGS — her calls while walking all six stations. Each
+  one is written up in full, with draft copy where it exists, in
+  `docs/investigation-station-playthrough-notes.md`; the note numbers are given so the
+  two documents can be read together.)
+  · **Teach before you ask (the root cause, N-root).** Every panel's explanation must sit
+    ABOVE its question. Rule for new panels: a learner who has read everything above the
+    question must be able to answer it. Five existing panels break this.
+  · **Marks talk STAYS; the exam board goes (N5).** Her exact refinement: "comments about
+    where they get their marks, that's fine, because it teaches them in general how to
+    approach an investigation… some kids really like those solid points to look for, but
+    let's just take out the 'IEB says' stuff." So strip the attribution, keep every
+    sentence about where marks are won or lost. DONE and committed.
+  · **"Proof" is not a calculation (N13).** She has drilled her class that you prove a
+    CLAIM — that something is a tangent, a cyclic quad, a diameter, parallel — and you
+    calculate a number. Station 4's calculation panels must stop calling themselves
+    proofs ("solution" / "oplossing"). `inv1`/`inv3`/`inv5` already use "proof" only for
+    claims, so they are already on her side of the line. Open: whether the station's
+    TITLE ("Prove It") changes too — her call, and her lean was body copy first.
+  · **A guess is not an answer (N7).** Where a panel asks a learner to commit to a
+    conclusion they have no way to investigate yet, every option is accepted and the next
+    panel reveals. DONE for `inv3` p1; the `predict` type now exists for reuse.
+  · **`needs` lists are the SHAPE of the answer, never its content (N10).** Written from
+    the panel's mark scheme with the answers removed. DONE for all nine typed panels.
+  · **Split the two-part typed panels (N15), and note it SUPERSEDES the `s4p4` scheme
+    loosening (N14).** `s4p4` → "what did it spot?" then "name the theorem"; `s1p4` →
+    a Yes/No TAP (no checker call at all) then the reason. Do NOT split `s2p4` or `s6p4`:
+    assembling one precise sentence / one closing paragraph IS the skill there. Cost is
+    not a constraint — she loaded $10 of API credit; the 20-per-hour cap is a per-learner
+    rate limit, not a spend limit.
+  · **The app records the learner's OWN readings (N1).** Station 1's table stops being
+    narration the learner never wrote. This is the biggest single build item left.
+  · **Rain and the sprinkler (N17).** "If it is raining, the ground is wet" is true; turn
+    it around and it is false — someone's sprinkler. Goes in `inv5` panel 1 right after
+    "this one happens to be true, which is lucky", with a callback in `s5p4`. Her words:
+    "it will help them understand." Draft copy in both languages is in the notes.
+  · **Explain "conjecture" as a HUNCH, on its own slide, before anything is asked (N21).**
+    "it's a big word for a 17 year old to hear." Lead with the familiar word and let the
+    technical one attach to it. Note the languages are not equally hard here: Afrikaans
+    *vermoede* already IS "hunch", so the English copy carries the whole burden.
+  · **A panel that refers back to another station must carry what it refers to (N20).**
+    This deliberately REVERSES the Chunk A decision that `s6p4` needs no diagram ("it
+    asks for a write-up, not a reading of a figure") — true, but it asks for a conclusion
+    ABOUT an investigation played days earlier. Show Station 2's figure with the angles
+    marked but UNLABELLED, so the setup is restored without handing over the conjecture.
+  · **Option order and length are giving the answers away (N18) — measured, not guessed.**
+    The correct option is FIRST in 12 of 12 panels on the line, and also the longest in 7
+    of them; `js/discover.js` has the same flaw in 7 of 7 of its choice panels. `game.js`
+    shuffles and the 43 graded rounds are fine. Fix = shuffle in `investigate.js` and
+    `discover.js` with a `keepOrder` opt-out for sequences ("Step 1/2/3/None of them"),
+    PLUS levelling the lengths — and on `inv6` p1/p2 that means padding the distractors,
+    not shortening the right answer, because there completeness is the point.
 - 2026-07-30 (CHUNK A — where the four new stations DEPART from the plan's §4, and
   why. All four are one-figure-per-station calls, which is the rule Chunk A was
   handed; where the plan's content needed a second unrelated figure, the content
@@ -510,10 +588,19 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
+- 🌐 1 min **[blocking-ish]**: nothing to run — just say at the START of next session
+  whether to delete or keep the `ZZ Toets` test learner. It is a real row on the live
+  database and the class can see it on the login list; Claude has the delete and the
+  recreate SQL ready either way.
 - 💻 2 min **[whenever]**: ask whoever owns the school's AI-use / POPIA policy whether
   typed answers may leave the school's systems (only the answer text is sent).
-- 👀 5 min **[whenever]**: decide whether `s2p4` is too strict — Claude runs
-  `node tools/probe-checker.mjs 3` and you read the three verdicts.
+- 👀 3 min **[whenever]**: decide whether Station 4 keeps the title "Prove It" once its
+  body copy stops calling a calculation a proof.
+
+(Done 2026-07-30 — the old `s2p4` strictness question is probably ANSWERED, not open: its
+own hints and reveal text were teaching "on the same side of the chord", the one location
+wording the mark scheme refuses. The coaching was wrong, not the strictness. Fixed and
+committed; re-test with a real answer next session before touching `must_have`.)
 
 **Do NOT push — Megan's call, 2026-07-30.** Nothing goes to origin until the train
 is finished, so no learner sees a half-built station. Explained under "Next up".
@@ -534,17 +621,51 @@ live" batches from 19/20/24 Jul were killed on Megan's call — the kids had bee
 playing on those builds for days, so real use did the eyeballing.)
 
 ## Next up
-**Megan is doing this over SEVERAL SESSIONS (her call, 2026-07-30) — no rush, and no
-need to finish a chunk in one sitting.** Two chunks remain, in this order:
+**NEXT SESSION = CHUNK C, the corrections pass.** Her instruction, verbatim: "imma build
+it in the next session with the rest of the station 1-3 corrections, you just keep notes
+to hand off at the end." So the next session BUILDS from
+`docs/investigation-station-playthrough-notes.md`. Read that file first; it is ordered by
+station, each finding carries its status (🔴 to decide / 🟡 agreed / ✅ built), and the
+root-cause table is at the top.
+
+Suggested order for that session, cheapest-first inside each group:
+  1. **The line-wide fixes**, because they touch every station: shuffle the options in
+     `investigate.js` + `discover.js` with the `keepOrder` opt-out (N18), then the
+     teach-before-you-ask pass over the five panels in the root-cause table.
+  2. **Station 1**: the readings table the app records for itself (N1 — the big one),
+     which then drags along the protractor→rounding rewrite (N2, and remember rounding
+     can only ever be 1° out, so 96/49 becomes 97/49) and the row count (N4). Add the
+     conjecture-as-a-hunch slide (N21).
+  3. **Station 3**: the diagram + rewrite on the three-points-vs-four panel (N7b), and
+     the rotating-line interactive if she wants Break It to have something to break (N8).
+  4. **Station 4**: the proof block on screen (N12), "to find x" in the prompt (N12b),
+     "solution" not "proof" (N13), and the `s4p4` split (N15 — which settles N14, so do
+     NOT also loosen the mark scheme).
+  5. **Stations 5 and 6**: the IF…THEN restatement + rain/sprinkler (N16, N17), the
+     "conclusion" definition (N19), and the carried-forward figures (N20).
+Anything touching a `must_have` needs `node tools/probe-checker.mjs` re-run afterwards
+with the throwaway login — a memo is a prompt and cannot be eyeball-checked.
+
+**THE PUSH STAYS DEFERRED.** Her original reason (nothing visible to learners until the
+line is finished) now has a second one: the line exists but has 21 known defects, five of
+them "a learner cannot tell what this panel wants". `/ship` clears everything when Chunk C
+lands.
+
+---
+(Historical, kept for the trail) **Megan is doing this over SEVERAL SESSIONS (her call,
+2026-07-30) — no rush, and no need to finish a chunk in one sitting.** The two original
+chunks, both now done:
 
 - **CHUNK A — Stations 1, 3, 5, 6. ✅ DONE 2026-07-30.** All six stations exist,
   memo rows are live, verify is green, both languages walked offline, marking probed
   22/22 against the live checker, and Megan has played all six in teacher preview
   ("they look very cute, had me thinking as well"). Committed at `bbafc96`, not
   pushed by her instruction. No loose ends.
-- **CHUNK B — the train.** Home strip + the six-stop map screen + the four design
-  rulings above (rank ladder, badge counter, train-only entry). Do NOT start this
-  until all six stations exist; that was the whole point of ruling 2.
+- **CHUNK B — the train. ✅ DONE 2026-07-30, committed at `27e71bf`.** Home strip +
+  the six-stop map screen + all four design rulings (rank ladder, badge counter,
+  train-only entry, Pi untouched). Shown to her before committing; her words: "omw,
+  that's soooo cute, yes, I love it". Then she played the whole line, which is where
+  Chunk C came from.
 
 Chunk A was shown and approved on 2026-07-30 (she played all six in teacher
 preview: "they look very cute, had me thinking as well"), so Chunk B is cleared

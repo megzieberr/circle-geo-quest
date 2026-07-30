@@ -7,6 +7,58 @@ branch is 5 commits ahead of origin and still unpushed.
 
 Status key: 🔴 to decide · 🟡 agreed in principle · ✅ built
 
+## Index (the body is ordered BY STATION, not by number)
+| # | what | status |
+|---|---|---|
+| root | teaching filed after the answer, not before — five instances | 🔴 |
+| N1 | app records the learner's own readings (Station 1) | 🟡 |
+| N2 | protractor → the screen rounds to whole degrees; 96/49 → 97/49 | 🔴 |
+| N3 | `s1p4` needed the shape of the answer — she got stuck here | ✅ |
+| N3b | starter chips below the fold | ✅ |
+| N3c | `s1p4` rung 2 asked instead of telling | ✅ |
+| N4 | the row count does not match the table | 🔴 |
+| N5 | exam-board attribution out, marks talk stays (absorbed N6) | ✅ |
+| N7 | `predict` panel — a guess is not an answer | ✅ |
+| N7b | three-points-vs-four panel is unreadable; needs a figure | 🔴 |
+| N8 | "Break It" has nothing to break — rotating line from O | 🟡 |
+| N9 | typed panel taller than a screen (minor, mine) | ✅ |
+| N10 | typed panels never model the answer they ask for | ✅ |
+| N11 | `s2p4`'s hints taught the wording its scheme refuses | ✅ |
+| N12 | the proof is not on the screen (`inv4` p1) | 🔴 |
+| N12b | `inv4` p1 never says the proof is finding x | 🔴 |
+| N13 | "proof" ≠ a calculation (her classroom convention) | 🟡 |
+| N14 | `s4p4` demands a theorem name it never asked for | superseded by N15 |
+| N15 | split the two-part typed panels | 🟡 |
+| N16 | `s5p4` hides the IF…THEN frame | 🔴 |
+| N17 | rain / sprinkler example | 🟡 |
+| N18 | correct option is FIRST in 12/12 (+7/7 discovery) | 🔴 |
+| N19 | `inv6` p2 defines "observation" but not "conclusion" | 🔴 |
+| N20 | panels must carry the station they refer back to | 🟡 |
+| N21 | define "conjecture" as a HUNCH, on its own slide | 🟡 |
+
+---
+
+# ROOT CAUSE — read this before doing any of the individual fixes
+**The panels were written as ASSESSMENT when the station is INSTRUCTION: the teaching is
+filed AFTER the answer instead of before it.** Megan said some version of "this is vague"
+five times while playing, on five different panels, and every one of them is this same
+fault. In no case was the content missing — it was written, and written well, but placed
+one step too late to be used:
+
+| panel | the teaching that exists | where it was |
+|---|---|---|
+| `s1p4` (N3) | what the answer has to do | nowhere — ✅ now a `needs` list |
+| `inv3` p3 (N7b) | why 3-vs-4 points matters, and a figure | absent |
+| `inv4` p1 (N12) | the proof itself | absent |
+| `s5p4` (N16) | the IF…THEN frame | panel 1, three panels back |
+| `inv6` p2 (N19) | the definition of "conclusion", and the word-tells | the post-answer note, and hint rung 2 |
+
+That is why she kept hitting it while knowing the mathematics cold: each panel asked her
+to produce the thing it intended to explain to her afterwards. **Fix it as one editing
+pass over the line — move each panel's teaching in front of its question — not as five
+separate patches.** The rule for new panels: a learner who has read everything above the
+question must be able to answer it.
+
 ## BUILT 2026-07-30 (her call: "fix these things now… i feel like the next rounds
 ## are going to reveal the same problems", scope = LINE-WIDE only)
 Only the findings that change the stations she has NOT yet tested were built. The
@@ -44,6 +96,44 @@ probes did not need re-running.
 ---
 
 ## Station 1 · Measure & Notice (`inv1`)
+
+### N21 · 🟡 DEFINE "conjecture" on its own slide, before anything is asked
+**Her words, 2026-07-30:** "Maybe just have a slide actually explaining what a conjecture
+is bc I know what it means, and some kids will assume what it means, but it's a big word
+for a 17 year old to hear."
+
+Worth knowing: **the two languages are not equally hard here.** Afrikaans uses *vermoede*
+— everyday language, a hunch. English "conjecture" is the only one of the pair a Grade 11
+has likely never met. So the English copy carries the whole burden.
+
+The line DOES define it — in `inv1` panel 2's note, after the blank has been filled:
+*"That is a conjecture: a claim about every position, not a report of the ones you happened
+to try."* ROOT CAUSE again: written well, filed after the question that needed it.
+
+**Her follow-up ruling: anchor it on the word HUNCH.** "explain conjecture as a hunch so
+they can associate it with that." So the definition leads with the familiar word and lets
+"conjecture" attach to it, rather than the other way round. (This also lines the two
+languages up: *vermoede* IS a hunch, so both versions now teach the same association.)
+
+Fix: a new `note` panel at the very start of `inv1`, before the explore. Draft:
+> **Conjecture** — a fancy word for a **hunch**. Not a wild guess: a hunch you have good
+> reasons for, that nobody has proved yet.
+>
+> You spot a pattern, you check it a few times, and then you write it down as a claim
+> about EVERY case. That written-down claim is the conjecture. Check 4, 8, 12, 16 — all
+> even — and you can write "every multiple of 4 is even". You believe it, you have
+> reasons, and you have not proved it.
+>
+> A conjecture stays a conjecture until one of two things happens: somebody proves it, and
+> it becomes a theorem — or somebody finds a single case where it fails, and it is dead.
+
+(The last line sets up Stations 3 and 5 for free: it is the disprove-vs-prove asymmetry the
+whole line is built on.)
+
+**Do NOT put all the vocabulary on one slide** — three definitions at once is its own wall
+of words. Define **counterexample** at first use in `inv3` and **converse** at first use in
+`inv5`, each in the PROMPT before the question rather than in a note after it. `inv5` panel
+1 already does this well for converses, which is the model to copy.
 
 ### N1 · 🟡 The app must record the learner's own readings
 **Her call, 2026-07-30:** "Can we have the app record their own readings please."
@@ -132,7 +222,9 @@ the table holds, the sentence has to match it row for row.
 
 ---
 
-### N5 · 🟡 LINE-WIDE: the exam board comes out of learner copy — the MARKS TALK STAYS
+### N5 · ✅ LINE-WIDE (BUILT): the exam board comes out of learner copy — the MARKS TALK STAYS
+_(N6, the "IEB task type N ·" blurb prefix, was folded into this entry — there is no
+separate N6.)_
 **Her ruling, 2026-07-30, in two steps. Read the second one; the first is not what
 she meant.** She first said: "this investigation station is not only to help them
 prepare and do well in their investigation, the goal is to get them to actually
@@ -338,15 +430,328 @@ model than the ones already shipped, and draggable panels are exempt from
 declared value to disagree with the picture).
 
 ## Station 4 · Prove It (`inv4`)
-_(nothing yet)_
+
+### N15 · 🟡 SPLIT the two-part typed panels — and it SUPERSEDES N14
+**Her idea, 2026-07-30:** "Maybe it would be good to break questions like this up in 2
+different slides?" Plus her cost ruling: "I loaded $10 onto the API, so the cost is not
+an issue" — so the extra checker call per split panel is not a constraint. (Told her the
+20-per-hour cap is a per-learner RATE limit in `checker_calls`, not a spend limit, so
+the credit does not lift it; it can be raised for the throwaway account alone.)
+
+**The interaction that matters: splitting `s4p4` FIXES N14 rather than needing it.**
+N14 exists because the panel asks for a description and then marks down a learner for
+omitting a theorem NAME it never requested. Split it, and slide B literally asks for the
+name — so requiring the name becomes fair, and no loosening is needed. Do the split OR
+the N14 loosening, not both.
+
+Where to split, and where not:
+  · **`s4p4` — SPLIT.** Two different kinds of thing: a description ("what did the
+    shorter one spot?") then a name ("name the theorem that gives it in one step").
+    Slide A's scheme drops the name requirement; slide B's requires it.
+  · **`s1p4` — SPLIT, and make part 1 a TAP.** "Have you proved it? Yes / No" needs no
+    language model at all: instant, free, no 12-second wait. The reason then gets its own
+    slide. Cheaper and clearer than two typed slides.
+  · **`s2p4` — DO NOT SPLIT.** Writing ONE precise sentence carrying all three conditions
+    is the skill; splitting it into three hands over the structure being tested.
+  · **`s6p4` — DO NOT SPLIT.** Same, more strongly: it is a closing PARAGRAPH, and
+    assembling the three moves into one is the whole task.
+  · **`s6p3`, `s2p5`, `s4p5`** — already single asks.
+  · **`s5p4` — her call.** Two halves of one argument; my lean is to leave it whole.
+
+Free improvement for the panels that are NOT split: the edge function already returns
+`missing` — up to three short plain-language labels for what is absent (see the response
+schema in `supabase/functions/check-answer/index.ts`) — and `js/investigate.js` throws
+them away, using only `nudge`. Rendering them against the `needs` list would show a
+learner WHICH of the two things is still outstanding, with no split and no extra call.
+Render as textContent, never HTML — it is model output.
+
+### N14 · 🔴 (SUPERSEDED BY N15 IF THE SPLIT HAPPENS) mark-scheme bug on `s4p4`
+**Her words, 2026-07-30:** "..... why is this wrong". It was not wrong.
+
+Her answer: *"The shorter proof noticed that AB is the diameter which makes C = 90
+degrees. Then we use interior angles of a triangle. This happens because the angle at
+the center (180 degrees) is double the angle at the circumference."* Live verdict:
+`partly` — "can you name the theorem that explains why a diameter creates a right angle
+at the circumference?"
+
+`s4p4`'s `must_have` line 2 is *"names the semi-circle theorem as the shortcut … however
+it is worded"*. She did not name it; she DERIVED it (180° at the centre, halved at the
+circumference). So the checker behaved exactly as instructed — the instruction is wrong:
+  · the panel asks *"What did the SHORTER proof spot that the longer one missed?"* and
+    never asks the learner to name anything;
+  · "AB is the diameter which makes C = 90 degrees" IS the theorem in her own words —
+    "diameter subtends right angle" is one of its accepted forms;
+  · this is precisely the failure the 2026-07-30 checker session already ruled on for
+    `s6p3` ("never ask for a theorem name on top of a correct description") and the
+    memo-vs-mark-scheme finding ("anything listed there that the panel did not actually
+    ask for will mark real learners down"). The rule was simply never applied to `s4p4`.
+  · a derivation is a STRONGER answer than a name: naming shows recognition, deriving
+    shows understanding.
+
+Proposed replacement for line 2:
+> identifies the diameter → right-angle step as the shortcut. ACCEPT any wording that
+> links the diameter to the 90°: a plain description ("AB is a diameter so C is 90"),
+> the theorem's name in any accepted form, OR a derivation of it (180° at the centre,
+> halved at the circumference; or the isosceles-radii route). Never require a formal
+> theorem name on top of a correct description. Count as MISSING only when the 90° is
+> credited to a different theorem, or the diameter is never linked to it.
+
+Cost: one `UPDATE` on `panel_memos` + the same edit in `supabase/phase16.sql`, then
+re-run the `s4p4` probes (and add one probe carrying her exact answer, plus one that
+credits the 90° to the wrong theorem, to prove the loosening did not go too far).
+Both Claude steps. **Asked her whether to fix now or at plan time; recommended now,
+because this one fails learners who understand the maths better than the scheme does.**
+
+### N12 · 🔴 THE PROOF IS NOT ON THE SCREEN (panel 1) — a missing element, not vagueness
+**Her words, 2026-07-30:** "and which part is left out exactly? again, this is vague."
+
+Panel 1 says *"A learner wrote this proof, but one line fell out. Which line is
+missing?"* — and no proof is rendered. The panel carries `diagram: FIG_GIVEN`, a
+prompt, four options and hints; there is no proof text anywhere in the panel. The only
+route through is to reverse-engineer the proof out of the four options. Its own hint
+proves the intent: *"Read the proof as a chain: 90° … then what? … then 40°"* — there
+is no chain on screen to read.
+
+Why panels 2 and 3 escape this: their four options ARE the proof's lines (one carries
+the wrong reason / does no work), so the learner can see the whole argument while
+choosing. Panel 1 is the only one whose options are CANDIDATES for a gap, so it is the
+only one that cannot be answered from what is displayed.
+
+Fix: a proof block a panel can render — statement + reason per line, with a visible
+blank where the missing line goes:
+```
+∠ABC = 50°               (given)
+∠ACB = 90°               (∠s in semi-circle)
+_______________          ( ? )
+∠BAC = 40°
+```
+Small new display feature in `js/investigate.js` (a `proof:` field, lines of
+{statement, reason}), plus CSS. Once it exists, panels 2 and 3 should render their
+proofs the same way rather than smuggling them into the options, so all three panels of
+the station read alike.
+
+### N13 · 🟡 DECIDED: "proof" comes out of Station 4's calculation panels
+**Her ruling, 2026-07-30:** "I have been hammering in my kids' heads that proof =
+converse... You prove something is a tangent, cyclic quad, diameter, parallel... I
+think proof here is a bit confusing." Her classroom convention wins over general
+mathematical licence — matching what the class has been drilled on is the point.
+
+**The dividing line, and it already holds everywhere else:** a CLAIM gets proved, a
+NUMBER gets calculated. Her four examples (tangent / cyclic quad / diameter / parallel)
+are all claims. `inv1`, `inv3` and `inv5` only ever use "proof" for claims — "measuring
+cannot prove the conjecture" — so they sit on her side of the line already. `inv4`'s
+calculation panels are the ONLY place in the line that crosses it. This is one
+station's copy, not a rethink of the line.
+
+Worth carrying into the copy: what her four examples share is not strictly "converse"
+(converses are the largest family of claims-to-prove, not the definition), and `inv1`
+asks learners to prove a conjecture that is not a converse. So the rewritten copy should
+lean on claim-vs-number rather than on the word converse, or the two stations will feel
+like they mean different things by "prove".
+**Her question, 2026-07-30:** "Why do we call it a proof if we are working something
+out? Isn't this just a statement?" She is right, and the consequence is structural.
+
+The exam distinction: *"Calculate x, giving reasons"* wants a chain of statements each
+carrying a reason, landing on a NUMBER. *"Prove that ABCD is cyclic"* wants an argument
+that a stated CLAIM holds, usually with no numbers, where the destination is announced
+in advance. They are marked differently.
+
+Panels 1-4 of `inv4` are the first kind: given 50° and a diameter, find x = 40°. Not
+false to call that a proof — any justified chain proves its own conclusion — but wrong
+for a Grade 11 in exam language, and wrong in the one place it costs something: **the
+station teaching the difference between evidence and proof is using "proof" for
+something that is not one.** That undercuts the argument the whole line is built on.
+
+Where "proof" IS accurate and must stay: `inv6` panel 3 (explain why ∠ACB HAS to be
+90°), and all the conjecture-proving talk in `inv1`, `inv3` and `inv5`.
+
+Suggested (naming is hers): in `inv4`, call what panels 1-3 display a **solution**
+(AF *oplossing*) and its lines **statements and reasons**. Note the app already uses
+"rider" for this shape elsewhere (`round18-riders-*`, `daily-riders`), so "rider" is
+the consistent alternative.
+
+**Open decision for her — the station's TITLE.** `inv4` is called "Prove It" and its
+content is error-spotting in reasoned solutions. Either rename it (e.g. "Check It")
+and let `inv6` carry the proving, or fix only the body copy and see whether the title
+still grates once "solution" is in there. My lean: body copy first.
+
+### N12b · 🔴 Panel 1 never says what the proof is FOR
+**Her ask, with a correction to the content.** She wrote: "maybe say that… A learner
+wrote this proof to show that it is a diameter". Her instinct is right — the prompt
+never states the proof's goal — but the goal is NOT the diameter: "AB is a diameter" is
+the panel's GIVEN, used to justify ∠ACB = 90°. The proof works out **x = ∠BAC = 40°**,
+which is what `FIG_GIVEN` marks at A.
+
+So the wording should be "A learner wrote this proof **to find x**" — do not write "to
+show that it is a diameter", which would be false. Flagged in chat and she has not
+disputed it; worth confirming at plan time in case she wants different wording.
 
 ## Station 5 · Turn It Around (`inv5`)
-_(nothing yet)_
+
+### N16 · 🔴 `s5p4` hides the frame that makes it answerable
+**Her words, 2026-07-30:** "I swear, I am not lazy, I just don't know what to answer
+here." Third time the teacher who commissioned the content could not answer a panel
+(see N3, N7b) — the same class of finding, and the most abstract panel on the line.
+
+The panel asks "why does proving a theorem not prove its converse as well?" — a general
+principle — while panels 1-3 gave three CONCRETE converses to judge and none of them is
+on screen any more. The diagram (`FIG_OPP`) is a cyclic quad, which illustrates the
+theorem but not the abstraction being asked about.
+
+**The scaffolding exists, three panels earlier.** Panel 1 already carries the IF…THEN
+frame in full, with the cyclic-quad pair worked through. By panel 4 it is off screen, and
+hint rung 1 (*"Write the theorem out as IF … THEN …, then write the converse under it the
+same way"*) only appears after three misses. So panel 4 needs to RESTATE the frame, not
+invent it — put the pair on the panel:
+```
+Theorem:   IF the quadrilateral is cyclic   THEN opposite ∠s add to 180°
+Converse:  IF opposite ∠s add to 180°       THEN the quadrilateral is cyclic
+```
+
+### N17 · 🟡 DECIDED: add the rain / sprinkler pair
+**Her call, 2026-07-30:** "I think we should include this… that makes a lot of sense
+here, it will help them understand."
+
+WHERE: `inv5` panel 1, immediately after its existing sentence *"This one happens to be
+true, which is lucky"* — the rain pair is precisely the unlucky case that sentence sets
+up. Then a one-line callback in panel 4 next to the restated IF…THEN pair, so the learner
+meets it again where the abstract question is asked.
+
+Draft copy, ready to paste:
+> EN: It does not always work out that way. "If it is raining, the ground is wet" is
+> true. Turn it around — "if the ground is wet, it is raining" — and it is false:
+> someone's sprinkler was on. Same shape, opposite verdicts. That is why a converse has
+> to earn its own proof.
+>
+> AF: Dit werk nie altyd so uit nie. "As dit reën, is die grond nat" is waar. Draai dit
+> om — "as die grond nat is, reën dit" — en dit is onwaar: iemand se sproeier was aan.
+> Dieselfde vorm, teenoorgestelde uitkomste. Daarom moet 'n omgekeerde sy eie bewys
+> verdien.
+
+A non-circle example is on-topic here rather than a digression: Station 5 is about
+converses in general, and the whole difficulty is that the asymmetry is a logical one,
+not a geometric one.
+
+The mathematical point the panel wants, for whoever writes the copy: the theorem's proof
+STARTS FROM the given and uses it to reach the conclusion. The converse hands you the
+conclusion and asks for the given, so none of the original proof's steps are available —
+it is a different journey, not the same journey reversed. (This is also the honest reason
+"you cannot just reverse the proof" rather than a rule to memorise.)
 
 ## Station 6 · Explain It (`inv6`)
-_(nothing yet)_
+
+### N20 · 🟡 Panels that refer back to another station must CARRY what they refer to
+**Her words, 2026-07-30, on `s6p4`:** "I played station 2 like 30 min ago, I cannot
+remember what it was about and neither will my kids... maybe just show that diagram again
+here?" And the stations will often be played DAYS apart, not 30 minutes.
+
+**This reverses a deliberate Chunk A decision, on purpose.** The 2026-07-30 decision in
+PROJECT-STATUS reads: *"`s6p4` carries no diagram either — it asks for a write-up, not a
+reading of a figure."* True but beside the point: the panel asks for a conclusion ABOUT a
+specific investigation, so the figure is not decoration, it is the subject.
+
+**Refinement — do not paste `BOWTIE` in as-is.** Station 2's figure labels both angles
+`54°`, and "state the conjecture" is the FIRST thing this panel's mark scheme asks for, so
+the labelled figure hands that over. Use a variant with the two angles MARKED BUT
+UNLABELLED (`t: ""`, keeping `o.v` so `verify.html` still checks it) plus a one-line recap
+above it: *"Back in Station 2 you dragged P and Q around chord AB."* The learner then sees
+what was investigated and still has to say what stayed true.
+
+This costs nothing the panel was testing: its `must_have` explicitly says *"Do NOT require
+'at the circumference', 'in the same segment' or 'on the same side' here; this panel is
+about the shape of the paragraph, not the precision of the conjecture."*
+
+**Second panel with the same fault: `inv6` p1** — *"Four learners wrote up the Station 1
+investigation"* — also carries no figure and also refers to a station played who knows
+when. Its Chunk A reason was different (showing the semicircle figure there would
+pre-empt `s6p3`), but the write-ups are about the CENTRE-DOUBLE investigation, so the
+centre-double figure can be shown without pre-empting anything.
+
+### N19 · 🔴 `inv6` p2 defines "observation" and not "conclusion"
+**Her words, 2026-07-30:** "'Which one is the conclusion'... Why are these questions so
+explicitly vague?" An instance of the ROOT CAUSE above, and the sharpest one because the
+asymmetry is visible in a single sentence.
+
+The prompt defines one of its two terms — *"three of these four sentences are OBSERVATIONS
+— reports of what was seen or measured"* — and then uses CONCLUSION, the term the question
+actually turns on, without defining it.
+
+Both missing pieces exist elsewhere in the panel, after the point of use:
+  · the definition is in the post-answer `note`: *"A conclusion is a claim: it says what
+    must be true, gives the reason, and covers cases nobody measured."*
+  · the word-level tell is in hint rung 2, three misses away: *"'I measured', 'looks like'
+    and 'stayed the same' all describe. 'So', 'therefore' and 'must' all conclude."*
+
+Fix: define CONCLUSION in the prompt alongside OBSERVATIONS, in the same breath and the
+same style. The hint's word-tells could also move up — they are the actual method for the
+task, not a rescue.
+
+(For the record, the answer is option 1: "so… must… therefore… always" — it claims
+something about every case, while the other three report single events.)
+
+### N18 · 🔴 LINE-WIDE, MEASURED: the correct option is FIRST in 12 of 12 panels
+**Her words, 2026-07-30, on `inv6` p1:** "just by judging the length of the answer, the
+learners can guess which one is correct without even reading… I saw this in station 1
+too… we can make this a bit more challenging."
+
+Measured every option list on the line (script over `STATIONS`, comparing the correct
+option's index and its length against the others):
+
+| tell | result |
+|---|---|
+| correct option is FIRST | **12 / 12 panels** |
+| correct option is LONGEST | 7 / 12 panels |
+
+`js/investigate.js` renders `panel.options` in source order — it never shuffles — and
+every panel was authored with the correct option written first. So "always tap the first
+one" clears every choice panel in the line without reading. `js/game.js` DOES shuffle
+(`shuffled(q.options)`, line ~388), which is why the 43 graded rounds never showed this.
+**`js/discover.js` does not shuffle either: 7 of 7 choice panels across the discovery
+rounds are also correct-first.** That is 19 panels in the app with a positional tell.
+
+Worst length gaps (correct vs the rest, EN characters):
+  · `inv6` p1 — 216 vs 64 / 18 / 98
+  · `inv6` p2 — 108 vs 49 / 32 / 66
+  · `inv2` p3 — 104 vs 54 / 82 / 14
+  · `inv3` p3 — 86 vs 41 / 56 / 64
+
+TWO SEPARATE FIXES, both needed:
+  1. **Shuffle** in `investigate.js` and `discover.js`, reusing `shuffled` from `ui.js`
+     exactly as `game.js` does. Needs one opt-out (`keepOrder: true`) for panels whose
+     options are a SEQUENCE rather than a set — `inv4` p3 is "Step 1 / Step 2 / Step 3 /
+     None of them", which reads as nonsense shuffled and whose "None of them" belongs
+     last; `inv3` p3's lettered claims (A) / (B) / Both / Neither are the same shape.
+     Check every panel for a trailing "none / both / neither" option before shuffling it.
+  2. **Level the lengths** — a copy job, but NOT by shortening the right answer on
+     `inv6` p1/p2: those panels ask which write-up a reader could FOLLOW, so the good one
+     is legitimately the most complete. Pad the distractors instead — a wordy write-up
+     that still says "looks like", or one that uses letters it never introduces. That is
+     better teaching as well, since the real trap in marking is the long answer that says
+     nothing.
 
 ---
+
+## ⚠️ LIVE DATA TO CLEAN UP — do this before the next session ends
+A throwaway learner exists in the LIVE database so Megan could test the typed panels
+with real marking (teacher preview cannot: "Teacher Preview" is not a row in `students`,
+so `_cgg_auth` 401s and every typed answer falls through to the hint ladder).
+
+  · `students.display_name = 'ZZ Toets'`, password `toets1234`, id
+    `98e6d6a4-8060-4382-b054-cafb42e68c5e`, created 2026-07-30.
+  · It was given all 43 MAIN rounds as `passed` with `total_xp = 0`, so the train strip
+    opens and every station is unlocked; the six stations were left unplayed.
+  · While it exists it is VISIBLE TO THE CLASS on the login name list and the
+    leaderboard (bottom, 0 XP until stations are played).
+
+Delete it when the testing is done — the cascade takes its progress, xp_events, events
+and `checker_calls` (which hold learner-authored answer text) with it:
+```sql
+delete from public.students where display_name = 'ZZ Toets';
+```
+If the 20-calls-per-hour cap bites mid-testing, clear only that learner's counter:
+```sql
+delete from public.checker_calls where student_id = '98e6d6a4-8060-4382-b054-cafb42e68c5e';
+```
 
 ## Carried over from before this playthrough
 - `s2p4` strictness is still an open question of hers (the location condition).
