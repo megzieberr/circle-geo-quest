@@ -46,8 +46,8 @@ export const round = {
   id: "inv4", n: 0, accent: AC, kind: "investigate", group: "g6",
   title: { en: "Prove It", af: "Bewys Dit" },
   blurb: {
-    en: "IEB task type 9 · Error Spotting. Four proofs, and something wrong with three of them.",
-    af: "IEB taak tipe 9 · Foutopsporing. Vier bewyse, en iets fout met drie daarvan.",
+    en: "Error Spotting. Four proofs, and something wrong with three of them.",
+    af: "Foutopsporing. Vier bewyse, en iets fout met drie daarvan.",
   },
   panels: [
 
@@ -144,6 +144,12 @@ export const round = {
         en: "Write one or two sentences…",
         af: "Skryf een of twee sinne…",
       },
+      needs: [
+        { en: "say what the shorter proof noticed in the figure",
+          af: "sê wat die korter bewys in die figuur raakgesien het" },
+        { en: "name the theorem that let it skip the long way round",
+          af: "noem die stelling wat dit toegelaat het om die lang pad oor te slaan" },
+      ],
       starters: [
         { en: "The shorter proof noticed that AB is…", af: "Die korter bewys het raakgesien dat AB…" },
         { en: "Because AB is a diameter, the angle at C…", af: "Omdat AB 'n middellyn is, is die hoek by C…" },
@@ -161,13 +167,13 @@ export const round = {
       reason: "semiCircle",
     },
 
-    /* ---------- 5 · typed: write the reason the way IEB accepts it ---------- */
+    /* ---------- 5 · typed: write the reason in an accepted wording ---------- */
     {
       type: "written",
       panelId: "s4p5",
       prompt: {
-        en: "This step has no reason next to it:\n\n    ∠ACB = 90°   ( ______________ )\n\nWrite the reason the way an IEB marker accepts it.",
-        af: "Hierdie stap het geen rede langsaan nie:\n\n    ∠ACB = 90°   ( ______________ )\n\nSkryf die rede soos 'n IEB-nasiener dit aanvaar.",
+        en: "This step has no reason next to it:\n\n    ∠ACB = 90°   ( ______________ )\n\nWrite the reason the way a marker accepts it.",
+        af: "Hierdie stap het geen rede langsaan nie:\n\n    ∠ACB = 90°   ( ______________ )\n\nSkryf die rede soos 'n nasiener dit aanvaar.",
       },
       diagram: FIG_FULL,
       minChars: 8,
@@ -175,20 +181,26 @@ export const round = {
         en: "The accepted short form…",
         af: "Die aanvaarde kort vorm…",
       },
+      needs: [
+        { en: "write the reason only — no working, no numbers",
+          af: "skryf net die rede — geen bewerking, geen getalle nie" },
+        { en: "use one of the accepted wordings for it",
+          af: "gebruik een van die aanvaarde bewoordings daarvoor" },
+      ],
       hints: [
         { en: "AB is a diameter, and C sits on the circle. Which theorem is that, in the short form the memo uses?",
           af: "AB is 'n middellyn, en C lê op die sirkel. Watter stelling is dit, in die kort vorm wat die memo gebruik?" },
-        { en: "Appendix G lists more than one accepted wording for this one — any of them earns the mark. You only need one.",
-          af: "Addendum G lys meer as een aanvaarde bewoording hiervoor — enige een verdien die punt. Jy het net een nodig." },
+        { en: "There is more than one accepted wording for this one — any of them earns the mark. You only need one.",
+          af: "Daar is meer as een aanvaarde bewoording hiervoor — enige een verdien die punt. Jy het net een nodig." },
       ],
       memoDisplay: {
-        en: "∠s in semi-circle. IEB Appendix G also accepts “diameter subtends right angle” and “∠ in ½⊙”. In Afrikaans: “∠ in halwe sirkel” or “middellyn onderspan regte hoek”.",
-        af: "∠ in halwe sirkel. IEB Addendum G aanvaar ook “middellyn onderspan regte hoek”. In Engels: “∠s in semi-circle” of “diameter subtends right angle”.",
+        en: "∠s in semi-circle. The accepted wordings also include “diameter subtends right angle” and “∠ in ½⊙”. In Afrikaans: “∠ in halwe sirkel” or “middellyn onderspan regte hoek”.",
+        af: "∠ in halwe sirkel. Die aanvaarde bewoordings sluit ook in: “middellyn onderspan regte hoek”. In Engels: “∠s in semi-circle” of “diameter subtends right angle”.",
       },
       reason: "semiCircle",
       note: {
-        en: "Learn one accepted wording per theorem and write that one every time. Markers work from the Appendix G list — a reason that means the right thing but is worded from scratch is where marks quietly go missing.",
-        af: "Leer een aanvaarde bewoording per stelling en skryf elke keer daardie een. Nasieners werk vanaf die Addendum G-lys — 'n rede wat die regte ding beteken maar van nuuts af bewoord is, is waar punte stilweg verlore gaan.",
+        en: "Learn one accepted wording per theorem and write that one every time. Markers work from a list of accepted wordings — a reason that means the right thing but is worded from scratch is where marks quietly go missing.",
+        af: "Leer een aanvaarde bewoording per stelling en skryf elke keer daardie een. Nasieners werk vanaf 'n lys van aanvaarde bewoordings — 'n rede wat die regte ding beteken maar van nuuts af bewoord is, is waar punte stilweg verlore gaan.",
       },
     },
 

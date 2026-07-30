@@ -57,14 +57,20 @@ export const round = {
   id: "inv3", n: 0, accent: AC, kind: "investigate", group: "g6",
   title: { en: "Break It", af: "Breek Dit" },
   blurb: {
-    en: "IEB task type 12 · Counterexamples. One case is all it takes to bring a claim down. Go and find it.",
-    af: "IEB taak tipe 12 · Teenvoorbeelde. Een geval is al wat nodig is om 'n bewering te laat val. Gaan soek dit.",
+    en: "Counterexamples. One case is all it takes to bring a claim down. Go and find it.",
+    af: "Teenvoorbeelde. Een geval is al wat nodig is om 'n bewering te laat val. Gaan soek dit.",
   },
   panels: [
 
-    /* ---------- 1 · is it really always? ---------- */
+    /* ---------- 1 · is it really always? A PREDICTION, not a question ----------
+       Megan's call, 2026-07-30: there is nothing to drag here, so committing to
+       one of four conclusions is a guess — and a guess scored as an answer trips
+       the hint ladder and lands in the trajectory stats. Every option is now
+       accepted, and panel 2 does the reveal. The two hints that used to live here
+       became the bridge lines below: `after` points at where to look without
+       saying what is there. */
     {
-      type: "choice",
+      type: "predict",
       prompt: {
         en: "You have used this all term: a line from the centre that bisects a chord is perpendicular to that chord. Is it true for every chord you could draw?",
         af: "Jy het dit die hele kwartaal gebruik: 'n lyn vanuit die middelpunt wat 'n koord halveer, is loodreg op daardie koord. Is dit waar vir elke koord wat jy kan teken?",
@@ -80,16 +86,17 @@ export const round = {
         { text: { en: "No — it only works when the chord passes through the centre.",
                   af: "Nee — dit werk net wanneer die koord deur die middelpunt gaan." } },
       ],
-      hints: [
-        { en: "Do not test small chords and long chords — that is not where the trouble is. Ask instead: is there a chord whose midpoint is somewhere unusual?",
-          af: "Moenie klein koorde en lang koorde toets nie — dis nie waar die moeilikheid lê nie. Vra eerder: is daar 'n koord wie se middelpunt op 'n vreemde plek lê?" },
-        { en: "Every chord has a midpoint somewhere inside the circle. For one special chord that midpoint lands on the centre itself — and then \"the line from the centre that bisects it\" stops meaning one particular line.",
-          af: "Elke koord het 'n middelpunt ergens binne die sirkel. Vir een spesiale koord land daardie middelpunt op die middelpunt van die sirkel self — en dan beteken \"die lyn vanuit die middelpunt wat dit halveer\" nie meer een spesifieke lyn nie." },
-      ],
-      reason: "centreMidChord",
-      note: {
-        en: "It fails once, and only once. A chord that is very short or very long is no trouble at all — the theorem handles both. The exception is somewhere else entirely, and the next panel asks you to name it.",
-        af: "Dit misluk een keer, en net een keer. 'n Koord wat baie kort of baie lank is, is geen moeilikheid nie — die stelling hanteer albei. Die uitsondering lê heeltemal elders, en die volgende paneel vra jou om dit te benoem.",
+      reactRight: {
+        en: "Good instinct. Hold on to that — let's go and look.",
+        af: "Goeie aanvoeling. Hou daaraan vas — kom ons gaan kyk.",
+      },
+      reactWrong: {
+        en: "Fair guess. Nobody can tell from here — let's go and look.",
+        af: "Billike raaiskoot. Niemand kan van hier sien nie — kom ons gaan kyk.",
+      },
+      after: {
+        en: "One thing worth knowing before you look: short chords and long chords are no trouble at all, so that is not where to hunt. Every chord has a midpoint somewhere inside the circle — ask yourself whether a midpoint could ever land somewhere unusual.",
+        af: "Een ding is die moeite werd om te weet voordat jy kyk: kort koorde en lang koorde is geen moeilikheid nie, dus is dit nie waar om te soek nie. Elke koord het 'n middelpunt ergens binne die sirkel — vra jouself of 'n middelpunt ooit op 'n vreemde plek kan land.",
       },
     },
 
@@ -162,6 +169,12 @@ export const round = {
         en: "Because a conjecture claims something about…",
         af: "Omdat 'n vermoede iets beweer oor…",
       },
+      needs: [
+        { en: "say what a conjecture claims",
+          af: "sê wat 'n vermoede beweer" },
+        { en: "say what ONE failing case does to that claim",
+          af: "sê wat EEN geval wat misluk aan daardie bewering doen" },
+      ],
       starters: [
         { en: "A conjecture claims something about every…", af: "'n Vermoede beweer iets oor elke…" },
         { en: "So one case that fails means…", af: "Dus beteken een geval wat misluk…" },

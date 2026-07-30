@@ -48,8 +48,8 @@ export const round = {
   id: "inv1", n: 0, accent: AC, kind: "investigate", group: "g6",
   title: { en: "Measure & Notice", af: "Meet & Merk Op" },
   blurb: {
-    en: "IEB task type 16 · Investigation. Drag it, measure it, write the pattern down — then find out what measuring can never do.",
-    af: "IEB taak tipe 16 · Ondersoek. Sleep dit, meet dit, skryf die patroon neer — en vind dan uit wat meting nooit kan doen nie.",
+    en: "Investigation. Drag it, measure it, write the pattern down — then find out what measuring can never do.",
+    af: "Ondersoek. Sleep dit, meet dit, skryf die patroon neer — en vind dan uit wat meting nooit kan doen nie.",
   },
   panels: [
 
@@ -131,15 +131,24 @@ export const round = {
         en: "Yes or no, and then why…",
         af: "Ja of nee, en dan hoekom…",
       },
+      needs: [
+        { en: "answer the question: yes or no",
+          af: "die vraag antwoord: ja of nee" },
+        { en: "give ONE reason for your answer — one good reason is enough",
+          af: "EEN rede vir jou antwoord gee — een goeie rede is genoeg" },
+      ],
       starters: [
         { en: "Measuring the angles only shows…", af: "Om die hoeke te meet wys net…" },
         { en: "To be sure about every position…", af: "Om seker te wees oor elke posisie…" },
       ],
+      // Rung 1 may ask a question; rung 2 must TELL. A hint only ever appears
+      // once a learner is stuck, and a stuck learner handed another question is
+      // handed nothing. (Megan, 2026-07-30: "those hints were a bit vague".)
       hints: [
-        { en: "Count what you actually checked. Five positions. Now count how many positions A, B and P could be dragged to.",
-          af: "Tel wat jy werklik nagegaan het. Vyf posisies. Tel nou hoeveel posisies A, B en P na gesleep kan word." },
-        { en: "You cannot measure them all — there is no end to them. And the 2° row shows that even the ones you did measure were only read to the nearest degree. So what would it take to cover every position at once?",
-          af: "Jy kan hulle nie almal meet nie — daar is geen einde aan hulle nie. En die 2°-ry wys dat selfs dié wat jy wel gemeet het, net tot die naaste graad gelees is. Wat sou dit dan verg om elke posisie in een slag te dek?" },
+        { en: "Count the positions you actually checked. Now count how many positions A, B and P could be dragged to.",
+          af: "Tel die posisies wat jy werklik nagegaan het. Tel nou hoeveel posisies A, B en P na gesleep kan word." },
+        { en: "There is no end to them, so you can never measure them all — and the sentence you wrote says ALWAYS, which is a claim about every single one. The positions you tried cannot settle the ones you did not try. Only a proof covers all of them at once.",
+          af: "Daar is geen einde aan hulle nie, so jy kan hulle nooit almal meet nie — en die sin wat jy geskryf het, sê ALTYD, wat 'n bewering oor elke enkele een is. Die posisies wat jy probeer het, kan nie dié wat jy nie probeer het nie uitmaak nie. Net 'n bewys dek hulle almal in een slag." },
       ],
       memoDisplay: {
         en: "No. Measuring only ever checks the positions you actually measured, and A, B and P can be dragged to endlessly many others — so the table supports the conjecture without proving it. (The 2° row also shows a protractor reading is never exact.) Only a proof covers every position at once, and that is the next thing to go looking for.",
@@ -152,14 +161,14 @@ export const round = {
       },
     },
 
-    /* ---------- 5 · the IEB's own words ---------- */
+    /* ---------- 5 · the one line to hold on to ---------- */
     {
       type: "note",
-      prompt: { en: "The line the examiners wrote down", af: "Die reël wat die eksaminatore neergeskryf het" },
+      prompt: { en: "Keep this in mind", af: "Hou dit in gedagte" },
       diagram: FIG,
       note: {
-        en: "The IEB says it in one sentence in the Subject Assessment Guidelines: <i>\"Numerous specific examples supporting a conjecture do not constitute a general proof.\"</i><br><br>That is worth reading twice, because it is the rule the marks follow. An investigation earns marks for measuring carefully AND for saying honestly what the measuring has not settled. A write-up that stops at \"it worked every time I tried it\" has left the last marks on the table.",
-        af: "Die IEB stel dit in een sin in die Vakassesseringsriglyne: <i>\"Talle spesifieke voorbeelde wat 'n vermoede ondersteun, vorm nie 'n algemene bewys nie.\"</i> (Die IEB se Engelse woorde: <i>\"Numerous specific examples supporting a conjecture do not constitute a general proof.\"</i>)<br><br>Dit is die moeite werd om twee keer te lees, want dit is die reël wat die punte volg. 'n Ondersoek verdien punte vir versigtige meting EN vir 'n eerlike stelling van wat die meting nie uitgemaak het nie. 'n Verslag wat stop by \"dit het elke keer gewerk toe ek dit probeer het\" laat die laaste punte op die tafel.",
+        en: "One line carries the whole idea: <i>no number of specific examples that support a conjecture adds up to a general proof.</i><br><br>That is worth reading twice, because it is also how the marks work. An investigation earns marks for measuring carefully AND for saying honestly what the measuring has not settled. A write-up that stops at \"it worked every time I tried it\" has left the last marks on the table.",
+        af: "Een reël dra die hele idee: <i>geen aantal spesifieke voorbeelde wat 'n vermoede ondersteun, tel op tot 'n algemene bewys nie.</i><br><br>Dit is die moeite werd om twee keer te lees, want dit is ook hoe die punte werk. 'n Ondersoek verdien punte vir versigtige meting EN vir 'n eerlike stelling van wat die meting nie uitgemaak het nie. 'n Verslag wat stop by \"dit het elke keer gewerk toe ek dit probeer het\" laat die laaste punte op die tafel.",
       },
     },
 

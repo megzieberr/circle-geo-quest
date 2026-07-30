@@ -101,8 +101,8 @@ export const round = {
   id: "inv2", n: 0, accent: AC, kind: "investigate", group: "g6",
   title: { en: "State the Conjecture", af: "Stel die Vermoede" },
   blurb: {
-    en: "IEB task type 15 · Investigation. Seeing the pattern is the easy half. Saying it precisely is where the marks are.",
-    af: "IEB taak tipe 15 · Ondersoek. Om die patroon te sien is die maklike helfte. Om dit presies te stel, is waar die punte lê.",
+    en: "Investigation. Seeing the pattern is the easy half. Saying it precisely is where the marks are.",
+    af: "Ondersoek. Om die patroon te sien is die maklike helfte. Om dit presies te stel, is waar die punte lê.",
   },
   panels: [
 
@@ -190,19 +190,32 @@ export const round = {
         en: "One sentence, true for every circle…",
         af: "Een sin, waar vir elke sirkel…",
       },
+      needs: [
+        { en: "say how the two angles compare",
+          af: "sê hoe die twee hoeke vergelyk" },
+        { en: "say what they both stand on",
+          af: "sê waarop hulle albei staan" },
+        { en: "say where on the circle they sit",
+          af: "sê waar op die sirkel hulle lê" },
+      ],
       starters: [
         { en: "Angles subtended by the same chord…", af: "Hoeke onderspan deur dieselfde koord…" },
         { en: "If two angles at the circumference stand on…", af: "As twee hoeke by die omtrek staan op…" },
       ],
       hints: [
-        { en: "Check your sentence against the one you built two panels ago. Does it say where the angles are, which chord they stand on, and which side of it they are?",
-          af: "Toets jou sin teen dié wat jy twee panele gelede gebou het. Sê dit waar die hoeke is, op watter koord hulle staan, en aan watter kant daarvan hulle is?" },
-        { en: "Three things have to be in there: the angles are EQUAL, they stand on the SAME chord (or arc), and they are on the SAME side of it — in the same segment.",
-          af: "Drie dinge moet daarin wees: die hoeke is GELYK, hulle staan op DIESELFDE koord (of boog), en hulle is aan DIESELFDE kant daarvan — in dieselfde segment." },
+        { en: "Check your sentence against the one you built two panels ago. Does it say how the angles compare, which chord they stand on, and where on the circle they sit?",
+          af: "Toets jou sin teen dié wat jy twee panele gelede gebou het. Sê dit hoe die hoeke vergelyk, op watter koord hulle staan, en waar op die sirkel hulle lê?" },
+        // The location line deliberately says "at the circumference / in the same
+        // segment" and NOT "on the same side of the chord". The mark scheme counts
+        // "same side" alone as MISSING — the angle at the centre is also on that
+        // side, and is double — so a hint that taught "same side" was steering
+        // learners into the one phrasing the checker refuses.
+        { en: "Three things have to be in there: the angles are EQUAL, they stand on the SAME chord (or arc), and they sit AT THE CIRCUMFERENCE — in the same segment.",
+          af: "Drie dinge moet daarin wees: die hoeke is GELYK, hulle staan op DIESELFDE koord (of boog), en hulle lê BY DIE OMTREK — in dieselfde segment." },
       ],
       memoDisplay: {
-        en: "Angles subtended by the same chord (or the same arc), at the circumference and in the same segment, are equal. Any wording carrying those three ideas is right: equal angles · same chord or arc · same side of it. IEB accepts the short reason as “∠s in the same seg”.",
-        af: "Hoeke onderspan deur dieselfde koord (of dieselfde boog), by die omtrek en in dieselfde segment, is gelyk. Enige bewoording wat daardie drie idees dra, is reg: gelyke hoeke · dieselfde koord of boog · dieselfde kant daarvan. IEB aanvaar die kort rede as “∠e in dieselfde segment”.",
+        en: "Angles subtended by the same chord (or the same arc), at the circumference and in the same segment, are equal. Any wording carrying those three ideas is right: equal angles · same chord or arc · at the circumference, in the same segment. The accepted short reason is “∠s in the same seg”.",
+        af: "Hoeke onderspan deur dieselfde koord (of dieselfde boog), by die omtrek en in dieselfde segment, is gelyk. Enige bewoording wat daardie drie idees dra, is reg: gelyke hoeke · dieselfde koord of boog · by die omtrek, in dieselfde segment. Die aanvaarde kort rede is “∠e in dieselfde segment”.",
       },
       reason: "sameSeg",
     },
@@ -221,6 +234,12 @@ export const round = {
         en: "The two angles now…",
         af: "Die twee hoeke is nou…",
       },
+      needs: [
+        { en: "say what is true about the two angles TOGETHER now",
+          af: "sê wat nou waar is van die twee hoeke SAAM" },
+        { en: "one sentence is enough — no theorem name needed",
+          af: "een sin is genoeg — geen stellingnaam nodig nie" },
+      ],
       starters: [
         { en: "The two angles always add up to…", af: "Die twee hoeke tel altyd op tot…" },
       ],

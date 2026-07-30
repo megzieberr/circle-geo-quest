@@ -143,6 +143,14 @@ export const round = {
         en: "Because the converse starts from…",
         af: "Omdat die omgekeerde begin by…",
       },
+      needs: [
+        { en: "say what a converse does to the theorem's given and its conclusion",
+          af: "sê wat 'n omgekeerde aan die stelling se gegewe en sy gevolgtrekking doen" },
+        { en: "say what that means for whether it is true, and what it needs",
+          af: "sê wat dit beteken vir of dit waar is, en wat dit nodig het" },
+        { en: "no example or theorem name needed",
+          af: "geen voorbeeld of stellingnaam nodig nie" },
+      ],
       starters: [
         { en: "The converse swaps…", af: "Die omgekeerde ruil…" },
         { en: "So it is a different claim, which means…", af: "Dus is dit 'n ander bewering, wat beteken…" },

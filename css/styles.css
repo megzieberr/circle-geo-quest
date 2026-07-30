@@ -895,3 +895,19 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .station-badge .sb-text{flex:1;}
 .station-badge .sb-text h3{font-size:1.2rem; margin:1px 0 3px;}
 .station-back{margin-top:20px;}
+
+/* ---------- Investigation Station: typed-panel scaffolding (2026-07-30) ----------
+   "Your answer needs to:" — the SHAPE of the answer, above the box along with the
+   sentence openers. Both used to sit below the textarea, where a learner in the
+   middle of writing never saw them. */
+.dp-needs{margin:4px 0 12px; padding:11px 14px; border:2px dashed var(--ink);
+  border-radius:13px; background:#f6f8ff;}
+.dp-needs-tag{font-size:.7rem; text-transform:uppercase; letter-spacing:.08em;
+  font-weight:800; color:var(--ink-soft); margin-bottom:5px;}
+.dp-needs-list{margin:0; padding-left:20px; display:grid; gap:4px;}
+.dp-needs-list li{font-size:.92rem; line-height:1.45; font-weight:600;}
+
+/* a prediction panel: the tap that was accepted, and the bridge into the reveal */
+.q-options.predict .opt.is-picked{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);}
+.dp-feedback.predict{background:#eef2fb; border-color:#4263eb; color:#26408f;}
+.dp-after{margin:10px 0 2px; font-size:.93rem; line-height:1.5; color:var(--ink-soft);}

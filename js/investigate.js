@@ -29,7 +29,29 @@
      explore | blank | choice | note
    plus:
      { type:"written", panelId, prompt, placeholder, minChars,
-       starters?, hints:[…], memoDisplay, note?, reason? }
+       needs?, starters?, hints:[…], memoDisplay, note?, reason? }
+     { type:"predict", prompt, options:[{text, correct?, reaction?}],
+       reactRight?, reactWrong?, after? }
+
+   `needs` IS THE SHAPE OF THE ANSWER, NEVER ITS CONTENT (added
+   2026-07-30 after Megan walked the line and got stuck on panels
+   whose mathematics she knew cold). A typed panel asks for a written
+   argument; without being told what the answer has to DO, a learner
+   who understands the maths still cannot tell what is wanted, and
+   reaches for the wrong half. So every typed panel now lists its
+   moves — "say yes or no", "give one reason" — taken from the panel's
+   mark scheme with the answers stripped out. Telling a learner the
+   shape is scaffolding; telling them the content would be doing it
+   for them, and the list must never cross that line.
+
+   `predict` IS A GUESS, AND A GUESS IS NOT AN ANSWER (Megan's design,
+   2026-07-30). Where a panel asks the learner to commit to a
+   conclusion they have no way to investigate yet, marking it right or
+   wrong is punishing a coin flip: three unlucky taps trip the hint
+   ladder as though they were failing, and the miss lands in the
+   admin attempt-trajectory numbers. So a predict panel accepts every
+   option, says something back, and lets the NEXT panel do the reveal.
+   It is deliberately NOT gated — nothing it does reaches the stats.
    ============================================================ */
 import { ROUND_BY_ID } from "./rounds/index.js";
 import { submitRoundReliable } from "./sync.js";
@@ -53,6 +75,7 @@ const UI = {
   starters:    { en: "Stuck? Tap one to start:",      af: "Vasgevang? Tik een om te begin:" },
   writeMore:   { en: "Write a little more first",     af: "Skryf eers 'n bietjie meer" },
   memoLabel:   { en: "One good answer",               af: "Een goeie antwoord" },
+  needsLabel:  { en: "Your answer needs to:",         af: "Jou antwoord moet:" },
 };
 
 export function renderInvestigate(app, host, params) {
@@ -191,6 +214,40 @@ function mountPanel(host, panel, accent, onDone) {
     return;
   }
 
+  // ---- a prediction: every option is accepted, the next panel reveals ----
+  // Sits ABOVE the gated section on purpose: `stats.gated` stays false, so a
+  // guess never counts as an attempt and never reaches the trajectory numbers.
+  if (panel.type === "predict") {
+    const opts = el("div", "q-options predict");
+    const react = el("div", "dp-feedback predict"); react.hidden = true;
+    let locked = false;
+    panel.options.forEach(o => {
+      const b = el("button", "opt", tx(o.text));
+      b.addEventListener("click", () => {
+        if (locked) return;
+        locked = true;
+        [...opts.children].forEach(x => { x.disabled = true; });
+        b.classList.add("is-picked");
+        react.hidden = false;
+        const msg = o.reaction || (o.correct ? panel.reactRight : panel.reactWrong);
+        react.textContent = msg ? tx(msg) : "";
+        // `after` is the bridge into the next panel — the "let's go and look"
+        // line. Never the answer: a predict panel must not spoil its own reveal,
+        // which is why panel.note is deliberately NOT rendered here.
+        if (panel.after) body.appendChild(el("p", "dp-after", tx(panel.after)));
+        cont.hidden = false;
+        cont.textContent = t("continue");
+        cont.focus();
+      });
+      opts.appendChild(b);
+    });
+    body.appendChild(opts);
+    body.appendChild(react);
+    cont.hidden = true;
+    cont.addEventListener("click", advance);
+    return;
+  }
+
   // ---- gated tasks: blank, choice, written ----
   stats.gated = true;
   cont.hidden = true;
@@ -291,10 +348,21 @@ function mountPanel(host, panel, accent, onDone) {
     ta.setAttribute("maxlength", "600");
     ta.setAttribute("rows", "4");
     ta.placeholder = panel.placeholder ? tx(panel.placeholder) : "";
-    body.appendChild(ta);
+
+    // What the answer has to DO. Read the header note before editing one of
+    // these lists: it is the shape of the answer, never the answer.
+    if (panel.needs?.length) {
+      const card = el("div", "dp-needs");
+      card.appendChild(el("div", "dp-needs-tag", tx(UI.needsLabel)));
+      const list = el("ul", "dp-needs-list");
+      panel.needs.forEach(n => list.appendChild(el("li", null, tx(n))));
+      card.appendChild(list);
+      body.appendChild(card);
+    }
 
     // tap-to-insert sentence openers — they cut the blank-page problem for
-    // weaker learners and cost nothing
+    // weaker learners and cost nothing. ABOVE the box, with `needs`: both used
+    // to sit underneath it, where a learner mid-answer never saw them.
     if (panel.starters?.length) {
       body.appendChild(el("p", "dp-starter-label", tx(UI.starters)));
       const row = el("div", "dp-starters");
@@ -313,6 +381,8 @@ function mountPanel(host, panel, accent, onDone) {
       });
       body.appendChild(row);
     }
+
+    body.appendChild(ta);
 
     const check = el("button", "btn primary", t("check"));
     check.disabled = true;

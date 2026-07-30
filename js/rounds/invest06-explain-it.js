@@ -38,8 +38,8 @@ export const round = {
   id: "inv6", n: 0, accent: AC, kind: "investigate", group: "g6",
   title: { en: "Explain It", af: "Verduidelik Dit" },
   blurb: {
-    en: "IEB task type 7 · A Lesson to a Friend. Mark four write-ups, then write two of your own. The marks live in the writing.",
-    af: "IEB taak tipe 7 · 'n Les vir 'n Vriend. Sien vier verslae na, skryf dan twee van jou eie. Die punte lê in die skryfwerk.",
+    en: "A Lesson to a Friend. Mark four write-ups, then write two of your own. The marks live in the writing.",
+    af: "'n Les vir 'n Vriend. Sien vier verslae na, skryf dan twee van jou eie. Die punte lê in die skryfwerk.",
   },
   panels: [
 
@@ -116,6 +116,12 @@ export const round = {
         en: "Because AB is a diameter, the angle at the centre…",
         af: "Omdat AB 'n middellyn is, is die hoek by die middelpunt…",
       },
+      needs: [
+        { en: "give the REASONING, not just the fact that it is 90°",
+          af: "gee die REDENASIE, nie net die feit dat dit 90° is nie" },
+        { en: "one complete route is enough — there is more than one way to show it, and you only need yours",
+          af: "een volledige roete is genoeg — daar is meer as een manier om dit te wys, en jy het net joune nodig" },
+      ],
       starters: [
         { en: "AB goes straight through O, so the angle at the centre is…", af: "AB gaan reguit deur O, dus is die hoek by die middelpunt…" },
         { en: "The angle at the circumference is always…", af: "Die hoek by die omtrek is altyd…" },
@@ -150,6 +156,14 @@ export const round = {
         en: "Three or four sentences to close the investigation…",
         af: "Drie of vier sinne om die ondersoek af te sluit…",
       },
+      needs: [
+        { en: "state the conjecture",
+          af: "die vermoede stel" },
+        { en: "say how it was tested",
+          af: "sê hoe dit getoets is" },
+        { en: "say what is still needed",
+          af: "sê wat nog nodig is" },
+      ],
       starters: [
         { en: "The investigation suggests that…", af: "Die ondersoek dui daarop dat…" },
         { en: "This was tested by…", af: "Dit is getoets deur…" },
