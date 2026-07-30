@@ -94,6 +94,33 @@ export const ROUNDS = ORDER.map((r, i) => {
 });
 export const ROUND_BY_ID = Object.fromEntries(ROUNDS.map(r => [r.id, r]));
 
+/* ------------------------------------------------------------
+   THE MAIN LINE vs THE BRANCH LINE (Megan's ruling, 2026-07-30).
+   The Investigation Station is reached ONLY from the train strip on
+   the home screen, so its six stations come OFF the main round map —
+   no round appears in two places, and the main line goes back to being
+   the 43 rounds. ROUNDS stays the full list, because the unlock chain,
+   ROUND_BY_ID, verify.html and the admin dashboard all still want
+   everything; these two views are what the learner-facing screens
+   render. Membership is by `kind`, not by a hand-kept id list, so a
+   seventh station would need no change here.
+   ------------------------------------------------------------ */
+export const STATIONS = ROUNDS.filter(r => r.kind === "investigate");
+export const MAIN_ROUNDS = ROUNDS.filter(r => r.kind !== "investigate");
+
+/* Which rounds are unlocked: the first always, every other once the
+   round BEFORE it in the play order has been passed. It lives here
+   because the chain is a property of the ORDER above, and both maps
+   (game.js for the main line, stations.js for the branch) read it. */
+export function unlockedIds(progress) {
+  const set = new Set([ROUNDS[0].id]);
+  for (let i = 1; i < ROUNDS.length; i++) {
+    const prev = progress[ROUNDS[i - 1].id];
+    if (prev && prev.passed) set.add(ROUNDS[i].id);
+  }
+  return set;
+}
+
 /* Guiding-hint fallback: a round may set `defaultHints` (a 2-rung ladder that
    names its theorem's angles and the move to make). Apply it to every graded
    question that doesn't carry its own `hints`, so a uniform round needs just

@@ -1,6 +1,6 @@
 /* Game screens: the progress map (home), the play loop, and results. */
-import { ROUNDS, ROUND_BY_ID } from "./rounds/index.js";
-import { CONFIG, GROUPS } from "./config.js";
+import { ROUNDS, MAIN_ROUNDS, STATIONS, ROUND_BY_ID, unlockedIds } from "./rounds/index.js";
+import { CONFIG, GROUPS, LADDER_GROUPS } from "./config.js";
 import { api } from "./api.js";
 import { getSession } from "./session.js";
 import { t, tx, reason } from "./i18n.js";
@@ -17,6 +17,7 @@ import { maybeShowBoostAnnounce } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
 import { submitRoundReliable } from "./sync.js";
 import { initPiMascot, piCameo } from "./pi.js";
+import { trainStrip } from "./stations.js";
 
 /* which screen a round plays on */
 function screenFor(round) {
@@ -29,20 +30,23 @@ function screenFor(round) {
 // earn a badge, so they render as scored cards like any graded round.
 const isLearningRound = r => r.kind === "cutscene" || r.kind === "discover";
 
-/* which rounds are unlocked: round 1 always, others when the previous passed */
-function unlockedSet(progress) {
-  const set = new Set([ROUNDS[0].id]);
-  for (let i = 1; i < ROUNDS.length; i++) {
-    if (progress[ROUNDS[i - 1].id] && progress[ROUNDS[i - 1].id].passed) set.add(ROUNDS[i].id);
+/* the next round to play: the first unlocked round not yet passed (i.e. where
+   the learner should continue). MAIN LINE ONLY — the Investigation Station is
+   reached through the train strip, never through "continue your quest", so a
+   learner who finishes round 43 is finished, not quietly pushed onto a branch
+   they didn't choose. Null only when every unlocked main round is done. */
+function nextRoundToPlay(progress) {
+  const unlocked = unlockedIds(progress);
+  for (const r of MAIN_ROUNDS) {
+    if (unlocked.has(r.id) && !(progress[r.id] && progress[r.id].passed)) return r;
   }
-  return set;
+  return null;
 }
 
-/* the next round to play: the first unlocked round not yet passed (i.e. where
-   the learner should continue). Null only when every unlocked round is done. */
-function nextRoundToPlay(progress) {
-  const unlocked = unlockedSet(progress);
-  for (const r of ROUNDS) {
+/* the same, along the branch line: the next station that is open and unvisited */
+function nextStationToPlay(progress) {
+  const unlocked = unlockedIds(progress);
+  for (const r of STATIONS) {
     if (unlocked.has(r.id) && !(progress[r.id] && progress[r.id].passed)) return r;
   }
   return null;
@@ -63,9 +67,11 @@ export function renderHome(app, host) {
   clear(host);
   const st = app.state;
   const progress = st.progress || {};
-  const unlocked = unlockedSet(progress);
+  const unlocked = unlockedIds(progress);
   const groups = groupStatus(progress);
-  const badgesEarned = groups.filter(g => g.earned).length;
+  // Ladder badges only — the station badge is earned and celebrated, but it is
+  // deliberately not part of the 5-badge climb to Circle Grand Master.
+  const badgesEarned = groups.filter(g => g.earned && !g.hidden).length;
 
   const head = el("div", "home-head");
   head.innerHTML = `
@@ -73,7 +79,7 @@ export function renderHome(app, host) {
     <h1>${tx({ en: "Hi", af: "Hallo" })}, ${st.student.name.split(" ")[0]} 👋</h1>`;
   const stats = el("div", "home-stats");
   stats.appendChild(el("div", "hstat", `<b>${st.totalXp}</b><span>${t("totalXp")}</span>`));
-  stats.appendChild(el("div", "hstat", `<b>${badgesEarned}/${GROUPS.length}</b><span>${t("badges")}</span>`));
+  stats.appendChild(el("div", "hstat", `<b>${badgesEarned}/${LADDER_GROUPS.length}</b><span>${t("badges")}</span>`));
   if (st.rank) stats.appendChild(el("div", "hstat", `<b>#${st.rank}</b><span>${t("rank")}</span>`));
   const lb = el("button", "btn ghost", "🏆 " + t("leaderboard"));
   lb.addEventListener("click", () => app.go("leaderboard"));
@@ -86,8 +92,8 @@ export function renderHome(app, host) {
   // top, so a learner never has to scroll the map to find where they're up to.
   const nextR = nextRoundToPlay(progress);
   if (nextR) {
-    const total = ROUNDS.length;
-    const doneCount = ROUNDS.filter(r => progress[r.id] && progress[r.id].passed).length;
+    const total = MAIN_ROUNDS.length;
+    const doneCount = MAIN_ROUNDS.filter(r => progress[r.id] && progress[r.id].passed).length;
     const anyDone = doneCount > 0;
     const cont = el("div", "card continue-card");
     cont.style.setProperty("--accent", nextR.accent);
@@ -103,6 +109,10 @@ export function renderHome(app, host) {
     cont.querySelector(".cont-foot").appendChild(go);
     host.appendChild(cont);
   }
+
+  // The Investigation Station 🚂 — a full-width tappable strip, and the only
+  // way in. It sits directly above the badge panel (Megan's ruling, 2026-07-30).
+  host.appendChild(trainStrip(app));
 
   const ladder = renderRankLadder(progress);
   if (ladder) host.appendChild(ladder);            // hidden until the first badge is earned
@@ -123,7 +133,7 @@ export function renderHome(app, host) {
 
   // Adventure (Grand Master bonus) — only shown once every badge is earned, so
   // the locked teaser never pushes the rounds down for a beginner.
-  const isGM = GROUPS.length > 0 && badgesEarned === GROUPS.length;
+  const isGM = LADDER_GROUPS.length > 0 && badgesEarned === LADDER_GROUPS.length;
   if (isGM) {
     const advBanner = el("div", "card adventure-banner");
     advBanner.innerHTML = `
@@ -141,10 +151,12 @@ export function renderHome(app, host) {
   }
 
   const grid = el("div", "round-grid");
-  // The whole map is shown — including locked rounds — so learners can see how
-  // many rounds there are and plan their pace. The Continue card above still
+  // The whole main line is shown — including locked rounds — so learners can see
+  // how many rounds there are and plan their pace. The Continue card above still
   // jumps them straight to their current spot, so the longer list is no problem.
-  ROUNDS.forEach(r => {
+  // The six investigation stations are NOT here: they live behind the train
+  // strip, so no round appears in two places.
+  MAIN_ROUNDS.forEach(r => {
     const p = progress[r.id];
     const isUnlocked = unlocked.has(r.id);
     const passed = !!(p && p.passed);
@@ -198,7 +210,10 @@ export function renderHome(app, host) {
    ones stay hidden so a beginner isn't faced with a wall of them and can find
    where to start. Returns null until the first badge is unlocked. */
 function renderRankLadder(progress) {
-  const earned = groupStatus(progress).filter(g => g.earned);
+  // `hidden` groups are excluded: the rank is read as the LAST earned badge, so
+  // the station badge joining this list would demote a finisher off 🏆 Circle
+  // Grand Master. It is shown on the station map instead (js/stations.js).
+  const earned = groupStatus(progress).filter(g => g.earned && !g.hidden);
   if (!earned.length) return null;
   const rank = earned[earned.length - 1];
   const card = el("div", "card rank-card");
@@ -554,13 +569,31 @@ export function renderResults(app, host, params) {
   // an earlier gap they jump straight to their real frontier, not the round after).
   const nextRound = nextRoundToPlay(app.state.progress || {});
   const showNext = saved && passed && !!nextRound && nextRound.id !== round.id;
+  // A station belongs to the branch line, so its results stay on the branch:
+  // "next" is the next STOP, and "back" returns to the station map, never to
+  // the main round map the learner didn't come from.
+  const isStation = round.kind === "investigate";
+  const nextStation = isStation ? nextStationToPlay(app.state.progress || {}) : null;
 
   const actions = screen.querySelector(".result-actions");
   const mkBtn = (label, primary, fn) => { const b = el("button", "btn " + (primary ? "primary" : "ghost"), label); b.addEventListener("click", fn); actions.appendChild(b); };
   const goNext = () => app.go(screenFor(nextRound), { roundId: nextRound.id });
   const goHome = () => app.go("home");
+  const goStations = () => app.go("stations");
   const goRetry = () => app.go(screenFor(round), { roundId: round.id });
-  if (!saved && !params.discovery) {
+  const stationMapLabel = "🚂 " + tx({ en: "Station map", af: "Stasiekaart" });
+  if (isStation) {
+    if (nextStation && nextStation.id !== round.id) {
+      mkBtn("▶ " + tx({ en: "Next station", af: "Volgende stasie" }), true,
+        () => app.go("investigate", { roundId: nextStation.id }));
+      mkBtn(stationMapLabel, false, goStations);
+    } else {
+      mkBtn(stationMapLabel, true, goStations);
+    }
+    // NOT t("backHome") — that reads "Back to map", which next to "Station map"
+    // would leave the learner with two buttons both claiming to be a map.
+    mkBtn("🏠 " + tx({ en: "Home", af: "Tuis" }), false, goHome);
+  } else if (!saved && !params.discovery) {
     // The pass is only queued locally — be honest and don't let them move on as
     // if it counted. It will sync automatically; retry is the clearest action.
     const warn = el("div", "result-msg warn");
@@ -611,7 +644,9 @@ export function renderResults(app, host, params) {
 
   // Finishing the very last round of the quest → one-time anonymous survey popup.
   // (No-ops if they've already given feedback or been prompted before.)
-  const isFinalRound = ROUNDS.length > 0 && round.id === ROUNDS[ROUNDS.length - 1].id;
+  // The last round of the MAIN line — the stations sit after it in ROUNDS, but
+  // finishing the quest is finishing the 43 rounds.
+  const isFinalRound = MAIN_ROUNDS.length > 0 && round.id === MAIN_ROUNDS[MAIN_ROUNDS.length - 1].id;
   if (isFinalRound && passed && !params.discovery) {
     try { maybeShowSurveyPopup(app); } catch { /* non-critical */ }
   }

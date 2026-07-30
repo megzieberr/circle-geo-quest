@@ -1,6 +1,34 @@
 # Project status — updated 2026-07-30
 
 ## Where we are
+**CHUNK B IS BUILT (2026-07-30), NOT YET COMMITTED, awaiting Megan's look at the
+train.** All four of her design rulings are in and verified in the browser:
+  1. `js/stations.js` (new) holds `trainStrip()` — a full-width tappable strip on
+     the home screen, inserted directly above the rank ladder — and
+     `renderStations()`, the six-stop map, routed as the new `stations` screen.
+     Pi is untouched. Her art is used as-is: the PNG's transparent padding
+     (13.85% top, 32.85% bottom of its width) is cropped in CSS with negative
+     percentage margins, which resolve against the WIDTH, so the numbers land the
+     crop exactly. Measured live: a 520px-wide box renders the art 520x277, i.e.
+     the true 1066/2000 aspect. The file itself was never opened for editing.
+  2. The map is a real six-stop line — no "coming soon" halts.
+  3. The stations are OFF the main map: `rounds/index.js` now exports
+     `MAIN_ROUNDS` / `STATIONS` (split by `kind`, not a hand-kept id list) plus
+     `unlockedIds()`, which both maps share so the unlock chain can't drift.
+     Verified: 43 cards on the home map, 0 of them a station, and the continue
+     card reads "0 / 43 rounds done" again.
+  4. `g6` is off the ladder via a `hidden: true` flag on the group (config.js) +
+     `LADDER_GROUPS`. Verified with all six stations passed: the home stat reads
+     **5/5 BADGES** and the rank reads **🏆 Circle Grand Master**. The badge is
+     still earned and still fires the ceremony; it is displayed on the station map
+     once the line is done. Side effect worth knowing: the Adventures banner is
+     back for finishers — it had been gated on 6/6, which g6 made unreachable.
+Also: ✕ inside a station and a station's results now return to the station map,
+not home; the end-of-quest survey fires on the last MAIN round again (it had moved
+to inv6). `verify.html` still green — **406 diagrams / 749 angles / 0 mismatches**.
+Walked in both languages at 375px and 1280px, no console errors, no horizontal
+overflow. Nothing pushed; the branch stays 4 commits ahead of origin.
+
 IN PROGRESS 2026-07-30 on branch `claude/investigation-station-circle-geo-dd1g0a`
 (PR #4): INVESTIGATION STATION 🚂 — six graded "stations" that drill the
 *investigation* skill (conjecture, counterexample, error-spotting, converses,

@@ -62,10 +62,19 @@ export const GROUPS = [
   { id: "g5", icon: "🏆", name: "Circle Grand Master",
     blurb: { en: "Tough mixed exam-style riders.",
              af: "Moeilike gemengde eksamen-styl vraagstukke." } },
-  { id: "g6", icon: "🚂", name: "Line Inspector",
+  // `hidden` = earned and celebrated exactly like the others, but kept OFF the
+  // rank ladder and the badge counter (Megan's ruling, 2026-07-30). The ladder
+  // reads the learner's rank as the LAST earned badge, so letting g6 join it
+  // quietly demoted a finisher from 🏆 Circle Grand Master to 🚂 Line Inspector
+  // and turned the counter into 5/6. Finishing the 43 rounds must still end on
+  // Grand Master, so the station badge lives on the station map instead, and the
+  // train strip shows "N of 6 stations visited".
+  { id: "g6", icon: "🚂", name: "Line Inspector", hidden: true,
     blurb: { en: "Investigation Station — conjecture, counterexample, proof and explanation.",
              af: "Ondersoekstasie — vermoede, teenvoorbeeld, bewys en verduideliking." } },
 ];
+/* The badges that count towards the rank ladder and the "x/5 badges" stat. */
+export const LADDER_GROUPS = GROUPS.filter(g => !g.hidden);
 export const BASE_RANK = "Newcomer";
 
 /* ============================================================

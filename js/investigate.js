@@ -70,7 +70,9 @@ export function renderInvestigate(app, host, params) {
   top.innerHTML = `<button class="link-btn quit">✕</button>
     <div class="play-title">🚂 ${tx(round.title)}</div>
     <div class="play-count"></div>`;
-  top.querySelector(".quit").addEventListener("click", () => app.go("home"));
+  // ✕ goes back to the station map, not home — the learner came in off the
+  // train strip, so that is the screen behind them.
+  top.querySelector(".quit").addEventListener("click", () => app.go("stations"));
   const bar = el("div", "pbar"); bar.appendChild(el("i"));
   const stepHost = el("div", "discover-host");
   mount(screen, top, bar, stepHost);

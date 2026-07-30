@@ -811,3 +811,87 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .admin-integrity .flag-list li{line-height:1.4;}
 .admin-integrity .integrity-fyi{margin-top:12px; padding:10px 14px; border-radius:12px; background:rgba(37,42,74,.05);}
 .admin-integrity .ok-line{padding:8px 0;}
+
+/* ============================================================
+   INVESTIGATION STATION 🚂 — the home strip and the six-stop map
+   ------------------------------------------------------------
+   THE CROP. assets/investigation-station-train.png is Megan's art and
+   is never edited: a 2000x2000 PNG whose drawing sits at y=277..1343,
+   so 13.85% of the width is transparent above it and 32.85% below.
+   Both are pulled off with negative percentage margins, which resolve
+   against the WIDTH — and the image is exactly as wide as its clipping
+   box, so the numbers land the crop on the pixel. The box then ends up
+   53.3% of its own width tall, which is the art's true aspect.
+   ============================================================ */
+.train-art{overflow:hidden; line-height:0;}
+.train-art img{display:block; width:100%; height:auto; margin:-13.85% 0 -32.85%;}
+
+/* ---------- the home strip: the only door into the stations ---------- */
+.train-strip{
+  display:block; width:100%; text-align:left; cursor:pointer; overflow:hidden;
+  background:linear-gradient(180deg,#fffaf2,var(--kaart)); color:var(--ink);
+  border:2px solid var(--ink); border-radius:var(--radius); border-left:7px solid var(--s2);
+  box-shadow:var(--shadow); padding:14px 16px 0; margin-bottom:22px;
+  transition:transform .1s ease, box-shadow .1s ease; font:inherit;
+}
+.train-strip:hover,.train-strip:focus-visible{transform:translate(-1px,-1px); box-shadow:6px 6px 0 rgba(37,42,74,.18); outline:none;}
+.train-strip:active{transform:translate(0,0); box-shadow:var(--shadow-sm);}
+.train-strip.shut{opacity:.75; background:repeating-linear-gradient(45deg,#fff,#fff 9px,#faf7ef 9px,#faf7ef 18px);}
+.ts-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px;}
+.ts-head .eyebrow{font-size:.8rem;}
+.ts-line{flex-basis:100%; font-size:.86rem; color:var(--ink-soft); line-height:1.35;}
+.ts-count{font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:.9rem; color:var(--s2);}
+.ts-lamps{display:inline-flex; gap:5px; align-items:center;}
+.ts-lamp{width:10px; height:10px; border-radius:50%; border:2px solid var(--ink); background:#fff; opacity:.45;}
+.ts-lamp.open{opacity:1;}
+.ts-lamp.on{opacity:1; background:var(--s2);}
+/* the art fills the strip's full width, so the painted track runs edge to edge
+   and carries straight on into the map when tapped */
+.train-strip .train-art{margin:6px -16px 0; max-width:none;}
+@media (min-width:560px){ .train-strip .train-art{max-width:520px; margin-inline:auto;} }
+
+/* ---------- the six-stop map ---------- */
+.station-head{margin-bottom:6px;}
+.station-head h1{font-size:1.9rem;}
+.station-art{max-width:520px; margin:0 auto 14px;}
+.station-intro{margin-bottom:20px; padding:16px 18px; border-left:7px solid var(--s2);}
+.station-intro p{font-size:.92rem;}
+.station-intro p + p{margin-top:8px;}
+
+/* the line itself: one rail down the left with a numbered sign per stop */
+.stopline{list-style:none; position:relative; padding:4px 0 4px 52px; margin:0;}
+.stopline::before{
+  content:""; position:absolute; left:14px; top:0; bottom:0; width:8px; border-radius:4px;   /* centred under the 36px stop signs */
+  background:
+    repeating-linear-gradient(180deg, var(--ink) 0 6px, transparent 6px 16px),
+    linear-gradient(90deg,#8d6748,#b98a63);
+  background-size:100% 100%, 100% 100%;
+}
+.stop{position:relative; margin-bottom:14px;}
+.stop:last-child{margin-bottom:0;}
+.stop-dot{
+  position:absolute; left:-52px; top:16px; width:36px; height:36px; border-radius:50%;
+  border:3px solid var(--ink); background:#fff; color:var(--ink);
+  display:grid; place-items:center; font-family:"Bricolage Grotesque",sans-serif;
+  font-weight:800; font-size:1.05rem; box-shadow:var(--shadow-sm); z-index:1;
+}
+.stop.done .stop-dot{background:var(--accent); color:#fff;}
+.stop.locked .stop-dot{background:#f2efe6; color:var(--ink-soft); border-style:dashed; box-shadow:none;}
+.stop-card{padding:14px 16px; box-shadow:var(--shadow-sm); border-left:7px solid var(--accent);}
+.stop.locked .stop-card{opacity:.66; border-left-style:dashed;
+  background:repeating-linear-gradient(45deg,#fff,#fff 9px,#faf7ef 9px,#faf7ef 18px);}
+.stop.done .stop-card{box-shadow:5px 5px 0 var(--accent);}
+.stop-eyebrow{font-weight:800; letter-spacing:.1em; font-size:.68rem; text-transform:uppercase; color:var(--accent);}
+.stop-card h3{font-size:1.08rem; margin:4px 0 5px;}
+.stop-card p{font-size:.85rem; color:var(--ink-soft);}
+.stop-foot{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px;}
+.stop-foot .btn{margin-left:auto;}
+.stop-done{font-size:.78rem; font-weight:700; color:var(--accent);}
+
+/* the station badge, once the whole line is done — it lives here rather than on
+   the home rank ladder, which stays the five-badge climb to Grand Master */
+.station-badge{display:flex; align-items:center; gap:14px; margin-top:22px; border-left:7px solid var(--s3);}
+.station-badge .sb-icon{font-size:2.5rem; line-height:1;}
+.station-badge .sb-text{flex:1;}
+.station-badge .sb-text h3{font-size:1.2rem; margin:1px 0 3px;}
+.station-back{margin-top:20px;}
