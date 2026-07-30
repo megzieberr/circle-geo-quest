@@ -24,11 +24,25 @@ as designed when the checker is unreachable — hint at 3 misses, `memoDisplay` 
 5, Continue appears, no error ever shown. **NOT YET COMMITTED**, and nothing is
 on `main`; the live site is unchanged. Chunk B (the train) has NOT been started.
 
-⚠️ **The five new panels have not been MARKED end to end.** Exercising the
-checker needs a real learner name + password, which this session did not have,
-so `s1p4 s3p4 s5p4 s6p3 s6p4` have been reasoned against the three checker
-decisions below but never actually put through Haiku. That is the one thing left
-to test on them — see "Pending on Megan".
+**MARKING TESTED AND CLEAN (2026-07-30): 22/22 on the five new panels.** Run
+against the live edge function with a throwaway learner (`ZZ Checker Toets`,
+created, used, and deleted — 0 progress rows, 0 xp_events, 0 events, and its 10
+checker_calls cascaded away with it; 21 real students untouched). 9 accepted
+answers accepted, 12 wrong answers rejected, 1 prompt-injection attempt refused
+(`unclear`, and it answered the maths question instead of obeying). The three
+probes that mattered most all passed:
+  · `s1p4` accepted an Afrikaans answer whose ONLY reason was "a protractor is
+    never exact" — the accept-any-one-of-three rule holds.
+  · `s3p4` accepted an Afrikaans answer that gave only the first half of the
+    question (every case → one failure breaks it) and never touched the "why a
+    thousand examples still fail" half, which the scheme says not to require.
+  · `s6p3` accepted the Afrikaans ISOSCELES-RADII proof, not just the
+    centre-double route — the accept-either-route rule holds. This is the one
+    that would have quietly failed a correct learner.
+Every rejection came back `partly` or `not_yet` with a nudge that points at the
+gap without leaking the answer ("Your testing is strong — but what does that
+testing still not tell us?"). Response times 1.6-5.8s, well inside the 12s
+client timeout.
 
 **The `check-answer` edge function is DEPLOYED and WORKING (2026-07-30).** It
 did not need the dashboard: the Supabase MCP connection can deploy edge
@@ -460,13 +474,12 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- 👀 **[next session]**: Chunk A is built but UNCOMMITTED, and commit `1312c97`
-  (Station 2 + the checker deploy) is still unpushed. One `/ship` clears both.
-- 🔑 **[next session, 5 min]**: the five new typed panels have never been marked by
-  the real checker — that needs a learner login, which the build session did not
-  have. Either play them yourself (Stations 1, 3, 5, 6 → the typed panel in each)
-  or hand over a test login and Claude will run the 10-correct / 10-wrong probe the
-  way Station 2 and 4 were tested.
+- ⏸️ **NOT A TASK — Megan's call, 2026-07-30: DO NOT PUSH until the train is done.**
+  Chunk A is committed locally (`bbafc96`) and the branch sits 2 ahead of origin
+  (`1312c97` too). She does not want any of it visible to learners until the
+  Investigation Station is finished, so the push waits for Chunk B. Nothing is on
+  `main` either way. Local commits are the only backup — don't leave it longer than
+  the next session or two.
 - 💻 2 min **[whenever]**: worth a word with whoever owns the school's AI-use / POPIA
   policy before Monday — learner-authored text leaves the school's systems. Only the
   answer text is sent: no names, no IDs.
@@ -493,9 +506,10 @@ playing on those builds for days, so real use did the eyeballing.)
 need to finish a chunk in one sitting.** Two chunks remain, in this order:
 
 - **CHUNK A — Stations 1, 3, 5, 6. ✅ DONE 2026-07-30.** All six stations exist,
-  memo rows are live, verify is green, both languages walked offline. Uncommitted.
-  The only loose end is marking the five new typed panels against the real checker
-  (see "Pending on Megan").
+  memo rows are live, verify is green, both languages walked offline, marking probed
+  22/22 against the live checker, and Megan has played all six in teacher preview
+  ("they look very cute, had me thinking as well"). Committed at `bbafc96`, not
+  pushed by her instruction. No loose ends.
 - **CHUNK B — the train.** Home strip + the six-stop map screen + the four design
   rulings above (rank ladder, badge counter, train-only entry). Do NOT start this
   until all six stations exist; that was the whole point of ruling 2.
