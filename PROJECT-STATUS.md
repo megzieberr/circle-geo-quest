@@ -1,17 +1,18 @@
 # Project status — updated 2026-07-30
 
-## Where we are (THE DASHBOARD SESSION — committed, pushed, NOT MERGED)
+## Where we are (THE DASHBOARD SESSION — SHIPPED AND LIVE)
 
-⚠️ **ONE THING IS PENDING ON MEGAN AND IT IS THE ONLY THING:**
-[PR #5](https://github.com/megzieberr/circle-geo-quest/pull/5) is open and needs
-merging to `main`. GitHub Pages serves `main`, so **until that merge the live site
-has none of tonight's client work** — no dashboard panel, and replays still pay 0.
+**NOTHING IS PENDING.** [PR #5](https://github.com/megzieberr/circle-geo-quest/pull/5)
+was merged to `main` on 2026-07-30 (squash, `0d395a9`), GitHub Pages rebuilt on
+that exact commit, and the live site was verified serving the new modules
+(`config.js` carries `replayMaxPaid`, `api.js` `adminStuck`, `admin.js`
+`renderStuckReport`, `announce.js` `maybeShowReplayAnnounce`). All three
+migrations were already applied. Client and database now agree.
 
-**The database is ALREADY LIVE and the half-state is safe.** All three migrations
-are applied (phase17, the cap bump, phase18). The currently-published client still
-sends 0 XP for a replay, so the server awards 0 and no learner sees a change. The
-cap of 40 is live and working right now. So there is no rush and nothing is broken
-— but nothing Megan asked for is visible either until the merge.
+What the class meets next time they open it: **replays pay half XP** (two per
+round) and the **one-time announcement popup** explaining it. What Megan meets on
+`admin.html`: the **"I don't get it" panel** — empty until the class plays,
+because the table genuinely has 0 rows today.
 
 Three things landed, all verified:
 
