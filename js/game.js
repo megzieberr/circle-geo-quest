@@ -9,7 +9,7 @@ import { showCelebration } from "./celebrate.js";
 import { mountQuestion } from "./questions.js";
 import { sfx } from "./sound.js";
 import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
-import { getDaily, dailyUnlocked, isDoneToday } from "./daily.js";
+import { getDaily, dailyUnlocked, isDoneToday, syncStreakOnce } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
@@ -266,6 +266,13 @@ function dailyCard(app) {
   } else {
     foot.appendChild(el("span", "rc-lock", "🔒"));
   }
+  // First home render of the session: pull the server's cross-device streak
+  // (phase19) and redraw this card if it answered. On a fresh device the
+  // local number is 0/stale; syncStreakOnce resolves null on every later
+  // call, so the rebuild below cannot loop.
+  syncStreakOnce(app).then(r => {
+    if (r && card.isConnected) card.replaceWith(dailyCard(app));
+  });
   return card;
 }
 

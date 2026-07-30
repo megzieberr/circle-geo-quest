@@ -9,8 +9,14 @@
 
    The set is fixed per local day (no re-rolling for an easier draw),
    and a wrong answer drops into the Fix-My-Mistakes pile so weak
-   spots resurface. Reward here is the streak itself: no leaderboard
-   XP in phase 1, so the server economy is untouched.
+   spots resurface.
+
+   THE STREAK IS SERVER-COMPUTED since phase19 (a learner caught the
+   old way: localStorage-only meant a streak continued on another
+   device restarted at 1). cgg_get_streak counts consecutive days from
+   xp_events — the same rows cgg_submit_daily has always written — and
+   syncStreak() below mirrors that number into localStorage, which is
+   kept only as the offline fallback and for the home-card display.
    ============================================================ */
 import { ROUNDS, QUESTION_BANK, QUESTION_BY_ID, DAILY_EXTRA, DAILY_RIDERS, DAILY_RIDERS_MULTI, DAILY_RIDERS_SINGLE } from "./rounds/index.js";
 import { t, tx } from "./i18n.js";
@@ -60,6 +66,46 @@ function allRoundsPassed(app) {
 export function dailyUnlocked(app) { return passedQuestionPool(app).length > 0; }
 export function getDaily(app) { return read(app); }
 export function isDoneToday(app) { return read(app).doneDay === localDay(); }
+
+/* Pull the server's streak (phase19) and mirror it into localStorage, so a
+   learner sees the SAME number on every device. Returns the server object,
+   or null when it can't be reached (offline / preview / timeout) — callers
+   then simply keep the local optimistic value, which is the old behaviour.
+   `best` takes the max of both sides: the server can't know about days that
+   were only ever completed offline, and localStorage can't know about other
+   devices. doneDay is only ever set forward (server says today is claimed),
+   never cleared — an offline completion stays done on this device. */
+const withTimeout = (p, ms) => Promise.race([
+  p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms)),
+]);
+export async function syncStreak(app) {
+  try {
+    const s = getSession();
+    if (!s) return null;
+    const r = await withTimeout(api.getStreak(s.name, s.password), 4000);
+    if (!r || !r.ok) return null;
+    const st = read(app);
+    const next = {
+      ...st,
+      streak: r.streak || 0,
+      best: Math.max(st.best || 0, r.best || 0),
+      lastDay: r.lastDay || st.lastDay,
+    };
+    if (r.doneToday) next.doneDay = localDay();
+    write(app, next);
+    return r;
+  } catch { return null; }
+}
+
+/* Once per page load, for the home card — cheap, and enough that a learner
+   logging in on a fresh device sees their real flame without opening the
+   Daily screen first. */
+let syncedOnce = false;
+export function syncStreakOnce(app) {
+  if (syncedOnce) return Promise.resolve(null);
+  syncedOnce = true;
+  return syncStreak(app);
+}
 
 /* Pick (and remember for the day) an interleaved set of question ids.
    - Finishers (every round passed) get mostly FRESH bonus riders plus one
@@ -128,7 +174,7 @@ function completeDaily(app) {
 }
 
 /* ---------------- DAILY SCREEN ---------------- */
-export function renderDaily(app, host) {
+export async function renderDaily(app, host) {
   clear(host);
 
   if (!dailyUnlocked(app)) {
@@ -140,6 +186,11 @@ export function renderDaily(app, host) {
     host.appendChild(card);
     return;
   }
+
+  // Ask the server first (4s cap): if today's daily was already done on
+  // ANOTHER device this marks it done here too, and either way localStorage
+  // now holds the true cross-device streak before anything renders.
+  await syncStreak(app);
 
   if (isDoneToday(app)) { renderDailyDone(app, host, read(app)); return; }
 
@@ -193,20 +244,35 @@ export function renderDaily(app, host) {
     if (state.i < state.total) { window.scrollTo(0, 0); show(); }
     else {
       next.disabled = true;
-      const res = completeDaily(app);                    // local streak (+ milestone flag)
+      let res = completeDaily(app);                      // optimistic local streak
       // claim the daily XP on the server (granted at most once per local day)
       let award = { xpAwarded: 0, alreadyClaimed: true };
       let milestoneAward = null;
       try {
         const s = getSession();
         award = await api.submitDaily(s.name, s.password, { day: localDay(), correct: state.correct, total: state.total });
-        // streak milestone hit — claim its XP too. Server is source of truth
-        // (idempotent against streak_milestones_awarded), the local `res`
-        // above is only used for the immediate optimistic display.
+        // now that today's completion is banked, the server's cross-device
+        // count is the truth — it replaces the local guess for the display
+        // AND for milestone detection (the local count restarts at 1 on a
+        // fresh device, which is exactly the bug a learner reported).
+        const srv = await syncStreak(app);
+        if (srv) {
+          res = {
+            ...res,
+            streak: srv.streak,
+            best: Math.max(res.best || 0, srv.best || 0),
+            isNew: srv.streak <= 1,
+            milestone: CONFIG.streakMilestones.find(m => m.days === srv.streak) || null,
+          };
+        }
+        // milestone hit — claim its XP (idempotent server-side against
+        // streak_milestones_awarded). If it was already claimed some other
+        // day/device, skip the full-screen celebration too: it already fired.
         if (res.milestone) {
           milestoneAward = await api.awardStreakMilestone(s.name, s.password, res.milestone.days);
+          if (milestoneAward && milestoneAward.alreadyAwarded) res = { ...res, milestone: null };
         }
-      } catch { /* offline — still show the streak result */ }
+      } catch { /* offline — still show the local streak result */ }
       await app.refreshState();
       renderDailyDone(app, host, res, state.correct, state.total, award, milestoneAward, state.score);
     }

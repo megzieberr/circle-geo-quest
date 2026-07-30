@@ -42,6 +42,11 @@ export const SupabaseBackend = {
   awardStreakMilestone(name, password, days) {
     return rpc("cgg_award_streak_milestone", { p_name: name, p_password: password, p_days: days });
   },
+  // day-streak, computed server-side from xp_events (phase19.sql) so the
+  // same number shows on every device. Read-only on the server.
+  getStreak(name, password) {
+    return rpc("cgg_get_streak", { p_name: name, p_password: password });
+  },
   logItems(name, password, roundId, items) {
     return rpc("cgg_log_items", { p_name: name, p_password: password, p_round: roundId, p_items: items });
   },

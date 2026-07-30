@@ -306,6 +306,37 @@ const LocalBackend = {
     return { ok: true, xpAwarded: milestone.xp, alreadyAwarded: false };
   },
 
+  /* Day-streak computed from the events log, not from the per-device streak
+     state in daily.js — mirrors the cgg_get_streak RPC (phase19.sql), where
+     the same gaps-and-islands walk runs over xp_events. A "day" is a distinct
+     local calendar day with a 'daily' event; the current streak is the run
+     ending today (or yesterday, if today isn't done yet — still alive until
+     midnight); best is the longest run ever. Read-only, like the server. */
+  async getStreak(name, password) {
+    const s = this._verify(name, password);
+    if (!s) return { ok: false, error: "auth" };
+    const events = read(LS.events, []);
+    const days = [...new Set(events
+      .filter(e => e.studentId === s.id && e.roundId === "daily")
+      .map(e => localDate(e.ts)))].sort();
+    const nextDay = day => {
+      const [y, m, d] = day.split("-").map(Number);
+      const dt = new Date(y, m - 1, d);
+      dt.setDate(dt.getDate() + 1);
+      return localDate(dt.getTime());
+    };
+    let best = 0, run = 0, prev = null;
+    for (const d of days) {
+      run = (prev !== null && d === nextDay(prev)) ? run + 1 : 1;
+      if (run > best) best = run;
+      prev = d;
+    }
+    const today = localDate(Date.now());
+    const last = days.length ? days[days.length - 1] : null;
+    const alive = last !== null && (last === today || nextDay(last) === today);
+    return { ok: true, streak: alive ? run : 0, best, doneToday: last === today, lastDay: last };
+  },
+
   /* Set (or clear) the caller's own nickname + avatar. Mirrors the
      cgg_set_profile RPC (supabase/phase12.sql): trims + length-caps the
      nickname (empty string -> null, NO other validation — moderation is
@@ -717,6 +748,9 @@ const PreviewBackend = {
   async submitRound() { return { ok: true, passed: true, badgeEarned: false, xpAwarded: 0, alreadyPassed: true }; },
   async submitDaily() { return { ok: true, xpAwarded: 0, alreadyClaimed: true }; },
   async awardStreakMilestone() { return { ok: true, xpAwarded: 0, alreadyAwarded: true }; },
+  // ok:false on purpose (not zeros): daily.js falls back to its local
+  // optimistic streak, so the teacher's preview walkthrough reads sanely.
+  async getStreak() { return { ok: false, error: "preview" }; },
   async setProfile() { return { ok: true, nickname: null, avatarId: null }; },   // never persisted in preview
   async logItems() { return { ok: true, logged: 0 }; },
   async adminIntegrity() { return { ok: true, students: [] }; },
