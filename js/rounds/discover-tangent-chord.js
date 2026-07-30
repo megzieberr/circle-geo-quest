@@ -70,6 +70,6 @@ export const round = {
         { en: "The tangent–chord angle always equals the angle in the segment on the OTHER side — the alternate segment.", af: "Die raaklyn–koord-hoek is altyd gelyk aan die hoek in die segment aan die ANDER kant — die oorstaande segment." },
       ],
       reason: "tanChord",
-      note: { en: "The angle between a tangent and a chord equals the angle in the alternate segment. Reason: <i>tan-chord theorem</i>.", af: "Die hoek tussen 'n raaklyn en 'n koord is gelyk aan die hoek in die oorstaande segment. Rede: <i>raaklyn-koord-stelling</i>." } },
+      note: { en: "The angle between a tangent and a chord equals the angle in the alternate segment. Reason: <i>tan chord theorem</i>.", af: "Die hoek tussen 'n raaklyn en 'n koord is gelyk aan die hoek in die oorstaande segment. Rede: <i>raaklyn koord stelling</i>." } },
   ],
 };

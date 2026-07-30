@@ -94,6 +94,6 @@ export const round = {
         { en: "Centre = 2 × circumference. Work out 2 × 40.", af: "Middelpunt = 2 × omtrek. Bereken 2 × 40." },
       ],
       reason: "centreDouble",
-      note: { en: "Centre = 2 × 40° = 80°. Reason: ∠ at centre = 2 × ∠ at circumference.", af: "Middelpunt = 2 × 40° = 80°. Rede: middelpuntshoek = 2 × omtrekshoek." } },
+      note: { en: "Centre = 2 × 40° = 80°. Reason: ∠ at centre = 2 × ∠ at circumference.", af: "Middelpunt = 2 × 40° = 80°. Rede: Midpt∠ = 2 × Omtreks∠." } },
   ],
 };

@@ -69,7 +69,7 @@ export const round = {
         { en: "The circumference angle is half the centre angle. Half of 180 is…?", af: "Die omtrekshoek is die helfte van die middelpuntshoek. Die helfte van 180 is…?" },
       ],
       reason: "semiCircle",
-      note: { en: "∠APB = 90°. The angle in a semicircle (subtended by a diameter) is a right angle. Reason: <i>∠ in semi-circle</i>.", af: "∠APB = 90°. Die hoek in 'n halfsirkel (onderspan deur 'n middellyn) is 'n regte hoek. Rede: <i>∠ in semi sirkel</i>." } },
+      note: { en: "∠APB = 90°. The angle in a semicircle (subtended by a diameter) is a right angle. Reason: <i>∠s in semi-circle</i>.", af: "∠APB = 90°. Die hoek in 'n halfsirkel (onderspan deur 'n middellyn) is 'n regte hoek. Rede: <i>∠ in halwe sirkel</i>." } },
 
     { type: "explore",
       prompt: { en: "Confirm it by dragging", af: "Bevestig dit deur te sleep" },

@@ -55,11 +55,11 @@ export const round = {
       diagram: { O: true, pts: { A: 180, B: 0, P: 110 }, chords: [["A", "B"], ["A", "P"], ["B", "P"]],
         angles: [ { at: "P", legs: ["A", "B"], t: "", o: { v: 90, mark: 1 } }, { at: "B", legs: ["A", "P"], t: "35°", o: { v: 35 } }, { at: "A", legs: ["B", "P"], t: "x", o: { v: 55 } } ] },
       options: [ { text: "55°", correct: true }, { text: "45°" }, { text: "35°" }, { text: "65°" } ],
-      answer: { en: "∠APB = 90° (angle in a semicircle), so x = 180° − 90° − 35° = 55°.", af: "∠APB = 90° (hoek in 'n semi sirkel), dus x = 180° − 90° − 35° = 55°." },
+      answer: { en: "∠APB = 90° (angle in a semicircle), so x = 180° − 90° − 35° = 55°.", af: "∠APB = 90° (hoek in 'n halfsirkel), dus x = 180° − 90° − 35° = 55°." },
       explainReason: "semiCircle",
       hints: [
         { en: "AB is a diameter, so ∠APB = 90° (angle in a semicircle).",
-          af: "AB is 'n middellyn, dus ∠APB = 90° (hoek in 'n semi sirkel)." },
+          af: "AB is 'n middellyn, dus ∠APB = 90° (hoek in 'n halfsirkel)." },
         { en: "The angles of △ABP add to 180°. Take away 90° and the 35° you're given.",
           af: "Die hoeke van △ABP is saam 180°. Trek 90° en die gegewe 35° af." },
       ] },

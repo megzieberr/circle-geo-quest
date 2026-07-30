@@ -347,41 +347,44 @@ export const PARTS = {
 };
 
 /* ---------- Acceptable-reasons bank ----------
-   ENGLISH follows IEB SAGs Appendix G "Euclidean Geometry: Acceptable
-   Reasons" exactly — that is what this cohort's markers accept.
-   AFRIKAANS follows the DBE "Aanvaarbare Redes (Euclidean Geometry)"
-   list (IEB publishes the reasons in English only; the DBE list is the
-   near-identical Afrikaans authority).
+   BOTH languages follow IEB SAGs "Addendum/Appendix G: Euclidean Geometry:
+   Acceptable Reasons" — that is what this cohort's markers accept. The IEB
+   publishes the appendix in both languages: the English forms come from
+   "27. MATHEMATICS SAGs 2026" pp.29-32, the Afrikaans from
+   "27. WISKUNDE SAGs 2026" pp.29-32. Where the appendix lists several
+   accepted forms we store the most common one and let the checker accept
+   the variants.
    Audit + rationale for every change: docs/ieb-acceptable-reasons.md */
 export const REASONS = {
-  tanChord:      { en: "tan chord theorem",        af: "raaklyn-koord-stelling" },
-  straightLine:  { en: "∠s on a str line",         af: "∠e op 'n reguitlyn" },
-  triSum:        { en: "Int ∠s Δ",                 af: "binne-∠e van Δ" },
+  tanChord:      { en: "tan chord theorem",        af: "raaklyn koord stelling" },
+  straightLine:  { en: "∠s on a str line",         af: "∠e op reguit lyn" },
+  triSum:        { en: "Int ∠s Δ",                 af: "binne ∠e Δ" },
   tanRadius:     { en: "tan ⊥ radius",             af: "raaklyn ⊥ radius" },
   tanDiameter:   { en: "tan ⊥ diameter",           af: "raaklyn ⊥ middellyn" },
   // converses — used to PROVE a line is a tangent
   tanRadiusConv: { en: "converse tan ⊥ radius",    af: "omgekeerde raaklyn ⊥ radius" },
-  tanChordConv:  { en: "converse tan chord theorem", af: "omgekeerde raaklyn-koord" }, // TODO(af): -stelling
-  semiCircle:    { en: "∠s in semi-circle",        af: "∠e in semi sirkel" },          // TODO(af): halfsirkel?
+  tanChordConv:  { en: "converse tan chord theorem", af: "omgekeerde raaklyn koord stelling" },
+  // NB the appendix keeps ∠ SINGULAR in the Afrikaans semi-circle reasons
+  semiCircle:    { en: "∠s in semi-circle",        af: "∠ in halwe sirkel" },
   // converse — used to PROVE a chord is a diameter
-  semiCircleConv:{ en: "converse ∠s in semi-circle", af: "omgekeerde ∠e in semi sirkel" }, // TODO(af)
-  tansCommonPt:  { en: "tans from same pt",        af: "raaklyne vanuit dieselfde punt" },
+  semiCircleConv:{ en: "converse ∠s in semi-circle", af: "omgekeerde ∠ in halwe sirkel" },
+  tansCommonPt:  { en: "tans from same pt",        af: "raaklyne vanaf dieselfde punt" },
   sameSeg:       { en: "∠s in the same seg",       af: "∠e in dieselfde segment" },
   isosBase:      { en: "∠s opp equal sides",       af: "∠e teenoor gelyke sye" },
   sidesOppAngles:{ en: "sides opp equal ∠s",       af: "sye teenoor gelyke ∠e" },
-  centreDouble:  { en: "∠ at centre = 2 × ∠ at circumference", af: "middelpuntshoek = 2 × omtrekshoek" },
-  centrePerpChord:{ en: "line from centre ⊥ to chord", af: "lyn vanuit mdpt ⊥ op koord" },
-  centreMidChord:{ en: "line from centre to midpt of chord", af: "lyn vanuit mdpt na mdpt van koord" },
+  centreDouble:  { en: "∠ at centre = 2 × ∠ at circumference", af: "Midpt∠ = 2 × Omtreks∠" },
+  centrePerpChord:{ en: "line from centre ⊥ to chord", af: "lyn vanuit midpt ⊥ op koord" },
+  centreMidChord:{ en: "line from centre to midpt of chord", af: "lyn vanuit midpt na midpt van koord" },
   cyclicOpp:     { en: "opp ∠s of cyclic quad",    af: "teenoorst. ∠e van kvh" },
-  cyclicExt:     { en: "ext ∠ of cyclic quad",     af: "buite∠ van kvh" },
+  cyclicExt:     { en: "ext ∠ of cyclic quad",     af: "buite ∠ van kvh" },
   // converses — used to PROVE a quadrilateral is cyclic ("converse" is essential)
   cyclicOppConv: { en: "converse opp ∠s of cyclic quad", af: "omgekeerde teenoorst. ∠e van kvh" },
   cyclicExtConv: { en: "converse ext ∠ of cyclic quad",  af: "omgekeerde buite∠ van kvh" },
-  sameSegConv:   { en: "converse ∠s in the same seg",    af: "omgekeerde ∠e in selfde segm." },
+  sameSegConv:   { en: "converse ∠s in the same seg",    af: "omgekeerde ∠e in dieselfde segment" },
   equalChords:   { en: "equal chords; equal ∠s",   af: "gelyke koorde; gelyke ∠e" },
   equalCirclesChords: { en: "equal circles; equal chords; equal ∠s",
-                        af: "gelyke sirkels; gelyke koorde; gelyke ∠e" }, // TODO(af)
-  perpBisChord:  { en: "perp bisector of chord",   af: "middelloodlyn van koord" },   // TODO(af)
+                        af: "gelyke sirkels; gelyke koorde; gelyke ∠e" },
+  perpBisChord:  { en: "perp bisector of chord",   af: "middelloodlyn van koord" },
   pythagoras:    { en: "Pythagoras",               af: "Pythagoras" },
   // (removed) radiiEqual — near-duplicate of `radii`, zero usages. See LEGACY below.
   altAngles:     { en: "alt ∠s ; lines ∥",         af: "verw. ∠e ; lyne ∥" },
@@ -396,18 +399,18 @@ export const REASONS = {
   commonSide:    { en: "common",              af: "gemeen" },
   rhs:           { en: "RHS",                 af: "RHS" },
   congTri:       { en: "≡ Δs",                af: "≡ Δe" },
-  triExt:        { en: "ext ∠ of Δ",          af: "buite∠ van Δ" },
-  roundPt:       { en: "∠s round a pt",       af: "∠e rondom 'n punt" },
+  triExt:        { en: "ext ∠ of Δ",          af: "buite ∠ van Δ" },
+  roundPt:       { en: "∠s round a pt",       af: "∠e om 'n punt" },
   // foundation reasons the circle theorems rest on — were missing entirely, so a
   // learner could never pick them in a reason-picker even when they were correct
-  vertOpp:       { en: "vert opp ∠s =",       af: "regoorstaande ∠e =" },      // TODO(af)
-  adjSupp:       { en: "adj ∠s supp",         af: "aangrensende ∠e supp" },    // TODO(af)
-  // congruency — needed by the prove-cyclic / prove-tangent exercises
-  // TODO(af): DBE Afrikaans is likely SSS / SHS / HHS. Set to the English forms
-  // for now so nothing is silently wrong. Confirm before shipping the af build.
+  vertOpp:       { en: "vert opp ∠s =",       af: "regoorst. ∠e" },
+  adjSupp:       { en: "adj ∠s supp",         af: "aangr. ∠e suppl." },
+  // Congruency — needed by the prove-cyclic / prove-tangent exercises.
+  // The Afrikaans appendix translates the letters (S = sy, H = hoek), so
+  // SAS→SHS and AAS→HHS. It also accepts S∠S / ∠∠S, and 90°HS for RHS.
   sss:           { en: "SSS",                 af: "SSS" },
-  sas:           { en: "SAS",                 af: "SAS" },
-  aas:           { en: "AAS",                 af: "AAS" },
+  sas:           { en: "SAS",                 af: "SHS" },
+  aas:           { en: "AAS",                 af: "HHS" },
 };
 
 export function reason(code) {
@@ -470,15 +473,15 @@ LEGACY["base ∠s of isos Δ"] = REASONS.isosBase;          // → "∠s opp equ
 LEGACY["tans from common pt"] = REASONS.tansCommonPt;     // → "tans from same pt"
 LEGACY["tans from common pt; base ∠s of isos △"] = {
   en: "tans from same pt; ∠s opp equal sides",
-  af: "raaklyne vanuit dieselfde punt; ∠e teenoor gelyke sye",
+  af: "raaklyne vanaf dieselfde punt; ∠e teenoor gelyke sye",
 };
 LEGACY["base ∠s of isos △ (TA = TB)"] = {
   en: "∠s opp equal sides (TA = TB)",
   af: "∠e teenoor gelyke sye (TA = TB)",
 };
 LEGACY["tan-chord theorem (chord TS at T)"] = {
-  en: "tan-chord theorem (chord TS at T)",
-  af: "raaklyn-koord-stelling (koord TS by T)",
+  en: "tan chord theorem (chord TS at T)",
+  af: "raaklyn koord stelling (koord TS by T)",
 };
 LEGACY["alt ∠s, AB ∥ SU"] = { en: "alt ∠s, AB ∥ SU", af: "verw. ∠e, AB ∥ SU" };
 
@@ -497,6 +500,18 @@ LEGACY["∠s around a point"]              = REASONS.roundPt;
 // removed codes — keep their phrases resolving
 LEGACY["line from centre to midpt of chord ⊥ chord"] = REASONS.centrePerpChord;
 LEGACY["radii equal"]                    = REASONS.radii;
+
+/* Section-level `rede:` summaries in data-tanchord.js list several reasons
+   joined by "·". They are not single codes, so they never hit LEGACY and were
+   rendering the pre-Appendix-G English in BOTH languages. Map them whole. */
+LEGACY["tan-chord theorem · ∠s on a str line · ∠ sum of △"] = {
+  en: "tan chord theorem · ∠s on a str line · Int ∠s Δ",
+  af: "raaklyn koord stelling · ∠e op reguit lyn · binne ∠e Δ",
+};
+LEGACY["tan ⊥ diameter · ∠ in semi-circle · tans from common pt"] = {
+  en: "tan ⊥ diameter · ∠s in semi-circle · tans from same pt",
+  af: "raaklyn ⊥ middellyn · ∠ in halwe sirkel · raaklyne vanaf dieselfde punt",
+};
 
 export function reasonAuto(phrase) {
   if (!phrase) return "";

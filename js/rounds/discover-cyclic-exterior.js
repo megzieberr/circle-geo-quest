@@ -77,6 +77,6 @@ export const round = {
         { en: "It equals the angle at the OPPOSITE vertex — ∠A, diagonally across from C.", af: "Dit is gelyk aan die hoek by die TEENOORSTAANDE hoekpunt — ∠A, dwarsoor van C." },
       ],
       reason: "cyclicExt",
-      note: { en: "The exterior angle of a cyclic quad = the interior opposite angle. Why? ext = 180 − ∠C, and ∠A = 180 − ∠C as well (opposite angles), so ext = ∠A. Reason: <i>ext ∠ of cyclic quad</i>.", af: "Die buitehoek van 'n koordevierhoek = die binne-teenoorstaande hoek. Hoekom? buite = 180 − ∠C, en ∠A = 180 − ∠C ook (teenoorstaande hoeke), so buite = ∠A. Rede: <i>buite∠ van kvh</i>." } },
+      note: { en: "The exterior angle of a cyclic quad = the interior opposite angle. Why? ext = 180 − ∠C, and ∠A = 180 − ∠C as well (opposite angles), so ext = ∠A. Reason: <i>ext ∠ of cyclic quad</i>.", af: "Die buitehoek van 'n koordevierhoek = die binne-teenoorstaande hoek. Hoekom? buite = 180 − ∠C, en ∠A = 180 − ∠C ook (teenoorstaande hoeke), so buite = ∠A. Rede: <i>buite ∠ van kvh</i>." } },
   ],
 };

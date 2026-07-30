@@ -100,7 +100,7 @@ export const round = {
         { en: "STU is a tangent and TA a diameter, so ∠UTA = 90° (tan ⊥ diameter).",
           af: "STU is 'n raaklyn en TA 'n middellyn, dus ∠UTA = 90° (raaklyn ⊥ middellyn)." },
         { en: "TA is a diameter, so the angle at P standing on it is 90° (angle in a semicircle). That angle is 3x, so 3x = 90°.",
-          af: "TA is 'n middellyn, dus is die hoek by P wat daarop staan 90° (hoek in 'n semi sirkel). Daardie hoek is 3x, dus 3x = 90°." },
+          af: "TA is 'n middellyn, dus is die hoek by P wat daarop staan 90° (hoek in 'n halfsirkel). Daardie hoek is 3x, dus 3x = 90°." },
       ],
       prompt: { en: "STU is a tangent at T and TA is a diameter. Calculate the value of x.", af: "STU is 'n raaklyn by T en TA is 'n middellyn. Bereken die waarde van x." },
       diagram: { O: true, pts: { T: 270, A: 90, P: 170 }, tang: [{ at: "T", lab: ["S", "U"] }], chords: [["T", "A"], ["P", "T"], ["P", "A"]],
