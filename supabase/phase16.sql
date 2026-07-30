@@ -22,7 +22,17 @@
 --  reaches them only through SECURITY DEFINER functions and the edge
 --  function's service-role client.
 --
---  NOT YET APPLIED — see PROJECT-STATUS "Pending on Megan".
+--  APPLIED to live 2026-07-30 (sections 1-5) and verified. Sections 6-9 are
+--  the memo rows for Stations 1, 3, 5 and 6, added when those stations were
+--  built. The whole file is idempotent — `create table if not exists`,
+--  `create or replace function`, and `on conflict (panel_id) do update` — so
+--  re-running it is safe and is how a memo edit gets to live.
+--
+--  NOTE ON QUOTING: sections 4 and 5 use ordinary '...' literals with
+--  chr(10) for newlines. Sections 6-9 use dollar-quoted $m$...$m$ strings
+--  with real newlines instead, because their accept-lists carry a lot of
+--  Afrikaans and every 'n would otherwise have to be hand-doubled — one
+--  missed pair silently changes a memo's meaning.
 -- ============================================================
 
 
@@ -222,6 +232,143 @@ insert into public.panel_memos (panel_id, memo, must_have) values
   'The teaching point of the panel is that this is the SAME theorem as angles in the same segment, seen from the other side of the chord — not a separate fact.',
   'says the two angles ADD UP TO 180 degrees, or says they are supplementary (either wording alone is enough)' || chr(10) ||
   'the learner does NOT have to mention cyclic quadrilaterals, opposite angles, or any theorem name — noticing the sum is the whole ask'
+)
+on conflict (panel_id) do update
+  set memo       = excluded.memo,
+      must_have  = excluded.must_have,
+      updated_at = now();
+
+
+-- ------------------------------------------------------------
+--  6. Memo seed — Station 1 "Measure & Notice" (IEB SBA task type #16)
+-- ------------------------------------------------------------
+--  Figure: chord AB in a circle, centre O, with P on the major arc, so the
+--  angle AOB at the centre is double the angle APB at the circumference. The
+--  learner has dragged it, written the conjecture down, and read a table of
+--  five measured pairs — three exactly double, one 2 degrees out (a protractor
+--  reading), one impossible.
+--
+--  MARK SCHEME, NOT A SUMMARY. The panel asks two things only: yes-or-no, and
+--  one reason. It does NOT ask for a proof, for a theorem name, or for the
+--  "infinitely many cases" argument specifically — so any one sound reason
+--  takes the tick. Listing more here would mark down learners who answered
+--  exactly what was asked.
+
+insert into public.panel_memos (panel_id, memo, must_have) values
+(
+  's1p4',
+  $m$No. Measuring can only ever check the positions that were actually measured. A, B and P can be dragged to endlessly many other positions, so a table of five rows - or five hundred - leaves out all the rest, and the conjecture is a claim about every one of them.
+On top of that, every protractor reading carries error. The row reading 96 degrees and 49 degrees is 2 degrees away from exactly double, which is what reading to the nearest degree does. So even the measured cases were only "double as far as I could read it".
+Only a proof covers every position at once. The IEB Subject Assessment Guidelines put it in one line: numerous specific examples supporting a conjecture do not constitute a general proof.$m$,
+  $m$says NO - the measurements have not proved it. ACCEPT any wording that answers no: "no", "not proved", "not yet proved", "you have only tested it", "nee", "dit is nie bewys nie", "nog nie bewys nie", "jy het dit net getoets".
+gives ONE reason why measuring is not a proof. ACCEPT ANY ONE of the following, and treat them as fully equivalent: (a) only the measured cases or positions have been checked, or there are infinitely many other positions, or you cannot measure them all - "net die gevalle wat gemeet is", "daar is oneindig baie posisies", "jy kan nie almal meet nie"; (b) measurement is not exact, the protractor has error, or the 2 degrees out shows the reading was approximate - "meting is nie presies nie", "die gradeboog is nie akkuraat nie"; (c) a proof is needed to cover every case - "n bewys is nodig", "n bewys wat vir elke geval geld". Any ONE of (a), (b) or (c) alone satisfies this line - do not ask for a second one.
+IGNORE whether the learner names a theorem, writes any proof, or mentions the IEB. Two short sentences carrying a no and one reason are got_it.$m$
+)
+on conflict (panel_id) do update
+  set memo       = excluded.memo,
+      must_have  = excluded.must_have,
+      updated_at = now();
+
+
+-- ------------------------------------------------------------
+--  7. Memo seed — Station 3 "Break It" (IEB SBA task type #12)
+-- ------------------------------------------------------------
+--  The learner has just found the counterexample: for a DIAMETER the chord's
+--  midpoint is the centre itself, so every line from the centre bisects it and
+--  almost none of them are perpendicular. The panel then asks about the
+--  asymmetry between disproof and proof.
+--
+--  MARK SCHEME: the question has two halves, but a learner who explains the
+--  "every case" logic has answered it. The second half (why a thousand
+--  examples still fail) is explicitly NOT required — line 3 says so, because
+--  demanding something the panel did not ask for is exactly what marked
+--  correct learners down on the first deployed prompt.
+
+insert into public.panel_memos (panel_id, memo, must_have) values
+(
+  's3p4',
+  $m$A conjecture claims something about EVERY case - that is what the word "always" does. One case where it fails makes "always" false, and nothing can repair it, so a single counterexample settles the matter for good.
+A thousand agreeing cases only tell you about those thousand. The untested cases are still untested, and that is exactly where an exception could be hiding, so agreement in many cases is not the same as agreement in all cases.
+That is why the two jobs cost such different amounts of work: to disprove, find one case; to prove, build an argument that holds for every case at the same time. The diameter is that one case for "a line from the centre that bisects a chord is perpendicular to it".$m$,
+  $m$says a conjecture is a claim about EVERY case, or uses "always" / "all cases" / "every position". ACCEPT: "it has to be true for every case", "it says always", "elke geval", "altyd", "alle gevalle", "vir enige posisie".
+says ONE failing case is enough to make it false or to break it. ACCEPT: "one exception makes it wrong", "if it fails once it is not always true", "een uitsondering breek dit", "as dit een keer misluk is dit nie altyd waar nie".
+Do NOT require the second half of the question. An answer that never explains why a thousand examples are not enough is still got_it when the two lines above are present, and an answer that covers both halves is also got_it.
+IGNORE whether the diameter counterexample is mentioned, and ignore theorem names entirely.$m$
+)
+on conflict (panel_id) do update
+  set memo       = excluded.memo,
+      must_have  = excluded.must_have,
+      updated_at = now();
+
+
+-- ------------------------------------------------------------
+--  8. Memo seed — Station 5 "Turn It Around" (converses)
+-- ------------------------------------------------------------
+--  The learner has seen three converses: one true and useful (opposite angles
+--  of a cyclic quadrilateral), one false (the exterior-angle converse with the
+--  word "opposite" dropped — a slanted parallelogram is the counterexample),
+--  and one true but useless (the definition read backwards).
+--
+--  MARK SCHEME: two ideas, and an example is NOT required.
+
+insert into public.panel_memos (panel_id, memo, must_have) values
+(
+  's5p4',
+  $m$Because a converse swaps what is GIVEN with what is CONCLUDED. "If AB is a diameter, then angle ACB = 90 degrees" starts at a diameter and ends at 90 degrees. Its converse starts at 90 degrees and ends at a diameter. Those are two different claims travelling in opposite directions, so a proof of one says nothing at all about the other, and the converse needs a proof of its own.
+Sometimes the converse turns out false, which is the proof that the two directions really are independent. "A tangent is perpendicular to the radius at the point of contact" is true, but "a line perpendicular to a radius is a tangent" is false - the perpendicular has to be at the end of the radius, on the circle. Dropping one condition breaks it.
+This is also why every converse on the IEB reason list carries the word "converse" in front of it: the direction of travel is part of the reason.$m$,
+  $m$says the converse SWAPS the given and the conclusion, or turns the statement around, or reverses it, or starts where the theorem finished. ACCEPT: "the given and the answer change places", "you start from the conclusion", "it works the other way round", "dit ruil die gegewe en die gevolgtrekking om", "dit werk in die ander rigting", "jy begin by die antwoord", "dit is omgedraai".
+says that makes it a DIFFERENT claim, so it needs its own proof or may not be true. ACCEPT: "it is a new statement", "it must be proved separately", "it is not automatically true", "dit is n ander bewering", "dit moet apart bewys word", "dit is nie noodwendig waar nie".
+Do NOT require an example, a counterexample, or any theorem name. Two sentences carrying the two ideas above are got_it.$m$
+)
+on conflict (panel_id) do update
+  set memo       = excluded.memo,
+      must_have  = excluded.must_have,
+      updated_at = now();
+
+
+-- ------------------------------------------------------------
+--  9. Memo seeds — Station 6 "Explain It" (IEB SBA task type #7)
+-- ------------------------------------------------------------
+--  s6p3: explain to a friend WHY the angle in a semi-circle is 90 degrees.
+--  Figure: AB is a diameter through centre O, C on the circle, angle ACB
+--  marked square. Radius OC is deliberately not drawn.
+--
+--  TWO CORRECT ROUTES, and the mark scheme has to accept EITHER. Requiring the
+--  centre-double route would mark down a learner who gives the isosceles-
+--  triangle proof, which is just as correct — and marking a correct learner
+--  down for taking the other road is the exact failure the 2026-07-30 checker
+--  decisions exist to prevent.
+--
+--  s6p4: write the conclusion paragraph for the Station 2 investigation
+--  (angles in the same segment). Three moves are required. The precision
+--  conditions drilled in Station 2 are deliberately NOT required here: this
+--  panel asks for the SHAPE of a closing paragraph, not for a re-audit of the
+--  conjecture's wording. (s2p4 is where that gets marked.)
+
+insert into public.panel_memos (panel_id, memo, must_have) values
+(
+  's6p3',
+  $m$Route 1 (the short one). AB is a diameter, so A, O and B lie in a straight line and the angle at the centre standing on AB is 180 degrees. The angle at the circumference on the same chord is half the angle at the centre, so angle ACB = 180 / 2 = 90 degrees, wherever C sits on the circle.
+Route 2 (equally correct). Draw radius OC. Then OA = OC and OB = OC (radii), so triangle AOC and triangle BOC are both isosceles. Call their base angles x and y. The three angles of triangle ABC are x, y and (x + y), and they add to 180 degrees, so 2x + 2y = 180 and x + y = 90 - and x + y is angle ACB.
+The panel asks for the reasoning, not for theorem names. Everyday wording is exactly what a friend who missed the lesson needs.$m$,
+  $m$gives a REASON, not only the fact that the angle is 90 degrees. ACCEPT EITHER of the two routes below as a complete answer, and treat them as equally correct.
+ROUTE 1 needs both of these: (a) the diameter makes a straight line, a straight angle, or 180 degrees at the centre - "AB gaan deur die middelpunt, dus is die hoek by die middelpunt 180 grade", "dit is n reguit lyn, dus 180"; AND (b) the angle at the circumference is half the angle at the centre, or the centre angle is double the circumference angle - "die hoek by die omtrek is die helfte", "die middelpuntshoek is dubbel".
+ROUTE 2 needs both of these: (a) the radii make isosceles triangles - "OA = OC en OB = OC, dus is die driehoeke gelykbenig"; AND (b) an angle-sum step that lands on 90 - "die hoeke van die driehoek tel op tot 180, dus is die twee basishoeke saam 90".
+A learner who gives ONE complete route is got_it. NEVER ask for the other route as well, and never ask for a theorem name on top of a correct description.
+Use partly or not_yet only when the answer restates that the angle is 90 degrees with no reason at all, or stops at "because AB is a diameter" with no link to 180 degrees, to half or double, or to the isosceles triangles.$m$
+),
+(
+  's6p4',
+  $m$A conclusion paragraph for an investigation does three things, and a marker looks for all three.
+1. It STATES the conjecture: angles subtended by the same chord (or the same arc), at the circumference and in the same segment, are equal.
+2. It SAYS HOW IT WAS TESTED: the points were dragged to many different positions and the two angles stayed equal every time.
+3. It SAYS WHAT IS STILL MISSING: the testing supports the conjecture but does not prove it, because examples can never cover every position, so a general proof is still needed.
+Three or four sentences is plenty. The third move is what separates a full-mark write-up from a merely good one, and it is the one learners leave out.$m$,
+  $m$STATES the conjecture: the two angles standing on the same chord, or the same arc, are EQUAL. ACCEPT any wording carrying "equal angles on the same chord or arc", in either language - "die hoeke op dieselfde koord is gelyk". Do NOT require "at the circumference", "in the same segment" or "on the same side" here; this panel is about the shape of the paragraph, not the precision of the conjecture.
+SAYS IT WAS TESTED: mentions dragging, measuring, or trying many different positions, and that the equality held. ACCEPT: "I tested many positions and they stayed equal", "ek het die punte gesleep en dit het altyd gelyk gebly", "ek het dit baie keer gemeet".
+SAYS A PROOF IS STILL NEEDED, or that the testing does not prove it. ACCEPT: "it still has to be proven", "this is not a proof", "examples are not a proof", "dit is nog nie bewys nie", "n bewys is nog nodig", "voorbeelde is nie n bewys nie".
+All three lines above are required, in any order and any wording, in either language. Nothing else is required: do NOT ask for a proof itself, for theorem names, for point letters like A, B, P or Q, or for a formal register.$m$
 )
 on conflict (panel_id) do update
   set memo       = excluded.memo,

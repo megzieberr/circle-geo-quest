@@ -7,7 +7,10 @@
 const AC = "#f76707";
 const ORANGE = "#f76707", BLUE = "#4263eb", INK = "#252a4a";
 
-const MODEL = () => ({
+/* exported so Investigation Station 1 can reuse this exact figure instead of
+   rebuilding it — same reasoning as discover-same-segment.js. It is a factory,
+   so every caller still gets its own object. */
+export const MODEL = () => ({
   w: 340, h: 304, cx: 168, cy: 152, R: 100,
   fixed: { O: true },
   handles: [

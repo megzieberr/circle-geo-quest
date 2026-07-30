@@ -468,6 +468,13 @@ export const WORDS = {
   /* predicate forms — "is altyd gelyk", not the attributive "gelyke" */
   equalPred:      { en: "equal",             af: "gelyk" },
   unequalPred:    { en: "unequal",           af: "ongelyk" },
+  /* Investigation Station 3 — bare nouns for "the one chord it fails for is
+     the ___". The `tangent` chip above carries its article ("a tangent"), which
+     reads as "is the a tangent" in a slot like that, so these are separate. */
+  wDiameter:      { en: "diameter",          af: "middellyn" },
+  wRadius:        { en: "radius",            af: "radius" },
+  wTangent:       { en: "tangent",           af: "raaklyn" },
+  wArc:           { en: "arc",               af: "boog" },
 };
 export function word(id) {
   const o = WORDS[id];

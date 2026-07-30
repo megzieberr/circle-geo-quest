@@ -7,9 +7,28 @@ IN PROGRESS 2026-07-30 on branch `claude/investigation-station-circle-geo-dd1g0a
 explaining) rather than more rider practice. Two things make it unlike every
 other round: it PAYS XP (flat 50 per station, 300 for all six), and it accepts
 TYPED answers, marked by a Supabase edge function calling Claude Haiku.
-**Stations 4 "Prove It" and 2 "State the Conjecture" are built and play end to
-end in both languages.** Stations 1, 3, 5, 6 are NOT built yet. Nothing is on
-`main`; the live site is unchanged.
+
+**CHUNK A IS DONE (2026-07-30): all six stations now exist.** Stations 1
+"Measure & Notice", 3 "Break It", 5 "Turn It Around" and 6 "Explain It" were
+built this session and join the two that were already there. The play order is
+rounds 44-49 (`inv1`…`inv6`), all in group `g6`. Nine typed panels in total —
+`s1p4 s2p4 s2p5 s3p4 s4p4 s4p5 s5p4 s6p3 s6p4` — and all nine memo rows are
+LIVE (the five new ones applied via MCP `execute_sql` and verified; the app's
+panelIds and the table's panel_ids match exactly, no orphans either way).
+`verify.html` is green on the widened check: **406 diagrams, 749 angles, 0
+mismatches** (up from 393/728 — the 13 new still diagrams and 21 new angles).
+Walked all four new stations offline (`?local=1`) in both languages: every panel
+mounts and advances, the new word chips render (EN *diameter/radius/tangent/arc*,
+AF *middellyn/radius/raaklyn/boog*), and the never-stuck ladder degrades exactly
+as designed when the checker is unreachable — hint at 3 misses, `memoDisplay` at
+5, Continue appears, no error ever shown. **NOT YET COMMITTED**, and nothing is
+on `main`; the live site is unchanged. Chunk B (the train) has NOT been started.
+
+⚠️ **The five new panels have not been MARKED end to end.** Exercising the
+checker needs a real learner name + password, which this session did not have,
+so `s1p4 s3p4 s5p4 s6p3 s6p4` have been reasoned against the three checker
+decisions below but never actually put through Haiku. That is the one thing left
+to test on them — see "Pending on Megan".
 
 **The `check-answer` edge function is DEPLOYED and WORKING (2026-07-30).** It
 did not need the dashboard: the Supabase MCP connection can deploy edge
@@ -89,6 +108,66 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-30 (CHUNK A — where the four new stations DEPART from the plan's §4, and
+  why. All four are one-figure-per-station calls, which is the rule Chunk A was
+  handed; where the plan's content needed a second unrelated figure, the content
+  moved rather than the rule.)
+  1. **Station 1 panel 4 asks about the CENTRE-DOUBLE table, not a semicircle one.**
+     The plan's wording was *"your table reads 89°, 91°, 90°, 90° — have you proved
+     the angle is always 90°?"*, which is a semicircle question sitting at the end
+     of a centre-double station. Rewritten to stay on the station's own figure:
+     three rows exactly double, one row 2° out (a protractor reading), one row 42°
+     out (impossible). The teaching point is unchanged and the 2° row now does
+     double duty — it is the counterexample question in panel 3 AND the "even the
+     measured cases were only read to the nearest degree" half of panel 4.
+  2. **Station 5's two converse-verdict panels both live in the cyclic-quad family**,
+     so the station keeps one figure. The FALSE converse is the exterior-angle one
+     with the word "opposite" dropped — counterexample: any slanted parallelogram,
+     where the exterior angle at B equals the interior angle at A (co-interior) and
+     the figure is not cyclic. The TRUE-BUT-USELESS one is "if the four vertices lie
+     on one circle, the quadrilateral is cyclic" — true, and the definition read
+     backwards, so it tests nothing. Panel 5 then gives ∠A = 95° and ∠C = 85° so
+     exactly ONE of the four converse reasons fits what the learner was GIVEN;
+     asking "which converse proves a quad is cyclic" with no givens has two right
+     answers (opp ∠s and ext ∠), which is why the plan's phrasing was tightened.
+  3. **Station 6 panel 1 carries no diagram, and its four write-ups are about the
+     CENTRE-DOUBLE theorem, not the semicircle.** Judging four explanations of the
+     semicircle theorem two panels before `s6p3` asks the learner to write that same
+     explanation would hand over the answer. `s6p4` carries no diagram either — it
+     asks for a write-up, not a reading of a figure.
+  4. `discover-centre-circ.js` now EXPORTS its `MODEL()` so Station 1 reuses the
+     exact centre-double interactive instead of rebuilding it — same reasoning as
+     `discover-same-segment.js` and Station 2. Four bare-noun word chips were added
+     to `WORDS` (`wDiameter`/`wRadius`/`wTangent`/`wArc`) because the existing
+     `tangent` chip carries its article ("a tangent"), which reads as "is the a
+     tangent" in a mid-sentence slot.
+- 2026-07-30 (the mark schemes for the five new panels — read with the three checker
+  decisions below, which they were written against):
+  · **`s6p3` accepts EITHER of two complete routes** to why the angle in a
+    semicircle is 90°: the centre-double route (diameter → 180° at the centre →
+    half) or the isosceles-radii route (OA = OC = OB → base angles x and y →
+    2x + 2y = 180). Both are correct proofs. Requiring the first would mark down a
+    learner who gives the second, which is precisely the failure the memo-vs-mark-
+    scheme decision exists to prevent. The scheme says in those words: never ask
+    for the other route as well.
+  · **`s1p4` and `s3p4` each accept ONE reason, not a set.** `s1p4` takes any of
+    (a) only the measured cases were checked, (b) measurement is not exact, (c) a
+    proof is needed — all three are sound answers to "have you proved it?", so
+    demanding the (a) argument specifically would punish a learner who gave (b).
+    `s3p4` requires the "every case / one failure breaks it" logic and explicitly
+    does NOT require the second half of the question (why a thousand examples still
+    fail), because the panel's question can be fully answered without it.
+  · **`s6p4` is deliberately LOOSER about the conjecture's wording than `s2p4`.**
+    It asks for the three moves of a closing paragraph (state it · say it was
+    tested · say a proof is still needed), so its first line takes "equal angles on
+    the same chord or arc" and does not require the location condition. Precision
+    of the conjecture is what `s2p4` marks; re-marking it here would mean five
+    requirements on a paragraph the panel asked three things of.
+  · Sections 6-9 of `phase16.sql` use **dollar-quoted `$m$…$m$` literals** with real
+    newlines instead of `'…'` with `chr(10)`. The accept-lists carry a lot of
+    Afrikaans and every `'n` would otherwise need hand-doubling — one missed pair
+    silently changes a memo's meaning, and a memo cannot be eyeball-checked once it
+    is inside a prompt.
 - 2026-07-30 (MEGAN'S DESIGN RULING — the Investigation Station becomes a BRANCH LINE,
   not the next rung of the main ladder). Her four calls, all made after seeing Station 2:
   1. **The train gets a full-width tappable strip** on the home screen, directly above
@@ -381,6 +460,13 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
+- 👀 **[next session]**: Chunk A is built but UNCOMMITTED, and commit `1312c97`
+  (Station 2 + the checker deploy) is still unpushed. One `/ship` clears both.
+- 🔑 **[next session, 5 min]**: the five new typed panels have never been marked by
+  the real checker — that needs a learner login, which the build session did not
+  have. Either play them yourself (Stations 1, 3, 5, 6 → the typed panel in each)
+  or hand over a test login and Claude will run the 10-correct / 10-wrong probe the
+  way Station 2 and 4 were tested.
 - 💻 2 min **[whenever]**: worth a word with whoever owns the school's AI-use / POPIA
   policy before Monday — learner-authored text leaves the school's systems. Only the
   answer text is sent: no names, no IDs.
@@ -406,13 +492,10 @@ playing on those builds for days, so real use did the eyeballing.)
 **Megan is doing this over SEVERAL SESSIONS (her call, 2026-07-30) — no rush, and no
 need to finish a chunk in one sitting.** Two chunks remain, in this order:
 
-- **CHUNK A — Stations 1, 3, 5, 6.** Spec in docs/investigation-station-plan.md §4.
-  Follow `js/rounds/invest02-conjecture.js` exactly: one figure per station, angles
-  verified to scale, every string bilingual, `panelId`s matching new memo rows.
-  Five new typed panels in total: `s1p4`, `s3p4`, `s5p4`, `s6p3`, `s6p4`.
-  Registry: import + append to `ORDER` and add to `GROUP` in js/rounds/index.js.
-  `ORDER` renumbers automatically, so no migration — only memo rows, and those go
-  straight to live via MCP (no dashboard step).
+- **CHUNK A — Stations 1, 3, 5, 6. ✅ DONE 2026-07-30.** All six stations exist,
+  memo rows are live, verify is green, both languages walked offline. Uncommitted.
+  The only loose end is marking the five new typed panels against the real checker
+  (see "Pending on Megan").
 - **CHUNK B — the train.** Home strip + the six-stop map screen + the four design
   rulings above (rank ladder, badge counter, train-only entry). Do NOT start this
   until all six stations exist; that was the whole point of ruling 2.

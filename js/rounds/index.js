@@ -46,8 +46,12 @@ import { round as r18 } from "./round18-riders-twochord.js";
 import { round as r19 } from "./round19-riders-diameter.js";
 import { round as r20 } from "./round20-riders-mixed1.js";
 import { round as r21 } from "./round21-riders-mixed2.js";
+import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
+import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
 import { round as inv4 } from "./invest04-prove-it.js";          // g6 · Investigation Station
+import { round as inv5 } from "./invest05-turn-around.js";       // g6 · Investigation Station
+import { round as inv6 } from "./invest06-explain-it.js";        // g6 · Investigation Station
 import { round as dailyExtra } from "./daily-extra.js";          // bonus daily bank (not in play order)
 import { round as dailyRiders } from "./daily-riders.js";       // harder exam-style Daily bank (typed answers)
 
@@ -69,7 +73,7 @@ const ORDER = [
   eProveTan,                                             // g3 · prove a tangent
   r12, r14, r15, r16,                                    // g4 · Circle Detective
   r18, r19, r20, r21,                                    // g5 · Circle Grand Master
-  inv2, inv4,                                            // g6 · Investigation Station 🚂
+  inv1, inv2, inv3, inv4, inv5, inv6,                    // g6 · Investigation Station 🚂
 ];
 
 /* group membership (intro rounds carry no badge) */
@@ -80,7 +84,7 @@ const GROUP = {
   tanintro: "g3", tanchordintro: "g3", dtanchord: "g3", r10: "g3", r10b: "g3", dtanrad: "g3", r9: "g3", dtanpoint: "g3", r11: "g3", eprovetan: "g3",
   r12: "g4", r14: "g4", r15: "g4", r16: "g4",
   r18: "g5", r19: "g5", r20: "g5", r21: "g5",
-  inv2: "g6", inv4: "g6",
+  inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
 };
 
 export const ROUNDS = ORDER.map((r, i) => {
