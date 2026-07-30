@@ -15,7 +15,12 @@ function contacts(A, ctx) {
   return { F: ctx.pol(th + a), C: ctx.pol(th - a), dist };
 }
 
-const MODEL = () => ({
+/* EXPORTED (2026-07-30) so Investigation Station 1 can drag the very same
+   figure instead of rebuilding one — the same reasoning as
+   discover-centre-circ.js and discover-same-segment.js. It is a factory, so
+   each caller still gets its own object and the two rounds cannot share state.
+   Do not change its geometry without re-walking `dtanpoint` too. */
+export const MODEL = () => ({
   w: 344, h: 300, cx: 150, cy: 150, R: 92,
   fixed: { O: true },
   handles: [{ id: "A", kind: "free", init: { x: 264, y: 92 },

@@ -22,28 +22,44 @@ export const CONFIG = {
   ],
   // round pass rule
   passThreshold: 0.8,      // 80% correct (first-try) to pass a round and earn its badge
-  // Investigation Station: FLAT XP for finishing a station — not per panel, and
-  // not scaled by attempts. Six stations x 50 = 300 XP for the whole line, which
-  // converts predictably into Blipwork diamonds and is easy to explain to a
-  // class. Nothing else depends on this number; change it here and that's all.
-  // ⚠️ CHANGING TO PER-PANEL in Chunk D (her call 2026-07-30) — see
-  // docs/chunk-d-practice-panels.md §1, and do it BEFORE the line goes live.
-  investigationXp: 50,
+  // Investigation Station: XP IS PER PANEL — every panel of a station pays this,
+  // whatever the panel type, and NEVER scaled by attempts or by correctness. A
+  // learner who fights through five attempts has investigated MORE, not less;
+  // struggle is the product here. (Her call, 2026-07-30: "they earn XP for each
+  // panel, shame." That reverses the old flat-50-per-station rule and only that
+  // half of it — see js/investigate.js's header for the half that still stands.)
+  //
+  // It is still BANKED ONCE, at the end of the station, as panels.length × this
+  // rate; each panel shows a "+10 XP" tick on the way so it FEELS per-panel.
+  // Her call, asked and answered 2026-07-30: the tick is enough. Genuinely
+  // banking mid-station would need a record of which panels already paid (a
+  // learner who quits always restarts at panel 1 today, so replaying panels 1-5
+  // would pay for them twice), plus resume screens — a build of its own.
+  //
+  // ⚠️ THE STATIONS NOW PAY DIFFERENT AMOUNTS, on purpose: 7/5/5/6/6/5 panels =
+  // 70/50/50/60/60/50 XP, 340 for the line (300 under the old flat rule). Never
+  // hard-code any of those numbers in copy — compute them from panels.length, so
+  // a station that gains a panel in Chunk D cannot start promising the old total.
+  investigationXpPerPanel: 10,
   // ---- IS THE INVESTIGATION STATION RELEASED TO LEARNERS? ----
   // false = the line is completely invisible: no train strip on the home screen,
   // and the `stations` / `investigate` routes bounce back home, so a learner who
   // guesses a URL still cannot reach it.
   //
-  // Her call, 2026-07-30: "can we hide it from the learners for a little while
-  // more, until we added the other panels?" The line is finished and tested; she
-  // wants Chunk D's extra practice questions in before the class meets it. This
-  // flag exists so the REST of the app can be pushed safely in the meantime —
-  // Chunk C also improved two live discovery rounds, and those fixes should not
-  // have to wait for the station.
+  // RELEASED 2026-07-30 — her call at the end of the Chunk D session, after she
+  // play-tested the whole line herself: "make it visible for the learners".
   //
-  // Flip to true to release it. `?stations=1` overrides the flag for previewing,
-  // so it can still be walked while hidden.
-  stationsLive: false,
+  // It went live with ONE of Chunk D's four theorems in (two tangents from a
+  // point). Equal chords, tangent-radius and tan-chord are still to come and are
+  // deliberately additive — they add extra practice panels to stations that are
+  // already complete, so nothing a learner meets today is half-built. Adding
+  // them later costs no migration and no re-release; each new panel simply
+  // raises that station's XP, because the total is computed from panels.length.
+  //
+  // Set back to false to hide the line again — no train strip, and the
+  // `stations` / `investigate` routes bounce home, so a guessed URL cannot reach
+  // it. `?stations=1` overrides the flag either way, for previewing.
+  stationsLive: true,
   // struggling-learner support ("Boost mode")
   rescueAfterFails: 2,     // after this many failed attempts, replays get open hints + second chances
   comebackBonus: 40,       // extra XP for finally passing a round on the 3rd+ attempt

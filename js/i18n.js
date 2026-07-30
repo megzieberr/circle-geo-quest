@@ -475,6 +475,14 @@ export const WORDS = {
   wRadius:        { en: "radius",            af: "radius" },
   wTangent:       { en: "tangent",           af: "raaklyn" },
   wArc:           { en: "arc",               af: "boog" },
+  /* Chunk D, two tangents from a point — "drawn from ___ point ___ a circle".
+     The first slot needs a determiner because the noun follows it, so these
+     are not reusable as bare adjectives; sideSame ("the same" / "dieselfde")
+     already fits that slot and is reused rather than duplicated. */
+  ptDifferent:    { en: "a different",       af: "'n ander" },
+  posOutside:     { en: "outside",           af: "buite" },
+  posInside:      { en: "inside",            af: "binne" },
+  posOn:          { en: "on",                af: "op" },
 };
 export function word(id) {
   const o = WORDS[id];

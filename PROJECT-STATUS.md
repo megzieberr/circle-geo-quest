@@ -1,6 +1,78 @@
 # Project status — updated 2026-07-30
 
-## Where we are
+## Where we are (CHUNK D, session 1 — SHIPPED)
+**THE INVESTIGATION STATION IS LIVE.** `CONFIG.stationsLive` is **true** as of
+2026-07-30 — her call after play-testing the whole line herself ("make it visible
+for the learners"). Committed and pushed.
+
+**It went live with ONE of Chunk D's four theorems in**, which is earlier than the
+original plan said. That is deliberate and safe: the six stations were complete
+before Chunk D started, and the remaining three theorems (equal chords,
+tangent-radius, tan-chord) only ADD practice panels to finished stations. Nothing a
+learner meets today is half-built. Setting the flag back to false hides the whole
+line again in one line.
+
+⚠️ **One consequence of releasing early, for whoever adds the next theorem:** a
+station that gains a panel starts paying more XP automatically (the total is
+`panels.length × rate`), but **a learner who already finished that station is not
+paid the difference — a replay pays 0.** That is exactly the back-pay problem §1's
+sequencing existed to avoid, and it is now live. Per theorem, either add the panels
+to stations the class has not reached yet, or accept the gap knowingly.
+
+The whole session, in order: XP per panel · two tangents from a point (three panels,
+then rebuilt as a drag on her call) · the `s1p4` mark-scheme unfairness · the
+concyclic "why" slide · the override link replaced by "I don't get it". Details in
+the Decisions below.
+
+**1 · XP is per panel now.** `CONFIG.investigationXpPerPanel: 10` replaces
+`investigationXp: 50` (the old key is gone rather than repurposed, so nothing can
+read the new number as the old meaning). `finish()` banks `panels.length × rate`
+ONCE, which keeps the single reliable write; a "+10 XP" tick in the station header
+flashes as each panel clears and settles to a running total. **Her sub-decision,
+asked and answered: the tick is enough**, not genuine mid-station banking — there
+is no resume today, so a learner who quits restarts at panel 1, and paying as you
+go would need a record of which panels already paid plus resume screens.
+Landed while `progress`/`xp_events` are still at 0 rows, which was the whole point
+of the sequencing. Verified end to end: Station 1 banks 70 (7 panels), Station 2
+banks 70 (7 panels), a replay pays 0 and shows no tick at all.
+
+Two things the change turned up, both fixed and both pre-existing:
+  · **The station map promised one number for every stop.** It now states the RATE
+    ("every step you finish pays 10 XP") and each stop card computes its own total
+    from its panels — so a station that gains a panel starts advertising the higher
+    number by itself. No station total is hard-coded anywhere.
+  · **The results screen never mentioned station XP, and never had.** `game.js`'s
+    `params.discovery` branch is marked "no score, no XP" — true of discovery
+    rounds, false of an Investigation Station reusing that branch. So the line had
+    always been banking 50 silently. The pill is now gated on `params.xp > 0`.
+
+**2 · Two tangents from a point — four panels.** Station 1 gains a **drag-and-record**
+panel (her call while play-testing: "I want it to be draggable please") plus the
+choice panel that reads the learner's own tangent table back to them; Station 2
+gains the sentence-build and the four-learners judge, appended after panel 5.
+  · **No new interactive was written.** `discover-tangents-point.js` (`dtanpoint`)
+    already had exactly this figure, so its `MODEL()` is now exported and imported —
+    the same trick Station 1 already uses for the centre-double drag and Station 2
+    for the bowtie. The class therefore sees the identical picture they met on the
+    main line, and the two can never drift apart.
+  · **The letters match across both stations.** Station 2's still figure was
+    relabelled from P/T/S to **A/F/C** to agree with the drag. The stations are
+    played days apart, and meeting AF/AC at Stop 1 then PT/PS at Stop 2 reads as a
+    different theorem.
+  · Defect caught on the way: the readings table defaults a column's unit to `"°"`,
+    so the tangent LENGTHS rendered as "149°". Both tangent columns now carry
+    `unit: ""`. Worth remembering for any future non-angle table.
+  · Station 1's own recorded table proved the dedupe is right, not broken: dragging
+    P along its arc records ONE row, because ∠APB does not change along that arc.
+    Different readings need A or B moved. The counter's "different positions"
+    wording is what explains that to a learner.
+
+**3 · THE STALE-MODULE MYSTERY IS SOLVED, and it was not what the notes said.**
+See the Decisions entry below. Short version: the Preview MCP never reads the
+project's `.claude/launch.json` from these sessions, so Chunk C's fix had never
+once been in effect. Fixed in `C:\Users\megzi\.claude\.claude\launch.json`.
+
+## Where we are (Chunk C, for the trail)
 **CHUNK C IS BUILT AND COMMITTED — all 21 playthrough findings are closed.** The
 line now teaches before it asks, the app records the learner's own readings, the
 options no longer give themselves away, and the two mark schemes that were unfair
@@ -224,6 +296,133 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-30 (**"I THINK MY ANSWER WAS RIGHT" IS GONE. "I DON'T GET IT" REPLACES IT** —
+  her call, same session, once the entry below showed what the old link really did.)
+  · Her reasoning, and it is right: the old link let a learner mark their own work,
+    and it was never load-bearing anyway. The never-stuck ladder already guarantees
+    nobody is blocked (3 wrong → hint, 5 wrong → answer + Continue), so all the link
+    added was a self-mark any class would find in a day.
+  · **The new link asks for help instead of claiming correctness**, and it is available
+    IMMEDIATELY, before any attempt — a learner who does not understand the question
+    cannot produce three meaningful wrong answers first, and making them fail three
+    times to earn a hint punishes being lost. Each tap walks the same ladder:
+    **tap 1 → hint rung 1 · tap 2 → hint rung 2 · tap 3 → a good answer + Continue**
+    (her call on the third rung: yes, it should let them through). The label changes
+    as it goes, so the learner can see there is more behind it. **Typed panels only**
+    — also her call. Nothing here touches `stats.firstTry`: asking is not answering.
+  · **Two server changes were needed, and the second one is the subtle one:**
+    1. `check-answer` **v4** gained a `stuck` branch that logs to `checker_calls` with
+       verdict `stuck`, makes no API call, and sits ABOVE the cost cap. The old
+       `override` branch is kept so a stale cached client still works rather than
+       erroring at a learner mid-panel.
+    2. ⚠️ `cgg_checker_claim` counted **every** row in `checker_calls` inside the
+       window — so the new stuck rows would have eaten the 20-per-hour MARKING budget.
+       Exactly backwards: the learner asking for help is the one who still needs their
+       answers marked. The counter now ignores `verdict = 'stuck'` (a NULL verdict is
+       still counted — that is a claim in flight). Applied as migration
+       `checker_cap_ignores_stuck_rows` and mirrored into `supabase/phase16.sql`.
+       **Rule: anything new written to `checker_calls` must be checked against the cap
+       query, because that table is both the log and the meter.**
+  · Verified live end to end: the three rungs render in order, the button disappears
+    after the reveal, four `stuck` rows logged with the panel id and whatever had been
+    typed (often nothing, which is itself the signal), and `cgg_checker_claim` reports
+    8 marking calls used while ignoring all four.
+- 2026-07-30 (**THE OVERRIDE LINK WAS MARKING WRONG ANSWERS RIGHT — she found it play-testing.**)
+  · "I think my answer was right" called the same `onRight()` as a genuine pass, so it
+    printed **"✓ You've got it!"** over an answer nobody had judged. Her own session is
+    the proof, in `checker_calls`: `s3p4` came back **`partly`** at 17:59:51 (correctly —
+    her sentence said a conjecture claims something about "every tested value" rather
+    than about ALL values), and the override at 18:00:26 turned that into a green tick.
+  · Two harms, and **the second one she had not spotted**: the message teaches a learner
+    that a wrong answer was right and turns the hatch into a one-tap "tell me I am
+    correct" button that a class finds within a day — AND `onRight()` set
+    `stats.firstTry = (wrong === 0)`, so an override tapped straight away was recorded
+    as a **first-try success**, quietly inflating the very numbers the admin trajectory
+    panel exists to read. A learner coasting on the hatch would have looked like a
+    learner who never needed help.
+  · Fix: `onRight({ overridden })`. The hatch still ALWAYS advances — the never-stuck
+    ladder is the whole design and is untouched — but it now shows a neutral, honest
+    line ("Noted — your teacher will read this one herself. Carry on for now.") in the
+    `revealed` style rather than the green pass style, and it forces `firstTry = false`.
+    The answer is still logged with verdict `override` for her review; verified in the
+    table after the change.
+  · Rule worth keeping: **an escape hatch must never speak in the voice of a mark.**
+    Advancing a learner and telling them they were right are different promises.
+- 2026-07-30 (**`s1p4` WAS MARKING A CORRECT ANSWER DOWN — found by play-testing, fixed
+  and re-probed. The lesson generalises to every accept-any-one scheme on the line.**)
+  · Symptom: "Even the positions I did measure were rounded off to whole degrees…"
+    came back **`partly`**, asking for "all the positions you didn't measure". But the
+    panel promises the opposite in THREE places — the `needs` list says "one good
+    reason is enough", hint rung 2 says "(Another sound reason on its own: the readings
+    were rounded…)", and `memoDisplay` says "A second reason on its own is also enough".
+    A learner who got stuck, read the hint, and did exactly what it said was marked down.
+  · **The `must_have` text was already right** — it said "ACCEPT ANY ONE … treat them as
+    fully equivalent … do not ask for a second one". The failure was in its SHAPE: the
+    three routes were written as an **(a)/(b)/(c) list**, and the system prompt tells the
+    model to "check the must-have list one line at a time" and award got_it only "if
+    every line is present". A lettered list inside a conjunctive frame reads as a
+    checklist, so the model demanded all three and reported the unused two as `missing`.
+  · **Fix:** rewritten as `EITHER … OR … OR …` with the satisfaction rule FIRST ("ANY
+    SINGLE REASON BELOW SATISFIES THIS MARK SCHEME IN FULL"), plus an explicit
+    instruction not to put the unchosen alternatives into the `missing` field. No
+    redeploy — one UPDATE on `panel_memos`, mirrored into `supabase/phase16.sql`, and
+    verified the live row and the file are byte-identical.
+  · **Re-probed: 7/7 on the existing s1p4 set, plus both English rounding sentences now
+    `got_it`** (they were the regression). Both are now permanent probes in
+    `tools/probe-checker.mjs` — the Afrikaans rounding probe had been passing all along,
+    which is exactly why this survived: one wording passing is not the same as the ROUTE
+    passing, so an accept-any-one scheme needs a probe per route PER LANGUAGE.
+  · ⚠️ **Generalise this before the next memo is written:** never express alternatives as
+    a lettered list. `s3p4` and `s6p3` are the other accept-either schemes on the line
+    and are worth re-reading against this — `s6p3` accepts either of two proof routes,
+    which is the same shape that just failed here.
+- 2026-07-30 (**THE PREVIEW PANE'S STALE MODULES — root cause found, and the note in
+  the Chunk C entry below is WRONG about the fix.** Kept both so the trail reads.)
+  · Chunk C concluded the pane served stale ES modules because `.claude/launch.json`
+    ran `python -m http.server` instead of `serve.py`, and edited that file. The
+    edit was correct and **had no effect, because that file is never read.** These
+    sessions start with the working directory `C:\Users\megzi\.claude`, so the
+    Preview MCP resolves its config to **`C:\Users\megzi\.claude\.claude\launch.json`**
+    — a global file listing every one of her projects — and ITS `circle-quest` entry
+    was still `python -m http.server`. Plain `SimpleHTTPRequestHandler` honours
+    `If-Modified-Since` and answers **304**, so every edited module went on loading
+    from the browser cache. This cost most of a session in Chunk C and cost time
+    again today before it was chased down.
+  · Caught by the symptom the brief predicts: a word chip rendered as its raw id
+    (`ptDifferent`) although the chip existed on disk and `check-bilingual` passed.
+    Bare URL 38161 chars, `?bust=` 38704 — the file on disk was fine all along.
+  · **The fix is in the GLOBAL file**, and it is `cmd /c cd /d <project> && python
+    serve.py 5180`, matching the shape the `nwu-hub` entry already used. Two traps
+    on the way: `serve.py` serves its own CWD and takes no `--directory`, so
+    launching it by absolute path from `~/.claude` served a directory listing of
+    `~/.claude`; and quoting the path inside the `cmd /c` string makes the MCP fail
+    to start it (`nwu-hub` leaves the spaces unquoted, which works).
+  · Verified after the change: responses carry
+    `Cache-Control: no-store, no-cache, must-revalidate, max-age=0`, and the BARE
+    url serves the edited file. **Also worth keeping: `fetch()` answers from the
+    HTTP cache**, so when checking response headers use `fetch(url, {cache:'reload'})`
+    — a plain `fetch` reported "no cache-control header" from a cached response and
+    briefly pointed the diagnosis the wrong way.
+  · ⚠️ `.claude/` is gitignored at BOTH levels, so none of this travels to a fresh
+    clone, and the project's own `.claude/launch.json` is now decorative. Left in
+    place (correct, and read if a session ever runs with the project as cwd).
+- 2026-07-30 (**CHUNK D session 1 — the two build calls that were mine, not hers.**)
+  1. **The new panels are STILL FIGURES, not a new draggable.** §2 of the brief
+     suggested two-tangents "suits a drag-and-record panel". It does — but the N8
+     ruling (do not build a new interactive without asking) is the governing
+     precedent, a new `MODEL()` is a real build rather than a panel, and the preview
+     pane cannot test dragging at all (`innerWidth` is 0). Station 1 already teaches
+     drag-and-record on the centre-double figure; what it had never practised is
+     reading a table you did NOT take yourself and saying what it does and does not
+     support, which is most of what a marker asks for. **Open for her: say the word
+     and the draggable version gets built.**
+  2. **Station 2's new panels go AFTER panel 5, not before it.** §5's rule is that
+     new panels precede a station's closing `note` — Stations 1, 3 and 6 end on one.
+     Station 2 does not: it ends on a typed panel whose note is the payoff of a
+     single five-panel argument about one conjecture, which cannot be interrupted
+     halfway. Appending also turned out to be the better teaching, because that
+     note's last line is about a condition that "was never decoration" — and the
+     condition this theorem drops is the SAME external point.
 - 2026-07-30 (**CHUNK D's shape, and the XP RULING — her call at the end of the Chunk C
   session.** Full brief in `docs/chunk-d-practice-panels.md`.)
   · **More panels inside the six existing stations, not new stations.** 2-3 extra
@@ -718,15 +917,12 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- 🌐 1 min **[do this first]**: say the word and the `ZZ Toets` learner gets deleted.
-  She chose on 2026-07-30 to keep it for the day so the marking probes could run —
-  they have, 13/13 — so its reason to exist has expired, but it is STILL A REAL ROW on
-  the live database and the class can see it on the login list. Claude has both
-  statements ready; re-creating it later is one INSERT.
-- 👀 5 min **[whenever]**: read Chunk C in the app and say whether it lands. The three
-  things most worth her eye: Station 1's recorded readings table (does the gate at
-  three positions feel right, or should it be two?), the conjecture-as-a-hunch slide,
-  and the padded distractors on `inv6` p1 — those are deliberately long-and-wrong.
+- 👀 2 min **[first lesson back]**: the line is LIVE, so watch what the class does with
+  **"I don't get it"** on the typed panels. It is brand new and replaced a link that
+  let them mark their own work. Every tap is logged — one row per tap in
+  `checker_calls` with verdict `stuck`, the panel id, and whatever they had typed.
+  If a panel collects a lot of first-tap stucks with an EMPTY answer, that panel is
+  not asking clearly enough, which is exactly what happened to her on `s3p4`.
 - 💻 2 min **[whenever]**: ask whoever owns the school's AI-use / POPIA policy whether
   typed answers may leave the school's systems (only the answer text is sent).
 - 👀 1 min **[whenever]**: Station 4 kept the title "Prove It" on her call (body copy
@@ -776,10 +972,20 @@ follow and a tick-off checklist, is **`docs/chunk-d-practice-panels.md`**.
 `docs/NEXT-SESSION-PROMPT.md` is the paste-ready prompt.
 
 In order:
-  1. **XP per panel — before anything else, and before the push.** See the Decisions
-     entry below for why the sequencing matters.
-  2. **One theorem per session**, starting with two-tangents-from-a-point.
+  1. ~~XP per panel~~ **DONE 2026-07-30**, and the sequencing held: it landed while
+     `progress` and `xp_events` are still at 0 rows, so nobody is stuck on an old
+     amount.
+  2. **One theorem per session.** ~~Two tangents from a point~~ **DONE 2026-07-30**
+     (3 panels, all taps). Next, in the brief's order: **equal chords** → Station 3
+     (two circles of different size as the counterexample) and Station 1 or 2. Then
+     tangent-radius, then tan-chord last.
   3. **She reads it**, flip `CONFIG.stationsLive` to true, then **`/ship`**.
+
+**Worth deciding before the next session:** the two-tangents panels are still
+figures. If she wants Station 1's version to be a real drag-and-record — which is
+what §2 of the brief originally pictured — that is a new `MODEL()` in
+`interactive.js` and a session's work on its own, and it cannot be verified in the
+preview pane (no dragging there), so it would need her eyes on a real browser.
 
 **THE LINE IS HIDDEN FROM LEARNERS (`CONFIG.stationsLive: false`, her call
 2026-07-30).** No train strip, and the `stations` / `investigate` routes bounce home,

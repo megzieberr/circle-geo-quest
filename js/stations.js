@@ -38,8 +38,12 @@ const UI = {
                af: "Dink soos 'n wiskundige — ses haltes met die taklyn af." },
   blurb:     { en: "Six stops that drill the investigation itself: notice a pattern, say it precisely, try to break it, prove it, turn it around, and explain it to someone else.",
                af: "Ses haltes wat die ondersoek self inoefen: merk 'n patroon op, stel dit presies, probeer dit breek, bewys dit, draai dit om, en verduidelik dit vir iemand anders." },
-  xpNote:    { en: "Every station pays {xp} XP for finishing it — however many tries it takes.",
-               af: "Elke stasie betaal {xp} XP as jy dit klaarmaak — maak nie saak hoeveel probeerslae nie." },
+  // Says the RATE, never a station total — the totals differ per station and
+  // change again every time Chunk D adds a panel. Each stop card carries its own
+  // total, computed from its panels, so the two can never disagree.
+  xpNote:    { en: "Every step you finish pays {xp} XP — however many tries it takes.",
+               af: "Elke stap wat jy klaarmaak betaal {xp} XP — maak nie saak hoeveel probeerslae nie." },
+  stopXp:    { en: "{xp} XP",                af: "{xp} XP" },
   stop:      { en: "Stop",                   af: "Halte" },
   visit:     { en: "Visit",                  af: "Besoek" },
   revisit:   { en: "Visit again",            af: "Besoek weer" },
@@ -152,7 +156,7 @@ export function renderStations(app, host) {
   const intro = el("div", "card station-intro");
   intro.innerHTML = `
     <p>${tx(UI.blurb)}</p>
-    <p class="muted small">★ ${tx(UI.xpNote).replace("{xp}", CONFIG.investigationXp)}</p>`;
+    <p class="muted small">★ ${tx(UI.xpNote).replace("{xp}", CONFIG.investigationXpPerPanel)}</p>`;
   host.appendChild(intro);
 
   const line = el("ol", "stopline");
@@ -168,6 +172,12 @@ export function renderStations(app, host) {
       <p>${tx(r.round.blurb)}</p>
       <div class="stop-foot"></div>`;
     const foot = card.querySelector(".stop-foot");
+    // What THIS stop pays, computed from its own panels — a station that gains a
+    // practice panel starts advertising the higher number by itself.
+    const stopXp = (r.round.panels || []).length * CONFIG.investigationXpPerPanel;
+    if (r.unlocked && stopXp) {
+      foot.appendChild(el("span", "stop-xp", "★ " + tx(UI.stopXp).replace("{xp}", stopXp)));
+    }
     if (r.unlocked) {
       if (r.passed) foot.appendChild(el("span", "stop-done", "✓ " + tx(UI.cleared)));
       const go = el("button", "btn primary small", (r.passed ? tx(UI.revisit) : "▶ " + tx(UI.visit)));

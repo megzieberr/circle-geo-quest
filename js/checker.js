@@ -35,7 +35,7 @@ function functionUrl(name) {
  * @returns {Promise<{verdict: string, missing: string[], nudge: string, misconception: string} | null>}
  *   null means "checker unavailable" — use the static hints.
  */
-export async function checkAnswer({ panelId, answer, lang, override = false }) {
+export async function checkAnswer({ panelId, answer, lang, override = false, stuck = false }) {
   const url = functionUrl("check-answer");
   if (!url) return null;                       // playing locally, no backend
 
@@ -61,6 +61,7 @@ export async function checkAnswer({ panelId, answer, lang, override = false }) {
         answer: String(answer ?? "").slice(0, 600),
         lang: lang === "af" ? "af" : "en",
         override,
+        stuck,
       }),
       signal: ctrl.signal,
     });
@@ -88,4 +89,15 @@ export async function checkAnswer({ panelId, answer, lang, override = false }) {
  *  and always advances, even if the network call fails. */
 export async function acceptOverride({ panelId, answer, lang }) {
   await checkAnswer({ panelId, answer, lang, override: true });
+}
+
+/* The learner tapped "I don't get it". Fire-and-forget: the hint is shown by
+   the caller straight away and must never wait on the network, so a failure
+   here costs nothing but the flag. Consumes no marking call — see the `stuck`
+   branch in supabase/functions/check-answer/index.ts for why it sits above the
+   cost cap. */
+export function reportStuck({ panelId, answer, lang, step }) {
+  try {
+    checkAnswer({ panelId, answer: `[stuck:${step}] ${answer || ""}`.slice(0, 600), lang, stuck: true });
+  } catch { /* never blocks a learner asking for help */ }
 }

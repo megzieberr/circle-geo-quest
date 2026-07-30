@@ -166,6 +166,13 @@ h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",sans-serif; line-he
 .play-top .quit{font-size:1.1rem;}
 .play-title{font-weight:800; font-size:.95rem; text-align:center;}
 .play-count{font-size:.8rem; color:var(--ink-soft); white-space:nowrap;}
+/* Investigation Station only: the panel counter stacks over the running XP
+   tick, so the header keeps its three-column grid and gains no fourth cell.
+   .bump is the 1.1s "+10 XP" flash before it settles to the total. */
+.investigate .play-count{display:flex; flex-direction:column; align-items:flex-end; gap:1px; line-height:1.15;}
+.pc-xp{font-size:.72rem; font-weight:800; color:var(--ink-soft);}
+.pc-xp.bump{color:#0a8a5f; font-size:.86rem;}
+@media (prefers-reduced-motion:no-preference){ .pc-xp{transition:font-size .18s ease, color .18s ease;} }
 .pbar{height:10px; background:rgba(37,42,74,.10); border:2px solid var(--ink); border-radius:99px; overflow:hidden;}
 .pbar i{display:block; height:100%; width:0; background:var(--accent); border-radius:99px; transition:width .25s ease;}
 
@@ -463,10 +470,12 @@ svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display
   box-shadow:var(--shadow-sm);}
 .dp-starter:hover{background:#fff3d6;}
 
-/* deliberately quiet — an honest escape hatch, not a tempting shortcut */
-.dp-override{display:block; margin:10px 0 2px; font-size:.82rem; color:var(--ink-soft);
+/* "I don't get it". Quiet, but NOT hidden — a learner who is lost should be
+   able to find it without hunting, since the whole point is that asking beats
+   guessing three times. (It replaced .dp-override, which was a self-mark.) */
+.dp-stuck{display:block; margin:10px 0 2px; font-size:.82rem; color:var(--ink-soft);
   text-decoration:underline; background:none; border:none; cursor:pointer; padding:0;}
-.dp-override:hover{color:var(--ink);}
+.dp-stuck:hover{color:var(--ink);}
 
 .dp-memo{margin:12px 0 4px; padding:12px 15px; border:2px solid #e0a500;
   border-radius:13px; background:#fff8e6; box-shadow:var(--shadow-sm);}
@@ -932,6 +941,7 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .stop-foot{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px;}
 .stop-foot .btn{margin-left:auto;}
 .stop-done{font-size:.78rem; font-weight:700; color:var(--accent);}
+.stop-xp{font-size:.78rem; font-weight:700; color:var(--ink-soft);}
 
 /* the station badge, once the whole line is done — it lives here rather than on
    the home rank ladder, which stays the five-badge climb to Grand Master */

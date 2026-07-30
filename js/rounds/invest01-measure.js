@@ -58,6 +58,7 @@
    misses, which is a different thing and safe to ship. */
 
 import { MODEL } from "./discover-centre-circ.js";
+import { MODEL as TANGENT_MODEL } from "./discover-tangents-point.js";
 
 const AC = "#e64980";
 
@@ -71,6 +72,53 @@ const FIG = {
     { at: "O", legs: ["A", "B"], t: "112°", o: { v: 112, r: 40 } },
     { at: "P", legs: ["A", "B"], t: "56°", o: { v: 56, r: 40 } },
   ],
+};
+
+/* ---- CHUNK D · two tangents from a point ---------------------------------
+   The station's second theorem, and a still figure rather than a drag: N8's
+   ruling (no new interactive without asking) applies here too, and Station 1
+   already teaches drag-and-record on the centre-double figure. What this panel
+   adds is the OTHER half of measuring — reading somebody else's table, which
+   panel 4 already established as an honest move ("somebody else measured…").
+
+   TO SCALE, and the readings are computed rather than invented. PT and PS are
+   the tangent lengths from an external point P, and the engine places P at the
+   intersection of the two tangents, so PT = PS = R·tan(θ/2) exactly, where θ is
+   ∠TOS. Drawn: T at 50°, S at 310°, so θ = 100° and PT = PS = 70·tan50° = 83.4px.
+   The table below reads the SAME circle at 4 cm radius (17.5 px/cm), so:
+        θ = 60°  → 4·tan30° = 2.31 cm
+        θ = 100° → 4·tan50° = 4.77 cm   ← the position drawn here
+        θ = 130° → 4·tan65° = 8.58 cm
+   Row 2 is entered as 4.8 / 4.7 on purpose. A millimetre apart is what a ruler
+   costs you, and this station has already taught that a reading that is a whisker
+   out is a reading, while a reading that is wildly out is a different claim.
+   Megan's call, 2026-07-30, after play-testing: this panel DRAGS. It was a
+   still figure over somebody else's readings; it is now the same drag-and-record
+   shape the station opens with, on `dtanpoint`'s model — the identical figure
+   the class already met in the discovery round, imported rather than rebuilt.
+   The still figure moved to Station 2, which states the conjecture rather than
+   measuring it, and still wants a picture to point at. */
+
+/* ---- the tangent readings ------------------------------------------------
+   Its own column pair, because this table measures LENGTHS and the centre-double
+   one measures angles. The numbers are the model's own raw measures — the same
+   bare numbers `dtanpoint` puts on screen, so a learner who met them there sees
+   the same scale here. Both tangents are computed from one length, so a row can
+   never disagree with itself: there is no rounding wobble to teach on this
+   figure, and none is invented.
+
+   ⚠️ `unit: ""` is REQUIRED here. The readings table defaults a column's unit to
+   "°" (it was built for the angle table), so without this the lengths render as
+   "149°" — a degree sign on a length, which is exactly the kind of thing a maths
+   class notices before anything else. */
+const TAN_READ_COLS = [
+  { label: { en: "AF (orange)", af: "AF (oranje)" }, from: m => m.af, unit: "" },
+  { label: { en: "AC (blue)", af: "AC (blou)" },     from: m => m.ac, unit: "" },
+];
+const TAN_SHOW = {
+  key: "tangentReadings",
+  cols: TAN_READ_COLS,
+  caption: { en: "Your tangent readings", af: "Jou raaklyn-lesings" },
 };
 
 /* ---- the recorded readings ----------------------------------------------
@@ -286,9 +334,17 @@ export const round = {
         { en: "There is no end to them, so you can never measure them all — and the sentence you wrote says ALWAYS, which is a claim about every single one of them. The answer is no.",
           af: "Daar is geen einde aan hulle nie, so jy kan hulle nooit almal meet nie — en die sin wat jy geskryf het, sê ALTYD, wat 'n bewering oor elke enkele een van hulle is. Die antwoord is nee." },
       ],
+      /* The middle paragraph is scaffolding for the typed panel that follows
+         (her call, 2026-07-30: "add one more paragraph about how this is a
+         conjecture… just to scaffold the next slide"). It deliberately names the
+         STATUS of what they have and stops there. It does NOT say why the table
+         falls short — that is precisely what panel 6 asks them to write, and a
+         note that answers the next question has not scaffolded it, it has done
+         it. It also re-uses `conjecture` as a CALLBACK to panel 1 rather than
+         defining it again; the rule is one definition, at first use. */
       note: {
-        en: "No — and that is not a trick question, and it is not a criticism of your measuring. Everything in your table is true. It just does not reach far enough. The next panel asks you to say WHY in your own words, which is the part a marker actually reads.",
-        af: "Nee — en dit is nie 'n strikvraag nie, en dit is nie kritiek op jou meting nie. Alles in jou tabel is waar. Dit reik net nie ver genoeg nie. Die volgende paneel vra jou om in jou eie woorde te sê HOEKOM, en dit is die deel wat 'n nasiener werklik lees.",
+        en: "No — and that is not a trick question, and it is not a criticism of your measuring. Everything in your table is true. It just does not reach far enough.<br><br>So what you have now is a <b>conjecture</b> — that word from the very first slide. A hunch you have good reasons for, that nobody has proved yet. Your table is exactly what good reasons look like: you spotted a pattern, you tested it yourself, and it held every time. That is how every theorem in your textbook started out. It stays a conjecture until somebody proves it — and the moment somebody does, it becomes a theorem.<br><br>The next panel asks you to say WHY in your own words, which is the part a marker actually reads.",
+        af: "Nee — en dit is nie 'n strikvraag nie, en dit is nie kritiek op jou meting nie. Alles in jou tabel is waar. Dit reik net nie ver genoeg nie.<br><br>Wat jy nou het, is dus 'n <b>vermoede</b> — daardie woord van die heel eerste skyfie af. 'n Aanvoeling waarvoor jy goeie redes het, wat nog niemand bewys het nie. Jou tabel is presies hoe goeie redes lyk: jy het 'n patroon raakgesien, jy het dit self getoets, en dit het elke keer gehou. So het elke stelling in jou handboek begin. Dit bly 'n vermoede totdat iemand dit bewys — en die oomblik as iemand dit doen, word dit 'n stelling.<br><br>Die volgende paneel vra jou om in jou eie woorde te sê HOEKOM, en dit is die deel wat 'n nasiener werklik lees.",
       },
     },
 
@@ -307,15 +363,32 @@ export const round = {
         en: "Measuring is not a proof because…",
         af: "Meting is nie 'n bewys nie, want…",
       },
+      /* Third line added 2026-07-30 on her call while play-testing with the kind
+         of sentence her class writes. It is SHAPE, not content (N10): it tells a
+         learner that the panel is not hunting for one magic wording, which is the
+         thing that makes them freeze and guess. The mark scheme really does take
+         any ONE of three separate reasons, so saying "there is more than one good
+         answer" is describing the marking honestly, not leaking it. It must stay
+         a count, never a list — naming the three would write the answer. */
       needs: [
         { en: "give ONE reason why measuring has not proved it — one good reason is enough",
           af: "EEN rede gee waarom meting dit nie bewys het nie — een goeie rede is genoeg" },
+        { en: "there is more than one good reason here, so pick the one you believe and say it properly — you are not hunting for one magic sentence",
+          af: "daar is meer as een goeie rede hier, so kies die een wat jy glo en sê dit behoorlik — jy soek nie na een towersin nie" },
+        { en: "say what your measuring could NOT reach, not just what it showed",
+          af: "sê wat jou meting NIE kon bereik nie, nie net wat dit gewys het nie" },
         { en: "you have already answered yes or no, so you do not have to repeat it",
           af: "jy het al ja of nee geantwoord, dus hoef jy dit nie te herhaal nie" },
       ],
+      /* Both original starters open the SAME route ("you only checked a few"),
+         which quietly told a learner that was the only way in. The third opens
+         the accuracy route instead — the scheme takes it on its own — so the
+         chips now match the marking. Left vague on purpose: it says which door,
+         not what is behind it. */
       starters: [
         { en: "Measuring the angles only shows…", af: "Om die hoeke te meet wys net…" },
         { en: "To be sure about every position…", af: "Om seker te wees oor elke posisie…" },
+        { en: "Even the positions I did measure…", af: "Selfs die posisies wat ek wel gemeet het…" },
       ],
       // Rung 1 may ask a question; rung 2 must TELL. A hint only ever appears
       // once a learner is stuck, and a stuck learner handed another question is
@@ -337,7 +410,65 @@ export const round = {
       },
     },
 
-    /* ---------- 7 · the one line to hold on to ---------- */
+    /* ---------- 7 · CHUNK D · a second theorem, measured the same way ----------
+       Her call, 2026-07-30: this DRAGS. It first shipped as a still figure over
+       somebody else's readings; she wanted the learner's own hand on it, which
+       is also the more honest version of a station called "Measure & Notice".
+       Sits BEFORE the closing note, which stays the last word.
+
+       The model is `dtanpoint`'s, imported — the identical figure the class met
+       in the discovery round, so this is a second look at something familiar
+       rather than a new picture to decode. Note it draws the radii and their
+       right angles: that is raw geometry the learner has already seen there, not
+       a conclusion about the two lengths, which is what this panel asks for. */
+    {
+      type: "explore",
+      prompt: { en: "A different theorem, measured the same way", af: "'n Ander stelling, op dieselfde manier gemeet" },
+      instruction: {
+        en: "From the point A outside the circle, two tangents touch it at F and C. Drag A — pull it in close to the circle, push it far away, swing it round the other side. Every time you let go, that position goes into your table. Collect at least three different positions.",
+        af: "Vanaf die punt A buite die sirkel raak twee raaklyne dit by F en C. Sleep A — trek dit naby aan die sirkel, stoot dit ver weg, swaai dit om na die ander kant. Elke keer as jy los, gaan daardie posisie in jou tabel in. Versamel ten minste drie verskillende posisies.",
+      },
+      interactive: TANGENT_MODEL(),
+      record: { ...TAN_SHOW, min: 3, max: 6 },
+    },
+
+    /* ---------- 8 · what did YOUR tangent table say? ----------
+       The options describe the table in words only. They must never quote a
+       number, because the learner generated the rows and the copy cannot know
+       them — the rule that bit twice already (N4, s3p4). The distractor about
+       staying the same length is the real one: both tangents DO grow together as
+       A moves out, so "equal" and "constant" are easy to blur. */
+    {
+      type: "choice",
+      showRecord: TAN_SHOW,
+      prompt: {
+        en: "Look down your tangent table. What do your own readings actually say?",
+        af: "Kyk af met jou raaklyn-tabel. Wat sê jou eie lesings eintlik?",
+      },
+      options: [
+        { text: { en: "AF and AC are equal to each other, at every position of A I tried.",
+                  af: "AF en AC is gelyk aan mekaar, by elke posisie van A wat ek probeer het." }, correct: true },
+        { text: { en: "AF and AC are equal to each other, and they stay the same length wherever A goes.",
+                  af: "AF en AC is gelyk aan mekaar, en hulle bly dieselfde lengte waar A ook al gaan." } },
+        { text: { en: "AF and AC get shorter as A is pushed further away from the circle.",
+                  af: "AF en AC word korter soos A verder van die sirkel af weggestoot word." } },
+        { text: { en: "AF and AC only become equal once A is far enough away from the circle.",
+                  af: "AF en AC word eers gelyk sodra A ver genoeg van die sirkel af is." } },
+      ],
+      hints: [
+        { en: "Read each row across before you read the table down. What are you comparing inside a single row, and what are you comparing between one row and the next?",
+          af: "Lees elke ry oor voordat jy die tabel af lees. Wat vergelyk jy binne 'n enkele ry, en wat vergelyk jy tussen een ry en die volgende?" },
+        { en: "Across a row, your two numbers match. Down the table they do not — the pair gets bigger as you drag A further out, and smaller as you pull it in. So the two tangents match EACH OTHER at any one position; they are not stuck at one fixed size. The answer you pick has to say the first thing without claiming the second.",
+          af: "Oor 'n ry pas jou twee getalle. Af met die tabel pas hulle nie — die paar word groter soos jy A verder uitsleep, en kleiner soos jy dit intrek. Die twee raaklyne pas dus BY MEKAAR by enige een posisie; hulle sit nie op een vaste grootte vas nie. Die antwoord wat jy kies moet die eerste ding sê sonder om die tweede te beweer." },
+      ],
+      reason: "tansCommonPt",
+      note: {
+        en: "Equal to each other is not the same as staying the same size, and that is the confusion this table exists to clear up. Both numbers grew when you dragged A away and shrank when you pulled it in — they simply did it together, keeping pace with each other the whole way.<br><br>And notice what has NOT happened here. You measured a handful of positions and the pattern held at every one — which is precisely as far as measuring ever gets you. A is free to sit anywhere outside that circle, and there is no end to the places it could go.",
+        af: "Gelyk aan mekaar is nie dieselfde as om dieselfde grootte te bly nie, en dit is die verwarring wat hierdie tabel bestaan om op te klaar. Albei getalle het gegroei toe jy A weggesleep het en gekrimp toe jy dit ingetrek het — hulle het dit net saam gedoen, en die hele pad by mekaar gehou.<br><br>En let op wat NIE hier gebeur het nie. Jy het 'n handvol posisies gemeet en die patroon het by elkeen gehou — wat presies is so ver as wat meting jou ooit bring. A kan enige plek buite daardie sirkel sit, en daar is geen einde aan die plekke waarheen dit kan gaan nie.",
+      },
+    },
+
+    /* ---------- 9 · the one line to hold on to ---------- */
     {
       type: "note",
       prompt: { en: "Keep this in mind", af: "Hou dit in gedagte" },

@@ -48,6 +48,23 @@ const BOWTIE = {
   ],
 };
 
+/* CHUNK D — two tangents from a point, as a STILL figure. Station 1 now DRAGS
+   this same configuration (it reuses `dtanpoint`'s model), and this station
+   states the conjecture rather than measuring it, so a picture to point at is
+   all it needs.
+
+   THE LETTERS DELIBERATELY MATCH THE DRAG: external point A, contacts F and C,
+   with F on the upper arc exactly as the model places it. The two stations are
+   played days apart, and meeting AF and AC at Stop 1 and then PT and PS at
+   Stop 2 would read as a different theorem. To scale: the engine puts A at the
+   intersection of the two tangents, so AF = AC by construction. */
+const TAN_FIG = {
+  O: true,
+  w: 340, h: 254, cx: 132, cy: 127, R: 70,
+  pts: { F: 50, C: 310 },
+  ext: [{ name: "A", t: ["F", "C"] }],
+};
+
 /* Q moved to the OTHER arc. Handle ranges are kept apart on purpose —
    A stops at 238 deg, Q runs 250-290, B starts at 302 — so no amount of
    dragging can shuffle the points out of the order A, Q, B along the
@@ -259,6 +276,78 @@ export const round = {
       note: {
         en: "Nothing was added to the picture. The same chord, the same circle, one point moved across the chord — and \"angles in the same segment\" became \"opposite angles of a cyclic quadrilateral\". They are not two facts to memorise separately; they are the same fact seen from either side of AB. That is also why the condition you kept putting in your conjecture — SAME side — was never decoration.",
         af: "Niks is by die prent gevoeg nie. Dieselfde koord, dieselfde sirkel, een punt oor die koord geskuif — en \"hoeke in dieselfde segment\" het \"teenoorstaande hoeke van 'n koordevierhoek\" geword. Dit is nie twee feite om apart te memoriseer nie; dit is dieselfde feit van weerskante van AB af gesien. Dit is ook hoekom die voorwaarde wat jy elke keer in jou vermoede gesit het — DIESELFDE kant — nooit versiering was nie.",
+      },
+    },
+
+    /* ---------- 6 · CHUNK D · the same skill, a second conjecture ----------
+       Placed AFTER panel 5 on purpose. Panels 1-5 are one continuous argument
+       about one conjecture and cannot be interrupted; panel 5's closing line
+       ("the condition you kept putting in — SAME side — was never decoration")
+       is also the cleanest possible way in, because the condition this theorem
+       drops is the SAME external point.
+
+       Same rhythm as panels 2 and 3 — build the sentence, then judge four of
+       them — so the station teaches one method twice rather than two methods
+       once. The figure is Station 1's, so a learner who met these tangents at
+       Stop 1 is looking at exactly the picture they measured. */
+    {
+      type: "blank",
+      prompt: {
+        en: "One more conjecture, and one more condition that is not decoration. AF and AC are tangents drawn from the point A outside the circle. Build the claim — every blank is a condition somebody drops and loses a mark for.",
+        af: "Nog een vermoede, en nog een voorwaarde wat nie versiering is nie. AF en AC is raaklyne wat vanaf die punt A buite die sirkel getrek is. Bou die bewering — elke oop plek is 'n voorwaarde wat iemand laat val en 'n punt voor verloor.",
+      },
+      diagram: TAN_FIG,
+      sentence: [
+        { en: "Two tangents drawn from ", af: "Twee raaklyne wat vanaf " },
+        { kind: "word", answer: "sideSame", options: ["sideSame", "ptDifferent", "sideOpposite"] },
+        { en: " point ", af: " punt " },
+        { kind: "word", answer: "posOutside", options: ["posOutside", "posInside", "posOn"] },
+        { en: " a circle are ", af: " 'n sirkel getrek word, is " },
+        { kind: "word", answer: "equalPred", options: ["equalPred", "unequalPred", "constant"] },
+        { en: " in length.", af: " in lengte." },
+      ],
+      hints: [
+        { en: "Start with the middle blank, and answer it by trying to draw the thing. Could you draw a tangent at all from a point sitting inside the circle? How many could you draw from a point sitting exactly on it?",
+          af: "Begin by die middelste oop plek, en beantwoord dit deur die ding te probeer teken. Sou jy hoegenaamd 'n raaklyn kon teken vanaf 'n punt wat binne die sirkel sit? Hoeveel sou jy kon teken vanaf 'n punt wat presies daarop sit?" },
+        { en: "From inside the circle you cannot draw a tangent at all, and from a point on the circle you can draw exactly one — so the point must be OUTSIDE. The two tangents also have to leave from the SAME outside point: two tangents from two different points have no reason to match. And the last blank is EQUAL — equal to each other, which is not the same as staying one fixed size, because both of them grow as P moves away.",
+          af: "Van binne die sirkel af kan jy glad nie 'n raaklyn teken nie, en vanaf 'n punt op die sirkel kan jy presies een teken — die punt moet dus BUITE wees. Die twee raaklyne moet ook vanaf DIESELFDE buitepunt vertrek: twee raaklyne vanaf twee verskillende punte het geen rede om te pas nie. En die laaste oop plek is GELYK — gelyk aan mekaar, wat nie dieselfde is as om een vaste grootte te bly nie, want albei groei soos P wegbeweeg." },
+      ],
+      reason: "tansCommonPt",
+      note: {
+        en: "Every blank in that sentence is load-bearing, and the middle two are the ones that go missing. Drop \"outside\" and the claim is about points where a tangent cannot even be drawn. Drop \"the same\" and it is plainly false — take a tangent touching the top of the circle and another touching the side, drawn from two unrelated points, and there is no reason on earth for them to be the same length.<br><br>The accepted short reason is <i>tans from same pt</i>, and it is worth noticing that the reason itself carries the condition. The wording a marker accepts is telling you what the theorem actually needs.",
+        af: "Elke oop plek in daardie sin dra gewig, en die middelste twee is dié wat wegraak. Laat \"buite\" val en die bewering gaan oor punte waar 'n raaklyn nie eens geteken kan word nie. Laat \"dieselfde\" val en dit is eenvoudig vals — vat 'n raaklyn wat die bokant van die sirkel raak en 'n ander wat die sykant raak, vanaf twee onverwante punte getrek, en daar is geen rede op aarde waarom hulle dieselfde lengte moet wees nie.<br><br>Die aanvaarde kort rede is <i>raaklyne vanaf dieselfde punt</i>, en dit is die moeite werd om op te let dat die rede self die voorwaarde dra. Die bewoording wat 'n nasiener aanvaar, sê vir jou wat die stelling werklik nodig het.",
+      },
+    },
+
+    /* ---------- 7 · CHUNK D · four learners, one precise sentence ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "Four learners measured those two tangents and wrote down what they found. Only one of them wrote a proper conjecture. Which one?",
+        af: "Vier leerders het daardie twee raaklyne gemeet en neergeskryf wat hulle gevind het. Net een van hulle het 'n behoorlike vermoede geskryf. Watter een?",
+      },
+      diagram: TAN_FIG,
+      options: [
+        { text: { en: "\"Two tangents drawn to a circle from the same point outside it are equal in length.\"",
+                  af: "\"Twee raaklyne wat vanaf dieselfde punt buite 'n sirkel na die sirkel getrek word, is gelyk in lengte.\"" }, correct: true },
+        { text: { en: "\"Every time I moved A further out, AF and AC both got longer, but they stayed equal to each other.\"",
+                  af: "\"Elke keer as ek A verder uitgeskuif het, het AF en AC albei langer geword, maar hulle het gelyk aan mekaar gebly.\"" } },
+        { text: { en: "\"Two tangents drawn to a circle are equal in length.\"",
+                  af: "\"Twee raaklyne wat na 'n sirkel getrek word, is gelyk in lengte.\"" } },
+        { text: { en: "\"AF = AC.\"", af: "\"AF = AC.\"" } },
+      ],
+      hints: [
+        { en: "Three of these are things a learner could honestly write after measuring. Ask the harder question again: which one would still make sense, and still be true, for a circle and a point that nobody has drawn yet?",
+          af: "Drie hiervan is dinge wat 'n leerder eerlik kon neerskryf ná meting. Vra weer die moeiliker vraag: watter een sou steeds sin maak, en steeds waar wees, vir 'n sirkel en 'n punt wat nog niemand geteken het nie?" },
+        { en: "\"AF = AC\" is about the letters in this one picture. \"Every time I moved A…\" reports what happened while measuring — true, but it claims nothing beyond the positions actually tried. And \"Two tangents drawn to a circle are equal\" is not true at all: two tangents drawn from two unrelated points have no reason to match. Only the sentence that says the tangents come from the SAME point OUTSIDE the circle survives somebody trying to prove it wrong.",
+          af: "\"AF = AC\" gaan oor die letters in hierdie een prent. \"Elke keer as ek A geskuif het…\" rapporteer wat tydens meting gebeur het — waar, maar dit beweer niks buite die posisies wat werklik probeer is nie. En \"Twee raaklyne wat na 'n sirkel getrek word, is gelyk\" is glad nie waar nie: twee raaklyne vanaf twee onverwante punte het geen rede om te pas nie. Net die sin wat sê die raaklyne kom vanaf DIESELFDE punt BUITE die sirkel, oorleef iemand wat dit verkeerd probeer bewys." },
+      ],
+      // Every option is named by its WORDS below, never by its position — the
+      // options are shuffled. See js/options-order.js.
+      reason: "tansCommonPt",
+      note: {
+        en: "Notice that the four answers fail in exactly the same four ways as the four in panel 3, on a completely different theorem. \"AF = AC\" answers about one picture. \"Every time I moved A…\" is an observation — it says what was measured and stops there. \"Two tangents drawn to a circle are equal\" has the right shape but has dropped the condition that makes it true, which is the single most expensive mistake on this page.<br><br>That is the whole point of this station. Seeing it is the easy half. The marks are in the sentence, and the sentence is mostly conditions.",
+        af: "Let op dat die vier antwoorde op presies dieselfde vier maniere misluk as die vier in paneel 3, op 'n heeltemal ander stelling. \"AF = AC\" antwoord oor een prent. \"Elke keer as ek A geskuif het…\" is 'n waarneming — dit sê wat gemeet is en hou daar op. \"Twee raaklyne wat na 'n sirkel getrek word, is gelyk\" het die regte vorm maar het die voorwaarde laat val wat dit waar maak, en dit is die duurste enkele fout op hierdie bladsy.<br><br>Dit is die hele punt van hierdie stasie. Om dit te sien is die maklike helfte. Die punte lê in die sin, en die sin bestaan meestal uit voorwaardes.",
       },
     },
 

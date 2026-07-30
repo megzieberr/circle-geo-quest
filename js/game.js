@@ -521,13 +521,22 @@ export function renderResults(app, host, params) {
     ? `<div class="rank-pop">${group.icon} ${t("badgeEarned")}<br><b>${group.name}</b></div>` : "";
 
   if (params.discovery) {
-    // learning round (cutscene / discovery): no score, no XP
+    // Learning round (cutscene / discovery): no score. Cutscenes and discovery
+    // rounds pay no XP either and pass xp: 0, so the pill below stays hidden for
+    // them — but an Investigation Station reuses this branch and DOES pay, per
+    // panel. It was banking 50, and now 10 a panel, while this screen said
+    // nothing about it: the learner's total jumped and the screen that was
+    // supposed to celebrate it stayed quiet. Gated on the number rather than on
+    // the round kind, so whatever pays, shows.
     const isCut = round.kind === "cutscene";
+    const xpPill = params.xp > 0
+      ? `<div class="result-pills"><span class="pill xp">★ +${params.xp} ${t("xpEarned")}</span></div>` : "";
     screen.innerHTML = `
       <div class="result-card card">
         <div class="result-emoji">${isCut ? "🎬" : "🔭"}</div>
         <h1>${isCut ? t("introDone") : t("discoverComplete")}</h1>
         <p class="muted">${tx(round.title)}</p>
+        ${xpPill}
         <div class="result-msg good">${params.alreadyPassed ? t("replayNoXpMsg") : t("discoverUnlocked")}</div>
         ${groupPop}
         <div class="result-actions"></div>

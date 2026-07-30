@@ -164,10 +164,23 @@ node tools/audit-options.mjs        # no positional tell, no unmarked sequence
 node tools/check-bilingual.mjs      # every learner string has both languages
 node tools/check-table-summary.mjs  # only if Station 1's generated copy changed
 ```
-Then walk it in the browser in BOTH languages. ⚠️ The pane serves stale ES modules:
-`.claude/launch.json` must point at `serve.py` (not `python -m http.server`), and
-after editing a module the page has already loaded, **navigate with `force: true`**
-— a plain reload and even a new tab will show you the old file and waste your time.
+Then walk it in the browser in BOTH languages. ⚠️ The pane serves stale ES modules — and on
+2026-07-30 the reason was finally found. **The project's own `.claude/launch.json`
+is not the file the Preview MCP reads.** A session whose working directory is
+`~/.claude` (which is how Circle Quest sessions start) makes it read
+`C:\Users\megzi\.claude\.claude\launch.json`, and that file's `circle-quest` entry
+was running `python -m http.server` — which honours `If-Modified-Since` and answers
+**304**, so every edited module kept loading from the browser cache. The Chunk C fix
+was correct and simply unreachable. It now runs `cmd /c cd /d <project> && python
+serve.py 5180` (the shape the `nwu-hub` entry already used — `serve.py` serves its
+own CWD and takes no `--directory`, so it must be launched from the project).
+Verified: responses now carry `no-store` and a bare URL serves the edited file.
+
+Diagnose a suspected stale module by fetching the bare URL against `?bust=random`
+and comparing lengths — and note that `fetch()` itself can answer from the HTTP
+cache, so use `fetch(url, {cache:'reload'})` when checking response HEADERS.
+After editing a module the page has already loaded, still navigate with
+`force: true`.
 
 ---
 
@@ -199,21 +212,81 @@ be the last word.
 
 ## 6. Progress checklist — tick as sessions land
 
-- [ ] **XP per panel** (do first, before any push) — config + `finish()` + every
-      place that promises a number, then confirm the results screen and the station
-      map agree with what is actually banked.
-- [ ] **Two tangents from a point** → Station 1 (measure & record), Station 2
-      (state it precisely: from the SAME external point).
+- [x] **XP per panel** — DONE 2026-07-30. `CONFIG.investigationXpPerPanel: 10`
+      (the old `investigationXp` key is gone, not repurposed); `finish()` banks
+      `panels.length × rate` once; a "+10 XP" tick in the station header flashes
+      per panel and settles to a running total, and is hidden entirely on a replay
+      because a replay pays 0. Her sub-decision, asked and answered: **the tick is
+      enough** — genuinely banking mid-station would need a record of which panels
+      already paid (there is no resume today, so a learner who quits restarts at
+      panel 1 and would be paid twice), plus resume screens.
+      Two things this turned up, both fixed:
+        · the station map hard-coded nothing but promised one number for all six
+          stops. It now states the RATE, and each stop card computes its own total
+          from `panels.length` — so a station that gains a panel starts advertising
+          the higher number by itself. Verified live: Stop 1 → 80 XP, Stop 2 → 70.
+        · the results screen said NOTHING about station XP, and never had — the
+          `params.discovery` branch of `game.js` is marked "no score, no XP", which
+          is true of discovery rounds but not of a station reusing that branch. The
+          pill is now gated on `params.xp > 0`, so whatever pays, shows. Verified in
+          all three cases: station pays → pill; replay → no pill, existing "no XP
+          this time" message; real discovery round → unchanged.
+- [x] **Two tangents from a point** — DONE 2026-07-30, three panels, all taps, no
+      new memo and no probe run. Station 1 gets a measure-and-notice panel over
+      somebody else's readings (before the closing note, per §5); Station 2 gets
+      the sentence-build and the four-learners judge, appended after panel 5
+      because panels 1-5 are one continuous argument that cannot be interrupted —
+      and panel 5's closing line ("the condition you kept putting in — SAME side —
+      was never decoration") is the cleanest possible way in to a theorem whose
+      dropped condition is the SAME external point.
+      · **A still figure, not a new draggable.** `TAN_FIG` is exported from
+        `invest01-measure.js` and imported by Station 2, so the two stations show
+        the identical picture days apart. §2 suggested a drag-and-record panel;
+        the N8 precedent (no new interactive without asking) and the pane's
+        inability to test dragging both argue against it. **If she wants the drag,
+        say so — it is a real build, not a tweak.**
+      · The readings are computed, not invented: PT = PS = R·tan(θ/2), so at a 4 cm
+        radius θ = 60/100/130° gives 23.1, 47.7 and 85.8 mm. Written as 23/23,
+        48/47 and 86/86 — whole millimetres, so neither language needs a decimal
+        separator, and the 48/47 row is a ruler reading that deliberately echoes
+        the 97°/49° row this station already taught. The drawn figure IS the 47.7
+        row (70 px = 4 cm, PT = 83.4 px).
+      · New word chips: `ptDifferent`, `posOutside`, `posInside`, `posOn`;
+        `sideSame` and `sideOpposite` reused rather than duplicated. Every
+        distractor was checked for grammar in BOTH languages when substituted into
+        the slot — an earlier "any / enige" option was dropped because "from any
+        point outside a circle" is arguably TRUE, and an ambiguous distractor is
+        the kind of unfairness this brief exists to prevent.
+      · Still to come for this theorem if she wants it: nothing required. It is a
+        complete addition as it stands.
 - [ ] **Equal chords** → Station 3 (counterexample: two circles of different size),
       Station 1 or 2.
 - [ ] **Tangent-radius** → Station 5 (its true, useful converse), Station 4 (used
       where the line is not a tangent).
 - [ ] **Tan-chord** → Station 4 (the wrong alternate segment), Station 6 (explain
       which segment is which — the one typed panel, if any).
-- [ ] Re-run all four checkers + walk both languages.
-- [ ] **Flip `CONFIG.stationsLive` to true** — that is the release. Confirm the
-      train strip is back for a normal learner (no `?stations=1`).
-- [ ] `/ship`.
+- [x] Re-run all four checkers + walk both languages — done 2026-07-30, and she
+      play-tested the line herself end to end.
+- [x] **`CONFIG.stationsLive` is TRUE — RELEASED 2026-07-30.** Her call after
+      play-testing: *"make it visible for the learners"*. Note this is EARLIER than
+      the original plan, which said to wait for all four theorems. That is fine and
+      deliberate: the six stations were already complete before Chunk D began, and
+      the remaining three theorems only ADD extra practice panels to finished
+      stations — nothing a learner meets is half-built. Setting the flag back to
+      false hides the whole line again, in one line.
+- [x] `/ship` — done 2026-07-30.
+
+**So the three remaining theorems are now additions to a LIVE line, not to a hidden
+one.** Two things follow, and they are the only things that change:
+  · A new panel raises that station's XP automatically (the total is
+    `panels.length × rate`, never hard-coded) — but a learner who ALREADY finished
+    that station is not paid the difference, because a replay pays 0. That is the
+    same back-pay problem §1 was sequenced to avoid, and it is now live. Adding
+    panels to a station the class has finished means those learners keep the old
+    total. Worth deciding per theorem: add to stations they have not reached yet,
+    or accept the gap.
+  · Everything else is unchanged — no migration, no re-release, no badge or ladder
+    changes. Build the theorem, run the four checkers, push.
 
 ---
 

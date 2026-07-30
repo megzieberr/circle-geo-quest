@@ -61,6 +61,17 @@ const PROBES = [
     "Because I only checked a handful of positions, and A, B and P can go to endlessly many others, so all the rest are still untested."],
   ["s1p4", "af", "got_it", "reason (b) only, AF — rounding, and the accept-any-one test",
     "Die hoeke op die skerm word tot heelgetal-grade afgerond, so een ry was 'n graad uit. Die lesings is dus nie presies nie."],
+  /* The ENGLISH rounding-only answer. Added 2026-07-30 after it came back
+     `partly` while the Afrikaans one above passed — the scheme's "accept any
+     one" rule was written as an (a)/(b)/(c) list, and the model read the list
+     as a checklist and demanded the other two. Megan found it by play-testing;
+     the fix was to rewrite the line as EITHER/OR with an explicit instruction
+     not to report the unused alternatives as missing. Two phrasings, because
+     one wording passing is not the same as the ROUTE passing. */
+  ["s1p4", "en", "got_it", "reason (b) only, EN — the regression this scheme was fixed for",
+    "Even the positions I did measure were rounded off to whole degrees, so the screen could never show me that it was exactly double anyway."],
+  ["s1p4", "en", "got_it", "reason (b) only, EN — plainer wording of the same route",
+    "The angles are only given to the nearest degree, so my readings are not exact enough to prove they are exactly double."],
   ["s1p4", "en", "got_it", "reason (c) only, terse",
     "No, not proved. You need a proof that works for every case."],
   ["s1p4", "en", "reject", "says yes",

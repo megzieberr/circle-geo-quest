@@ -71,6 +71,48 @@ const FIG_FOUR = {
   angles: [],
 };
 
+/* ---- the WHY slide's pair (added 2026-07-30, her call: "I am actually
+   bamboozled… add an extra slide just to show them") -------------------------
+
+   FIG_WHY3 shows the construction rather than asserting the result. A, B and C
+   sit at the same three angles as everywhere else on this panel, and because
+   they lie on the engine's circle its centre IS their circumcentre — so the
+   perpendicular bisectors really do pass through O, and `mid` computes the two
+   midpoints rather than anyone typing a coordinate. The two right angles are
+   marked and verify-node.mjs measures them, which is what stops this figure from
+   quietly lying about the very fact it teaches.
+
+   ⚠️ EACH BISECTOR IS DRAWN AS O→MIDPOINT, NOT AS A FULL LINE ACROSS THE CIRCLE.
+   The first version extended each one through O and out the far side, to make the
+   crossing obvious, which needed two invented endpoint names — and the engine
+   labels every named point, with no opt-out. The endpoint of BC's bisector landed
+   ON A: A is at 200 deg, which is exactly the far arc-midpoint of BC (B 340, C 60
+   -> midpoints 20 and 200), so that bisector passes precisely through A and the
+   two labels rendered as "FA". Megan spotted it immediately.
+   Half-lines meeting at O are better anyway: no invented points, nothing to
+   collide, and "the line from the centre to the midpoint of a chord" is the
+   theorem in the exact words her class already writes as a reason.
+
+   FIG_FOUR_SHOWN is FIG_FOUR with the circle put back. D is 22px inside a
+   radius of 80 — invisible while the dots are bare, obvious the moment the
+   circle is there, which is exactly the point the panel before it makes. */
+const FIG_WHY3 = {
+  O: true,
+  pts: DOTS3,
+  mid: [{ name: "M", of: ["A", "B"] }, { name: "N", of: ["B", "C"] }],
+  chords: [["A", "B"], ["B", "C"], ["C", "A"], ["O", "M"], ["O", "N"]],
+  angles: [
+    { at: "M", legs: ["O", "B"], t: "", o: { v: 90, mark: 1 } },
+    { at: "N", legs: ["O", "C"], t: "", o: { v: 90, mark: 1 } },
+  ],
+};
+
+const FIG_FOUR_SHOWN = {
+  pts: { ...DOTS3, D: { x: 112, y: 88 } },
+  chords: [["A", "D"], ["D", "C"], ["C", "B"], ["B", "A"]],
+  angles: [],
+};
+
 /* the one case that breaks it: AB is a diameter, so its midpoint IS O, and
    the line OD bisects AB without being perpendicular to it */
 const FIG_DIAM = {
@@ -204,12 +246,43 @@ export const round = {
           af: "Drie kolletjies bepaal 'n sirkel volledig — daar is presies een sirkel deur hulle. Die vierde kolletjie moet dan op 'n sirkel land wat reeds vasgestel is, en byna elke posisie mis dit." },
       ],
       note: {
-        en: "Three dots that are not in a line always lie on exactly one circle, so \"these three points are concyclic\" is never worth saying — it is free. Four is a real condition, and that is exactly why cyclic quadrilaterals get a theorem of their own: a four-cornered figure whose corners all reach one circle is special. In the second picture above, D sits just inside the circle through A, B and C — close enough that no eye could call it, which is the point. <b>So you have to PROVE a quadrilateral is cyclic before you may use the cyclic-quad theorems on it.</b> Every four dots that miss are a quadrilateral you are not allowed to use them on.",
-        af: "Drie kolletjies wat nie in 'n lyn lê nie, lê altyd op presies een sirkel, dus is \"hierdie drie punte is konsiklies\" nooit die moeite werd om te sê nie — dit is verniet. Vier is 'n werklike voorwaarde, en dit is juis hoekom koordevierhoeke hul eie stelling kry: 'n vierhoekige figuur wie se hoekpunte almal een sirkel bereik, is besonders. In die tweede prent hierbo lê D net binne die sirkel deur A, B en C — naby genoeg dat geen oog dit kan uitmaak nie, en dit is die punt. <b>Jy moet dus BEWYS 'n vierhoek is koordies voordat jy die koordevierhoek-stellings daarop mag gebruik.</b> Elke vier kolletjies wat mis, is 'n vierhoek waarop jy hulle nie mag gebruik nie.",
+        en: "Three dots that are not in a line always lie on exactly one circle, so \"these three points are concyclic\" is never worth saying — it is free. Four is a real condition, and that is exactly why cyclic quadrilaterals get a theorem of their own: a four-cornered figure whose corners all reach one circle is special. In the second picture above, D sits just inside the circle through A, B and C — close enough that no eye could call it, which is the point. The next slide draws that circle in, and shows you why three dots settle the matter on their own. <b>So you have to PROVE a quadrilateral is cyclic before you may use the cyclic-quad theorems on it.</b> Every four dots that miss are a quadrilateral you are not allowed to use them on.",
+        af: "Drie kolletjies wat nie in 'n lyn lê nie, lê altyd op presies een sirkel, dus is \"hierdie drie punte is konsiklies\" nooit die moeite werd om te sê nie — dit is verniet. Vier is 'n werklike voorwaarde, en dit is juis hoekom koordevierhoeke hul eie stelling kry: 'n vierhoekige figuur wie se hoekpunte almal een sirkel bereik, is besonders. In die tweede prent hierbo lê D net binne die sirkel deur A, B en C — naby genoeg dat geen oog dit kan uitmaak nie, en dit is die punt. Die volgende skyfie teken daardie sirkel in, en wys jou hoekom drie kolletjies die saak op hul eie afhandel. <b>Jy moet dus BEWYS 'n vierhoek is koordies voordat jy die koordevierhoek-stellings daarop mag gebruik.</b> Elke vier kolletjies wat mis, is 'n vierhoek waarop jy hulle nie mag gebruik nie.",
       },
     },
 
-    /* ---------- 4 · typed: why the two directions are not equal work ---------- */
+    /* ---------- 4 · WHY three dots settle it — the construction, not the claim ----
+       Added 2026-07-30, her call after play-testing: "That's crazy… I have been
+       teaching it but I haven't ever thought about it in that way." The panel
+       before it ASSERTS that three dots fix a circle; a claim that surprises a
+       maths teacher will surprise a class, and an assertion they cannot check is
+       exactly what this station is teaching them to distrust.
+
+       It leans on the theorem they already own (line from centre to the midpoint
+       of a chord is perpendicular to it), read BACKWARDS: the centre lies on every
+       chord's perpendicular bisector, so two chords pin it down. That also answers
+       her second question — the circle IS drawn through the four dots here, one
+       slide later than she suggested. On the question panel it would have shown
+       the answer: with the circle in, D's miss is obvious, and "no eye could call
+       it" is the whole reason that panel works. */
+    {
+      type: "note",
+      prompt: { en: "Why three dots settle it", af: "Hoekom drie kolletjies dit afhandel" },
+      diagrams: [
+        { diagram: FIG_WHY3, caption: {
+            en: "O sits square above the midpoint of AB, and of BC — and only one point can do both.",
+            af: "O lê loodreg bo die middelpunt van AB, én van BC — en net een punt kan albei doen." } },
+        { diagram: FIG_FOUR_SHOWN, caption: {
+            en: "The same four dots, with the circle through A, B and C drawn in.",
+            af: "Dieselfde vier kolletjies, met die sirkel deur A, B en C ingeteken." } },
+      ],
+      note: {
+        en: "The centre of a circle through A and B must be the same distance from both — so it has to sit somewhere on the <b>perpendicular bisector of AB</b>. For the same reason it has to sit on the perpendicular bisector of BC. Those two lines are not parallel, because A, B and C are not in a straight line, so they meet at <b>exactly one point</b>. That meeting point is the centre, and its distance to A is the radius.<br><br>So the circle was decided the moment the third dot went down. Nobody chose it — the dots did.<br><br>You already know the first half of this from the other direction: <i>the line from the centre to the midpoint of a chord is perpendicular to the chord</i>. Read backwards, that says the centre lies on every chord's perpendicular bisector. Two chords are enough to pin it in place, and a third dot gives you a second chord — which is the whole trick.<br><br>And that is why the fourth dot gets no say. By the time D is placed, the circle already exists. D is either on it or it is not, and almost every position is not. The second picture puts the circle in, and there it is: D was sitting inside it all along. Not by much — but a miss is a miss, and no eye could have called it from the bare dots.",
+        af: "Die middelpunt van 'n sirkel deur A en B moet ewe ver van albei af wees — dit moet dus êrens op die <b>middelloodlyn van AB</b> lê. Om dieselfde rede moet dit op die middelloodlyn van BC lê. Daardie twee lyne is nie ewewydig nie, want A, B en C lê nie in 'n reguit lyn nie, en hulle ontmoet dus by <b>presies een punt</b>. Daardie ontmoetingspunt is die middelpunt, en sy afstand na A is die radius.<br><br>Die sirkel is dus beslis op die oomblik toe die derde kolletjie neergesit is. Niemand het dit gekies nie — die kolletjies het.<br><br>Jy ken die eerste helfte hiervan reeds uit die ander rigting: <i>die lyn vanuit die middelpunt na die middelpunt van 'n koord is loodreg op die koord</i>. Andersom gelees sê dit die middelpunt lê op elke koord se middelloodlyn. Twee koorde is genoeg om dit vas te pen, en 'n derde kolletjie gee jou 'n tweede koord — en dit is die hele kunsie.<br><br>En daarom het die vierde kolletjie geen sê nie. Teen die tyd dat D geplaas word, bestaan die sirkel reeds. D is óf daarop óf nie, en byna elke posisie is nie. Die tweede prent sit die sirkel in, en daar is dit: D was al die tyd binne-in. Nie met veel nie — maar 'n mis is 'n mis, en geen oog kon dit uit die kaal kolletjies uitgemaak het nie.",
+      },
+    },
+
+    /* ---------- 5 · typed: why the two directions are not equal work ---------- */
     {
       type: "written",
       panelId: "s3p4",
@@ -218,8 +291,8 @@ export const round = {
       // dragged). Same defect as N4, one station over: copy must not assert a
       // number it cannot know. Reworded to need no count at all.
       prompt: {
-        en: "One chord was enough to bring that theorem's wording down. But back in Station 1, a whole table of your own readings was not enough to prove a conjecture — and a thousand rows would not have been either. Why is one counterexample enough to destroy a claim when a thousand examples cannot prove one?",
-        af: "Een koord was genoeg om daardie stelling se bewoording te laat val. Maar terug in Stasie 1 was 'n hele tabel van jou eie lesings nie genoeg om 'n vermoede te bewys nie — en duisend rye sou ook nie gewees het nie. Hoekom is een teenvoorbeeld genoeg om 'n bewering te vernietig terwyl duisend voorbeelde nie een kan bewys nie?",
+        en: "One chord was enough to bring that theorem's wording down. But back in Station 1, a whole table of your own readings was not enough to prove a conjecture — and a thousand rows would not have been either. A conjecture always carries the word ALWAYS — it is a claim about every case, including the ones nobody has looked at. So: why is one counterexample enough to destroy a claim like that, when a thousand examples cannot prove one?",
+        af: "Een koord was genoeg om daardie stelling se bewoording te laat val. Maar terug in Stasie 1 was 'n hele tabel van jou eie lesings nie genoeg om 'n vermoede te bewys nie — en duisend rye sou ook nie gewees het nie. 'n Vermoede dra altyd die woord ALTYD — dit is 'n bewering oor elke geval, ook dié waarna niemand gekyk het nie. Dus: hoekom is een teenvoorbeeld genoeg om so 'n bewering te vernietig, terwyl duisend voorbeelde nie een kan bewys nie?",
       },
       diagram: FIG_DIAM,
       minChars: 25,
@@ -227,11 +300,24 @@ export const round = {
         en: "Because a conjecture claims something about…",
         af: "Omdat 'n vermoede iets beweer oor…",
       },
+      /* The pivot word is ALWAYS, and until 2026-07-30 nothing above the question
+         pointed at it — it only appeared in hint rung 1, which a learner has to
+         fail three times to earn. That breaks teach-before-you-ask on the panel
+         that carries the whole line's idea. Megan proved it by answering
+         "claims something about every TESTED value": she reached for the right
+         word and attached it to the wrong set, because the panel never showed
+         her which set it meant. Naming the word is shape, not content — it says
+         where to look, and the argument is still entirely theirs to make. */
       needs: [
-        { en: "say what a conjecture claims",
-          af: "sê wat 'n vermoede beweer" },
-        { en: "say what ONE failing case does to that claim",
-          af: "sê wat EEN geval wat misluk aan daardie bewering doen" },
+        { en: "say what the word ALWAYS in a conjecture is claiming — and about which cases",
+          af: "sê wat die woord ALTYD in 'n vermoede beweer — en oor watter gevalle" },
+        { en: "say what ONE failing case does to a claim like that",
+          af: "sê wat EEN geval wat misluk aan so 'n bewering doen" },
+        // NO third line about "why a thousand agreeing cases still fail". The
+        // question raises it, but s3p4's mark scheme deliberately does NOT
+        // require it (see the 2026-07-30 memo decisions), and a `needs` list
+        // that asks for more than the scheme marks is the exact unfairness the
+        // s1p4 fix removed this same day. The list mirrors the scheme, always.
       ],
       starters: [
         { en: "A conjecture claims something about every…", af: "'n Vermoede beweer iets oor elke…" },

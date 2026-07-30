@@ -147,6 +147,7 @@ Deno.serve(async (req) => {
   const panelId  = String(body.panelId ?? "");
   const lang     = body.lang === "af" ? "af" : "en";
   const override = body.override === true;
+  const stuck    = body.stuck === true;
   // hard cap before anything else touches it
   const answer   = String(body.answer ?? "").slice(0, 600);
 
@@ -161,8 +162,31 @@ Deno.serve(async (req) => {
   });
   if (authErr || !sid) return json({ ok: false, error: "auth" }, 401);
 
+  // --- the learner tapped "I don't get it" ---------------------------------
+  // Added 2026-07-30, replacing the old "I think my answer was right" hatch.
+  // Purely a flag for Megan: who asked for help, on which panel, and what they
+  // had typed so far (often nothing, which is itself the useful signal).
+  //
+  // DELIBERATELY ABOVE THE COST CAP, and it claims no slot. Asking for a hint
+  // must never be rationed — a learner who has run out of marking calls still
+  // needs help, and refusing the request is the one thing this whole design
+  // exists to prevent. It makes no API call, so it costs nothing to allow.
+  // The client never waits for the answer either; the hint shows immediately.
+  if (stuck) {
+    await admin.from("checker_calls").insert({
+      student_id: sid,
+      panel_id: panelId,
+      verdict: "stuck",
+      answer,
+    });
+    return json({ ok: true, verdict: "stuck", missing: [], nudge: "", misconception: "" });
+  }
+
   // --- the learner said the checker got it wrong ---------------------------
-  // Logged for Megan to review, costs nothing, never calls the API.
+  // RETIRED on the client 2026-07-30 (see js/investigate.js): the link was
+  // replaced by "I don't get it", because it printed a pass over an answer
+  // nobody had marked. The branch stays so any older cached client still
+  // works and still logs, rather than erroring at a learner mid-panel.
   if (override) {
     const { data: claim } = await admin.rpc("cgg_checker_claim", {
       p_student_id: sid,

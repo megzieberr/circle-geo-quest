@@ -133,6 +133,10 @@ begin
       from public.checker_calls
      where student_id = p_student_id
        and created_at > now() - p_window
+       -- 2026-07-30: "I don't get it" logs verdict 'stuck' here too. Asking for
+       -- help must not spend the MARKING budget, so those rows are not counted.
+       -- A NULL verdict IS counted: that is a claim in flight, a real call.
+       and coalesce(verdict, '') <> 'stuck'
   ), claimed as (
     insert into public.checker_calls (student_id, panel_id)
     select p_student_id, p_panel_id from recent where n < cap
@@ -289,7 +293,7 @@ insert into public.panel_memos (panel_id, memo, must_have) values
   $m$Measuring can only ever check the positions that were actually measured. A, B and P can be dragged to endlessly many other positions, so a table of five rows - or five hundred - leaves out all the rest, and the conjecture is a claim about every one of them.
 On top of that, both angles on the screen are rounded to whole degrees. Doubling one rounded reading can land a degree away from the other, which is why a row like 97 degrees and 49 degrees shows up: double 49 is 98, and the screen shows 97. So even the measured rows were only "double as far as the readings could show". One degree is the most that rounding can ever cost.
 Only a proof covers every position at once. No number of specific examples that support a conjecture adds up to a general proof.$m$,
-  $m$gives ONE reason why the measuring has not proved the conjecture. ACCEPT ANY ONE of the following, and treat them as fully equivalent: (a) only the measured cases or positions have been checked, or there are endlessly many other positions, or you cannot measure them all - "net die gevalle wat gemeet is", "daar is oneindig baie posisies", "jy kan nie almal meet nie"; (b) the readings are not exact - the angles on screen are rounded to whole degrees, or the row that is a degree out shows the reading was approximate - "die lesings is afgerond", "meting is nie presies nie", "dit is net tot die naaste graad"; (c) a proof is needed to cover every case - "n bewys is nodig", "n bewys wat vir elke geval geld". Any ONE of (a), (b) or (c) alone satisfies this line - do not ask for a second one.
+  $m$gives at least ONE sound reason why the measuring has not proved the conjecture. ANY SINGLE REASON BELOW SATISFIES THIS MARK SCHEME IN FULL. The panel asks for one reason and one reason is a COMPLETE answer, so these are equivalent ALTERNATIVES and NOT a checklist: EITHER only the measured cases or positions have been checked, or there are endlessly many other positions, or you cannot measure them all - "net die gevalle wat gemeet is", "daar is oneindig baie posisies", "jy kan nie almal meet nie"; OR the readings are not exact - the angles on screen are rounded to whole degrees, or a row that is a degree out shows the reading was only approximate - "die lesings is afgerond", "meting is nie presies nie", "dit is net tot die naaste graad"; OR a proof is needed to cover every case - "n bewys is nodig", "n bewys wat vir elke geval geld". If the answer carries ANY ONE of those ideas in any wording, the verdict is got_it. Do NOT ask for a second reason. Do NOT put the reasons the learner did not choose into the missing field - they are not missing, they are alternatives the learner was free not to use.
 The learner ALREADY answered yes-or-no by tapping on the previous panel, so do NOT require the word "no" here and do NOT mark down an answer that gives the reason on its own. An answer that also says "no" is equally fine.
 IGNORE whether the learner names a theorem or writes any proof. ONE sentence carrying one sound reason is got_it.$m$
 )

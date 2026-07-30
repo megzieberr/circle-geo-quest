@@ -14,11 +14,21 @@
         anywhere"). That rule still holds there. The `written` panel
         below is the single exception, and it lives only here.
 
-   XP IS FLAT PER STATION, not per panel and not scaled by attempts.
+   XP IS PER PANEL, AND NEVER SCALED BY ATTEMPTS OR BY CORRECTNESS.
    The point of an investigation is to think it through, not to
    already know the answer — a learner who fights through five
    attempts per panel has investigated MORE than one who breezes it,
    and should not be paid less for it. Struggle is the product here.
+   That half of the original flat-XP argument is untouched and must
+   stay: per-PANEL is compatible with it, per-ATTEMPT is not.
+
+   What changed (her call, 2026-07-30): the rate is per panel rather
+   than a flat 50 for the station, so a seven-panel station pays more
+   than a five-panel one. It is still banked ONCE, in finish(), as
+   panels.length × CONFIG.investigationXpPerPanel — one reliable write,
+   no partial-submission machinery — while a "+10 XP" tick in the
+   header counts up as each panel is cleared so it FEELS per-panel.
+   The tick is DISPLAY ONLY. Nothing is owed until finish() runs.
 
    THE NEVER-STUCK LADDER IS LOAD-BEARING. 3 wrong → escalating
    static hint, 5 wrong → show the answer and move on. That ladder is
@@ -69,7 +79,7 @@ import { el, clear, mount } from "./ui.js";
 import { orderedOptions } from "./options-order.js";
 import { mountInteractive } from "./interactive.js";
 import { renderDiagram } from "./engine.js";
-import { checkAnswer, acceptOverride } from "./checker.js";
+import { checkAnswer, reportStuck } from "./checker.js";
 
 const HINT_AFTER = 3;
 const REVEAL_AFTER = 5;
@@ -79,7 +89,13 @@ const REVEAL_AFTER = 5;
 const UI = {
   checking:    { en: "Checking…",                     af: "Kontroleer…" },
   sayMore:     { en: "Try saying a bit more than that.", af: "Probeer 'n bietjie meer sê as dit." },
-  iThinkRight: { en: "I think my answer was right",   af: "Ek dink my antwoord was reg" },
+  /* The "I don't get it" ladder. It never says the learner was right — it is a
+     request for help, not a mark. The label changes as the ladder is walked, so
+     a learner can see there is more behind it and knows the last rung gives an
+     answer rather than leaving them hanging. */
+  dontGetIt:   { en: "I don't get it",                af: "Ek snap dit nie" },
+  stillStuck:  { en: "I still don't get it",          af: "Ek snap dit steeds nie" },
+  showAnswer:  { en: "Show me a good answer",         af: "Wys my 'n goeie antwoord" },
   starters:    { en: "Stuck? Tap one to start:",      af: "Vasgevang? Tik een om te begin:" },
   writeMore:   { en: "Write a little more first",     af: "Skryf eers 'n bietjie meer" },
   memoLabel:   { en: "One good answer",               af: "Een goeie antwoord" },
@@ -106,7 +122,7 @@ export function renderInvestigate(app, host, params) {
   const top = el("div", "play-top");
   top.innerHTML = `<button class="link-btn quit">✕</button>
     <div class="play-title">🚂 ${tx(round.title)}</div>
-    <div class="play-count"></div>`;
+    <div class="play-count"><span class="pc-n"></span><span class="pc-xp"></span></div>`;
   // ✕ goes back to the station map, not home — the learner came in off the
   // train strip, so that is the screen behind them.
   top.querySelector(".quit").addEventListener("click", () => app.go("stations"));
@@ -129,9 +145,38 @@ export function renderInvestigate(app, host, params) {
      progress, it is what happened on this screen just now. */
   const scratch = {};
 
+  /* ---- the per-panel XP tick: DISPLAY ONLY ----
+     It lives in the header, which survives the panel being torn down, so the
+     learner sees "+10 XP" flash and then a running total that follows them
+     down the station. Nothing is banked until finish() runs.
+
+     It is hidden entirely on a REPLAY, because a replay pays 0 (`alreadyDone`
+     below, and the server agrees). A "+10 XP" that banks nothing is exactly
+     the promise-a-number-you-cannot-keep bug the panel copy rules forbid.
+
+     The settle is a setTimeout, not an animation-end event: the preview pane
+     never fires rAF, and the total must appear even where nothing animates. */
+  const RATE = CONFIG.investigationXpPerPanel;
+  const countN = top.querySelector(".pc-n");
+  const countXp = top.querySelector(".pc-xp");
+  let earned = 0;
+  let bumpT = null;
+  if (!alreadyDone) countXp.textContent = `★ 0 XP`;
+  function tickXp() {
+    if (alreadyDone) return;
+    earned += RATE;
+    countXp.textContent = `+${RATE} XP`;
+    countXp.classList.add("bump");
+    clearTimeout(bumpT);
+    bumpT = setTimeout(() => {
+      countXp.classList.remove("bump");
+      countXp.textContent = `★ ${earned} XP`;
+    }, 1100);
+  }
+
   let i = 0;
   function show() {
-    top.querySelector(".play-count").textContent = `${i + 1} / ${panels.length}`;
+    countN.textContent = `${i + 1} / ${panels.length}`;
     bar.querySelector("i").style.width = Math.round((i / panels.length) * 100) + "%";
     clear(stepHost);
     mountPanel(stepHost, panels[i], round.accent, scratch, (stats) => {
@@ -139,6 +184,7 @@ export function renderInvestigate(app, host, params) {
         gatedTotal++;
         if (stats.firstTry) firstTryCorrect++;
       }
+      tickXp();
       i++;
       if (i < panels.length) { window.scrollTo(0, 0); show(); }
       else finish();
@@ -147,15 +193,18 @@ export function renderInvestigate(app, host, params) {
 
   async function finish() {
     bar.querySelector("i").style.width = "100%";
+    // The one bank, computed from the panels that actually exist — so a station
+    // that gains a panel in Chunk D pays for it without anyone editing a number.
+    const xpEarned = panels.length * CONFIG.investigationXpPerPanel;
     let res = { ok: false };
     if (!alreadyDone) {
       const s = getSession();
       res = await submitRoundReliable(s.name, s.password, round.id, {
-        // COMPLETING IS PASSING. If XP is flat for finishing, gating the badge
+        // COMPLETING IS PASSING. XP is paid for finishing, so gating the badge
         // on CONFIG.passThreshold would be a contradiction — full XP and no
         // badge. Matches discover.js exactly.
         score: 1,
-        xpGained: CONFIG.investigationXp,
+        xpGained: xpEarned,
         total: gatedTotal || panels.length,
         correct: firstTryCorrect,
       });
@@ -166,7 +215,7 @@ export function renderInvestigate(app, host, params) {
       discovery: true,
       correct: firstTryCorrect,
       total: gatedTotal || panels.length,
-      xp: alreadyDone ? 0 : CONFIG.investigationXp,
+      xp: alreadyDone ? 0 : xpEarned,
       frac: 1,
       badgeEarned: !!(res && res.badgeEarned),
       alreadyPassed: alreadyDone,
@@ -353,6 +402,11 @@ function mountPanel(host, panel, accent, scratch, onDone) {
     }
     if (wrong >= REVEAL_AFTER && revealAnswer) revealAnswer();
   }
+  /* onRight is now only ever reached by a genuinely correct answer. The old
+     `overridden` branch is gone with the "I think my answer was right" link it
+     served: that link printed a pass over an answer nobody had marked, AND set
+     firstTry on it, quietly inflating the numbers the admin trajectory panel
+     reads. Its replacement ("I don't get it") never calls this function. */
   function onRight() {
     stats.firstTry = (wrong === 0);
     feedback.hidden = false;
@@ -473,24 +527,42 @@ function mountPanel(host, panel, accent, scratch, onDone) {
     body.appendChild(check);
     body.appendChild(feedback);
 
-    // the escape hatch: one tap accepts the answer, advances, and logs the
-    // event for Megan to review. It removes the last way the checker can be
-    // unfair, and learners use it honestly far more often than not.
-    const escape = el("button", "link-btn dp-override", tx(UI.iThinkRight));
-    escape.hidden = true;
-    body.appendChild(escape);
+    /* "I DON'T GET IT" — her design, 2026-07-30, replacing the old "I think my
+       answer was right" hatch. That link let a learner mark their own work; this
+       one lets them ASK FOR HELP, which is the thing they actually needed.
+
+       It is available IMMEDIATELY, before any attempt. A learner who does not
+       understand the question cannot produce three meaningful wrong answers
+       first, and making them fail three times to earn a hint is a punishment for
+       being lost. Each tap walks the same ladder a wrong answer would:
+         tap 1 -> hint rung 1
+         tap 2 -> hint rung 2
+         tap 3 -> a good answer, and Continue
+       and every tap is logged, so she gets "who asked for help, and where"
+       rather than "who disputed a mark". Nothing here claims the learner was
+       right, and nothing here touches stats.firstTry — asking is not answering.
+
+       It costs no marking call: `reportStuck` posts above the cost cap and the
+       hint renders without waiting for it. */
+    const stuckBtn = el("button", "link-btn dp-stuck", tx(UI.dontGetIt));
+    body.appendChild(stuckBtn);
 
     const sync = () => { check.disabled = ta.value.trim().length < minChars; };
     ta.addEventListener("input", sync);
 
-    escape.addEventListener("click", async () => {
+    let stuckTaps = 0;
+    stuckBtn.addEventListener("click", () => {
       if (locked) return;
-      locked = true;
-      escape.hidden = true;
-      ta.disabled = true;
-      check.hidden = true;
-      acceptOverride({ panelId: panel.panelId, answer: ta.value.trim(), lang: getLang() });
-      onRight();
+      stuckTaps++;
+      const hints = panel.hints || [];
+      reportStuck({ panelId: panel.panelId, answer: ta.value.trim(), lang: getLang(), step: stuckTaps });
+      if (stuckTaps <= hints.length) {
+        hintBox.hidden = false;
+        hintBox.innerHTML = `<span class="dp-hint-tag">💡 ${t("hint")}</span> ${tx(hints[stuckTaps - 1])}`;
+        stuckBtn.textContent = stuckTaps < hints.length ? tx(UI.stillStuck) : tx(UI.showAnswer);
+      } else {
+        revealAnswer();
+      }
     });
 
     check.addEventListener("click", async () => {
@@ -513,14 +585,12 @@ function mountPanel(host, panel, accent, scratch, onDone) {
         ta.disabled = false;
         check.disabled = false;
         onWrong();
-        escape.hidden = false;
         return;
       }
 
       if (res.verdict === "got_it") {
         locked = true;
         check.hidden = true;
-        escape.hidden = true;
         onRight();
         return;
       }
@@ -530,7 +600,6 @@ function mountPanel(host, panel, accent, scratch, onDone) {
       // "unclear" gets the generic say-more prompt; partly / not_yet get the
       // model's nudge, which points at the gap without giving the answer.
       onWrong(res.verdict === "unclear" ? tx(UI.sayMore) : (res.nudge || undefined));
-      escape.hidden = false;
       ta.focus();
     });
 
@@ -539,7 +608,7 @@ function mountPanel(host, panel, accent, scratch, onDone) {
       locked = true;
       ta.disabled = true;
       check.hidden = true;
-      escape.hidden = true;
+      stuckBtn.hidden = true;
       if (panel.memoDisplay) {
         const memo = el("div", "dp-memo");
         memo.appendChild(el("div", "dp-memo-tag", tx(UI.memoLabel)));
