@@ -1,5 +1,35 @@
 # Project status — updated 2026-07-31
 
+## Where we are (INVESTIGATION STATION AUDIT — SHIPPED, LIVE, same day)
+
+**A full fresh-eyes audit of inv1–inv6 ran after Chunk D went live** (her ask:
+final pass for leftover bugs + a sentence/hint ambiguity sweep, extra weight on
+the un-play-tested Chunk D panels). **Verdict: no functional bugs anywhere.**
+All four checkers green; all 10 panel memos live and matching (s6p5 md5-verified
+against phase16.sql); every Chunk D panel walked in the browser in BOTH
+languages, 0 console errors; every new figure's geometry re-derived by hand and
+exact. Nine copy-level findings, all fixed same day on her go-ahead and pushed
+(`16c59d1`), verified serving live:
+
+  · **The "Last one." class (the real pattern):** appending Chunk D panels made
+    two panels lie — inv4 s4p5 and inv6 s6p4 both said "Last one." with panels
+    now after them. Fixed; each station's ACTUAL last panel now carries the
+    closer. **Rule for any future append: search the station for "Last one" /
+    "Laaste een" first.**
+  · inv2 p6 hint said "P" for external point A · inv4 p1 hint miscounted its
+    options, and its ∠AOC distractor said 80° (false — that's ∠BOC; now 100°,
+    a true-but-unused line like OA = OC) · tan-chord teaching copy now anchors
+    on "the 64° angle at T", never "the tangent ray" (a tangent has TWO rays —
+    only the marked one makes the rule work; server memo untouched, marking
+    already accepted side-of-chord wordings) · inv1 p10 hint no longer asserts
+    a chords-match row the learner's table may not have (N4 rule) · inv5 3b
+    hint de-circularised · inv3 "one KIND of chord" · inv2 p7 note no longer
+    says "panel 3" (learners never see panel numbers).
+  · **Full audit trail in `QA-SWEEP.md` (repo root, committed)** — including
+    one no-action observation worth a future decision: on CHOICE panels hint
+    rung 2 can never display (wrong answers cap at options−1 = 3; rung 2 needs
+    a 4th). Only blank/written panels and the written stuck-ladder reach it.
+
 ## Where we are (CHUNK D — TAN-CHORD, session 4 — the LAST theorem — SHIPPED, LIVE)
 
 **Tan-chord is the fourth and final theorem of Chunk D.** `progress` was
@@ -1293,17 +1323,18 @@ live" batches from 19/20/24 Jul were killed on Megan's call — the kids had bee
 playing on those builds for days, so real use did the eyeballing.)
 
 ## Next up
-**CHUNK C IS DONE and committed (`f42892f`). NEXT IS CHUNK D — more practice panels,
-and it starts with the XP change.** Her brief, 2026-07-30: *"I want a few more
-additional questions… just for other theorems so they get more practice… maybe add 2
-or 3 rounds per station"*, scoped to **more panels inside each of the six stations**
-(the train stays six stops), on the four theorems the line never touches, **mostly
-taps with only 1-2 typed in the whole chunk**, and explicitly spread over several
-sessions: *"I kinda want all of them, but it does not have to happen in one session."*
+**NOTHING IS OWED. Chunk D is complete, audited (2026-07-31 fresh-eyes sweep,
+`QA-SWEEP.md`), and everything is pushed and live** — the working tree is clean and
+`main` matches `origin/main` at `16c59d1`. The Investigation Station is done as
+briefed.
 
-The full brief, with per-theorem station assignments, the rules every new panel must
-follow and a tick-off checklist, is **`docs/chunk-d-practice-panels.md`**.
-`docs/NEXT-SESSION-PROMPT.md` is the paste-ready prompt.
+Open threads, none urgent, whenever she raises them:
+  · the brief's "Also open" pair — the marking cap (now 40; Chunk D added only 1
+    typed panel against the budgeted 1-2) and whether to revisit the on-screen-tick
+    XP decision;
+  · the choice-panel hint-rung-2 reachability observation in `QA-SWEEP.md` (rung 2
+    can never show on tap panels — design decision, not a bug);
+  · Station 4's "Prove It" title (her call: body copy first, see Pending).
 
 In order:
   1. ~~XP per panel~~ **DONE 2026-07-30**, and the sequencing held: it landed while
