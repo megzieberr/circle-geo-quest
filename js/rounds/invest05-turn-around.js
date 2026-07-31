@@ -48,6 +48,23 @@ const FIG_EXT = {
   ],
 };
 
+/* ---- CHUNK D · tangent-radius — the converse that IS true and useful ----
+   Panels 2 and 3 show a false converse and a true-but-useless one. This
+   theorem is the station's own promised third case: clean, TRUE, and the
+   one riders actually use to prove a line is a tangent. It sits between
+   panel 3 and panel 4 on purpose — a fourth example, on a different
+   theorem, before the station commits to one long argument about the
+   cyclic-quad converse. Reuses the plain O–radius–tangent figure already
+   verified for round09 (`r9`) and for the discovery round `dtanrad`; no
+   new interactive, no new memo row. */
+const TANRAD_FIG = {
+  O: true,
+  pts: { T: 270 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: [["O", "T"]],
+  angles: [{ at: "T", legs: ["tg+", "O"], t: "", o: { v: 90, mark: 1 } }],
+};
+
 export const round = {
   id: "inv5", n: 0, accent: AC, kind: "investigate", group: "g6",
   title: { en: "Turn It Around", af: "Draai Dit Om" },
@@ -133,6 +150,68 @@ export const round = {
       note: {
         en: "True, and completely useless — which is a third possibility worth knowing about. A converse earns its place in your toolkit only when it starts from something a question can actually GIVE you (two angles adding to 180°, a 90°, two equal angles on a chord, a length) and ends somewhere you could not otherwise go. This one starts from the conclusion itself, so it moves you nowhere. Compare it with the converse in panel 1: that one starts at \"∠A + ∠C = 180°\", which is exactly the kind of thing you can work out from a diagram — and that is why it is the one you actually use.",
         af: "Waar, en heeltemal nutteloos — wat 'n derde moontlikheid is wat die moeite werd is om te ken. 'n Omgekeerde verdien sy plek in jou gereedskapkis net wanneer dit begin by iets wat 'n vraag jou werklik kan GEE (twee hoeke wat tot 180° optel, 'n 90°, twee gelyke hoeke op 'n koord, 'n lengte) en eindig waar jy nie andersins kon kom nie. Hierdie een begin by die gevolgtrekking self, dus bring dit jou nêrens. Vergelyk dit met die omgekeerde in paneel 1: daardie een begin by \"∠A + ∠C = 180°\", wat presies die soort ding is wat jy uit 'n diagram kan uitwerk — en dit is hoekom dit die een is wat jy werklik gebruik.",
+      },
+    },
+
+    /* ---------- 3b · judge it: a converse that is TRUE and USEFUL ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "One more, a different theorem this time: a tangent is perpendicular to the radius at the point of contact. Turned around: \"If a line is perpendicular to a radius at the point where it meets the circle, then it is a tangent.\" What do you make of that converse?",
+        af: "Nog een, 'n ander stelling hierdie keer: 'n raaklyn is loodreg op die radius by die raakpunt. Omgedraai: \"As 'n lyn loodreg is op 'n radius by die punt waar dit die sirkel ontmoet, dan is dit 'n raaklyn.\" Wat maak jy van daardie omgekeerde?",
+      },
+      diagram: TANRAD_FIG,
+      options: [
+        { text: { en: "True, and useful — a single right angle at the exact point of contact is the whole proof that the line is a tangent.",
+                  af: "Waar, en nuttig — een enkele regte hoek by die presiese raakpunt is die hele bewys dat die lyn 'n raaklyn is." }, correct: true },
+        { text: { en: "False — a right angle where a line meets a circle does not always mean that line is a tangent.",
+                  af: "Onwaar — 'n regte hoek waar 'n lyn die sirkel ontmoet beteken nie altyd die lyn is 'n raaklyn nie." } },
+        { text: { en: "True, but useless — it only restates the original theorem's definition read backwards, proving nothing new.",
+                  af: "Waar, maar nutteloos — dit herhaal net die oorspronklike stelling se definisie agteruit, en bewys niks nuuts nie." } },
+        { text: { en: "It cannot be judged true or false without first measuring the actual diagram for yourself.",
+                  af: "Dit kan nie as waar of onwaar beoordeel word sonder om die werklike diagram self te meet nie." } },
+      ],
+      hints: [
+        { en: "Try to picture a line that makes a right angle with a radius at the very point it meets the circle, but is NOT a tangent. Can you find one?",
+          af: "Probeer 'n lyn voorstel wat 'n regte hoek met 'n radius maak by presies die punt waar dit die sirkel ontmoet, maar wat NIE 'n raaklyn is nie. Kan jy een kry?" },
+        { en: "You can't — a line that meets a circle at exactly one point AND is perpendicular to the radius there cannot cross the circle again. That is exactly why riders use this converse to PROVE a line is a tangent, not just to describe one.",
+          af: "Jy kan nie — 'n lyn wat die sirkel op presies een punt ontmoet EN loodreg op die radius daar is, kan nie weer deur die sirkel sny nie. Dit is presies hoekom vraagstukke hierdie omgekeerde gebruik om te BEWYS 'n lyn is 'n raaklyn, nie net om een te beskryf nie." },
+      ],
+      reason: "tanRadiusConv",
+      note: {
+        en: "True and useful — that makes three kinds of converse now met: false (drop one word and the exterior-angle converse breaks), true but useless (the four-vertices one, which is just the definition), and now true and useful. tan ⊥ radius joins converse opp ∠s of cyclic quad as one of the small set of converses a rider actually uses — and it needs only ONE right angle at the point of contact to work, nothing else.",
+        af: "Waar en nuttig — dit maak nou drie soorte omgekeerdes wat jy teëgekom het: onwaar (laat een woord val en die buitehoek-omgekeerde breek), waar maar nutteloos (die vier-hoekpunte-een, wat net die definisie is), en nou waar en nuttig. raaklyn ⊥ radius sluit aan by omgekeerde teenoorst. ∠e van kvh as een van die klein groepie omgekeerdes wat 'n vraagstuk werklik gebruik — en dit het net EEN regte hoek by die raakpunt nodig om te werk, niks anders nie.",
+      },
+    },
+
+    /* ---------- 3c · apply it ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "You've shown ∠OTU = 90°, where O is the centre, T is a point on the circle, and SU is a straight line through T. What can you conclude, and why?",
+        af: "Jy het getoon ∠OTU = 90°, waar O die middelpunt is, T 'n punt op die sirkel is, en SU 'n reguit lyn deur T is. Wat kan jy aflei, en hoekom?",
+      },
+      diagram: TANRAD_FIG,
+      options: [
+        { text: { en: "SU is a tangent to the circle at T — that is exactly what the converse tan ⊥ radius proves.",
+                  af: "SU is 'n raaklyn aan die sirkel by T — dit is presies wat die omgekeerde raaklyn ⊥ radius bewys." }, correct: true },
+        { text: { en: "OT bisects SU — that conclusion needs a line from the centre to a chord's midpoint, not this.",
+                  af: "OT halveer SU — daardie gevolgtrekking het 'n lyn van die middelpunt na 'n koord se middelpunt nodig, nie hierdie een nie." } },
+        { text: { en: "Only that T lies on the circle — a single right angle is not enough to say anything more than that.",
+                  af: "Net dat T op die sirkel lê — een regte hoek alleen is nie genoeg om meer as dit te sê nie." } },
+        { text: { en: "Nothing at all — one right angle can never be enough to prove that a line is a tangent.",
+                  af: "Glad niks nie — een regte hoek kan nooit genoeg wees om te bewys 'n lyn is 'n raaklyn nie." } },
+      ],
+      hints: [
+        { en: "You judged this exact converse two panels ago. Was it true and useful, or not?",
+          af: "Jy het hierdie presiese omgekeerde twee panele terug beoordeel. Was dit waar en nuttig, of nie?" },
+        { en: "It was true and useful: one right angle between a radius and a line, formed exactly at the point where the line meets the circle, is the whole proof that the line is a tangent — nothing else is needed.",
+          af: "Dit was waar en nuttig: een regte hoek tussen 'n radius en 'n lyn, gevorm presies by die punt waar die lyn die sirkel ontmoet, is die hele bewys dat die lyn 'n raaklyn is — niks anders word benodig nie." },
+      ],
+      reason: "tanRadiusConv",
+      note: {
+        en: "SU is a tangent — converse tan ⊥ radius. This is one of the shortest converses in the whole toolkit: one right angle, at the exact point of contact, is the complete proof. Compare that with the cyclic-quad converse coming up next, which needs an entire pair of opposite angles adding to 180° before it can conclude anything at all.",
+        af: "SU is 'n raaklyn — omgekeerde raaklyn ⊥ radius. Dit is een van die kortste omgekeerdes in die hele gereedskapkis: een regte hoek, by die presiese raakpunt, is die volledige bewys. Vergelyk dit met die koordevierhoek-omgekeerde wat volgende kom, wat 'n hele paar teenoorstaande hoeke wat tot 180° optel nodig het voordat dit enigiets kan aflei.",
       },
     },
 

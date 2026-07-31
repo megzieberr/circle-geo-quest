@@ -1,5 +1,58 @@
 # Project status — updated 2026-07-31
 
+## Where we are (CHUNK D — TANGENT-RADIUS, session 3 — built, checked, NOT pushed)
+
+**Tangent-radius is the third of Chunk D's four theorems, done the same shape as
+the previous two: three panels, all taps, no new memo, no probe run needed.**
+`progress` was checked for `inv4`/`inv5` rows before starting — still empty, so
+no back-pay gap to worry about, same as the last two sessions.
+
+  · **Station 5 "Turn It Around"** gets two panels, inserted between the
+    station's "true but useless" example (panel 3) and the start of the
+    cyclic-quad deep-dive (panel 4): a judge panel — tangent-radius's converse
+    is the station's promised fourth example, true AND useful, alongside the
+    false one and the true-but-useless one already there — and an apply
+    panel, which models the judge-then-apply shape the station later uses on
+    the harder cyclic-quad converse. Both reuse the plain O–radius–tangent
+    figure already verified for round09 and the discovery round `dtanrad`.
+  · **Station 4 "Prove It"** gets one panel, appended after the closing typed
+    panel (s4p5) rather than inserted mid-station — panels 1-6 there are one
+    continuous argument, same call as Station 2 in the two-tangents session.
+    It reuses the T/D/P points from `discover-tangent-radius.js`'s own
+    derivation figure (∠TPD = 90° by the semicircle theorem): a learner's
+    solution reaches the right value but reasons "tan ⊥ radius" where no
+    tangent is drawn at all — TP and PD are chords. The sharp distractor
+    swaps in "tan ⊥ diameter", which fixes the terminology and still misses
+    that there is no tangent anywhere in the picture.
+  · **A real bug, caught only by walking the browser in Afrikaans, not by the
+    checkers.** Station 4's first draft put an English sentence into a
+    `solution.lines[].st` field, which the engine renders verbatim and never
+    translates — every existing use of that field is symbol-only
+    (`∠ABC = 50°`), so `check-bilingual.mjs` doesn't scan it and passed clean
+    both before and after the bug was present. Fixed by moving the setup into
+    the bilingual `prompt` and leaving the solution line as pure symbol.
+    **Worth keeping: `solution.lines[].st` is symbol-only, never prose — and
+    a `solution`-block panel needs an Afrikaans walkthrough even when every
+    checker is green, because this class of bug is invisible to them.**
+  · Full write-up, including the exact panel copy and the bug, is in
+    `docs/chunk-d-practice-panels.md`'s checklist.
+
+**Checks:** `verify-node` 422 diagrams / 767 angles / 0 mismatches (up from
+420/765); `audit-options` clean (inv5 p4/p5 both land at 25/25/25/25 across
+the sample, no length tell); `check-bilingual` clean; `check-table-summary`
+clean. Walked in the browser via `?local=1` and the fast console jump (below)
+in both English and Afrikaans: all three new panels answer correctly, show
+the right REASON pill, and — after the fix — render clean in both languages.
+No console errors.
+
+**Not yet reviewed by her, and NOT PUSHED** — same as the last two sessions,
+awaiting her word. Committed locally only, once she says so.
+
+**Next up:** tan-chord is the last of the four theorems → Station 4 (the wrong
+alternate segment) and Station 6 (explain which segment is which — the one
+typed panel Chunk D may still need, per §3 of the brief). Once that lands,
+Chunk D is done.
+
 ## Where we are (CHUNK D — EQUAL CHORDS, session 2 — built, checked, NOT pushed)
 
 **Equal chords is the second of Chunk D's four theorems, done the same shape as

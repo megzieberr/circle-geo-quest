@@ -58,6 +58,23 @@
 
 const AC = "#0ea271";
 
+/* ---- CHUNK D · tangent-radius — using it where there is no tangent at all ----
+   Reuses the T/D/P geometry already verified for the discovery round
+   `dtanrad` (TD a diameter, P on the circle, ∠TPD = 90° by the semicircle
+   theorem) — no new interactive, and the angle is already known to scale.
+   The point of the panel: TP and PD are chords, not a tangent, so "tan ⊥
+   radius" cannot be the reason for this 90° no matter how tempting it
+   looks. Appended after s4p5 rather than inserted earlier, matching the
+   two-tangents session's call on Station 2: panels 1-6 here are one
+   continuous argument (a solution to write, the way a marker accepts it)
+   that should not be interrupted mid-flow. */
+const TANRAD_ERR_FIG = {
+  O: true,
+  pts: { T: 270, D: 90, P: 175 },
+  chords: [["T", "D"], ["P", "T"], ["P", "D"]],
+  angles: [{ at: "P", legs: ["T", "D"], t: "", o: { v: 90, r: 34, mark: 1 } }],
+};
+
 /* the shared figure, with whichever angles a given panel needs marked */
 const FIG = (angles) => ({
   O: true,
@@ -322,6 +339,43 @@ export const round = {
       note: {
         en: "Learn one accepted wording per theorem and write that one every time. Markers work from a list of accepted wordings — a reason that means the right thing but is worded from scratch is where marks quietly go missing.",
         af: "Leer een aanvaarde bewoording per stelling en skryf elke keer daardie een. Nasieners werk vanaf 'n lys van aanvaarde bewoordings — 'n rede wat die regte ding beteken maar van nuuts af bewoord is, is waar punte stilweg verlore gaan.",
+      },
+    },
+
+    /* ---------- CHUNK D · a different theorem, and no tangent anywhere ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "One more, using a different theorem this time. TD is a diameter and P is a point on the circle — there is no tangent anywhere in this figure. A learner's solution writes the line below; the value is right, but the reason is wrong. What is actually wrong with it?",
+        af: "Nog een, met 'n ander stelling hierdie keer. TD is 'n middellyn en P is 'n punt op die sirkel — daar is nêrens 'n raaklyn in hierdie figuur nie. 'n Leerder se oplossing skryf die reël hieronder; die waarde is reg, maar die rede is verkeerd. Wat is eintlik fout daarmee?",
+      },
+      diagram: TANRAD_ERR_FIG,
+      solution: {
+        caption: SOL_CAP,
+        lines: [
+          { st: "∠TPD = 90°", rs: { en: "tan ⊥ radius", af: "raaklyn ⊥ radius" } },
+        ],
+      },
+      options: [
+        { text: { en: "There is no tangent anywhere in this figure — TP and PD are chords, so tan ⊥ radius cannot apply here; the real reason is ∠s in semi-circle.",
+                  af: "Daar is nêrens 'n raaklyn in hierdie figuur nie — TP en PD is koorde, dus kan raaklyn ⊥ radius hier nie geld nie; die werklike rede is ∠ in halwe sirkel." }, correct: true },
+        { text: { en: "There is no problem with it — a radius is involved and the angle really is 90°, so tan ⊥ radius fits well enough.",
+                  af: "Daar is geen probleem mee nie — 'n radius is betrokke en die hoek is werklik 90°, dus pas raaklyn ⊥ radius goed genoeg." } },
+        { text: { en: "The value itself is wrong here — ∠TPD does not actually work out to 90° in this particular figure.",
+                  af: "Die waarde self is verkeerd hier — ∠TPD kom nie werklik op 90° uit in hierdie spesifieke figuur nie." } },
+        { text: { en: "The reason should say tan ⊥ diameter rather than tan ⊥ radius, since TD is a diameter and not just a plain radius.",
+                  af: "Die rede moet raaklyn ⊥ middellyn sê in plaas van raaklyn ⊥ radius, aangesien TD 'n middellyn is en nie net 'n gewone radius nie." } },
+      ],
+      hints: [
+        { en: "Look for a tangent line anywhere in this figure. Do you see one?",
+          af: "Soek na 'n raaklyn iewers in hierdie figuur. Sien jy een?" },
+        { en: "There isn't one — TP and PD are both chords, and TD is a diameter. tan ⊥ radius (and tan ⊥ diameter) only ever apply to the angle a TANGENT makes with a radius at its own point of contact; nothing here touches the circle from outside at all. ∠TPD = 90° is real, but it comes from a completely different theorem — the one about a diameter and a point on the circle.",
+          af: "Daar is nie een nie — TP en PD is albei koorde, en TD is 'n middellyn. raaklyn ⊥ radius (en raaklyn ⊥ middellyn) geld net vir die hoek wat 'n RAAKLYN met 'n radius maak by sy eie raakpunt; niks hier raak die sirkel van buite af nie. ∠TPD = 90° is werklik, maar dit kom van 'n heeltemal ander stelling — dié oor 'n middellyn en 'n punt op die sirkel." },
+      ],
+      reason: "semiCircle",
+      note: {
+        en: "∠TPD = 90° is correct, and it comes from the semicircle theorem: TD is a diameter and P is on the circle. tan ⊥ radius needs an actual tangent touching the circle at the exact point the angle is measured — swapping in \"tan ⊥ diameter\" does not fix that, because the real fault is that there is still no tangent anywhere in the picture. Always check a tangent is actually THERE before reaching for this reason, however convenient the radius and the right angle look.",
+        af: "∠TPD = 90° is korrek, en dit kom van die halfsirkel-stelling: TD is 'n middellyn en P is op die sirkel. raaklyn ⊥ radius het 'n werklike raaklyn nodig wat die sirkel raak by presies die punt waar die hoek gemeet word — om \"raaklyn ⊥ middellyn\" in te sit maak dit nie reg nie, want die werklike fout is dat daar steeds nêrens 'n raaklyn in die prentjie is nie. Kyk altyd of 'n raaklyn werklik DAAR is voordat jy hierdie rede gebruik, hoe gerieflik die radius en die regte hoek ook al lyk.",
       },
     },
 

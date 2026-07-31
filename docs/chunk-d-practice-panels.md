@@ -293,8 +293,51 @@ be the last word.
         clean (no positional tell, no unmarked sequence); `check-bilingual`
         clean; no console errors.
       · Still to come for this theorem if she wants it: nothing required.
-- [ ] **Tangent-radius** → Station 5 (its true, useful converse), Station 4 (used
-      where the line is not a tangent).
+- [x] **Tangent-radius** — DONE 2026-07-31, three panels (all taps, no new memo,
+      no probe run), same budget as the previous two. Station 5 gets two panels
+      inserted between the "true but useless" example (panel 3) and the start
+      of the cyclic-quad deep-dive (panel 4) — a judge panel (this converse is
+      the station's fourth example, and the promised true-AND-useful one) and
+      an apply panel (given a right angle at a point on the circle, conclude
+      the line is a tangent), the same judge-then-apply shape the station
+      later uses for the cyclic-quad converse. Station 4 gets one panel,
+      appended after the closing typed panel (s4p5) rather than inserted mid-
+      station — panels 1-6 there are one continuous argument, same call as
+      Station 2 in the two-tangents session.
+      · **No new interactive, and no new to-scale figure from scratch.**
+        Station 5's figure (`TANRAD_FIG`) is the same O–radius–tangent
+        geometry already verified for round09 (`r9`) and the discovery round
+        `dtanrad`. Station 4's figure (`TANRAD_ERR_FIG`) reuses the exact
+        T/D/P points from `discover-tangent-radius.js`'s own derivation
+        (∠TPD = 90° by the semicircle theorem) — the class already met this
+        picture deriving tan ⊥ radius, so Station 4 asks them to catch the
+        theorem being misapplied to it.
+      · **Station 4's teaching point:** the classic error is not a wrong
+        number — ∠TPD = 90° is genuinely correct — it is reaching for
+        "tan ⊥ radius" when no tangent is drawn anywhere (TP and PD are
+        chords). The sharp distractor swaps in "tan ⊥ diameter", which fixes
+        the terminology and misses that there is still no tangent at all.
+      · **A real bug caught by the browser walkthrough, not the checkers.**
+        Station 4's first draft put a full English sentence ("TD is a
+        diameter; P is a point on the circle.") into a `solution.lines[].st`
+        field. That field is rendered verbatim, never translated — every
+        existing use of it is symbol-only (`∠ABC = 50°`, `OA = OC`) by
+        convention, so `check-bilingual.mjs` doesn't scan it and passed clean
+        both times. It only showed up as untranslated English while walking
+        the panel in Afrikaans. Fixed by moving the setup into the bilingual
+        `prompt` and leaving the solution line as pure symbol (`∠TPD = 90°`).
+        **Rule worth keeping: `solution.lines[].st` is symbol-only, never
+        prose — put any sentence that needs translating in `prompt`, `rs`, or
+        `note` instead, and always walk a `solution`-block panel in Afrikaans
+        even after the checkers are green.**
+      · Verified live (`?local=1`, console jump into `inv5` and `inv4`):
+        all three panels answer correctly, show the right REASON pill
+        (`converse tan ⊥ radius` / `∠s in semi-circle`), and render clean in
+        both English and Afrikaans after the fix. `verify-node` 422/767/0;
+        `audit-options` clean (no positional tell, no length tell — inv5 p4/p5
+        both land at 25/25/25/25 across the sample); `check-bilingual` clean;
+        no console errors.
+      · Still to come for this theorem if she wants it: nothing required.
 - [ ] **Tan-chord** → Station 4 (the wrong alternate segment), Station 6 (explain
       which segment is which — the one typed panel, if any).
 - [x] Re-run all four checkers + walk both languages — done 2026-07-30, and she
