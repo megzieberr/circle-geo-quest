@@ -75,6 +75,26 @@ const TANRAD_ERR_FIG = {
   angles: [{ at: "P", legs: ["T", "D"], t: "", o: { v: 90, r: 34, mark: 1 } }],
 };
 
+/* ---- CHUNK D · tan-chord — the wrong alternate segment ----
+   T:270, A:38 are the exact points already verified in data-tanchord.js
+   (the "spot the theorem" mini-figure): tg+ leg gives a 64° tangent-chord
+   angle at T, and any point on the far arc (e.g. P at 150) reads the same
+   64° — that is the true alternate segment. Q at 350 sits on the NEAR arc
+   instead, the same side the tangent ray (tg+) points into, so it is in
+   the SAME segment as the tangent-chord angle, not the alternate one.
+   Angles in the two segments of one chord are supplementary, so ∠TQA
+   comes out at 116° — not 64° — which is exactly the number a learner who
+   grabs the nearest point on the circle will get wrong. */
+const TANCHORD_ERR_FIG = {
+  pts: { T: 270, A: 38, Q: 350 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: [["T", "A"], ["T", "Q"], ["A", "Q"]],
+  angles: [
+    { at: "T", legs: ["tg+", "A"], t: "64°", o: { v: 64, r: 40 } },
+    { at: "Q", legs: ["T", "A"], t: "", o: { v: 116, r: 34, mark: 1 } },
+  ],
+};
+
 /* the shared figure, with whichever angles a given panel needs marked */
 const FIG = (angles) => ({
   O: true,
@@ -376,6 +396,43 @@ export const round = {
       note: {
         en: "∠TPD = 90° is correct, and it comes from the semicircle theorem: TD is a diameter and P is on the circle. tan ⊥ radius needs an actual tangent touching the circle at the exact point the angle is measured — swapping in \"tan ⊥ diameter\" does not fix that, because the real fault is that there is still no tangent anywhere in the picture. Always check a tangent is actually THERE before reaching for this reason, however convenient the radius and the right angle look.",
         af: "∠TPD = 90° is korrek, en dit kom van die halfsirkel-stelling: TD is 'n middellyn en P is op die sirkel. raaklyn ⊥ radius het 'n werklike raaklyn nodig wat die sirkel raak by presies die punt waar die hoek gemeet word — om \"raaklyn ⊥ middellyn\" in te sit maak dit nie reg nie, want die werklike fout is dat daar steeds nêrens 'n raaklyn in die prentjie is nie. Kyk altyd of 'n raaklyn werklik DAAR is voordat jy hierdie rede gebruik, hoe gerieflik die radius en die regte hoek ook al lyk.",
+      },
+    },
+
+    /* ---------- CHUNK D · tan-chord — the wrong alternate segment ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "One more, a different theorem this time. STU is a tangent at T, and TA is a chord from the point of contact. The tan-chord theorem says the angle between the tangent and the chord equals the angle in the ALTERNATE segment — the segment on the far side of the chord, not the near one. The tangent-chord angle at T is 64°. A learner's solution writes the line below for the angle at Q. What has actually gone wrong?",
+        af: "Nog een, met 'n ander stelling hierdie keer. STU is 'n raaklyn by T, en TA is 'n koord vanaf die raakpunt. Die raaklyn-koord-stelling sê die hoek tussen die raaklyn en die koord is gelyk aan die hoek in die OORSTAANDE segment — die segment aan die vêr kant van die koord, nie die naby kant nie. Die raaklyn-koord-hoek by T is 64°. 'n Leerder se oplossing skryf die reël hieronder vir die hoek by Q. Wat het eintlik verkeerd geloop?",
+      },
+      diagram: TANCHORD_ERR_FIG,
+      solution: {
+        caption: SOL_CAP,
+        lines: [
+          { st: "∠TQA = 64°", rs: { en: "tan-chord theorem", af: "raaklyn-koord-stelling" } },
+        ],
+      },
+      options: [
+        { text: { en: "Q is in the SAME segment as the tangent-chord angle, not the alternate one — the theorem does not apply to it at all. The angle that actually equals 64° is on the OTHER side of chord TA; ∠TQA itself works out to 116°.",
+                  af: "Q is in dieselfde segment as die raaklyn-koord-hoek, nie die oorstaande een nie — die stelling geld glad nie daarvoor nie. Die hoek wat werklik gelyk is aan 64° is aan die ANDER kant van koord TA; ∠TQA self kom op 116° uit." }, correct: true },
+        { text: { en: "There's nothing wrong with it — Q is on the circle and TA is a chord, so the tan-chord theorem applies here exactly as written.",
+                  af: "Daar is niks fout mee nie — Q lê op die sirkel en TA is 'n koord, dus geld die raaklyn-koord-stelling hier presies soos geskryf." } },
+        { text: { en: "The reason is right, but the value is wrong — the tangent-chord angle at T does not actually work out to 64° in this figure.",
+                  af: "Die rede is reg, maar die waarde is verkeerd — die raaklyn-koord-hoek by T kom nie werklik op 64° uit in hierdie figuur nie." } },
+        { text: { en: "The reason should say converse tan-chord theorem instead, since the angle is being read off backwards from Q rather than from the tangent.",
+                  af: "Die rede moet eerder omgekeerde raaklyn-koord-stelling sê, aangesien die hoek agteruit vanaf Q afgelees word in plaas van vanaf die raaklyn." } },
+      ],
+      hints: [
+        { en: "Look at which side of chord TA the tangent ray sits on. Is Q on that same side, or the opposite one?",
+          af: "Kyk na watter kant van koord TA die raaklynstraal lê. Is Q aan dieselfde kant, of die teenoorgestelde kant?" },
+        { en: "Q is on the same side as the tangent, in the near segment — not the alternate one. Angles in the two segments of the same chord are supplementary, not equal, which is why ∠TQA is 116° here instead of 64°. Being ANYWHERE on the circle is not enough; the theorem only ever matches the tangent-chord angle to the segment on the far side.",
+          af: "Q is aan dieselfde kant as die raaklyn, in die naby segment — nie die oorstaande een nie. Hoeke in die twee segmente van dieselfde koord is aanvullend, nie gelyk nie, en dis hoekom ∠TQA hier 116° is in plaas van 64°. Om net ORAL op die sirkel te wees, is nie genoeg nie; die stelling pas die raaklyn-koord-hoek net by die segment aan die vêr kant." },
+      ],
+      reason: "tanChord",
+      note: {
+        en: "\"Alternate\" means the OTHER side. The tan-chord theorem only ever matches the tangent-chord angle to the segment across the chord from it — never the one next to the tangent. Checking a point is on the circle is not enough; you have to check which side of the chord it is on before the theorem can apply. This is the single biggest trap in tan-chord questions, more than any wrong number.",
+        af: "\"Oorstaande\" beteken die ANDER kant. Die raaklyn-koord-stelling pas die raaklyn-koord-hoek net by die segment oorkant die koord — nooit die een langs die raaklyn nie. Om te kyk of 'n punt op die sirkel lê, is nie genoeg nie; jy moet kyk aan watter kant van die koord dit is voordat die stelling kan geld. Dit is die grootste slaggat in raaklyn-koord-vrae, meer as enige verkeerde getal.",
       },
     },
 

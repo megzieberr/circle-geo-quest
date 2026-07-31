@@ -338,8 +338,74 @@ be the last word.
         both land at 25/25/25/25 across the sample); `check-bilingual` clean;
         no console errors.
       · Still to come for this theorem if she wants it: nothing required.
-- [ ] **Tan-chord** → Station 4 (the wrong alternate segment), Station 6 (explain
-      which segment is which — the one typed panel, if any).
+- [x] **Tan-chord** — DONE 2026-07-31, two panels: one tap (Station 4) and the
+      ONE typed panel this whole brief budgeted for (Station 6, s6p5). `progress`
+      was checked for `inv4`/`inv6` before starting — still empty for both, so
+      no back-pay gap.
+      · **Station 4 "Prove It"** gets one panel, appended after the tangent-
+        radius addition (panels 1-6 are one continuous argument; new theorem
+        additions keep appending at the end, same call as the last two
+        sessions). New figure `TANCHORD_ERR_FIG`: T:270, A:38 are the exact
+        points already verified in `data-tanchord.js`'s own "spot the theorem"
+        mini-figure (tg+ leg gives a 64° tangent-chord angle at T), plus a new
+        point Q at 350° on the NEAR arc — the same side the tangent ray points
+        into. A "learner's solution" line claims `∠TQA = 64° (tan-chord
+        theorem)`; the real fault is that Q is in the SAME segment as the
+        tangent-chord angle, not the alternate one, so the theorem never
+        applied to it at all — `∠TQA` actually works out to 116° (angles in
+        the two segments of one chord are supplementary). This is the classic
+        error the brief named: grabbing the nearest point on the circle
+        instead of checking which SIDE of the chord it is on.
+      · **Station 6 "Explain It"** gets `s6p5`, inserted before the closing
+        note (panel 5 of 6 now) — the one typed panel Chunk D's whole brief
+        budgeted for (§3: "mostly taps, 1-2 typed in the whole of Chunk D").
+        New figure `TANCHORD_FIG` reuses the same T:270/A:38 points, this time
+        showing BOTH candidates: P (150°, the true alternate segment) and Q
+        (350°, the near-side trap) — neither labelled with its own angle value
+        (`t: ""`, `o.v` kept, same convention as `FIG_BOWTIE`), so the figure
+        does not hand over which one is right. The learner explains to a
+        friend how to FIND the alternate segment and why the near point is a
+        trap — writing, not tapping, which is exactly the skill Station 6
+        exists to drill on this theorem (§2 of the brief).
+      · **No new interactive, and both figures reuse already-verified points.**
+        `TANCHORD_ERR_FIG` and `TANCHORD_FIG` both build on the exact T:270,
+        A:38 coordinates already shipped and verified in `data-tanchord.js` —
+        only the new points (Q, and P+Q together) needed fresh geometry, and
+        both are plain inscribed-angle results (128°/232° arcs → 64°/116°),
+        not hand-tuned.
+      · **The `s6p5` memo, mirrored to `phase16.sql` and applied to live.**
+        Two required ideas, neither needing the letters P/Q by name — a
+        learner who explains it purely by side (near/far, same/opposite) has
+        answered just as completely as one who names the points. Probed with
+        `node tools/probe-checker.mjs s6p5` against a throwaway learner
+        (created → probed → deleted, cascade clean): 4/4 passed — both
+        `got_it` cases (EN full answer, AF informal) accepted; the near-miss
+        (names the right point, never says why the other is wrong) came back
+        `partly` with a nudge asking for the missing half; the wrong-theorem
+        case (blames "OQ is not a radius" instead of which side of the chord)
+        came back `not_yet` with a corrective nudge. Added to probe batch 3
+        alongside `s6p3`/`s6p4`.
+      · **No `solution.lines[].st` prose risk this time** — Station 4's new
+        panel keeps its one solution line symbol-only (`∠TQA = 64°`), and
+        Station 6's panel doesn't use a `solution` block at all, so the bug
+        tangent-radius found (an English sentence smuggled into a field the
+        engine never translates) had nowhere to recur. Walked anyway, in both
+        languages, per the rule that check-bilingual cannot catch this class
+        of defect.
+      · Verified live (`?local=1` on the `circle-quest-b` port, since another
+        session's dev server already held this folder's default port; console
+        jump into `inv4` and `inv6`): both panels render correctly in English
+        AND Afrikaans, the Station 4 tap shows the right REASON pill (`tan
+        chord theorem` / `raaklyn koord stelling`) and note in both languages,
+        and Station 6's hint ladder (rung 1 question, rung 2 tell) and
+        `memoDisplay` reveal all render clean in both languages. No console
+        errors. `verify-node` 424/772/0 (up from 422/767); `audit-options`
+        clean (inv4 p8's correct option lands at 217 vs a 138-char runner-up —
+        1.57×, under the 1.6× tell threshold, so no padding needed);
+        `check-bilingual` clean; `check-table-summary` clean (no Station 1
+        change this session).
+      · **This is the last of the four Chunk D theorems — the whole brief is
+        now built.** Nothing further is required by the original scope.
 - [x] Re-run all four checkers + walk both languages — done 2026-07-30, and she
       play-tested the line herself end to end.
 - [x] **`CONFIG.stationsLive` is TRUE — RELEASED 2026-07-30.** Her call after

@@ -411,3 +411,33 @@ on conflict (panel_id) do update
   set memo       = excluded.memo,
       must_have  = excluded.must_have,
       updated_at = now();
+
+
+-- ------------------------------------------------------------
+--  10. Memo seed — Station 6 "Explain It", Chunk D · tan-chord addition
+-- ------------------------------------------------------------
+--  s6p5: explain to a friend how to find the ALTERNATE segment of a
+--  tangent-chord angle, and why the near point (same side as the tangent)
+--  is a trap. Figure: STU tangent at T, chord TA, tangent-chord angle 64
+--  degrees. P (far side) and Q (near side) are both shown, neither one
+--  labelled with its own angle value — the panel is about identifying
+--  which SIDE is right, not reading a number off the picture.
+--
+--  MARK SCHEME: two ideas, and letter names are NOT required — a learner
+--  who never uses "P" or "Q" and describes it purely by side (near/far,
+--  same/opposite) has answered the question just as completely.
+
+insert into public.panel_memos (panel_id, memo, must_have) values
+(
+  's6p5',
+  $m$The alternate segment is the one on the OPPOSITE side of the chord from the tangent-chord angle, never the side next to it. Here the tangent ray points into the same side as Q, so Q's segment is the same one - not alternate - and its angle actually works out to 116 degrees, not 64. P sits on the far side, which is the true alternate segment, so P is the point whose angle equals the tangent-chord angle.
+Picking the near point because it "looks closest" to the tangent is exactly the trap the word "alternate" exists to stop. Angles in the two segments of one chord are supplementary (they add to 180 degrees), which is why the near point's angle is not equal to the tangent-chord angle at all, let alone close to it.$m$,
+  $m$says how to FIND the alternate segment: it is the side OPPOSITE / across from / on the far side of the chord from the tangent-chord angle, not the side next to it or on the same side. ACCEPT any wording carrying that idea, with or without point letters: "the alternate segment is the one on the other side of the chord from the tangent", "P is right because it's on the far side", "kyk aan watter kant die raaklyn nie is nie", "die oorstaande segment is aan die ander kant van die koord".
+says WHY the near point is wrong: it is in the SAME segment as the tangent-chord angle, not the alternate one, so the theorem does not match it to that angle. ACCEPT any wording carrying that idea, with or without point letters or a number: "Q is wrong because it's on the same side as the tangent", "the near point is in the same segment, not the alternate one", "Q is 'n slaggat want dit is aan dieselfde kant as die raaklyn", "die naby een is in dieselfde segment".
+Both ideas are required, in any order, in either language, and NEITHER needs the letters P or Q by name - a purely spatial description (near/far, same side/opposite side) that gets the reasoning right is a complete answer. Do NOT require the numbers 64 or 116, and do NOT require the word "supplementary" or any other theorem name.
+Use partly or not_yet when the answer states only that one point is right without explaining why the other is wrong (or vice versa), or when it says the near point "looks like" it should work with no reference to which side of the chord it is on.$m$
+)
+on conflict (panel_id) do update
+  set memo       = excluded.memo,
+      must_have  = excluded.must_have,
+      updated_at = now();

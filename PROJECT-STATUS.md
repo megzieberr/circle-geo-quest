@@ -1,5 +1,75 @@
 # Project status — updated 2026-07-31
 
+## Where we are (CHUNK D — TAN-CHORD, session 4 — the LAST theorem, built, checked, NOT pushed)
+
+**Tan-chord is the fourth and final theorem of Chunk D.** `progress` was
+checked for `inv4`/`inv6` before starting — still empty for both, so no
+back-pay gap, same as every prior session. **With this, Chunk D is done: all
+four theorems are in, every station that needed extra practice panels has
+them, and nothing further is required by the original brief.**
+
+  · **Station 4 "Prove It"** gets one more appended `choice` panel (after the
+    tangent-radius one from last session — panels 1-6 are one continuous
+    argument, and new theorem additions keep appending at the end). New
+    figure `TANCHORD_ERR_FIG` reuses T:270/A:38, the exact points already
+    verified in `data-tanchord.js`'s own "spot the theorem" mini-figure (tg+
+    gives a 64° tangent-chord angle), plus a new point Q at 350° on the NEAR
+    side of chord TA — the same side the tangent points into. A "learner's
+    solution" line claims `∠TQA = 64° (tan-chord theorem)`; the real fault is
+    that Q sits in the SAME segment as the tangent-chord angle, not the
+    alternate one, so the theorem never applied to it — `∠TQA` actually works
+    out to 116° (the two segments of a chord are supplementary). This is the
+    exact error the brief named: grabbing the nearest point instead of
+    checking which side of the chord it's on.
+  · **Station 6 "Explain It"** gets `s6p5` — the ONE typed panel the whole of
+    Chunk D budgeted for (§3: "mostly taps, 1-2 typed in the whole of Chunk
+    D" — the count was 0 going in). Inserted before the closing note. New
+    figure `TANCHORD_FIG` reuses the same T/A points and shows BOTH
+    candidates, P (150°, the true alternate segment) and Q (350°, the trap) —
+    neither labelled with its angle value, so the figure doesn't hand over
+    the answer. The learner explains to a friend how to find the alternate
+    segment and why the near point is a trap.
+  · **The `s6p5` memo is applied to live** (`panel_memos`, mirrored into
+    `phase16.sql`) and probed: `node tools/probe-checker.mjs s6p5` against a
+    throwaway learner (created → probed → deleted, cascade clean) — 4/4
+    passed. Both accepted answers (EN full, AF informal) came back `got_it`;
+    a near-miss (names the right point, never explains why the other is
+    wrong) came back `partly` with a nudge; a wrong-theorem answer (blames
+    "OQ is not a radius" instead of which side of the chord) came back
+    `not_yet` with a corrective nudge. Neither `must_have` line requires the
+    letters P/Q by name — a purely spatial explanation (near/far,
+    same/opposite side) is a complete answer.
+  · **No new interactive, and no `solution.lines[].st` prose risk this
+    time.** Both new figures build on already-verified T:270/A:38 geometry;
+    Station 4's one `solution` line stays symbol-only (`∠TQA = 64°`), and
+    Station 6's panel doesn't use a `solution` block at all, so the bug the
+    tangent-radius session found (an English sentence in a field the engine
+    never translates) had nowhere to recur. Walked anyway, in both
+    languages, since that bug is invisible to the checkers by design.
+  · Full write-up, including the exact geometry and the probe results, is in
+    `docs/chunk-d-practice-panels.md`'s checklist.
+
+**Checks:** `verify-node` 424 diagrams / 772 angles / 0 mismatches (up from
+422/767); `audit-options` clean (inv4's new panel: correct option 217 chars
+vs a 138-char runner-up, 1.57× — under the 1.6× tell threshold, no padding
+needed); `check-bilingual` clean; `check-table-summary` clean (no Station 1
+change this session). Walked in the browser via `?local=1` on the
+`circle-quest-b` port (this folder's default port was held by another
+session's dev server) and the fast console jump (below), in both English and
+Afrikaans: Station 4's tap shows the right REASON pill (`tan chord theorem` /
+`raaklyn koord stelling`) and note in both languages; Station 6's hint ladder
+(rung 1 question, rung 2 tell) and `memoDisplay` reveal all render clean in
+both languages. No console errors.
+
+**Not yet reviewed by her, and NOT PUSHED** — same as every prior Chunk D
+session, awaiting her word. Committed locally only, once she says so.
+
+**Next up: nothing required by the original brief.** All four theorems are
+in. What's still open, listed in the brief's "Also open" section: the
+marking cap (not urgent — Chunk D's typed-panel count is now 1 of the
+budgeted 1-2), and whether she wants the on-screen-tick XP decision
+revisited. Otherwise this is ready for her review and a `/ship`.
+
 ## Where we are (CHUNK D — TANGENT-RADIUS, session 3 — built, checked, NOT pushed)
 
 **Tangent-radius is the third of Chunk D's four theorems, done the same shape as

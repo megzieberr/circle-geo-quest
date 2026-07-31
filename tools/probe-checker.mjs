@@ -143,6 +143,16 @@ const PROBES = [
   ["s6p4", "en", "reject", "conjecture only",
     "Angles in the same segment are equal to each other in every circle."],
 
+  // ---------- s6p5 · Chunk D tan-chord — which segment is alternate, and why ----------
+  ["s6p5", "en", "got_it", "both ideas — side to find it, and why the near one is wrong",
+    "The alternate segment is the one on the other side of the chord from the tangent-chord angle. Q is on the same side as the tangent, so it's in the same segment, not the alternate one — that's why Q is wrong. P is on the far side, so P is the point whose angle equals 64 degrees."],
+  ["s6p5", "af", "got_it", "both ideas, informal AF",
+    "Die oorstaande segment is aan die ander kant van die koord as die raaklyn-koord-hoek. Q is aan dieselfde kant as die raaklyn, dus is dit in dieselfde segment, nie die oorstaande een nie — dis hoekom Q verkeerd is. P is aan die vêr kant, so P se hoek is gelyk aan 64 grade."],
+  ["s6p5", "en", "reject", "near-miss — names the right point, never says why the other is wrong",
+    "P is the correct one because it's in the alternate segment."],
+  ["s6p5", "en", "reject", "wrong-theorem — reasoning that has nothing to do with which side of the chord",
+    "Q is wrong because OQ is not a radius, so the tan-chord theorem cannot apply to it."],
+
   /* ---------- s2p4 · THE OPEN STRICTNESS QUESTION (batch 3, run on its own) ----------
      Not scored, because there is no correct expectation to score against — this is
      Megan's ruling to make, not a bug. `s2p4` deliberately rejects "equal + same
@@ -166,7 +176,7 @@ const PROBES = [
 const BATCHES = {
   1: ["s1p4", "s4p4"],
   2: ["s3p4", "s5p4"],
-  3: ["s6p3", "s6p4"],
+  3: ["s6p3", "s6p4", "s6p5"],
   4: ["s2p4"],
 };
 const arg = String(process.argv[2] || 1);
