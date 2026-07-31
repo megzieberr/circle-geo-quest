@@ -57,9 +57,15 @@ all 15 changed strings confirmed served + mounting in a fresh browser tab, 0 con
 errors. No server/memo changes, so no migration handshake needed. NOT COMMITTED —
 these edits sit on top of the tan-chord commit (fd59720), awaiting her word.
 
-## Observation for a future session (no action taken)
-On CHOICE panels hint rung 2 can never display: wrong answers are capped at
-(options − 1) = 3, and rung 2 needs a 4th wrong. Only blank/written panels (and the
-written stuck-ladder) ever reach rung 2. The rung-2 tell-hints on choice panels are
-therefore latent copy — kept correct anyway, but worth a design decision someday
-(e.g. show rung 2 on the 3rd wrong when only the correct option remains).
+## Observation → FIXED same day (her call: "let the second hint already show
+## before the right answer is shown")
+On CHOICE panels hint rung 2 could never display: wrong answers cap at
+(options − 1) = 3, and rung 2 needed a 4th wrong — rung 1 itself only arrived once
+elimination had left the correct option as the only live button. Fixed in
+`js/investigate.js`: on choice panels every wrong tap now advances the ladder one
+rung (wrong 1 → rung 1 with a real choice left, wrong 2 → the rung-2 tell with two
+options still open). Blank and written panels keep the original 3-miss ladder
+(their wrong count is unbounded, so every rung was always reachable). Verified in
+the browser: choice = rung 1 / rung 2 / clamp, blank = no hint until the 3rd miss.
+NOTE: `js/discover.js` (the frozen engine for the 11 live discovery rounds) has the
+identical old ladder — mirroring it there is HER call, not made in this change.

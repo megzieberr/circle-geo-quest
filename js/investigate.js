@@ -395,16 +395,26 @@ function mountPanel(host, panel, accent, scratch, onDone) {
   const hintBox = el("div", "dp-hint"); hintBox.hidden = true;
   const feedback = el("div", "dp-feedback"); feedback.hidden = true;
 
+  /* On a CHOICE panel every wrong tap advances the ladder one rung (her call,
+     2026-07-31: "let the second hint already show before the right answer is
+     shown"). Wrong taps cap at options−1, so with the shared HINT_AFTER of 3
+     a four-option panel could only ever reach rung 1 — and it arrived exactly
+     when elimination had already left the correct answer as the only live
+     button. Now rung 1 lands after the 1st wrong (a real choice remains) and
+     rung 2 — the tell — after the 2nd, while two options are still open.
+     Blank and written panels keep the original 3-miss ladder: their wrong
+     count is unbounded, so every rung was always reachable there. */
+  const hintAfter = panel.type === "choice" ? 1 : HINT_AFTER;
   function onWrong(customMsg) {
     wrong++;
     feedback.hidden = false;
     feedback.className = "dp-feedback bad";
     // The checker's nudge replaces the generic message when we have one.
     // textContent, never innerHTML — model output must stay inert.
-    feedback.textContent = customMsg || (wrong < HINT_AFTER ? t("notQuiteTry") : t("notQuiteThink"));
-    if (wrong >= HINT_AFTER) {
+    feedback.textContent = customMsg || (wrong < hintAfter ? t("notQuiteTry") : t("notQuiteThink"));
+    if (wrong >= hintAfter) {
       const hints = panel.hints || [];
-      const idx = Math.min(wrong - HINT_AFTER, hints.length - 1);
+      const idx = Math.min(wrong - hintAfter, hints.length - 1);
       if (hints.length) {
         hintBox.hidden = false;
         hintBox.innerHTML = `<span class="dp-hint-tag">💡 ${t("hint")}</span> ${tx(hints[idx])}`;
