@@ -178,8 +178,8 @@ export const round = {
       },
       diagram: FIG_CHORD,
       options: [
-        { text: { en: "No — there is exactly one chord it fails for.",
-                  af: "Nee — daar is presies een koord waarvoor dit misluk." }, correct: true },
+        { text: { en: "No — there is exactly one kind of chord it fails for.",
+                  af: "Nee — daar is presies een soort koord waarvoor dit misluk." }, correct: true },
         { text: { en: "Yes — it is a theorem, so it holds for every chord.",
                   af: "Ja — dit is 'n stelling, dus geld dit vir elke koord." } },
         { text: { en: "No — it fails whenever the chord is very short.",
@@ -214,7 +214,7 @@ export const round = {
       },
       diagram: FIG_DIAM,
       sentence: [
-        { en: "The theorem fails for exactly one chord: the ", af: "Die stelling misluk vir presies een koord: die " },
+        { en: "The theorem fails for exactly one kind of chord: the ", af: "Die stelling misluk vir presies een soort koord: die " },
         { kind: "word", answer: "wDiameter", options: ["wDiameter", "wRadius", "wTangent", "wArc"] },
         { en: ".", af: "." },
       ],

@@ -533,8 +533,11 @@ export const round = {
       hints: [
         { en: "Find the row where CD is closest in length to AB. What do ∠AOB and ∠COD do in that row?",
           af: "Vind die ry waar CD die naaste in lengte aan AB is. Wat doen ∠AOB en ∠COD in daardie ry?" },
-        { en: "Every other row has CD a different length from AB, and the two angles sit apart. Only the row where the chords match has the angles matching too.",
-          af: "Elke ander ry het CD 'n ander lengte as AB, en die twee hoeke sit uitmekaar. Net die ry waar die koorde ooreenstem, het die hoeke ook ooreenstem." },
+        // No claim that a chords-match row EXISTS in the learner's table — they
+        // may never have stopped at CD = AB. Same rule as N4/s3p4: copy must not
+        // assert anything about rows it cannot know.
+        { en: "Wherever CD is a different length from AB, the two angles sit apart — and the closer the chords get, the closer the angles get. They only ever match when the chords do.",
+          af: "Waar CD 'n ander lengte as AB het, sit die twee hoeke uitmekaar — en hoe nader die koorde aan mekaar kom, hoe nader kom die hoeke. Hulle stem net ooreen wanneer die koorde ooreenstem." },
       ],
       reason: "equalChords",
       note: {

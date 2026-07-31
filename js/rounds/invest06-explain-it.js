@@ -242,8 +242,8 @@ export const round = {
       type: "written",
       panelId: "s6p4",
       prompt: {
-        en: "Last one. This is the figure from Station 2: you dragged P and Q around chord AB, and the two marked angles stayed equal in every position you tried.\n\nWrite the CONCLUSION paragraph for that investigation — the few sentences that go at the very end of the write-up.",
-        af: "Laaste een. Dit is die figuur uit Stasie 2: jy het P en Q om koord AB gesleep, en die twee gemerkte hoeke het in elke posisie wat jy probeer het, gelyk gebly.\n\nSkryf die GEVOLGTREKKING-paragraaf vir daardie ondersoek — die paar sinne wat heel aan die einde van die verslag kom.",
+        en: "Nearly done. This is the figure from Station 2: you dragged P and Q around chord AB, and the two marked angles stayed equal in every position you tried.\n\nWrite the CONCLUSION paragraph for that investigation — the few sentences that go at the very end of the write-up.",
+        af: "Amper klaar. Dit is die figuur uit Stasie 2: jy het P en Q om koord AB gesleep, en die twee gemerkte hoeke het in elke posisie wat jy probeer het, gelyk gebly.\n\nSkryf die GEVOLGTREKKING-paragraaf vir daardie ondersoek — die paar sinne wat heel aan die einde van die verslag kom.",
       },
       // both angles marked, NEITHER labelled — see the N20 note in the header
       diagram: FIG_BOWTIE,
@@ -288,8 +288,8 @@ export const round = {
       type: "written",
       panelId: "s6p5",
       prompt: {
-        en: "One more theorem, one more friend who missed the lesson. STU is a tangent at T, and TA is a chord from the point of contact — the tangent-chord angle at T is 64°. P and Q are two points on the circle, one on each side of chord TA. Your friend cannot remember which one, P or Q, is in the ALTERNATE segment — the one whose angle actually equals 64°. Explain to them how to tell, and why the other point is a trap.",
-        af: "Nog 'n stelling, nog 'n maat wat die les gemis het. STU is 'n raaklyn by T, en TA is 'n koord vanaf die raakpunt — die raaklyn-koord-hoek by T is 64°. P en Q is twee punte op die sirkel, een aan elke kant van koord TA. Jou maat kan nie onthou watter een, P of Q, in die OORSTAANDE segment is nie — die een wie se hoek werklik gelyk is aan 64°. Verduidelik vir hulle hoe om dit uit te werk, en hoekom die ander punt 'n slaggat is.",
+        en: "Last one: a different theorem, and another friend who missed the lesson. STU is a tangent at T, and TA is a chord from the point of contact — the tangent-chord angle at T is 64°. P and Q are two points on the circle, one on each side of chord TA. Your friend cannot remember which one, P or Q, is in the ALTERNATE segment — the one whose angle actually equals 64°. Explain to them how to tell, and why the other point is a trap.",
+        af: "Laaste een: 'n ander stelling, en nog 'n maat wat die les gemis het. STU is 'n raaklyn by T, en TA is 'n koord vanaf die raakpunt — die raaklyn-koord-hoek by T is 64°. P en Q is twee punte op die sirkel, een aan elke kant van koord TA. Jou maat kan nie onthou watter een, P of Q, in die OORSTAANDE segment is nie — die een wie se hoek werklik gelyk is aan 64°. Verduidelik vir hulle hoe om dit uit te werk, en hoekom die ander punt 'n slaggat is.",
       },
       diagram: TANCHORD_FIG,
       minChars: 40,
@@ -308,19 +308,24 @@ export const round = {
         { en: "The point on the same side as the tangent is a trap because…", af: "Die punt aan dieselfde kant as die raaklyn is 'n slaggat omdat…" },
       ],
       hints: [
-        { en: "Look at which side of chord TA the tangent ray points into. Which of P or Q is on that same side, and which is on the far side?",
-          af: "Kyk na watter kant van koord TA die raaklynstraal inwys. Watter een van P of Q is aan daardie selfde kant, en watter een is aan die vêr kant?" },
-        { en: "Q sits on the same side as the tangent — that makes it the same segment, not the alternate one. P is on the far side, which IS the alternate segment, so P is the point whose angle equals 64°. \"Alternate\" always means the other side, never the near one.",
-          af: "Q lê aan dieselfde kant as die raaklyn — dit maak dit dieselfde segment, nie die oorstaande een nie. P is aan die vêr kant, wat WEL die oorstaande segment is, dus is P die punt wie se hoek gelyk is aan 64°. \"Oorstaande\" beteken altyd die ander kant, nooit die naby een nie." },
+        // "the tangent ray" was ambiguous — the tangent at T has TWO rays, one
+        // on each side of chord TA, and only the one forming the marked 64°
+        // angle makes the rule work. Anchor on the marked angle instead. (The
+        // server memo still accepts "same side as the tangent" wordings — this
+        // is the teaching copy, not the mark scheme.)
+        { en: "The 64° angle at T sits on one side of chord TA. Which of P or Q is on that same side, and which is on the far side?",
+          af: "Die 64°-hoek by T sit aan een kant van koord TA. Watter een van P of Q is aan daardie selfde kant, en watter een is aan die vêr kant?" },
+        { en: "Q sits on the same side as the 64° angle — that makes it the same segment, not the alternate one. P is on the far side, which IS the alternate segment, so P is the point whose angle equals 64°. \"Alternate\" always means the other side, never the near one.",
+          af: "Q lê aan dieselfde kant as die 64°-hoek — dit maak dit dieselfde segment, nie die oorstaande een nie. P is aan die vêr kant, wat WEL die oorstaande segment is, dus is P die punt wie se hoek gelyk is aan 64°. \"Oorstaande\" beteken altyd die ander kant, nooit die naby een nie." },
       ],
       memoDisplay: {
-        en: "The alternate segment is the one on the OPPOSITE side of the chord from the tangent-chord angle, never the side next to it. Here the tangent ray points into the same side as Q, so Q's segment is the same one — not alternate — and its angle actually works out to 116°, not 64°. P sits on the far side, which is the true alternate segment, so P is the point whose angle equals the tangent-chord angle. Picking the near point because it \"looks closest\" to the tangent is exactly the trap the word \"alternate\" exists to stop.",
-        af: "Die oorstaande segment is die een aan die TEENOORGESTELDE kant van die koord as die raaklyn-koord-hoek, nooit die kant langsaan nie. Hier wys die raaklynstraal in na dieselfde kant as Q, dus is Q se segment dieselfde een — nie oorstaande nie — en sy hoek kom werklik op 116° uit, nie 64° nie. P lê aan die vêr kant, wat die ware oorstaande segment is, dus is P die punt wie se hoek gelyk is aan die raaklyn-koord-hoek. Om die naby punt te kies omdat dit \"nader\" aan die raaklyn lyk, is presies die slaggat wat die woord \"oorstaande\" bestaan om te voorkom.",
+        en: "The alternate segment is the one on the OPPOSITE side of the chord from the tangent-chord angle, never the side next to it. Here the 64° angle at T sits on the same side of the chord as Q, so Q's segment is the same one — not alternate — and its angle actually works out to 116°, not 64°. P sits on the far side, which is the true alternate segment, so P is the point whose angle equals the tangent-chord angle. Picking the near point because it \"looks closest\" to the tangent is exactly the trap the word \"alternate\" exists to stop.",
+        af: "Die oorstaande segment is die een aan die TEENOORGESTELDE kant van die koord as die raaklyn-koord-hoek, nooit die kant langsaan nie. Hier sit die 64°-hoek by T aan dieselfde kant van die koord as Q, dus is Q se segment dieselfde een — nie oorstaande nie — en sy hoek kom werklik op 116° uit, nie 64° nie. P lê aan die vêr kant, wat die ware oorstaande segment is, dus is P die punt wie se hoek gelyk is aan die raaklyn-koord-hoek. Om die naby punt te kies omdat dit \"nader\" aan die raaklyn lyk, is presies die slaggat wat die woord \"oorstaande\" bestaan om te voorkom.",
       },
       reason: "tanChord",
       note: {
-        en: "Both routes to this are really the same check: find which side of the chord the tangent points into, and rule that side OUT for the alternate segment — it's the same segment. Whatever is left, on the far side, is the alternate one. A friend who keeps grabbing the near point is not making a maths mistake so much as a reading mistake — treating \"the angle over there\" as good enough, when the theorem is specific about which \"there\" it means.",
-        af: "Albei roetes hierheen is eintlik dieselfde toets: kyk aan watter kant van die koord die raaklyn inwys, en sluit daardie kant UIT vir die oorstaande segment — dit is dieselfde segment. Wat ook al oorbly, aan die vêr kant, is die oorstaande een. 'n Maat wat aanhoudend die naby punt gryp, maak nie eintlik 'n wiskundefout nie, maar eerder 'n leesfout — om \"die hoek daar\" as goed genoeg te behandel, terwyl die stelling spesifiek is oor watter \"daar\" dit bedoel.",
+        en: "Both routes to this are really the same check: find which side of the chord the tangent-chord angle sits on, and rule that side OUT for the alternate segment — it's the same segment. Whatever is left, on the far side, is the alternate one. A friend who keeps grabbing the near point is not making a maths mistake so much as a reading mistake — treating \"the angle over there\" as good enough, when the theorem is specific about which \"there\" it means.",
+        af: "Albei roetes hierheen is eintlik dieselfde toets: kyk aan watter kant van die koord die raaklyn-koord-hoek sit, en sluit daardie kant UIT vir die oorstaande segment — dit is dieselfde segment. Wat ook al oorbly, aan die vêr kant, is die oorstaande een. 'n Maat wat aanhoudend die naby punt gryp, maak nie eintlik 'n wiskundefout nie, maar eerder 'n leesfout — om \"die hoek daar\" as goed genoeg te behandel, terwyl die stelling spesifiek is oor watter \"daar\" dit bedoel.",
       },
     },
 

@@ -174,8 +174,11 @@ export const round = {
       hints: [
         { en: "Try to picture a line that makes a right angle with a radius at the very point it meets the circle, but is NOT a tangent. Can you find one?",
           af: "Probeer 'n lyn voorstel wat 'n regte hoek met 'n radius maak by presies die punt waar dit die sirkel ontmoet, maar wat NIE 'n raaklyn is nie. Kan jy een kry?" },
-        { en: "You can't — a line that meets a circle at exactly one point AND is perpendicular to the radius there cannot cross the circle again. That is exactly why riders use this converse to PROVE a line is a tangent, not just to describe one.",
-          af: "Jy kan nie — 'n lyn wat die sirkel op presies een punt ontmoet EN loodreg op die radius daar is, kan nie weer deur die sirkel sny nie. Dit is presies hoekom vraagstukke hierdie omgekeerde gebruik om te BEWYS 'n lyn is 'n raaklyn, nie net om een te beskryf nie." },
+        // Rewritten 2026-07-31: the old wording assumed "meets at exactly one
+        // point", which is the very thing being proved. This is the real
+        // argument, at learner level.
+        { en: "You can't — if a line is perpendicular to the radius at the point where it meets the circle, every OTHER point on that line is further than one radius from the centre, so the line can never touch the circle a second time. That is exactly why riders use this converse to PROVE a line is a tangent, not just to describe one.",
+          af: "Jy kan nie — as 'n lyn loodreg op die radius is by die punt waar dit die sirkel ontmoet, is elke ANDER punt op daardie lyn verder as een radius van die middelpunt af, dus kan die lyn nooit die sirkel 'n tweede keer raak nie. Dit is presies hoekom vraagstukke hierdie omgekeerde gebruik om te BEWYS 'n lyn is 'n raaklyn, nie net om een te beskryf nie." },
       ],
       reason: "tanRadiusConv",
       note: {

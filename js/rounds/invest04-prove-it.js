@@ -150,13 +150,16 @@ export const round = {
         { text: { en: "∠BAC = 180° − 90° − 50°   (Int ∠s Δ)", af: "∠BAC = 180° − 90° − 50°   (binne ∠e Δ)" }, correct: true },
         { text: { en: "∠ABC = 50°   (given)", af: "∠ABC = 50°   (gegee)" } },
         { text: { en: "OA = OC   (radii)", af: "OA = OC   (radii)" } },
-        { text: { en: "∠AOC = 80°   (∠ at centre = 2 × ∠ at circumference)", af: "∠AOC = 80°   (Midpt∠ = 2 × Omtreks∠)" } },
+        // 100° is TRUE for this figure (2 × ∠ABC, arc AC = 100°) — a true-but-
+        // unused line, same status as OA = OC. It was 80° until 2026-07-31,
+        // which is ∠BOC's value, so the distractor was false twice over.
+        { text: { en: "∠AOC = 100°   (∠ at centre = 2 × ∠ at circumference)", af: "∠AOC = 100°   (Midpt∠ = 2 × Omtreks∠)" } },
       ],
       hints: [
         { en: "Read the solution as a chain: 50° and 90° are there, and 40° comes out at the end. What has to happen in between to get from those two numbers to 40°?",
           af: "Lees die oplossing as 'n ketting: 50° en 90° is daar, en 40° kom aan die einde uit. Wat moet tussenin gebeur om van daardie twee getalle by 40° te kom?" },
-        { en: "Two of the options are lines the solution already has, and one brings in a radius it never uses. The missing one does the subtraction that turns 90° and 50° into 40°.",
-          af: "Twee van die opsies is reëls wat die oplossing reeds het, en een bring 'n radius in wat dit nooit gebruik nie. Die ontbrekende een doen die aftrekking wat 90° en 50° in 40° verander." },
+        { en: "One of the options is a line the solution already has, and two drag in the centre — radii and a centre angle the solution never uses. The missing one does the subtraction that turns 90° and 50° into 40°.",
+          af: "Een van die opsies is 'n reël wat die oplossing reeds het, en twee sleep die middelpunt in — radii en 'n middelpuntshoek wat die oplossing nooit gebruik nie. Die ontbrekende een doen die aftrekking wat 90° en 50° in 40° verander." },
       ],
     },
 
@@ -327,8 +330,8 @@ export const round = {
       type: "written",
       panelId: "s4p5",
       prompt: {
-        en: "Last one. This statement has no reason written next to it. Write the reason the way a marker accepts it.",
-        af: "Laaste een. Hierdie stelling het geen rede langsaan geskryf nie. Skryf die rede soos 'n nasiener dit aanvaar.",
+        en: "Now finish the solution. This statement has no reason written next to it — write the reason the way a marker accepts it.",
+        af: "Rond nou die oplossing af. Hierdie stelling het geen rede langsaan geskryf nie — skryf die rede soos 'n nasiener dit aanvaar.",
       },
       diagram: FIG_FULL,
       solution: {
@@ -403,8 +406,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "One more, a different theorem this time. STU is a tangent at T, and TA is a chord from the point of contact. The tan-chord theorem says the angle between the tangent and the chord equals the angle in the ALTERNATE segment — the segment on the far side of the chord, not the near one. The tangent-chord angle at T is 64°. A learner's solution writes the line below for the angle at Q. What has actually gone wrong?",
-        af: "Nog een, met 'n ander stelling hierdie keer. STU is 'n raaklyn by T, en TA is 'n koord vanaf die raakpunt. Die raaklyn-koord-stelling sê die hoek tussen die raaklyn en die koord is gelyk aan die hoek in die OORSTAANDE segment — die segment aan die vêr kant van die koord, nie die naby kant nie. Die raaklyn-koord-hoek by T is 64°. 'n Leerder se oplossing skryf die reël hieronder vir die hoek by Q. Wat het eintlik verkeerd geloop?",
+        en: "Last one, and a different theorem again. STU is a tangent at T, and TA is a chord from the point of contact. The tan-chord theorem says the angle between the tangent and the chord equals the angle in the ALTERNATE segment — the segment on the far side of the chord, not the near one. The tangent-chord angle at T is 64°. A learner's solution writes the line below for the angle at Q. What has actually gone wrong?",
+        af: "Laaste een, en weer 'n ander stelling. STU is 'n raaklyn by T, en TA is 'n koord vanaf die raakpunt. Die raaklyn-koord-stelling sê die hoek tussen die raaklyn en die koord is gelyk aan die hoek in die OORSTAANDE segment — die segment aan die vêr kant van die koord, nie die naby kant nie. Die raaklyn-koord-hoek by T is 64°. 'n Leerder se oplossing skryf die reël hieronder vir die hoek by Q. Wat het eintlik verkeerd geloop?",
       },
       diagram: TANCHORD_ERR_FIG,
       solution: {
@@ -424,10 +427,13 @@ export const round = {
                   af: "Die rede moet eerder omgekeerde raaklyn-koord-stelling sê, aangesien die hoek agteruit vanaf Q afgelees word in plaas van vanaf die raaklyn." } },
       ],
       hints: [
-        { en: "Look at which side of chord TA the tangent ray sits on. Is Q on that same side, or the opposite one?",
-          af: "Kyk na watter kant van koord TA die raaklynstraal lê. Is Q aan dieselfde kant, of die teenoorgestelde kant?" },
-        { en: "Q is on the same side as the tangent, in the near segment — not the alternate one. Angles in the two segments of the same chord are supplementary, not equal, which is why ∠TQA is 116° here instead of 64°. Being ANYWHERE on the circle is not enough; the theorem only ever matches the tangent-chord angle to the segment on the far side.",
-          af: "Q is aan dieselfde kant as die raaklyn, in die naby segment — nie die oorstaande een nie. Hoeke in die twee segmente van dieselfde koord is aanvullend, nie gelyk nie, en dis hoekom ∠TQA hier 116° is in plaas van 64°. Om net ORAL op die sirkel te wees, is nie genoeg nie; die stelling pas die raaklyn-koord-hoek net by die segment aan die vêr kant." },
+        // "the tangent ray" was ambiguous — the tangent at T has TWO rays, one
+        // on each side of chord TA, and only the one forming the marked 64°
+        // angle makes the rule work. Anchor on the marked angle instead.
+        { en: "The 64° angle at T sits on one side of chord TA. Is Q on that same side, or the opposite one?",
+          af: "Die 64°-hoek by T sit aan een kant van koord TA. Is Q aan dieselfde kant, of die teenoorgestelde kant?" },
+        { en: "Q is on the same side as the 64° angle, in the near segment — not the alternate one. Angles in the two segments of the same chord are supplementary, not equal, which is why ∠TQA is 116° here instead of 64°. Being ANYWHERE on the circle is not enough; the theorem only ever matches the tangent-chord angle to the segment on the far side.",
+          af: "Q is aan dieselfde kant as die 64°-hoek, in die naby segment — nie die oorstaande een nie. Hoeke in die twee segmente van dieselfde koord is aanvullend, nie gelyk nie, en dis hoekom ∠TQA hier 116° is in plaas van 64°. Om net ORAL op die sirkel te wees, is nie genoeg nie; die stelling pas die raaklyn-koord-hoek net by die segment aan die vêr kant." },
       ],
       reason: "tanChord",
       note: {
