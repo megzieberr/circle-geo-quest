@@ -1,6 +1,6 @@
 # Project status — updated 2026-07-31
 
-## Where we are (CHUNK D — TAN-CHORD, session 4 — the LAST theorem, built, checked, NOT pushed)
+## Where we are (CHUNK D — TAN-CHORD, session 4 — the LAST theorem — SHIPPED, LIVE)
 
 **Tan-chord is the fourth and final theorem of Chunk D.** `progress` was
 checked for `inv4`/`inv6` before starting — still empty for both, so no
@@ -61,14 +61,23 @@ Afrikaans: Station 4's tap shows the right REASON pill (`tan chord theorem` /
 (rung 1 question, rung 2 tell) and `memoDisplay` reveal all render clean in
 both languages. No console errors.
 
-**Not yet reviewed by her, and NOT PUSHED** — same as every prior Chunk D
-session, awaiting her word. Committed locally only, once she says so.
+**PUSHED and LIVE — 2026-07-31, her call:** *"you can push so the kids have it
+once they start playing today."* `main` was fast-forwarded from `claude/
+investigation-station-circle-geo-dd1g0a` (commit `fd59720`) and pushed to
+`origin/main`; verified live by fetching the two changed modules straight off
+`megzieberr.github.io/circle-geo-quest` (both show the new content) and
+confirming the homepage returns 200. **This push also carried the two prior
+Chunk D sessions that were sitting committed-but-unpushed** (equal chords,
+tangent-radius) — all four theorems went live together in this one push, not
+just tan-chord.
 
-**Next up: nothing required by the original brief.** All four theorems are
-in. What's still open, listed in the brief's "Also open" section: the
+**Next up: nothing required by the original brief — Chunk D is complete and
+live.** What's still open, listed in the brief's "Also open" section: the
 marking cap (not urgent — Chunk D's typed-panel count is now 1 of the
 budgeted 1-2), and whether she wants the on-screen-tick XP decision
-revisited. Otherwise this is ready for her review and a `/ship`.
+revisited (her call already stands: the tick is enough, see the checklist).
+Otherwise nothing pending from this brief — the next session starts fresh on
+whatever she brings.
 
 ## Where we are (CHUNK D — TANGENT-RADIUS, session 3 — built, checked, NOT pushed)
 
