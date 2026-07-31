@@ -1332,8 +1332,10 @@ Open threads, none urgent, whenever she raises them:
   · the brief's "Also open" pair — the marking cap (now 40; Chunk D added only 1
     typed panel against the budgeted 1-2) and whether to revisit the on-screen-tick
     XP decision;
-  · the choice-panel hint-rung-2 reachability observation in `QA-SWEEP.md` (rung 2
-    can never show on tap panels — design decision, not a bug);
+  · ~~the choice-panel hint-rung-2 observation~~ RESOLVED same day (`b6721ba`, live):
+    on Investigation Station tap panels every wrong tap now advances the ladder a
+    rung, so both hints land while a real choice remains. **Her ruling: the 11
+    discovery rounds keep the old ladder — leave `js/discover.js` alone.**
   · Station 4's "Prove It" title (her call: body copy first, see Pending).
 
 In order:
