@@ -259,8 +259,40 @@ be the last word.
         the kind of unfairness this brief exists to prevent.
       · Still to come for this theorem if she wants it: nothing required. It is a
         complete addition as it stands.
-- [ ] **Equal chords** → Station 3 (counterexample: two circles of different size),
-      Station 1 or 2.
+- [x] **Equal chords** — DONE 2026-07-31, three panels (all taps, no new memo,
+      no probe run), same budget as two-tangents. Station 1 gets a
+      drag-and-record panel on `discover-equal-chords.js`'s own CENTRE model
+      (exported as `MODEL`, same reuse trick as the other two theorems) plus a
+      "what did your table say" choice panel; Station 3 gets the counterexample
+      — two circles of different radius (4 cm / 7 cm), each carrying a chord of
+      the same real length (6 cm, marked with tick marks), whose central
+      angles come out at 97° and 51°. Both inserted before each station's
+      closing note, per §5.
+      · **Station 1 chosen over Station 2** (the brief left it open) — it pairs
+        with the theorem table's own row ("3 · Break It, 1 · Measure & Notice")
+        and keeps Station 1's shape consistent with its two-tangents addition:
+        drag-and-record, then a choice panel reading the table back.
+      · **No new interactive.** `discover-equal-chords.js`'s `CENTRE` factory
+        was renamed to `MODEL` and exported — same convention as
+        `discover-centre-circ.js` and `discover-tangents-point.js` — so Station
+        1 drags the exact figure the class already met in the discovery round.
+        Its own `measure()` already returned both chord lengths and both
+        central angles, so no new figure code was needed.
+      · **Station 3's two circles don't need pixel-identical chords.** The
+        6 cm chord in each renders within half a pixel of the other (89.9px vs
+        90.4px at 15 px/cm) — invisible, and the tick marks assert "equal"
+        as the GIVEN rather than something to measure off the picture, the
+        same convention `chordMark()` already documents itself as decorative.
+      · Verified live (`?local=1`, dev-console pointer-drag simulation since
+        the preview pane cannot drag by hand): 3 distinct rows record
+        correctly with `unit:""` on both chord columns (no stray "°" on a
+        length — the same trap two-tangents already found once), the choice
+        panel's showRecord carries the table forward, both new panels walked
+        correctly in English AND Afrikaans, and both `.mk` tick marks render
+        on Station 3's diagrams. `verify-node` 419/764/0; `audit-options`
+        clean (no positional tell, no unmarked sequence); `check-bilingual`
+        clean; no console errors.
+      · Still to come for this theorem if she wants it: nothing required.
 - [ ] **Tangent-radius** → Station 5 (its true, useful converse), Station 4 (used
       where the line is not a tangent).
 - [ ] **Tan-chord** → Station 4 (the wrong alternate segment), Station 6 (explain

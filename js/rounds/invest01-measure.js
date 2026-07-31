@@ -59,6 +59,7 @@
 
 import { MODEL } from "./discover-centre-circ.js";
 import { MODEL as TANGENT_MODEL } from "./discover-tangents-point.js";
+import { MODEL as EQCHORD_MODEL } from "./discover-equal-chords.js";
 
 const AC = "#e64980";
 
@@ -119,6 +120,29 @@ const TAN_SHOW = {
   key: "tangentReadings",
   cols: TAN_READ_COLS,
   caption: { en: "Your tangent readings", af: "Jou raaklyn-lesings" },
+};
+
+/* ---- CHUNK D · equal chords -----------------------------------------------
+   The station's third theorem, on `discover-equal-chords.js`'s own MODEL —
+   AB is fixed, the learner drags C to grow or shrink chord CD, and the model's
+   own measure() already returns both chord lengths and both central angles, so
+   no new figure was needed. Same trick as the tangent panel above: the class
+   met this exact drag in the discovery round, so this is a second look at a
+   familiar picture, not a new one to decode.
+
+   Two columns are lengths, not angles, so — same trap as TAN_READ_COLS —
+   `unit: ""` is REQUIRED, or the table's default "°" turns a chord length
+   into "126°". */
+const EQ_READ_COLS = [
+  { label: { en: "Chord AB", af: "Koord AB" }, from: m => m.ab, unit: "" },
+  { label: { en: "Chord CD", af: "Koord CD" }, from: m => m.cd, unit: "" },
+  { label: { en: "∠AOB", af: "∠AOB" }, from: m => Math.round(m.aob) },
+  { label: { en: "∠COD", af: "∠COD" }, from: m => Math.round(m.cod) },
+];
+const EQ_SHOW = {
+  key: "eqchordReadings",
+  cols: EQ_READ_COLS,
+  caption: { en: "Your readings", af: "Jou lesings" },
 };
 
 /* ---- the recorded readings ----------------------------------------------
@@ -468,7 +492,58 @@ export const round = {
       },
     },
 
-    /* ---------- 9 · the one line to hold on to ---------- */
+    /* ---------- 9 · CHUNK D · a third theorem, measured the same way ----------
+       AB is fixed; dragging C changes chord CD and, with it, the two central
+       angles. Recording several positions gives the learner their own table
+       of the same rule they met in the discovery round (`deqchord`) — that
+       chords of DIFFERENT lengths give DIFFERENT central angles, and only line
+       up when the chords themselves do. Station 3 later asks what condition
+       this rule needs that the copy here never has to name. */
+    {
+      type: "explore",
+      prompt: { en: "A third theorem, measured the same way", af: "'n Derde stelling, op dieselfde manier gemeet" },
+      instruction: {
+        en: "Chord AB (orange) is fixed. Drag C to grow or shrink chord CD (blue) — and watch the two angles at the centre. Every time you let go, that position goes into your table. Collect at least three different positions.",
+        af: "Koord AB (oranje) is vas. Sleep C om koord CD (blou) te vergroot of verklein — en let op die twee hoeke by die middelpunt. Elke keer as jy los, gaan daardie posisie in jou tabel in. Versamel ten minste drie verskillende posisies.",
+      },
+      interactive: EQCHORD_MODEL(),
+      record: { ...EQ_SHOW, min: 3, max: 6 },
+    },
+
+    /* ---------- 10 · what did YOUR chord table say? ----------
+       No count or number is asserted about the learner's own rows (N4 / s3p4's
+       lesson) — the options describe the RELATIONSHIP only. */
+    {
+      type: "choice",
+      showRecord: EQ_SHOW,
+      prompt: {
+        en: "Look down your table. When are the two central angles equal?",
+        af: "Kyk af met jou tabel. Wanneer is die twee middelpuntshoeke gelyk?",
+      },
+      options: [
+        { text: { en: "Only when chord CD is the same length as chord AB.",
+                  af: "Net wanneer koord CD dieselfde lengte as koord AB is." }, correct: true },
+        { text: { en: "Whenever CD is close to the same size as the circle.",
+                  af: "Wanneer CD naastenby dieselfde grootte as die sirkel is." } },
+        { text: { en: "Only when C sits exactly opposite A.",
+                  af: "Net wanneer C presies teenoor A sit." } },
+        { text: { en: "They are equal for every position of C, not just one.",
+                  af: "Hulle is gelyk vir elke posisie van C, nie net een nie." } },
+      ],
+      hints: [
+        { en: "Find the row where CD is closest in length to AB. What do ∠AOB and ∠COD do in that row?",
+          af: "Vind die ry waar CD die naaste in lengte aan AB is. Wat doen ∠AOB en ∠COD in daardie ry?" },
+        { en: "Every other row has CD a different length from AB, and the two angles sit apart. Only the row where the chords match has the angles matching too.",
+          af: "Elke ander ry het CD 'n ander lengte as AB, en die twee hoeke sit uitmekaar. Net die ry waar die koorde ooreenstem, het die hoeke ook ooreenstem." },
+      ],
+      reason: "equalChords",
+      note: {
+        en: "You already met this rule in the discovery round: equal chords subtend equal angles at the centre. Your table just proved it again from a fixed AB — as CD grows away from AB's length, ∠COD pulls away from ∠AOB, and only closes back up when the chords match.",
+        af: "Jy het hierdie reël reeds in die ontdekkingsronde teëgekom: gelyke koorde onderspan gelyke hoeke by die middelpunt. Jou tabel het dit nou net weer bewys vanaf 'n vaste AB — soos CD van AB se lengte af wegbeweeg, trek ∠COD weg van ∠AOB, en sluit eers weer toe wanneer die koorde ooreenstem.",
+      },
+    },
+
+    /* ---------- 11 · the one line to hold on to ---------- */
     {
       type: "note",
       prompt: { en: "Keep this in mind", af: "Hou dit in gedagte" },

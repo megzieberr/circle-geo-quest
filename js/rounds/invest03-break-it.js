@@ -113,6 +113,36 @@ const FIG_FOUR_SHOWN = {
   angles: [],
 };
 
+/* ---- CHUNK D · equal chords — the counterexample two circles make ---------
+   "Equal chords subtend equal angles at the centre" (met in the discovery
+   round `deqchord`, and again in Station 1's own Chunk D panel) quietly
+   assumes ONE circle. Two circles of different radius, each carrying a chord
+   of the SAME real length, break it at once — the smaller circle's chord has
+   to reach further round its own edge, so it cuts off a bigger angle.
+
+   TO SCALE, at 15 px/cm: a 6 cm chord in a 4 cm-radius circle subtends 97°
+   (2*4*sin(48.5°) = 5.99 cm); the same 6 cm chord in a 7 cm-radius circle
+   subtends 51° (2*7*sin(25.5°) = 6.03 cm) — both within a millimetre of 6 cm,
+   which is exactly the kind of whole-degree rounding this line already
+   teaches is not a defect. Chord ticks (`mk:"t1"`) mark them equal on
+   purpose: the GIVEN is that they are, not something to measure off the
+   picture. Point positions are placed independently in each figure — nothing
+   here needs to match Station 1's or the discovery round's angles. */
+const EQ_SMALL = {
+  w: 300, h: 260, cx: 150, cy: 130, R: 60,
+  O: true,
+  pts: { A: 135, B: 38 },
+  chords: [{ a: "A", b: "B", mk: "t1" }, ["O", "A"], ["O", "B"]],
+  angles: [{ at: "O", legs: ["A", "B"], t: "97°", o: { v: 97, r: 40 } }],
+};
+const EQ_BIG = {
+  w: 300, h: 260, cx: 150, cy: 130, R: 105,
+  O: true,
+  pts: { C: 115, D: 64 },
+  chords: [{ a: "C", b: "D", mk: "t1" }, ["O", "C"], ["O", "D"]],
+  angles: [{ at: "O", legs: ["C", "D"], t: "51°", o: { v: 51, r: 40 } }],
+};
+
 /* the one case that breaks it: AB is a diameter, so its midpoint IS O, and
    the line OD bisects AB without being perpendicular to it */
 const FIG_DIAM = {
@@ -332,6 +362,44 @@ export const round = {
       memoDisplay: {
         en: "A conjecture claims something about EVERY case. One case where it fails makes \"always\" false, and nothing can put it back — so a single counterexample settles the matter for good. A thousand agreeing cases only tell you about those thousand; the untested cases are still untested, and that is where the exception could be hiding. Disproving needs one example. Proving needs an argument that covers every case at once.",
         af: "'n Vermoede beweer iets oor ELKE geval. Een geval waar dit misluk, maak \"altyd\" onwaar, en niks kan dit terugsit nie — dus maak 'n enkele teenvoorbeeld die saak vir goed af. Duisend gevalle wat saamstem, sê net vir jou van daardie duisend; die ongetoetste gevalle is steeds ongetoets, en daar kan die uitsondering wegkruip. Om te weerlê verg een voorbeeld. Om te bewys verg 'n argument wat elke geval in een slag dek.",
+      },
+    },
+
+    /* ---------- CHUNK D · a second counterexample, a different kind ----------
+       The diameter panel broke a theorem by picking the one bad CASE inside a
+       single figure. This one breaks a theorem by picking the wrong CIRCLE —
+       every chord drawn is perfectly ordinary, so there is nothing to spot
+       inside either picture on its own; the two have to be compared. */
+    {
+      type: "choice",
+      diagrams: [
+        { diagram: EQ_SMALL, caption: { en: "Circle 1 — radius 4 cm", af: "Sirkel 1 — radius 4 cm" } },
+        { diagram: EQ_BIG, caption: { en: "Circle 2 — radius 7 cm", af: "Sirkel 2 — radius 7 cm" } },
+      ],
+      prompt: {
+        en: "Both chords below are the same length — 6 cm, marked with tick marks. \"Equal chords subtend equal angles at the centre\" is a rule you have used since the discovery round. Does it hold here too?",
+        af: "Albei koorde hieronder is dieselfde lengte — 6 cm, gemerk met kepies. \"Gelyke koorde onderspan gelyke hoeke by die middelpunt\" is 'n reël wat jy sedert die ontdekkingsronde gebruik. Geld dit ook hier?",
+      },
+      options: [
+        { text: { en: "No — the rule only holds inside the SAME circle (or circles of equal radius).",
+                  af: "Nee — die reël geld net binne DIESELFDE sirkel (of sirkels met gelyke radius)." }, correct: true },
+        { text: { en: "Yes — equal chords always give equal central angles, whatever the circle.",
+                  af: "Ja — gelyke koorde gee altyd gelyke middelpuntshoeke, watter sirkel ook al." } },
+        { text: { en: "No — the rule never holds for chords, in any circle.",
+                  af: "Nee — die reël geld nooit vir koorde, in enige sirkel nie." } },
+        { text: { en: "Yes, but only because both circles share the same centre.",
+                  af: "Ja, maar net omdat albei sirkels dieselfde middelpunt deel." } },
+      ],
+      hints: [
+        { en: "Read the two marked angles off the diagrams. Are they the same number?",
+          af: "Lees die twee gemerkte hoeke van die diagramme af. Is dit dieselfde getal?" },
+        { en: "97° and 51° are not equal, and both chords really are 6 cm. The chords are equal — the circles are not.",
+          af: "97° en 51° is nie gelyk nie, en albei koorde is regtig 6 cm. Die koorde is gelyk — die sirkels nie." },
+      ],
+      reason: "equalChords",
+      note: {
+        en: "Equal chords subtend equal angles — but only inside the same circle, or circles of the same radius. Shrink the circle and the same 6 cm chord has to reach further round the edge, so it cuts off a bigger angle at the centre: 97° in the small circle, only 51° in the big one. \"Equal chords, equal angles\" was always quietly assuming ONE circle — exactly the kind of dropped condition a counterexample exists to expose.",
+        af: "Gelyke koorde onderspan gelyke hoeke — maar net binne dieselfde sirkel, of sirkels met dieselfde radius. Verklein die sirkel en dieselfde 6 cm-koord moet verder om die rand strek, dus sny dit 'n groter hoek by die middelpunt af: 97° in die klein sirkel, net 51° in die groot een. \"Gelyke koorde, gelyke hoeke\" het altyd stilweg EEN sirkel aangeneem — presies die soort voorwaarde wat 'n teenvoorbeeld bestaan om bloot te lê.",
       },
     },
 

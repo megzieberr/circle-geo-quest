@@ -7,7 +7,10 @@ const ORANGE = "#f76707", BLUE = "#4263eb", GREEN = "#0ea271", INK = "#252a4a";
 const px = (a, b) => Math.round(Math.hypot(a.x - b.x, a.y - b.y));
 
 // ---- Panel 1: centre angles, resize CD to match AB ----
-const CENTRE = () => ({
+// exported so Investigation Station 1 can reuse this exact figure instead of
+// rebuilding it (same trick as discover-centre-circ.js and
+// discover-tangents-point.js) — the class meets the identical drag both times.
+export const MODEL = () => ({
   w: 340, h: 300, cx: 168, cy: 150, R: 100,
   fixed: { O: true, pts: { A: 130, B: 50 }, chords: [["A", "B"]] },
   handles: [{ id: "C", kind: "arc", min: 276, max: 338, init: 320 }],
@@ -87,7 +90,7 @@ export const round = {
     { type: "explore",
       prompt: { en: "Make chord CD equal to chord AB", af: "Maak koord CD gelyk aan koord AB" },
       instruction: { en: "Chord AB (orange) is fixed. Drag C to grow or shrink chord CD (blue). Use the panel to make CD the same length as AB — then look at the two angles at the centre.", af: "Koord AB (oranje) is vas. Sleep C om koord CD (blou) te vergroot of verklein. Gebruik die paneel om CD dieselfde lengte as AB te maak — kyk dan na die twee hoeke by die middelpunt." },
-      interactive: CENTRE() },
+      interactive: MODEL() },
 
     { type: "explore",
       prompt: { en: "Now look at the edge of the circle", af: "Kyk nou na die rand van die sirkel" },

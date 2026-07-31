@@ -1,4 +1,43 @@
-# Project status — updated 2026-07-30
+# Project status — updated 2026-07-31
+
+## Where we are (CHUNK D — EQUAL CHORDS, session 2 — built, checked, NOT pushed)
+
+**Equal chords is the second of Chunk D's four theorems, done the same shape as
+two-tangents: three panels, all taps, no new memo, no probe run needed.** Nobody
+has played the Investigation Station yet (her words going in: "the kids haven't
+started playing the investigation station"), so there is no back-pay gap to
+worry about this time either.
+
+  · **Station 3 "Break It"** gets the counterexample: two circles of different
+    radius (4 cm and 7 cm), each carrying a chord of the SAME real length
+    (6 cm, marked with tick marks), whose central angles come out at 97° and
+    51°. "Equal chords, equal angles" was always quietly assuming one circle —
+    this is the dropped-condition move the station already teaches, on a
+    second theorem.
+  · **Station 1 "Measure & Notice"** gets a drag-and-record panel on
+    `discover-equal-chords.js`'s own figure (its `CENTRE` factory renamed to
+    `MODEL` and exported — same reuse convention as the other two theorems
+    already on this station), plus a choice panel reading the learner's own
+    table back to them. **My call on the open "Station 1 or 2" question**: 1,
+    to match the theorem table's own pairing and keep the same drag-then-read
+    shape Station 1 already used for two-tangents.
+  · Full write-up, including the exact geometry and why the two circles' 6 cm
+    chords don't need to be pixel-identical, is in
+    `docs/chunk-d-practice-panels.md`'s checklist.
+
+**Checks:** `verify-node` 419 diagrams / 764 angles / 0 mismatches (up from
+417/762); `audit-options` clean; `check-bilingual` clean; `check-table-summary`
+clean. Walked in the browser via `?local=1` and a dev-console pointer-drag
+simulation (the preview pane cannot drag by hand) — both new Station 1 panels
+and the Station 3 counterexample confirmed correct in EN and AF, tick marks
+render on both Station 3 diagrams, no console errors.
+
+**NOT PUSHED — her call stands** (nothing goes to origin until she's read it,
+same as every Chunk D session). Committed locally only.
+
+**Next up:** tangent-radius → Station 5 (its true, useful converse) and
+Station 4 (used where the line is not actually a tangent). Then tan-chord
+last, and that is the whole of Chunk D.
 
 ## Where we are (THE STREAK FIX — SHIPPED AND LIVE, same day, later session)
 
@@ -1123,9 +1162,12 @@ In order:
      `progress` and `xp_events` are still at 0 rows, so nobody is stuck on an old
      amount.
   2. **One theorem per session.** ~~Two tangents from a point~~ **DONE 2026-07-30**
-     (3 panels, all taps). Next, in the brief's order: **equal chords** → Station 3
-     (two circles of different size as the counterexample) and Station 1 or 2. Then
-     tangent-radius, then tan-chord last.
+     (3 panels, all taps). ~~Equal chords~~ **DONE 2026-07-31** (3 panels, all
+     taps — Station 3's counterexample plus Station 1's drag-and-record; see
+     `docs/chunk-d-practice-panels.md`'s checklist for the full write-up). Next,
+     in the brief's order: **tangent-radius** → Station 5 (its true, useful
+     converse) and Station 4 (used where the line is not a tangent). Then
+     tan-chord last.
   3. **She reads it**, flip `CONFIG.stationsLive` to true, then **`/ship`**.
 
 **Worth deciding before the next session:** the two-tangents panels are still
