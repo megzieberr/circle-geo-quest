@@ -32,12 +32,28 @@ simulation (the preview pane cannot drag by hand) — both new Station 1 panels
 and the Station 3 counterexample confirmed correct in EN and AF, tick marks
 render on both Station 3 diagrams, no console errors.
 
-**NOT PUSHED — her call stands** (nothing goes to origin until she's read it,
-same as every Chunk D session). Committed locally only.
+**She reviewed it the same session** — checked both new panels herself via the
+fast console jump (below) rather than replaying the whole line, and is happy.
+**Still NOT PUSHED — her explicit call**: "commit, don't push yet." Committed
+locally only.
 
 **Next up:** tangent-radius → Station 5 (its true, useful converse) and
 Station 4 (used where the line is not actually a tangent). Then tan-chord
-last, and that is the whole of Chunk D.
+last, and that is the whole of Chunk D. Paste-ready prompt for that session is
+in `docs/NEXT-SESSION-PROMPT.md`.
+
+**Fast way to preview just the new panels of a station, without replaying the
+whole line** (found useful this session, worth keeping): open the dev server
+with `?local=1`, log in, then in the browser console —
+```js
+const mod = await import('/js/rounds/index.js');
+const round = mod.ROUND_BY_ID['inv1'];   // or whichever station
+round.panels = round.panels.slice(N);    // N = index of the first new panel
+window.__APP__.go("investigate", { roundId: "inv1" });
+```
+Nothing persists — a page reload puts the station back to normal. `?preview=1`
+(the existing teacher-preview mode) also unlocks every station instantly if a
+fuller walkthrough is wanted instead.
 
 ## Where we are (THE STREAK FIX — SHIPPED AND LIVE, same day, later session)
 
