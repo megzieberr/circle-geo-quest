@@ -660,6 +660,24 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-31 (**TAP-PANEL HINTS RUN AHEAD OF ELIMINATION; DISCOVERY ROUNDS DO NOT** —
+  her calls, audit session.)
+  · On Investigation Station CHOICE panels, every wrong tap advances the hint ladder
+    one rung (wrong 1 → rung 1, wrong 2 → the rung-2 tell) so both hints land while a
+    real choice remains — before, rung 2 was unreachable and rung 1 arrived only once
+    elimination had answered the question. Blank/written panels keep the 3-miss ladder.
+  · **The 11 discovery rounds keep the OLD ladder** — `js/discover.js` stays frozen,
+    her explicit ruling ("leave the discovery rounds please"). Do not mirror.
+- 2026-07-31 (**AUDIT RULINGS, from the fresh-eyes sweep — see `QA-SWEEP.md`.**)
+  · Appending panels to a station: FIRST search its copy for "Last one" / "Laaste een"
+    and move the closer to the panel that is actually last. Both inv4 and inv6 lied
+    after Chunk D's appends; fixed, and the actual last panels now carry it.
+  · Tan-chord teaching copy anchors on "the 64° angle at T", never "the tangent ray" —
+    a tangent has two rays, one per side of the chord, and only the marked angle makes
+    the find-the-alternate-segment rule read one way. Server memo untouched (it already
+    accepts side-of-chord wordings).
+  · Distractors on error-spotting panels should be TRUE-but-unused lines, not false
+    statements — inv4 p1's ∠AOC option corrected 80° → 100° to match that standard.
 - 2026-07-30 (**"I THINK MY ANSWER WAS RIGHT" IS GONE. "I DON'T GET IT" REPLACES IT** —
   her call, same session, once the entry below showed what the old link really did.)
   · Her reasoning, and it is right: the old link let a learner mark their own work,
