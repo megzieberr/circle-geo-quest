@@ -13,7 +13,7 @@ import { getDaily, dailyUnlocked, isDoneToday, syncStreakOnce } from "./daily.js
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
-import { maybeShowBoostAnnounce, maybeShowReplayAnnounce } from "./announce.js";
+import { maybeShowBoostAnnounce, maybeShowReplayAnnounce, maybeShowStationReminder } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
 import { submitRoundReliable } from "./sync.js";
 import { initPiMascot, piCameo } from "./pi.js";
@@ -206,8 +206,9 @@ export function renderHome(app, host) {
 
   /* One-time announcements. Each runs last so it politely waits for the next
      login whenever the install or weekly popup got there first, and each bails
-     out if a popup is already on screen — so these two can never stack. The
-     replay news goes first because it is the current one. */
+     out if a popup is already on screen — so these can never stack. The dated
+     station reminder goes first while it's live (2026-08-01/02 only). */
+  try { maybeShowStationReminder(app); } catch { /* non-critical */ }
   try { maybeShowReplayAnnounce(app); } catch { /* non-critical */ }
   try { maybeShowBoostAnnounce(app); } catch { /* non-critical */ }
 }

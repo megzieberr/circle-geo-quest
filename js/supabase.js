@@ -87,6 +87,20 @@ export const SupabaseBackend = {
   adminTimeline(pw, id, limit) {
     return rpc("cgg_admin_timeline", { p_admin_password: pw, p_student_id: id || null, p_limit: limit || 400 });
   },
+  // A one-off push to every subscribed device except the excluded learners.
+  // NOT an rpc() call — this is the send-push Edge Function, not a Postgres
+  // function, so it needs its own fetch. Gated server-side by the admin
+  // password (send-push checks it via _cgg_admin_ok), never the cron secret,
+  // which the browser must never hold.
+  async adminBroadcastPush(pw, { title, body, excludeIds } = {}) {
+    const res = await fetch(`${SUPABASE.url.replace(/\/+$/, "")}/functions/v1/send-push`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` },
+      body: JSON.stringify({ admin_password: pw, broadcast: true, title, body, exclude_student_ids: excludeIds || [] }),
+    });
+    if (!res.ok) return { ok: false, error: res.status === 401 ? "auth" : "http_" + res.status };
+    return res.json();
+  },
   // "I don't get it" taps (phase17.sql). Read-only over checker_calls: the
   // stuck rows rolled up per panel and per learner, with what each learner had
   // typed at the moment they tapped, plus the MARKING verdicts for the same

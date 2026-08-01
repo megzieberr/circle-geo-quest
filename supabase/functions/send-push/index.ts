@@ -11,6 +11,15 @@
 // to ping just one learner's device(s) with a custom message. Used by the
 // teacher to send a personal note (e.g. 'well done, try again this week').
 //
+// And a BROADCAST mode, for the admin dashboard (2026-08-01): send
+//   { "admin_password": "...", "broadcast": true, "title": "...", "body": "...",
+//     "exclude_student_ids": ["<uuid>", ...] }
+// to ping every subscribed device except the excluded learners. Gated by the
+// teacher's own admin password (checked server-side via _cgg_admin_ok, the
+// same helper every cgg_admin_* RPC uses) instead of the cron secret, because
+// the browser can never hold the cron secret. This is the only mode the admin
+// dashboard is allowed to call.
+//
 // It runs on Deno, so libraries are imported with npm: specifiers.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -65,16 +74,57 @@ async function sendTo(
 }
 
 Deno.serve(async (req) => {
-  // Only our own cron job (which knows the shared secret) may trigger this.
-  if (req.headers.get("x-cron-secret") !== CRON_SECRET) {
-    return new Response("forbidden", { status: 401 });
-  }
-
-  let body: { test?: boolean; student_id?: string; title?: string; body?: string; url?: string } = {};
+  let body: {
+    test?: boolean;
+    student_id?: string;
+    title?: string;
+    body?: string;
+    url?: string;
+    admin_password?: string;
+    broadcast?: boolean;
+    exclude_student_ids?: string[];
+  } = {};
   try {
     body = await req.json();
   } catch (_) {
     body = {};
+  }
+
+  // Two ways in: the pg_cron job (shared secret header) or the admin
+  // dashboard, broadcast mode only (the teacher's own admin password,
+  // checked server-side — the browser never holds the cron secret).
+  const cronOk = req.headers.get("x-cron-secret") === CRON_SECRET;
+  let adminOk = false;
+  if (!cronOk && body.broadcast && body.admin_password) {
+    const { data } = await admin.rpc("_cgg_admin_ok", { p_admin_password: body.admin_password });
+    adminOk = data === true;
+  }
+  if (!cronOk && !adminOk) {
+    return new Response("forbidden", { status: 401 });
+  }
+
+  // --- Broadcast mode: everyone subscribed, minus an exclude list ---------
+  // Admin-only (adminOk, never cronOk) — the daily cron job has its own mode
+  // below and never sets `broadcast`.
+  if (adminOk && body.broadcast) {
+    const exclude = new Set(body.exclude_student_ids ?? []);
+    const { data: subs } = await admin
+      .from("push_subscriptions")
+      .select("id, student_id, subscription");
+    const targets = (subs ?? []).filter((s) => !exclude.has(s.student_id as string));
+    const res = await sendTo(targets, {
+      title: body.title ?? "Circle Quest",
+      body: body.body ?? "A message from your teacher 🌟",
+      url: body.url ?? "./",
+      tag: "circle-quest-broadcast",
+    });
+    return Response.json({ ok: true, mode: "broadcast", targets: targets.length, ...res });
+  }
+
+  // Everything below is cron-only (the daily reminder + its targeted-note
+  // variant) — the broadcast branch above already returned.
+  if (!cronOk) {
+    return new Response("forbidden", { status: 401 });
   }
 
   // --- Targeted mode: one learner, custom message -------------------------
