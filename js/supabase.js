@@ -76,7 +76,6 @@ export const SupabaseBackend = {
   // admin
   adminLogin(pw) { return rpc("cgg_admin_login", { p_admin_password: pw }); },
   adminData(pw) { return rpc("cgg_admin_data", { p_admin_password: pw }); },
-  adminItemStats(pw) { return rpc("cgg_admin_item_stats", { p_admin_password: pw }); },
   adminFeedback(pw) { return rpc("cgg_admin_feedback", { p_admin_password: pw }); },
   // cheat-detection readout (phase13.sql) — per learner, every passed round
   // with how many per-question events were logged (qcount) + when last played.

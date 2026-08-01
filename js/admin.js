@@ -5,7 +5,7 @@
    admin password server-side. No service-role key in the client.
    ============================================================ */
 import { api, BACKEND } from "./api.js";
-import { ROUNDS, ROUND_BY_ID, QUESTION_BY_ID } from "./rounds/index.js";
+import { ROUNDS, ROUND_BY_ID, STATIONS } from "./rounds/index.js";
 import { ADVENTURES, ADVENTURE_BY_ID } from "./adventures/index.js";
 import { showCrownPreview, showRallyPreview } from "./weekly.js";
 import { avatarEmoji } from "./profile.js";
@@ -14,7 +14,7 @@ const root = document.getElementById("admin");
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 let adminPw = null;
 let data = null;
-let itemStats = null;
+let stationTimeline = null;  // Investigation Station activity log (its own fetch — see load())
 let feedback = null;
 let integrity = null;     // cheat-detection readout (phase13.sql cgg_admin_integrity)
 let championNow = null;   // current teacher's-choice Circle Champion (display name, or null)
@@ -100,8 +100,6 @@ async function load() {
   const r = await api.adminData(adminPw).catch(() => ({ ok: false }));
   if (!r.ok) return renderLogin("Session expired — log in again.");
   data = r;
-  // item-level "hardest questions" report (best-effort; needs the Phase-2 RPC)
-  itemStats = api.adminItemStats ? await api.adminItemStats(adminPw).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
   // anonymous end-of-game feedback (best-effort; needs the Phase-6 RPC)
   feedback = api.adminFeedback ? await api.adminFeedback(adminPw).catch(() => ({ ok: false })) : { ok: false };
   // current Circle Champion (best-effort; needs the Phase-10 RPC)
@@ -113,6 +111,10 @@ async function load() {
   timelineAll = api.adminTimeline ? await api.adminTimeline(adminPw, null, 400).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
   // "I don't get it" taps (best-effort; Phase-17 RPC)
   stuckData = api.adminStuck ? await api.adminStuck(adminPw, STUCK_DAYS, STUCK_LIMIT).catch(() => ({ ok: false })) : { ok: false };
+  // Investigation Station activity log — its own high-limit fetch (not the
+  // shared 400-row timelineAll) so a busy class doesn't crowd station rows
+  // out of view; same RPC (Phase-15), just asked for more history.
+  stationTimeline = api.adminTimeline ? await api.adminTimeline(adminPw, null, 2000).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
   renderDashboard();
 }
 
@@ -273,7 +275,7 @@ function renderDashboard() {
   root.appendChild(wrap);
 
   renderFeedbackReport();
-  renderItemReport();
+  renderStationProgress();
   renderIntegrityReport();
 
   root.appendChild(el("p", "muted small center", "Passwords are hidden. If a learner forgets theirs, use “reset pw” to clear it so they pick a new one. Backend: " + BACKEND));
@@ -752,41 +754,48 @@ function stuckDetail(panelId) {
   return box;
 }
 
-/* ---------- "hardest questions" report ---------- */
-function renderItemReport() {
+/* ---------- Investigation Station activity log ----------
+   "Who did what when" for the six stations, off the main round map and
+   easy to lose track of. Reuses cgg_admin_timeline (phase15) — every
+   station finish already writes a normal xp_events row (score always 1,
+   since completing a station IS passing it — see investigate.js finish())
+   — just filtered down to station round ids and read as a log instead of
+   a trajectory. A replay is detected client-side: the earliest row per
+   (learner, station) is the first play, anything after is a replay. */
+function renderStationProgress() {
   const section = el("div", "admin-report");
-  section.appendChild(el("h2", "report-title", "🔍 Hardest questions"));
-  const rows = (itemStats && itemStats.rows) || [];
+  section.appendChild(el("h2", "report-title", "🔬 Investigation Station activity"));
 
-  if (!itemStats || !itemStats.ok) {
-    section.appendChild(el("p", "muted small", "Question-level stats aren't available yet — this needs the Phase-2 database update (cgg_admin_item_stats)."));
+  if (!stationTimeline || !stationTimeline.ok) {
+    section.appendChild(el("p", "muted small", "This needs the Phase-15 database update (run supabase/phase15.sql) — the same data source as the trajectory arrows in “Needs a hand” above."));
     root.appendChild(section);
     return;
   }
+  const stationIds = new Set(STATIONS.map(s => s.id));
+  const rows = (stationTimeline.rows || []).filter(r => stationIds.has(r.roundId));
   if (!rows.length) {
-    section.appendChild(el("p", "muted small", "No question attempts logged yet. Once learners play, the questions they trip on most show up here."));
+    section.appendChild(el("p", "muted small", "Nobody has played the Investigation Station yet."));
     root.appendChild(section);
     return;
   }
 
-  section.appendChild(el("p", "muted small", "Ranked by lowest first-try success — these are the misconceptions to target first. Replays are excluded. “Learners” = how many different learners tried it; “Attempts” counts retries too, so Attempts > Learners means some are retrying."));
+  section.appendChild(el("p", "muted small", "Every Investigation Station finish, most recent first. A replay (a second or third go at an already-passed station) is marked — it pays half XP."));
+  const oldestFirst = [...rows].sort((a, b) => new Date(a.at) - new Date(b.at));
+  const seenFirst = new Set();
+  oldestFirst.forEach(r => {
+    const k = r.studentId + "|" + r.roundId;
+    r._first = !seenFirst.has(k);
+    seenFirst.add(k);
+  });
   const wrap = el("div", "table-wrap");
   const table = el("table", "admin-table report-table");
-  table.innerHTML = `<thead><tr><th>Rd</th><th>Question</th><th>First-try</th><th>Learners</th><th>Attempts</th><th>Most-picked wrong answer</th></tr></thead>`;
+  table.innerHTML = `<thead><tr><th>Learner</th><th>Station</th><th>When</th><th>XP</th><th></th></tr></thead>`;
   const tbody = el("tbody");
-  rows.forEach(r => {
-    const entry = QUESTION_BY_ID[r.qid];
-    const label = entry ? (entry.q.prompt ? truncate(entry.q.prompt.en, 70) : r.qid) : r.qid;
-    const rd = entry ? entry.roundN : (r.roundId || "—");
-    const pct = r.correctPct;
-    const cls = pct == null ? "" : (pct < 50 ? "pct-bad" : pct < 75 ? "pct-warn" : "pct-ok");
-    const wrong = r.topWrong ? `${escapeHtml(String(r.topWrong))} <span class="muted">×${r.topWrongCount}</span>` : "—";
+  [...rows].sort((a, b) => new Date(b.at) - new Date(a.at)).forEach(r => {
     const tr = el("tr");
-    const learners = (r.learners != null) ? r.learners : "—";
-    tr.innerHTML = `<td>${rd}</td><td class="qlabel">${escapeHtml(label)}</td>
-      <td class="num ${cls}">${pct == null ? "—" : pct + "%"}</td>
-      <td class="num">${learners}</td>
-      <td class="num">${r.attempts}</td><td>${wrong}</td>`;
+    tr.innerHTML = `<td>${escapeHtml(r.name)}</td><td>${roundLabel(r.roundId)}</td>
+      <td>${fmtDateTime(r.at)}</td><td class="num">${r.xp ?? "—"}</td>
+      <td>${r._first ? "" : '<span class="muted small">replay</span>'}</td>`;
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);

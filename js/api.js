@@ -442,29 +442,6 @@ const LocalBackend = {
     return s ? { ok: true } : { ok: false, error: "auth" };
   },
 
-  async adminItemStats(adminPassword) {
-    const meta = read(LS.meta, {});
-    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
-    const store = read(LS.items, []);
-    const byQ = {};
-    store.forEach(r => {
-      if (!r.firstTry) return;                           // genuine first-pass attempts only (exclude replays)
-      const k = r.qid;
-      const g = byQ[k] || (byQ[k] = { roundId: r.roundId, qid: k, attempts: 0, correct: 0, wrong: {}, learners: new Set() });
-      g.attempts++;
-      if (r.studentId) g.learners.add(r.studentId);     // distinct learners who tried it
-      if (r.correct) g.correct++;
-      else if (r.chosen) g.wrong[r.chosen] = (g.wrong[r.chosen] || 0) + 1;
-    });
-    const rows = Object.values(byQ).map(g => {
-      const top = Object.entries(g.wrong).sort((a, b) => b[1] - a[1])[0];
-      return { roundId: g.roundId, qid: g.qid, attempts: g.attempts, learners: g.learners.size, correct: g.correct,
-        correctPct: g.attempts ? Math.round((g.correct / g.attempts) * 100) : null,
-        topWrong: top ? top[0] : null, topWrongCount: top ? top[1] : 0 };
-    }).sort((a, b) => (a.correctPct ?? 101) - (b.correctPct ?? 101));
-    return { ok: true, rows };
-  },
-
   /* Cheat-detection raw material for the admin "Worth a look" section.
      Mirrors cgg_admin_integrity (phase13.sql): for EVERY learner, each PASSED
      round with how many per-question events were logged (qcount) and when it

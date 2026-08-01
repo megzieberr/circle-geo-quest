@@ -1,4 +1,36 @@
-# Project status — updated 2026-07-31
+# Project status — updated 2026-08-01
+
+## Where we are (DASHBOARD CLEANUP — Hardest Questions retired, Station activity log added — SHIPPED, LIVE)
+
+**Her ask, two small dashboard jobs:** retire "Hardest Questions" (she'd already
+pulled what she needed from it) and add a separate panel showing who's played
+the Investigation Station and when — it doesn't appear in the per-learner
+progress bar (her call, fine as is), so it needed its own home.
+
+  · **"Hardest Questions" is gone** — the panel, its `itemStats` fetch, and the
+    now-dead `adminItemStats` client methods in `js/api.js` (LocalBackend) and
+    `js/supabase.js` (SupabaseBackend). The underlying item-logging
+    (`logItems`) was left untouched — the "Worth a look" cheat-detection panel
+    depends on that same data (per-question counts) to catch a round "passed"
+    with zero questions answered. The Supabase RPC `cgg_admin_item_stats`
+    itself was left in place too (dropping it needs a migration, not required
+    just to hide a client panel).
+  · **New "🔬 Investigation Station activity" panel**, same spot on the
+    dashboard. No migration needed — every station finish already writes a
+    normal `xp_events` row (score is always 1; completing a station IS passing
+    it), so the panel just reuses `cgg_admin_timeline` (phase15), filtered to
+    the six station round ids, with its own high-limit fetch (2000, not the
+    shared 400-row one) so a busy class doesn't crowd station rows out of
+    view. Table: Learner · Station · When · XP · replay tag (first play per
+    learner-per-station vs. a later replay, detected client-side by earliest
+    timestamp).
+  · Verified in the browser (`?local=1`): panel renders correctly empty
+    (no plays yet) and, with synthetic test rows injected via console, renders
+    correctly populated — sorted newest-first, right learner/station labels,
+    replay tag landing on the second entry for the same learner+station. 0
+    console errors. Test data cleared afterward.
+
+**Pushed and live** — her call, same session.
 
 ## Where we are (INVESTIGATION STATION AUDIT — SHIPPED, LIVE, same day)
 
@@ -660,6 +692,14 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-07-31 — **Station 4 title and inv6 p2 wording: leave as is, her call.** "Prove It"
+  still reads fine even though the copy inside now says "solution"; the fictional
+  learner's protractor line stays too — it's a quoted write-up, not the app's own claim.
+- 2026-07-31 — **"I don't get it" panel: closed, no action needed.** Watched the first
+  lesson back — the class is struggling on some typed panels but not giving up, which is
+  the healthy outcome. No panel wording needs fixing.
+- 2026-07-31 — **POPIA/AI-use policy question dropped — her call.** She doesn't work for
+  the school, so it isn't hers to raise with them.
 - 2026-07-31 (**TAP-PANEL HINTS RUN AHEAD OF ELIMINATION; DISCOVERY ROUNDS DO NOT** —
   her calls, audit session.)
   · On Investigation Station CHOICE panels, every wrong tap advances the hint ladder
@@ -1299,20 +1339,8 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- 👀 2 min **[first lesson back]**: the line is LIVE, so watch what the class does with
-  **"I don't get it"** on the typed panels. It is brand new and replaced a link that
-  let them mark their own work. Every tap is logged — one row per tap in
-  `checker_calls` with verdict `stuck`, the panel id, and whatever they had typed.
-  If a panel collects a lot of first-tap stucks with an EMPTY answer, that panel is
-  not asking clearly enough, which is exactly what happened to her on `s3p4`.
-- 💻 2 min **[whenever]**: ask whoever owns the school's AI-use / POPIA policy whether
-  typed answers may leave the school's systems (only the answer text is sent).
-- 👀 1 min **[whenever]**: Station 4 kept the title "Prove It" on her call (body copy
-  first). Now that its copy says "solution" throughout, does the title still grate?
-- 👀 1 min **[whenever]**: `inv6` p2 has a fictional learner writing "I lined my
-  protractor up on the diagram". Kept deliberately — it is a quoted write-up being
-  judged, not the app claiming she used a protractor, and her class does use them on
-  paper. Say if it should become "measured it on the screen" for consistency with N2.
+- Nothing. (2026-07-31: Station 4's "Prove It" title and inv6 p2's protractor wording
+  both closed, her call — leave as is.)
 
 (Done 2026-07-30, and it was the one carried for two sessions: **`s2p4` is not too
 strict** — see the Decisions entry. Do not loosen it.)
