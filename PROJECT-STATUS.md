@@ -1,6 +1,42 @@
 # Project status — updated 2026-08-01
 
-## Where we are (INVESTIGATION STATION REMINDER — push button + banner — SHIPPED, LIVE, awaiting her click)
+## Where we are (REMINDER SENT, BUTTON RETIRED — 2026-08-01, later session — DONE, LIVE)
+
+**The Investigation Station push reminder WENT OUT on 2026-08-01**, and the
+dashboard button from the section below is GONE — her call ("I don't need that
+button"), removed and pushed the same session.
+
+  · **Why the button never worked:** the send-push Edge Function has no CORS
+    handling — it was only ever called server-to-server (pg_cron), so it never
+    answers the browser's preflight OPTIONS request. check-answer has the CORS
+    block; send-push doesn't. A browser on megzieberr.github.io therefore can't
+    call it at all: the preflight comes back 401, the fetch throws, and the
+    button alerted "Couldn't send — nothing went out." with no error code.
+    Last session's checks missed it because the 401 test ran directly against
+    the function (no browser, no preflight) and the click-flow test ran in
+    `?local=1` (no fetch). **Rule: a browser-called edge function needs the
+    CORS block AND a from-the-browser test against the live function.**
+  · **How the send actually happened: server-side, via SQL.** The cron secret
+    lives inside `cron.job`'s command text on live. One `execute_sql` call
+    extracted it IN SQL (never printed to chat) and called send-push's
+    targeted mode once per non-excluded subscribed learner via
+    `net.http_post`. Result, verified from `net._http_response`: **7 of 7
+    learners sent, 1 device each, 0 failures, 0 stale subscriptions.**
+    (9 learners have push on; 2 of the 4 excluded ids were among them.)
+  · **The in-app banner stays** (`js/announce.js`, `maybeShowStationReminder`)
+    — it reaches the 12 learners without push and expires itself after Sunday
+    2026-08-03 00:00 SA. Nothing to clean up later.
+  · **Removed from the client:** the 📣 button + `sendStationReminder()` +
+    `STATION_REMINDER_EXCLUDE_IDS` (js/admin.js), and the now-unreferenced
+    `adminBroadcastPush` in BOTH js/supabase.js and js/api.js (LocalBackend).
+    The deployed send-push v4 keeps its broadcast branch — cron uses the same
+    function daily, so it was left untouched; the branch is unreachable from
+    any client and still admin-password-gated if anything ever calls it.
+  · Verified in the browser (`?local=1`, own dev server on 5181): admin
+    login + dashboard render clean, toolbar shows the remaining nine buttons,
+    0 console errors.
+
+## Where we are (INVESTIGATION STATION REMINDER — push button + banner — superseded, see section above)
 
 **Her ask, later the same day:** remind the class to play the Investigation
 Station before Sunday's class, skipping three learners (two already asked to
@@ -9,8 +45,9 @@ be left out, one hasn't started playing at all yet) plus her own test account.
   · **New "📣 Station reminder" button on the admin dashboard.** Click it and
     it shows the exact excluded names (looked up live from the loaded
     roster — never hardcoded, this is a public repo) before you confirm, then
-    pushes to every OTHER subscribed device. **Nothing has been sent yet —
-    this is armed and waiting for her to actually press it.**
+    pushes to every OTHER subscribed device. **(2026-08-01: the button turned
+    out to be unable to send at all — no CORS on send-push — and was removed;
+    the reminder went out server-side instead. See the section above.)**
   · **In-app banner** (`js/announce.js`, `maybeShowStationReminder`) — fires
     once per learner on next login, same exclusions, and quietly stops
     showing after Sunday 2026-08-02 (hardcoded expiry) so it never lingers
@@ -730,6 +767,14 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-08-01 — **The Station-reminder button is retired, her call ("I don't need that
+  button").** The reminder was sent server-side instead (7/7 learners, verified), so
+  the button and the whole `adminBroadcastPush` client path were removed. If a
+  dashboard-triggered push is ever wanted again, send-push needs check-answer's CORS
+  block first — the browser path never worked and was never tested from the browser.
+- 2026-08-01 — **send-push's deployed broadcast branch stays as-is.** Unreachable from
+  any client now, still admin-password-gated, and not worth a redeploy of the function
+  the daily cron depends on just to delete dead code.
 - 2026-07-31 — **Station 4 title and inv6 p2 wording: leave as is, her call.** "Prove It"
   still reads fine even though the copy inside now says "solution"; the fictional
   learner's protractor line stays too — it's a quoted write-up, not the app's own claim.
@@ -1377,9 +1422,9 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- 📱 30 sec **[blocking, before Sunday's class]**: open admin.html → click
-  **"📣 Station reminder"** → check the excluded names in the confirm dialog
-  are the right 3 people → confirm. Nobody has been pushed yet.
+Nothing. (The old blocking item — click the 📣 Station reminder button — is DONE
+another way: the push went out server-side 2026-08-01, 7/7 learners, and the
+button is removed. The banner handles the rest of the class until Sunday.)
 - (2026-07-31: Station 4's "Prove It" title and inv6 p2's protractor wording
   both closed, her call — leave as is.)
 

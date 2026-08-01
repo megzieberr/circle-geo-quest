@@ -441,12 +441,6 @@ const LocalBackend = {
     const s = this._verify(name, password);
     return s ? { ok: true } : { ok: false, error: "auth" };
   },
-  async adminBroadcastPush(adminPassword, { title, body, excludeIds } = {}) {
-    const meta = read(LS.meta, {});
-    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
-    return { ok: true, mode: "broadcast", targets: 0, sent: 0, removed: 0 };  // no push server offline
-  },
-
   /* Cheat-detection raw material for the admin "Worth a look" section.
      Mirrors cgg_admin_integrity (phase13.sql): for EVERY learner, each PASSED
      round with how many per-question events were logged (qcount) and when it

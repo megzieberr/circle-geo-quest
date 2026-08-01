@@ -148,14 +148,11 @@ function renderDashboard() {
   csv.addEventListener("click", exportCSV);
   const resetWk = el("button", "btn ghost small", "↺ Reset weekly board");
   resetWk.addEventListener("click", resetWeekly);
-  const remind = el("button", "btn ghost small", "📣 Station reminder");
-  remind.title = "One-off push + in-app banner: play the Investigation Station before tomorrow's class. Excludes 3 learners — see the confirm dialog for who.";
-  remind.addEventListener("click", sendStationReminder);
   const refresh = el("button", "btn ghost small", "⟳ Refresh");
   refresh.addEventListener("click", load);
   const out = el("button", "btn ghost small", "Log out");
   out.addEventListener("click", () => { stopLive(); timelineOne = null; adminPw = null; renderLogin(); });
-  [preview, previewBoost, winners, rally, add, csv, resetWk, remind, refresh, out].forEach(b => tools.appendChild(b));
+  [preview, previewBoost, winners, rally, add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
   head.appendChild(tools);
   root.appendChild(head);
 
@@ -985,37 +982,6 @@ async function resetWeekly() {
   if (!r.ok) alert("Could not reset weekly board."); else load();
 }
 
-/* One-off: 2026-08-01 her ask — remind the class to play the Investigation
-   Station before Sunday's class. Push goes out immediately to every
-   subscribed device (minus exclusions); the matching in-app banner
-   (js/announce.js, same exclusion list) shows itself on each excluded-or-not
-   learner's next login regardless of this button, so pushing is optional —
-   this button is for the push half only. Hardcoded ids, one-time, not meant
-   to be pressed again after this weekend. No names as literals here — this
-   file ships to a public repo, so the confirm dialog below looks names up
-   from the live `data.rows` (already loaded, never committed) instead. */
-const STATION_REMINDER_EXCLUDE_IDS = [
-  "14333eb7-dce7-4d4e-8bca-6a45c6009ff9",
-  "dfb8f1fa-a70c-4b5c-bad4-7f1b149c2b04",
-  "4543de75-c4ad-4186-a3a4-62276e775aa2",
-  "66687063-a4ed-4da6-bdcf-47f0085bf9cb",
-];
-async function sendStationReminder() {
-  const excludeNames = STATION_REMINDER_EXCLUDE_IDS.map(id => {
-    const row = data.rows.find(r => r.id === id);
-    return row ? row.name : id;
-  });
-  if (!confirm("Send the Investigation Station push reminder now?\n\n" +
-    "Goes to every subscribed device except:\n" + excludeNames.map(n => "  • " + n).join("\n") +
-    "\n\nThis can't be recalled once sent.")) return;
-  const r = await api.adminBroadcastPush(adminPw, {
-    title: "Circle Quest",
-    body: "Play the Investigation Station before tomorrow's class! 🔬",
-    excludeIds: STATION_REMINDER_EXCLUDE_IDS,
-  }).catch(() => ({ ok: false }));
-  if (!r || !r.ok) { alert("Couldn't send — nothing went out. " + (r && r.error ? `(${r.error})` : "")); return; }
-  alert(`Sent to ${r.sent ?? 0} of ${r.targets ?? 0} subscribed device(s).` + (r.removed ? ` ${r.removed} stale subscription(s) cleaned up.` : ""));
-}
 function exportCSV() {
   const header = ["Rank", "Name", "PasswordSet", "WeeklyXP", "AllTimeXP", "LastActive", "RoundsPassed", "BestPerRound"];
   const lines = [header.join(",")];
