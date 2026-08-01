@@ -1,5 +1,43 @@
 # Project status — updated 2026-08-01
 
+## Where we are (INVESTIGATION STATION REMINDER — push button + banner — SHIPPED, LIVE, awaiting her click)
+
+**Her ask, later the same day:** remind the class to play the Investigation
+Station before Sunday's class, skipping three learners (two already asked to
+be left out, one hasn't started playing at all yet) plus her own test account.
+
+  · **New "📣 Station reminder" button on the admin dashboard.** Click it and
+    it shows the exact excluded names (looked up live from the loaded
+    roster — never hardcoded, this is a public repo) before you confirm, then
+    pushes to every OTHER subscribed device. **Nothing has been sent yet —
+    this is armed and waiting for her to actually press it.**
+  · **In-app banner** (`js/announce.js`, `maybeShowStationReminder`) — fires
+    once per learner on next login, same exclusions, and quietly stops
+    showing after Sunday 2026-08-02 (hardcoded expiry) so it never lingers
+    into a normal week.
+  · **New send-push Edge Function mode: `broadcast`.** Previously EVERY call
+    to send-push (including the already-built but never-wired-up
+    single-learner "personal note" mode) required the cron secret, which the
+    browser can never hold — so nothing on the dashboard could trigger a push
+    at all before today. Broadcast mode is instead gated by the teacher's own
+    admin password, checked server-side via the same `_cgg_admin_ok` helper
+    every other admin RPC uses. Deployed as send-push v4; verified live that
+    a missing/wrong admin password gets a clean 401 with no send and no
+    crash, before ever risking a real send.
+  · **Only 9 of 21 learners have push enabled at all** (checked live) — the
+    banner is what actually reaches the other 12.
+  · ⚠️ **No real learner names as literals anywhere in the diff.** First
+    draft had names in code comments and in a hardcoded confirm-dialog
+    string — caught before committing (this is a public repo). Fixed:
+    comments reference "three excluded learners" generically, and the admin
+    confirm dialog looks names up from `data.rows` (live, never committed)
+    by id at click-time instead.
+  · Verified in the browser: the button's confirm/alert flow works end to
+    end in `?local=1` (graceful "0 targets" since local mode has no push
+    server); the banner correctly shows for a non-excluded fake student id
+    and correctly stays hidden for an excluded one, tested directly against
+    the exported function. 0 console errors either way.
+
 ## Where we are (DASHBOARD CLEANUP — Hardest Questions retired, Station activity log added — SHIPPED, LIVE)
 
 **Her ask, two small dashboard jobs:** retire "Hardest Questions" (she'd already
@@ -1339,7 +1377,10 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- Nothing. (2026-07-31: Station 4's "Prove It" title and inv6 p2's protractor wording
+- 📱 30 sec **[blocking, before Sunday's class]**: open admin.html → click
+  **"📣 Station reminder"** → check the excluded names in the confirm dialog
+  are the right 3 people → confirm. Nobody has been pushed yet.
+- (2026-07-31: Station 4's "Prove It" title and inv6 p2's protractor wording
   both closed, her call — leave as is.)
 
 (Done 2026-07-30, and it was the one carried for two sessions: **`s2p4` is not too
