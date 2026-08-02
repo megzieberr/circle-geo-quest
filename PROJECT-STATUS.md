@@ -1,4 +1,60 @@
-# Project status — updated 2026-08-01
+# Project status — updated 2026-08-02
+
+## Where we are (STATION DOUBLE-SAVE FIXED — 2026-08-02 — DONE, LIVE)
+
+**Megan's read of the data was that the class was "bodging" the Investigation
+Station. They weren't — the app was saving each play 2–8 times.** Commit
+`4061af8`, pushed and verified live; phase20 applied to live the same session.
+
+  · **The tell.** Every "extra attempt" on a station landed within 1–2 seconds
+    of the one before it. Across the graded rounds: 0 of 228 replays did that.
+    Across the stations: 9 of 9. A learner cannot redo an investigation in
+    1.6s — those were duplicate submits, not replays.
+  · **Fault 1 (client).** The last panel's Continue button stayed enabled
+    right through `finish()` — an async submit (up to ~1.2s with sync.js
+    retries) plus `refreshState()`, with nothing moving on screen. A tap that
+    looked like it did nothing got repeated, and each repeat ran `finish()`
+    again: another submit, another `xp_events` row, another `+1` on attempts.
+    `game.js` has always set `next.disabled = true` before its await;
+    `investigate.js` and `discover.js` never did. Both now take a one-tap
+    guard — a `spent` flag AS WELL AS the disable, so a click already queued
+    when the button dies is dropped too. Reuses the existing `loading` i18n
+    key, so it stays bilingual.
+  · **Fault 2 (server).** `cgg_submit_round` read `paid_replays`, decided the
+    award, then wrote — nothing holding the row in between. Eight submits
+    arriving together all read the counter before any had committed, so the
+    first four each spent the same remaining replay: **80, 40, 40, 40, 40, 0,
+    0, 0 against a cap of 2.** `supabase/phase20.sql` adds `for update` to
+    that select. Body otherwise byte-identical to the LIVE
+    `pg_get_functiondef` output, per the phase18 note.
+  · **Neither fault bites alone.** Fault 1 without Fault 2 = inflated attempts
+    but correct XP. Fault 2 without Fault 1 never fires, because real replays
+    are minutes apart. The Station is the first thing here that both pays XP
+    and had an un-disabled button, which is why it surfaced now.
+  · **Where it came from:** `discover.js` has had the identical hole since
+    June — 115 duplicate submits — but it sends `xpGained: 0` and skips the
+    submit once already done, so it only ever inflated attempts. The Station
+    was built from that file (its own comment says "Matches discover.js
+    exactly") and made it pay. Fixed at the source so it can't be copied
+    forward a third time.
+  · **Verified in the app** (local mode, 900ms of injected latency to widen
+    the in-flight window): six rapid taps on the final Continue now fire ONE
+    submit, not six; the button disables and reads "Loading…" on the first
+    tap. A genuine replay still fires exactly one and reaches results. On a
+    discovery round, four rapid taps advance one panel, not four. Live deploy
+    re-checked after push: both files serving the guard, 0 console errors.
+  · ⚠️ **The inflated row was left alone, her ruling.** One learner's inv4
+    still reads 8 attempts / 240 XP / 4 paid replays for one clean play.
+    Fixing it would have taken 160 XP off a learner who did nothing wrong.
+  · **Worth knowing for reading the admin panel:** duplicates hit
+    `attempts + 1` too, so that inv4 row shows as badly stuck on a round that
+    was passed first time. Only affects rows created before today's fix.
+  · **The real finding wasn't the bug.** 9 of 21 learners have opened the
+    Station at all; only 2 finished all six stops. But of the 12 who haven't,
+    **five haven't opened the app AT ALL in over a week** (last active
+    19–27 Jul) — they drifted off before the Station existed, so this isn't a
+    verdict on the investigations. The ones who did turn up did real work:
+    4–17 minutes per stop, one learner did all six in ~75 minutes.
 
 ## Where we are (REMINDER SENT, BUTTON RETIRED — 2026-08-01, later session — DONE, LIVE)
 
@@ -767,6 +823,26 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-08-02 — **The inflated inv4 row keeps its XP, her call.** 8 attempts / 240 XP /
+  4 paid replays on one clean play, caused by the double-save. Correcting it would have
+  clawed 160 XP back off a learner who did nothing wrong and may well have seen the
+  total. Left as-is. Only rows created before 2026-08-02 can be affected.
+- 2026-08-02 — **A button that triggers an async submit must be disabled BEFORE the
+  await, and carry a `spent` flag as well.** `game.js` always did; `investigate.js` and
+  `discover.js` didn't, and that alone cost 250 XP and nine phantom attempts. The flag
+  matters separately from the disable: a click already queued when the button dies still
+  runs its handler.
+- 2026-08-02 — ⚠️ **`js/discover.js` was touched despite the "stays frozen" ruling —
+  flagged to her, not assumed.** That ruling (2026-07-31) is about the HINT LADDER: the
+  11 discovery rounds keep the old 3-miss rungs, do not mirror the Station's. This change
+  touches neither hints nor teaching — only the submit guard, so a double-tap can't save
+  twice. Nothing a learner sees changes except Continue reading "Loading…" for a moment.
+  If she'd rather discover.js went back to untouched, it's `git revert` of the
+  `discover.js` hunk in `4061af8` alone; `investigate.js` and phase20 stand on their own.
+- 2026-08-02 — **A read-then-write on a counter inside an RPC needs `for update`.** The
+  replay cap looked correct and tested correct, because real replays are minutes apart.
+  It only ever leaked when a client bug delivered eight submits in under a second. Assume
+  any cap that guards XP will eventually be hit concurrently.
 - 2026-08-01 — **The Station-reminder button is retired, her call ("I don't need that
   button").** The reminder was sent server-side instead (7/7 learners, verified), so
   the button and the whole `adminBroadcastPush` client path were removed. If a
@@ -1422,8 +1498,12 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- Nothing. (2026-08-01: the 📣 Station-reminder push went out server-side, 7/7 learners,
-  button removed; the banner covers the rest of the class until Sunday.)
+- 🌐 2 min **[whenever]**: open a station on the live site, finish it, and tap Continue
+  twice fast — it should sit on "Loading…" and only pay once.
+
+(2026-08-02: phase20.sql was applied to live via MCP and verified in-session — nothing
+to run. 2026-08-01: the 📣 Station-reminder push went out server-side, 7/7 learners,
+button removed; the banner covers the rest of the class until Sunday.)
 
 ## Pending archive (all DONE — history only, moved here 2026-08-02 so the pending sweep stays clean)
 
@@ -1460,8 +1540,16 @@ playing on those builds for days, so real use did the eyeballing.)
 ## Next up
 **NOTHING IS OWED. Chunk D is complete, audited (2026-07-31 fresh-eyes sweep,
 `QA-SWEEP.md`), and everything is pushed and live** — the working tree is clean and
-`main` matches `origin/main` at `16c59d1`. The Investigation Station is done as
-briefed.
+`main` matches `origin/main` at `4061af8`. The Investigation Station is done as
+briefed, and as of 2026-08-02 it saves once per play.
+
+**The open question is engagement, not the app.** 9 of 21 learners have opened the
+Station; 5 of the 12 who haven't have not opened the app AT ALL since 19–27 Jul. Megan
+has already sent five reminders and reminds them every class, so more reminders are not
+the lever. If she wants to pick this up, the useful next step is working out whether
+those five stopped for a reason that shows in the data (all mid-round? all after a
+specific round? all on one device type?) rather than pushing harder. Her call entirely —
+do not start this unprompted.
 
 Open threads, none urgent, whenever she raises them:
   · the brief's "Also open" pair — the marking cap (now 40; Chunk D added only 1
