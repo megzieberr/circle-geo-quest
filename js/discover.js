@@ -126,7 +126,20 @@ function mountPanel(host, panel, accent, onDone) {
   root.appendChild(foot);
   host.appendChild(root);
 
-  const advance = () => onDone();
+  /* Same one-tap guard as investigate.js — see the note there. Harmless here
+     today (a discovery replay sends xpGained 0 and is skipped once already
+     done, which is why 115 duplicate submits since June cost nothing), but
+     the duplicates still land a +1 on attempts each, and the Investigation
+     Station was built from this file and inherited the hole for real XP.
+     Fixing the original stops it being copied forward again. */
+  let spent = false;
+  const advance = () => {
+    if (spent) return;
+    spent = true;
+    cont.disabled = true;
+    cont.textContent = t("loading");
+    onDone();
+  };
 
   if (panel.type === "explore") {
     if (panel.instruction) body.appendChild(el("p", "dp-instruction", "👉 " + tx(panel.instruction)));

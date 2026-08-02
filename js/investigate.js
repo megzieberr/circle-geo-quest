@@ -291,7 +291,26 @@ function mountPanel(host, panel, accent, scratch, onDone) {
   host.appendChild(root);
 
   let stats = { gated: false, firstTry: false };
-  const advance = () => onDone(stats);
+  /* ONE TAP, ONE ADVANCE. On the last panel onDone runs finish(), which is
+     async: the submit (up to ~1.2s with sync.js retries) plus refreshState()
+     leave this button live for a second or two with nothing on screen moving,
+     so an impatient tap looked like it did nothing and got repeated. Each
+     repeat ran finish() again — a second full submit, a second xp_events row,
+     another +1 on attempts. Live data 2026-08-01/02: nine such duplicate
+     submits across the stations (one learner fired eight in 938ms on inv4,
+     banking 240 XP for one clean play and reading as 8 attempts). game.js has
+     always set `next.disabled = true` before its await; this is that guard,
+     plus the flag so a click already queued when the button dies is dropped
+     too. `loading` is reused rather than a new key: the wait really is the
+     server round-trip. */
+  let spent = false;
+  const advance = () => {
+    if (spent) return;
+    spent = true;
+    cont.disabled = true;
+    cont.textContent = t("loading");
+    onDone(stats);
+  };
 
   if (panel.type === "explore") {
     if (panel.instruction) body.appendChild(el("p", "dp-instruction", "👉 " + tx(panel.instruction)));
