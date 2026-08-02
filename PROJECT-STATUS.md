@@ -1422,9 +1422,11 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-Nothing. (The old blocking item — click the 📣 Station reminder button — is DONE
-another way: the push went out server-side 2026-08-01, 7/7 learners, and the
-button is removed. The banner handles the rest of the class until Sunday.)
+- Nothing. (2026-08-01: the 📣 Station-reminder push went out server-side, 7/7 learners,
+  button removed; the banner covers the rest of the class until Sunday.)
+
+## Pending archive (all DONE — history only, moved here 2026-08-02 so the pending sweep stays clean)
+
 - (2026-07-31: Station 4's "Prove It" title and inv6 p2's protractor wording
   both closed, her call — leave as is.)
 
@@ -1436,8 +1438,9 @@ own hints and reveal text were teaching "on the same side of the chord", the one
 wording the mark scheme refuses. The coaching was wrong, not the strictness. Fixed and
 committed; re-test with a real answer next session before touching `must_have`.)
 
-**Do NOT push — Megan's call, 2026-07-30.** Nothing goes to origin until the train
-is finished, so no learner sees a half-built station. Explained under "Next up".
+(EXPIRED 2026-07-31 — "**Do NOT push** until the train is finished", Megan's call
+2026-07-30. The Investigation Station train finished, was audited and pushed; normal
+shipping applies again.)
 
 (DONE 2026-07-30, the old blocking item: deploying `check-answer`. It never needed
 the dashboard — the Supabase MCP deploys edge functions directly. Now live at
