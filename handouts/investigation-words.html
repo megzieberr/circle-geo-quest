@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Words of an Investigation — Circle Geometry Gr 11</title>
+<style>
+/* ---------------------------------------------------------------
+   One-page A4 handout. Colours are Circle Quest's five brand
+   accents, so the sheet matches the app the class already plays.
+   Print: A4 portrait, 10 mm margins, one page. Scale must stay 100%.
+   --------------------------------------------------------------- */
+:root{
+  --pink:#e64980; --orange:#f76707; --green:#0ea271;
+  --blue:#4263eb; --purple:#9c36b5; --ink:#252a4a;
+  --paper:#ffffff; --wash:#f6f7fb; --line:#dfe3ef;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:#e9ebf2;
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  color:var(--ink);
+  padding:24px;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.page{
+  width:190mm; min-height:277mm;
+  margin:0 auto; padding:0;
+  background:var(--paper);
+  box-shadow:0 6px 28px rgba(37,42,74,.18);
+  display:flex; flex-direction:column; gap:5.5mm;
+}
+
+/* ---------- header ---------- */
+.head{
+  border-bottom:3px solid var(--ink);
+  padding-bottom:3mm;
+  display:flex; align-items:flex-end; justify-content:space-between; gap:6mm;
+}
+.head h1{
+  font-size:22pt; line-height:1.05; letter-spacing:-.4px; font-weight:800;
+}
+.head h1 em{font-style:normal; color:var(--orange);}
+.head .sub{font-size:8.5pt; color:#5b628a; margin-top:1.5mm;}
+.stamp{
+  flex:none; text-align:right; font-size:7.5pt; color:#5b628a;
+  line-height:1.5; border-left:1px solid var(--line); padding-left:5mm;
+}
+.stamp b{display:block; font-size:11pt; color:var(--ink);}
+
+/* ---------- the ladder ---------- */
+.ladder{display:flex; flex-direction:column; gap:2mm;}
+.rungs{display:flex; gap:0;}
+.rung{
+  flex:1; position:relative; color:#fff;
+  padding:2.6mm 3mm 2.6mm 7mm;
+  clip-path:polygon(0 0, calc(100% - 4mm) 0, 100% 50%, calc(100% - 4mm) 100%, 0 100%, 4mm 50%);
+}
+.rung:first-child{clip-path:polygon(0 0, calc(100% - 4mm) 0, 100% 50%, calc(100% - 4mm) 100%, 0 100%); padding-left:4mm;}
+.rung:last-child{clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%, 4mm 50%);}
+.rung .n{font-size:7pt; opacity:.8; letter-spacing:.7px; text-transform:uppercase;}
+.rung .t{font-size:11pt; font-weight:800; line-height:1.15;}
+.rung .d{font-size:7pt; opacity:.92; line-height:1.3; margin-top:.5mm;}
+.r1{background:var(--pink);}  .r2{background:var(--orange);}
+.r3{background:var(--blue);}  .r4{background:var(--purple);}
+.plinth{
+  background:var(--wash); border:1px dashed #b9c0d8; border-radius:2mm;
+  padding:2.2mm 4mm; font-size:7.5pt; color:#4a5178; line-height:1.4;
+}
+.plinth b{color:var(--ink);}
+
+/* ---------- term cards ---------- */
+.cards{display:grid; grid-template-columns:1fr 1fr; gap:3.5mm;}
+.card{
+  border:1px solid var(--line); border-radius:2.5mm;
+  border-left:4.5px solid var(--c);
+  padding:2.6mm 3.4mm; background:var(--paper);
+}
+.card h2{
+  font-size:11.5pt; font-weight:800; color:var(--c);
+  display:flex; align-items:baseline; gap:2.5mm; line-height:1.1;
+}
+.card h2 span{
+  font-size:6.5pt; font-weight:700; letter-spacing:.6px; text-transform:uppercase;
+  color:#7b82a8;
+}
+.card p{font-size:8.3pt; line-height:1.45; margin-top:1.4mm;}
+.card .eg{
+  margin-top:1.6mm; padding-top:1.4mm; border-top:1px dotted var(--line);
+  font-size:7.6pt; line-height:1.42; color:#4a5178;
+}
+.card .eg b{color:var(--c); font-weight:700;}
+.c-obs{--c:var(--pink);}   .c-con{--c:var(--orange);}
+.c-cex{--c:var(--green);}  .c-prf{--c:var(--blue);}
+.c-thm{--c:var(--purple);} .c-cnv{--c:var(--ink);}
+
+/* ---------- bottom two panels ---------- */
+.bottom{display:grid; grid-template-columns:1.35fr 1fr; gap:3.5mm;}
+.panel{border:1px solid var(--line); border-radius:2.5mm; overflow:hidden;}
+.panel > h3{
+  font-size:9.5pt; font-weight:800; padding:2mm 3.5mm; color:#fff;
+}
+.panel .body{padding:2.6mm 3.5mm 3mm;}
+.say h3{background:var(--ink);}
+.row{display:flex; gap:2.5mm; align-items:flex-start; margin-top:2mm;}
+.row:first-child{margin-top:0;}
+.tick,.cross{
+  flex:none; width:4.6mm; height:4.6mm; border-radius:50%; color:#fff;
+  font-size:7.5pt; font-weight:800; text-align:center; line-height:4.6mm;
+}
+.tick{background:var(--green);} .cross{background:#c92a2a;}
+.row .q{font-size:8pt; line-height:1.4;}
+.row .q i{display:block; font-style:normal; color:#6a7096; font-size:7.2pt; margin-top:.4mm;}
+.row .q b{font-weight:700;}
+.always h3{background:var(--orange);}
+.always .body{font-size:8.1pt; line-height:1.45;}
+.always ul{margin:1.8mm 0 0 4mm; padding:0;}
+.always li{margin-bottom:1.2mm;}
+.always .big{
+  display:block; text-align:center; font-size:13pt; font-weight:800;
+  color:var(--orange); letter-spacing:1px; margin-bottom:1.5mm;
+}
+
+/* ---------- footer quote ---------- */
+.quote{
+  margin-top:auto;
+  background:var(--ink); color:#fff; border-radius:2.5mm;
+  padding:2.5mm 4.5mm; font-size:9pt; line-height:1.4;
+}
+.quote b{color:#ffd43b;}
+.quote .src{display:block; font-size:6.8pt; color:#a9afd0; margin-top:1.2mm; letter-spacing:.4px;}
+
+/* ---------- print ---------- */
+@page{size:A4 portrait; margin:10mm;}
+@media print{
+  body{background:#fff; padding:0;}
+  .page{width:auto; min-height:0; box-shadow:none; gap:3.6mm;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="head">
+    <div>
+      <h1>The Words of an <em>Investigation</em></h1>
+      <div class="sub">Circle Geometry · Grade 11 · what each word means, and how to write it so it earns the mark</div>
+    </div>
+    <div class="stamp"><b>Keep this one.</b>Every investigation<br>uses these six words.</div>
+  </div>
+
+  <!-- ============ THE LADDER ============ -->
+  <div class="ladder">
+    <div class="rungs">
+      <div class="rung r1">
+        <div class="n">Step 1</div><div class="t">Observe</div>
+        <div class="d">You measure. You notice.</div>
+      </div>
+      <div class="rung r2">
+        <div class="n">Step 2</div><div class="t">Conjecture</div>
+        <div class="d">You claim it happens always.</div>
+      </div>
+      <div class="rung r3">
+        <div class="n">Step 3</div><div class="t">Prove</div>
+        <div class="d">You argue it for every case.</div>
+      </div>
+      <div class="rung r4">
+        <div class="n">Step 4</div><div class="t">Theorem</div>
+        <div class="d">Now you may use it as a reason.</div>
+      </div>
+    </div>
+    <div class="plinth">
+      <b>Underneath it all: axioms &amp; assumed results.</b> A proof leans on something earlier, which leans on something
+      earlier again — and that chain has to stop somewhere. The facts we agree to accept without proving them are the floor
+      of the whole building. In Grade 11 these are the things you may quote without proof: angles on a straight line add to
+      180°, vertically opposite angles are equal, the parallel-line angles, the congruency conditions.
+    </div>
+  </div>
+
+  <!-- ============ TERM CARDS ============ -->
+  <div class="cards">
+
+    <div class="card c-obs">
+      <h2>Observation <span>what I saw</span></h2>
+      <p>A report of what actually happened in the cases you measured. It is honest and it is true — but it says
+        <b>nothing at all</b> about the cases you did not try.</p>
+      <div class="eg"><b>Sounds like:</b> “When I dragged P and Q around the top of the circle, ∠APB and ∠AQB stayed equal.”
+        <br><b>Why it is not enough:</b> it stops at the positions you happened to use.</div>
+    </div>
+
+    <div class="card c-con">
+      <h2>Conjecture <span>what I claim</span></h2>
+      <p>A precise claim about <b>every</b> case, written so a stranger who has never seen your diagram could test it —
+        so no P, no Q, no A, no B. Not yet proved, but now it is a real claim that can be attacked.</p>
+      <div class="eg"><b>Sounds like:</b> “Angles subtended by the same chord, at the circumference and on the same side of it,
+        are always equal.”<br><b>The marks live in the conditions</b>, not in the answer.</div>
+    </div>
+
+    <div class="card c-cex">
+      <h2>Counterexample <span>one case that kills it</span></h2>
+      <p>A single case where the conjecture fails. That is enough to destroy it for good, and nothing can repair it —
+        because the claim said <i>always</i>, and now it doesn’t.</p>
+      <div class="eg"><b>Sounds like:</b> “A line from the centre that bisects a chord is perpendicular to it” — <b>except
+        the diameter</b>, which every line through the centre bisects. One case, conjecture dead.</div>
+    </div>
+
+    <div class="card c-prf">
+      <h2>Proof <span>why it must be so</span></h2>
+      <p>An argument that covers <b>every</b> case at once, each step justified by a theorem you are allowed to quote.
+        This is the only thing that can turn a conjecture into a theorem. Measuring never can.</p>
+      <div class="eg"><b>The asymmetry:</b> to <i>disprove</i>, find one case. To <i>prove</i>, handle all of them together.
+        That is why the two jobs cost such different amounts of work.</div>
+    </div>
+
+    <div class="card c-thm">
+      <h2>Theorem <span>proved, so usable</span></h2>
+      <p>A conjecture that has been proved. Only now may you write it as a <b>reason</b> in a rider — and only in the
+        wording the marker accepts. Until it is proved it is not a reason, however many times you have measured it.</p>
+      <div class="eg"><b>Accepted short forms:</b> ∠s in the same seg · ∠ at centre = 2 × ∠ at circumference ·
+        ∠s in semi-circle · tans from same pt · opp ∠s of cyclic quad</div>
+    </div>
+
+    <div class="card c-cnv">
+      <h2>Converse <span>the same theorem, backwards</span></h2>
+      <p>Swap what is <b>given</b> with what is <b>concluded</b>. That is a different claim travelling the other way, so
+        proving the theorem proves nothing about its converse — it needs its own proof, and sometimes it is false.</p>
+      <div class="eg"><b>Theorem:</b> AB is a diameter → ∠ACB = 90°. &nbsp;<b>Converse:</b> ∠ACB = 90° → AB is a diameter.
+        <br>That is why every converse reason starts with the word <i>converse</i>.</div>
+    </div>
+
+  </div>
+
+  <!-- ============ BOTTOM PANELS ============ -->
+  <div class="bottom">
+
+    <div class="panel say">
+      <h3>Four learners saw the same thing. Only one wrote a conjecture.</h3>
+      <div class="body">
+        <div class="row"><div class="cross">✕</div><div class="q">“∠APB = ∠AQB.”
+          <i>An answer about one picture. It dies with the diagram.</i></div></div>
+        <div class="row"><div class="cross">✕</div><div class="q">“When I dragged P and Q around, the angles stayed equal.”
+          <i>An observation. True — but it claims nothing beyond what was measured.</i></div></div>
+        <div class="row"><div class="cross">✕</div><div class="q">“Any two angles standing on the same chord are equal.”
+          <i>A dropped condition. This quietly includes the angle at the <b>centre</b> — and that one is double, not equal.</i></div></div>
+        <div class="row"><div class="tick">✓</div><div class="q">“Angles subtended by the same chord, at the circumference
+          and on the same side of it, are <b>always equal</b>.”
+          <i>A conjecture: precise, general, and testable by a stranger.</i></div></div>
+      </div>
+    </div>
+
+    <div class="panel always">
+      <h3>The word that does the work</h3>
+      <div class="body">
+        <span class="big">ALWAYS</span>
+        Drop it and you have <b>reported a measurement</b>. Put it in and you have <b>made a claim</b>.
+        <ul>
+          <li>It is what makes the sentence a conjecture at all.</li>
+          <li>It is what makes it <b>disprovable</b> — one failing case now beats it.</li>
+          <li>It is what makes a proof necessary, because “always” is a promise about cases you have never drawn.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="quote">
+    “Numerous specific examples supporting a conjecture <b>do not constitute a general proof</b>.”
+    <span class="src">IEB Mathematics SAGs — the one sentence this whole page exists to teach.</span>
+  </div>
+
+</div>
+</body>
+</html>
