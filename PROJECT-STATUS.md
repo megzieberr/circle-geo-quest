@@ -1,4 +1,11 @@
-# Project status — updated 2026-08-02
+# Project status — updated 2026-08-04
+
+## Where we are (INVESTIGATION-WORDS HANDOUT SHIPPED — 2026-08-04 — DONE, LIVE)
+
+Added `handouts/investigation-words.html` (+ a `.pdf` copy) — a one-page A4
+printable on the language of a circle geometry investigation, styled to match
+the app's brand accents. Committed `817211f`, pushed, verified live (200 OK).
+Nothing else touched this session; no migration, no `sw.js` change.
 
 ## Where we are (STATION DOUBLE-SAVE FIXED — 2026-08-02 — DONE, LIVE)
 
