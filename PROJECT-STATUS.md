@@ -1,4 +1,43 @@
-# Project status — updated 2026-08-04
+# Project status — updated 2026-08-06
+
+## Where we are (INVESTIGATION STATION HIDDEN AGAIN — 2026-08-06 — pushed, deploy QUEUED behind a GitHub outage)
+
+**The Investigation Station is hidden from learners again — her call.** This
+year's class is finished with the line, the `ANTHROPIC_API_KEY` behind the
+typed-panel marker has expired, and nobody is playing it anymore. **Hidden, not
+retired** — she was explicit: next year's Grade 11s will need it back.
+
+  · **One line changed:** `stationsLive: true → false` in `js/config.js`
+    (commit `393d396`). The flag does everything: no train strip on the home
+    screen, and the `stations`/`investigate` routes bounce back to the quest
+    map, so a guessed or shared URL can't reach it either. `?stations=1` still
+    opens the line for her own review.
+  · **Nothing was deleted.** The six stations, every panel, the `panel_memos`
+    rows in Supabase, the `check-answer` edge function, and the two learners'
+    completed station progress all stay exactly as they are.
+  · **To bring it back next year, TWO things:** flip the flag to `true`, AND
+    put a valid `ANTHROPIC_API_KEY` back into the Supabase secrets — the
+    expired key is why hiding costs nothing now (`check-answer` is the ONLY
+    thing that uses it, and only station typed panels call `check-answer`).
+    Both steps are also in the comment block above the flag in config.js.
+  · **Verified locally** (`?local=1`, dev server): no train strip on home,
+    both station routes render the quest map instead, `?stations=1` still
+    opens the station map, 0 console errors. The 43 main rounds, Daily
+    Challenge, Fix Mistakes and streak are all untouched.
+  · ⚠️ **The deploy was NOT verified live this session.** The push landed on
+    `main` fine, but GitHub itself was mid-outage (their status page: Pages
+    "degraded performance", Actions "partial outage") and the Pages build sat
+    in "building" for 15+ minutes. It will publish itself when GitHub
+    recovers; the checked-off item is in Pending below. The gap is harmless —
+    a learner who opens the station today just sees it as it was, and the
+    typed panels degrade gently when the marker is unreachable (never-stuck
+    ladder: hints still come, Continue still appears, no error shown).
+
+**Also this session: the best possible news.** A learner's voice note: doing
+circle geometry in class, she "could see everything in 2 minutes… I know how
+to write my story now" — unprompted, naming the app as what got her there.
+Three months of building, and the first spontaneous learner testimony says it
+worked. Kept here because this file is also the project's memory of WHY.
 
 ## Where we are (INVESTIGATION-WORDS HANDOUT SHIPPED — 2026-08-04 — DONE, LIVE)
 
@@ -830,6 +869,12 @@ column with a trend arrow. Verified live end-to-end (panel updated itself
 in 13s with no reload; deploy confirmed serving the new code).
 
 ## Decisions
+- 2026-08-06 — **The Investigation Station is HIDDEN, not retired — her exact words:
+  "not retire or nuke. We will need it again for the grade 11 learners of next year."**
+  The one flag (`stationsLive`) does the hiding; all content, memos, edge function and
+  progress stay. Re-enable = flag `true` + a fresh `ANTHROPIC_API_KEY` in Supabase
+  secrets. Do not clean up, drop, or "simplify away" any station code or SQL in the
+  meantime.
 - 2026-08-02 — **The inflated inv4 row keeps its XP, her call.** 8 attempts / 240 XP /
   4 paid replays on one clean play, caused by the double-save. Correcting it would have
   clawed 160 XP back off a learner who did nothing wrong and may well have seen the
@@ -1505,12 +1550,16 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- 🌐 2 min **[whenever]**: open a station on the live site, finish it, and tap Continue
-  twice fast — it should sit on "Loading…" and only pay once.
+- 🌐 1 min **[whenever]**: open megzieberr.github.io/circle-geo-quest in a fresh tab —
+  the train strip should be GONE from the home screen. (GitHub was mid-outage at push
+  time, so the deploy queued; if the train is still there, the queue just hasn't
+  cleared — check again later, nothing to fix.)
 
-(2026-08-02: phase20.sql was applied to live via MCP and verified in-session — nothing
-to run. 2026-08-01: the 📣 Station-reminder push went out server-side, 7/7 learners,
-button removed; the banner covers the rest of the class until Sunday.)
+(2026-08-06: the "double-tap a station's Continue on live" check is moot — the station
+is hidden now. 2026-08-02: phase20.sql was applied to live via MCP and verified
+in-session — nothing to run. 2026-08-01: the 📣 Station-reminder push went out
+server-side, 7/7 learners, button removed; the banner covered the rest of the class
+until Sunday.)
 
 ## Pending archive (all DONE — history only, moved here 2026-08-02 so the pending sweep stays clean)
 
