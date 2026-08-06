@@ -46,20 +46,22 @@ export const CONFIG = {
   // and the `stations` / `investigate` routes bounce back home, so a learner who
   // guesses a URL still cannot reach it.
   //
-  // RELEASED 2026-07-30 — her call at the end of the Chunk D session, after she
-  // play-tested the whole line herself: "make it visible for the learners".
+  // HIDDEN AGAIN 2026-08-06 — her call. This year's class has finished with the
+  // line and the ANTHROPIC_API_KEY behind the typed-panel marker has expired, so
+  // there is no reason to keep showing it. NOT retired and NOT deleted: the six
+  // stations, every panel, the panel_memos rows in Supabase and the learners'
+  // completed progress are all left exactly as they are. Next year's Grade 11s
+  // get the line back by setting this to true again — and by putting a valid
+  // ANTHROPIC_API_KEY back in the Supabase secrets, because the check-answer
+  // edge function is what marks the nine typed panels. (Nothing else in the app
+  // calls that function, so an expired key costs nothing while this is false.)
   //
-  // It went live with ONE of Chunk D's four theorems in (two tangents from a
-  // point). Equal chords, tangent-radius and tan-chord are still to come and are
-  // deliberately additive — they add extra practice panels to stations that are
-  // already complete, so nothing a learner meets today is half-built. Adding
-  // them later costs no migration and no re-release; each new panel simply
-  // raises that station's XP, because the total is computed from panels.length.
+  // It was RELEASED 2026-07-30 — her call at the end of the Chunk D session,
+  // after she play-tested the whole line herself: "make it visible for the
+  // learners" — and ran live for a week.
   //
-  // Set back to false to hide the line again — no train strip, and the
-  // `stations` / `investigate` routes bounce home, so a guessed URL cannot reach
-  // it. `?stations=1` overrides the flag either way, for previewing.
-  stationsLive: true,
+  // `?stations=1` overrides the flag either way, for previewing.
+  stationsLive: false,
   // struggling-learner support ("Boost mode")
   rescueAfterFails: 2,     // after this many failed attempts, replays get open hints + second chances
   comebackBonus: 40,       // extra XP for finally passing a round on the 3rd+ attempt
