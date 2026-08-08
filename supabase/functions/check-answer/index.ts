@@ -193,9 +193,10 @@ Deno.serve(async (req) => {
   // be gamed through it — station XP is paid per completion, not per verdict —
   // but a door that guards nothing and is used by nobody is just a door.
   //
-  // ⚠️ THIS FILE IS EDITED BUT NOT YET DEPLOYED. The live edge function still
-  // has the branch until someone runs a deploy — harmless, since the client
-  // stopped calling it a week ago and stationsLive is false.
+  // DEPLOYED to live 2026-08-07 (version 5), so the door is closed there too.
+  // `verify_jwt` stays FALSE for this function — it authenticates with the
+  // learner's name+password through _cgg_auth, not a JWT. Turning it on would
+  // break every call.
 
   // --- cost cap ------------------------------------------------------------
   // Claim BEFORE the API call, so a crash mid-call still counts the attempt.
