@@ -19,36 +19,13 @@ export function maybeShowBoostAnnounce(app) {
   });
 }
 
-/* One-off: "play the Investigation Station before tomorrow's class" — her
-   ask, 2026-08-01, class is Sunday 2026-08-02. Hardcoded ids and
-   English-only copy because this is a single dated reminder, not a
-   recurring feature (all her learners are English this year — Afrikaans
-   copy was her planning ahead for next year's class, not needed now).
-   Three learners were asked to be excluded (two already told not to be
-   nagged, one hasn't started playing at all yet), plus her own test
-   account — no names here, this file ships to a public repo; the mapping
-   from id to name lives only in her Supabase dashboard. Expires after
-   Sunday so it never lingers into a normal week. */
-const STATION_REMINDER_EXCLUDE = new Set([
-  "14333eb7-dce7-4d4e-8bca-6a45c6009ff9",
-  "dfb8f1fa-a70c-4b5c-bad4-7f1b149c2b04",
-  "4543de75-c4ad-4186-a3a4-62276e775aa2",
-  "66687063-a4ed-4da6-bdcf-47f0085bf9cb",
-]);
-const STATION_REMINDER_EXPIRES = Date.parse("2026-08-03T00:00:00+02:00");
-
-export function maybeShowStationReminder(app) {
-  const id = app && app.state && app.state.student && app.state.student.id;
-  if (!id || STATION_REMINDER_EXCLUDE.has(id)) return;
-  if (Date.now() >= STATION_REMINDER_EXPIRES) return;
-  showNews(app, "stationreminder2026aug", {
-    emoji: "🔬",
-    title: "Investigation Station reminder",
-    intro: "Quick heads-up before tomorrow's class:",
-    items: [["🔬", "Play through the Investigation Station if you haven't yet"]],
-    outro: "See you in class!",
-  });
-}
+/* REMOVED 2026-08-07 (audit finding 6): the one-off "play the Investigation
+   Station before tomorrow's class" reminder. It was written for the Sunday
+   2026-08-02 class and hard-expired at 2026-08-03 00:00 SA, so it had been
+   unreachable dead code — with a list of learner ids in it — ever since.
+   The pattern is in git if a dated one-off is ever wanted again: an EXCLUDE
+   set of opaque ids (never names, this repo is public) plus an expiry gate
+   as the first thing the function runs. */
 
 /* Replays pay again (2026-07-30). Its own storage key, so a learner who has
    already dismissed the Boost popup still sees this one — and vice versa. */

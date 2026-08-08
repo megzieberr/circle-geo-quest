@@ -146,7 +146,8 @@ Deno.serve(async (req) => {
   const password = String(body.password ?? "");
   const panelId  = String(body.panelId ?? "");
   const lang     = body.lang === "af" ? "af" : "en";
-  const override = body.override === true;
+  // body.override is no longer read — see the note further down where its
+  // branch used to be. An old client still sending it just gets normal marking.
   const stuck    = body.stuck === true;
   // hard cap before anything else touches it
   const answer   = String(body.answer ?? "").slice(0, 600);
@@ -182,25 +183,19 @@ Deno.serve(async (req) => {
     return json({ ok: true, verdict: "stuck", missing: [], nudge: "", misconception: "" });
   }
 
-  // --- the learner said the checker got it wrong ---------------------------
-  // RETIRED on the client 2026-07-30 (see js/investigate.js): the link was
-  // replaced by "I don't get it", because it printed a pass over an answer
-  // nobody had marked. The branch stays so any older cached client still
-  // works and still logs, rather than erroring at a learner mid-panel.
-  if (override) {
-    const { data: claim } = await admin.rpc("cgg_checker_claim", {
-      p_student_id: sid,
-      p_panel_id: panelId,
-    });
-    if (claim?.callId) {
-      await admin.rpc("cgg_checker_record", {
-        p_call_id: claim.callId,
-        p_verdict: "override",
-        p_answer: answer,
-      });
-    }
-    return json({ ok: true, verdict: "got_it", missing: [], nudge: "", misconception: "" });
-  }
+  // --- "the checker got it wrong": REMOVED 2026-08-07 (audit finding 2) ------
+  // Retired on the client 2026-07-30 (js/investigate.js) — the link printed a
+  // pass over an answer nobody had marked, so it became "I don't get it".
+  // The server branch was kept for "older cached clients", but this app's
+  // service worker caches NO code at all (see sw.js), so there are none to
+  // protect. What was left was a door: POST override:true and the server
+  // answered "got_it" without marking anything. Nothing in the database could
+  // be gamed through it — station XP is paid per completion, not per verdict —
+  // but a door that guards nothing and is used by nobody is just a door.
+  //
+  // ⚠️ THIS FILE IS EDITED BUT NOT YET DEPLOYED. The live edge function still
+  // has the branch until someone runs a deploy — harmless, since the client
+  // stopped calling it a week ago and stationsLive is false.
 
   // --- cost cap ------------------------------------------------------------
   // Claim BEFORE the API call, so a crash mid-call still counts the attempt.

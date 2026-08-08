@@ -3,13 +3,16 @@
 **Live:** <https://megzieberr.github.io/circle-geo-quest/> · **Admin:** <https://megzieberr.github.io/circle-geo-quest/admin.html>
 
 An online circle-geometry game for Grade 11 learners. Each learner logs in to their
-own account, plays themed rounds (one per theorem), earns XP and badges, and sees a
-live leaderboard. The teacher logs in as admin to see every learner's progress, scores,
-and last-active date. Learner passwords are never shown; a forgotten one is cleared with
-a "reset pw" button so the learner picks a new one.
+own account, works through **49 rounds** (43 in the main quest plus a 6-round
+Investigation Station), earns XP and badges, and sees a live leaderboard. The teacher
+logs in as admin to see every learner's progress, scores, and last-active date.
+Learner passwords are never shown; a forgotten one is cleared with a "reset pw"
+button so the learner picks a new one.
 
-**No learner ever types a maths answer** — every answer is a multiple-choice tap, a
-yes/no tap, or a tap directly on the diagram.
+**In the main quest no learner ever types a maths answer** — every answer is a
+multiple-choice tap, a yes/no tap, or a tap directly on the diagram. (The two
+final Investigation Station rounds are the deliberate exception: they ask for
+words, and an Edge Function marks them.)
 
 It reuses the verified SVG circle-diagram engine from `Gr11_Tan_Chord_Theorem.html` as
 the rendering core for every diagram. Every diagram is drawn to scale and self-checked
@@ -29,9 +32,14 @@ icon-*.png              app icons (regenerate with tools/make_icons.py)
 css/                    styles (shared family of the tan-chord page)
 js/
   engine.js             the diagram engine (extracted + extended)
-  questions.js          the 5 reusable question types
-  rounds/               the 12 rounds (round10 imports the tan-chord exercises)
+  questions.js          the reusable question types
+  rounds/               all 49 rounds — 43 main + 6 Investigation Station
+                        (see "Rounds" below; round10 imports the tan-chord exercises)
   game.js, app.js, …    game shell, routing, leaderboard, login
+  sync.js               offline retry queue, so a dropped submit is never lost
+  daily.js              the Daily Challenge
+  investigate.js        the Investigation Station panels
+  discover.js           the "work it out yourself" discovery rounds
   pwa.js                registers the service worker
   push.js               turn-on / subscribe flow for daily reminders
   push-config.js        >>> paste your VAPID public key here <<<
@@ -41,9 +49,14 @@ js/
 supabase/
   schema.sql            tables, RLS lockdown, RPC functions  (run first)
   admin-and-seed.sql    set admin password + seed class list (run second)
-  phase2.sql … phase6.sql  later additive migrations (daily XP, weekly, push,
-                           password privacy, anonymous feedback survey)
-  functions/send-push/  Edge Function: the daily-reminder sender
+  phase2.sql … phase20.sql  later additive migrations, run in order. Each is
+                        idempotent. Highlights: daily XP + weekly board (2–3),
+                        push (4), password privacy (5), feedback survey (6),
+                        nicknames/avatars (14), the checker's cost cap (17),
+                        paid replays (18), the server-authoritative round
+                        submit (20).
+  functions/send-push/     Edge Function: the daily-reminder sender
+  functions/check-answer/  Edge Function: marks typed Investigation answers
   cron.sql              schedules the daily reminder
 tools/
   gen_vapid.py          generate the VAPID notification keys
@@ -87,7 +100,7 @@ declared value and reports any that aren't to scale. It should say **ALL TO SCAL
 
 1. Create a Supabase project (free tier is fine).
 2. In the project's **SQL editor**, run `supabase/schema.sql` (tables + security + the
-   RPC API).
+   RPC API), then `phase2.sql` … `phase20.sql` **in numerical order**.
 3. Open `supabase/admin-and-seed.sql`, change the admin password and the class list,
    then run it.
 4. In **Project Settings → API**, copy the **Project URL** and the **anon public** key
@@ -165,16 +178,48 @@ Notes:
 
 ---
 
-## Rounds (chapter order)
+## Rounds
 
-1. Parts of a circle · 2. Line from the centre to a chord · 3. Angle at the centre =
-2 × circumference · 4. Angle in a semicircle · 5. Angles in the same segment ·
-6. Equal chords, equal angles · 7. Cyclic quad — opposite angles · 8. Cyclic quad —
-exterior angle · 9. Tangent ⊥ radius · 10. Tan-chord theorem (your existing exercises) ·
-11. Tangents from one point · 12. Boss: name that theorem.
+**49 rounds in all: 43 in the main quest, plus the 6-round Investigation Station.**
+They come in four kinds, and the mix is the point — a learner meets each theorem
+three times over, in a different posture each time:
 
-Each round unlocks when the previous is passed (80%). Reasons are phrased as they appear
-in CAPS exams, in English and Afrikaans (toggle in the top bar).
+- **discover (13)** — work the theorem out yourself by measuring and comparing,
+  before anyone names it. Diagrams show raw measurements only, never the conclusion.
+- **quiz (24)** — the drills: find the angle, pick the reason, riders, multi-step
+  problems, and the two boss rounds.
+- **cutscene (6)** — short story beats between chapters.
+- **investigate (6)** — the Investigation Station (below).
+
+The theorem order is the CAPS chapter order: parts of a circle → line from the
+centre to a chord → angle at centre = 2 × circumference → angle in a semicircle →
+angles in the same segment → equal chords → cyclic quad (opposite, then exterior)
+→ tangent ⊥ radius → tan-chord → tangents from one point → converses → riders.
+
+Each round unlocks when the previous is passed (80%). Reasons are phrased as they
+appear in CAPS exams, in English and Afrikaans (toggle in the top bar).
+**No learner ever types a maths answer in the main quest** — every answer is a tap.
+
+### The Investigation Station (currently hidden)
+
+Six rounds that ask a learner to behave like a mathematician rather than a
+student: measure it, form a conjecture, try to break it, prove it, turn it around
+(the converse), explain it in your own words. The last two accept **typed**
+answers, marked by the `check-answer` Edge Function rather than by pattern
+matching, with a per-learner daily cost cap. "I don't get it" is always available
+and is never rationed.
+
+⚠️ It is **switched off in the UI** (`stationsLive = false` in `js/stations.js`) —
+hidden, not retired. `?stations=1` opens it for a look.
+
+### Daily Challenge, streaks and replays
+
+- A **Daily Challenge** of questions drawn only from rounds the learner has
+  already passed — it revises, it never front-runs the quest.
+- A **streak** for consecutive days, and a **Star of the Week** on the weekly board.
+- **Replays pay again**: two paid replays per round per learner at half XP
+  (`progress.paid_replays`), so grinding is bounded but practice is rewarded.
+- **Fix Mistakes** takes a learner back through the questions they got wrong.
 
 ### Boost mode (support for stuck learners)
 

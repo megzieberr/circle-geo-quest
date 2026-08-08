@@ -1,4 +1,45 @@
-# Project status — updated 2026-08-06
+# Project status — updated 2026-08-07 (audit fixes applied, NOT committed or deployed)
+
+## 🔧 2026-08-07 — overnight audit fixes (all local, nothing shipped)
+
+Off `FABLE-AUDIT-2026-08-06.md`. All four checkers re-run green afterwards:
+**verify-node 424 diagrams / 772 angles / 0 mismatches**, audit-options,
+check-bilingual, check-table-summary. App boots clean, no console errors.
+
+- **🔴 The one that mattered — a logged-out learner's password could stay on the
+  device.** `js/sync.js`'s offline retry queue stored `{name, password, …}` in
+  localStorage and logout cleared only `cgg.session`, so on a shared computer the
+  next person could read the previous learner's login in devtools.
+  **Fixed at the root: the queue no longer stores a password at all.** Credentials
+  come from the live session at flush time, and an entry only ever replays under
+  the name that queued it (so one learner's queue can never flush under another's
+  login either). `js/app.js` logout now takes a copy of the credentials, flushes
+  best-effort, then goes to the login screen.
+  ⚠️ **A one-time stripper runs on module load** and removes the password from any
+  queue already sitting on a device — so phones that have one clean themselves the
+  next time the app opens, instead of waiting for the queue to drain. Proven in the
+  browser: a planted password vanished while the queued round survived to replay.
+- **Removed the retired `override` branch** from `supabase/functions/check-answer/
+  index.ts`. It answered `verdict: "got_it"` without marking anything. It was kept
+  for "older cached clients", but this app's service worker caches no code at all,
+  so there were none. ⚠️ **EDITED BUT NOT DEPLOYED** — the live edge function still
+  has it until someone runs a deploy. Harmless (the client stopped calling it on
+  2026-07-30 and `stationsLive` is false), but it is real drift: deploy with the
+  next ship.
+- **Deleted the expired station-reminder banner** (`js/announce.js` + its caller in
+  `js/game.js`). It hard-expired 2026-08-03, so it was unreachable code carrying a
+  list of learner ids. The pattern is in git if a dated one-off is wanted again.
+- **README refreshed** — it described the app of three months ago ("the 12 rounds",
+  migrations "phase2…phase6"). Now: 49 rounds = 43 main + 6 Investigation Station,
+  the four round kinds, phase2…phase20, the check-answer function, the Station (and
+  that it is hidden, not retired), Daily Challenge / streaks / paid replays / Fix
+  Mistakes.
+
+**Left open deliberately:** retried submits still carry no idempotency key, so a
+committed-but-lost response can double-count (audit F4 — "watch for it in the admin
+timeline", not a build item). Uncapped "stuck" inserts likewise.
+
+
 
 ## Where we are (INVESTIGATION STATION HIDDEN AGAIN — 2026-08-06 — pushed, deploy QUEUED behind a GitHub outage)
 

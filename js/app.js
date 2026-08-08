@@ -91,7 +91,17 @@ const app = {
     this.render();
   },
 
-  logout() { clearSession(); this.state = null; this.go("login"); },
+  logout() {
+    // Take a copy of the credentials before the session goes, so a round still
+    // sitting in the offline queue gets one last chance to reach the server on
+    // the way out. The queue stores no password (see sync.js), so anything that
+    // still can't be sent is safe to leave for this learner's next sign-in.
+    const who = getSession();
+    clearSession();
+    this.state = null;
+    this.go("login");
+    if (who && !PREVIEW) flushPendingSubmits(who).catch(() => { /* stays queued */ });
+  },
 
   // A persistent strip making it unmistakable this is the teacher preview and
   // that nothing here is saved. "Close" simply closes the preview tab.
