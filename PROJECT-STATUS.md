@@ -1,12 +1,15 @@
-# Project status — updated 2026-08-11 (proof rounds: ALL TEN ROUNDS BUILT, P0–P9, awaiting her morning review)
+# Project status — updated 2026-08-11 (proof rounds: ALL TEN ROUNDS BUILT, P0–P9, awaiting her review)
 
-## 🌙 2026-08-11 — overnight build resumed after the wifi drop, ALL SIX SESSIONS DONE. Nothing pushed.
+## ☀️ 2026-08-11 — daytime resume after the wifi drop, ALL SIX SESSIONS DONE. Nothing pushed.
 
-The run that stopped early (session 2, wifi) was picked back up and finished:
-**all six build sessions are done, reviewed against the four checkers, and
+The overnight run stopped early (session 2, wifi). Her instruction in the
+morning: pick up where it left off and run it during the day while she's at
+school. That run is now COMPLETE: **all six build sessions done, every arc
+foreman-reviewed with a full both-languages browser walk at 375px, and
 committed LOCAL.** No push, no deploy, no migration, no edge-function change,
-nothing that cost money. She reviews this morning and teaches proofs today —
-ship is a separate explicit step after her yes.
+nothing that cost money. She reviews when she's home today; **she teaches
+proofs from TOMORROW, 2026-08-12** — ship is a separate explicit step after
+her yes.
 
 **Where the app actually stands: P0 through P9, all ten proof rounds, are
 built and wired into the map.** `MAIN_ROUNDS` now reads **53** (43 + 10).
@@ -14,7 +17,8 @@ Nobody has this yet outside her review — the group (`g7`) is `hidden: true`,
 so a learner finishing the 43 rounds still reads 5/5 badges, same as before.
 
 ### ✅ Session 6 — P9 mixed finale + full-group checklist sweep · DONE
-Commit `bd2e67e`.
+Commits `bd2e67e` (build) + `b232ca7` (foreman review fix: the T1 tool card
+now says "RHS or SSS", because the variant-B claim genuinely runs on SSS).
 
 - **P9 (`pr9`), 11 panels, all taps, figure-free throughout** (the claim is
   entirely in words, so a diagram would be decoration — same call P0 made).
@@ -50,11 +54,12 @@ Commit `bd2e67e`.
     the `id:` field and header comments).
   - `git diff origin/main --stat -- supabase sw.js css` is empty — nothing
     under those paths touched across the whole six-session run.
-- **Not done / deferred:** no browser walk this session (Browser pane
-  automation doesn't apply here since nothing renders live without her
-  dev-server setup) — the checkers are the evidence for this round; she
-  should still eyeball P9 in the app before teaching from it, same as every
-  other arc.
+- **Browser-walked by the foreman** (this supersedes the build session's own
+  "no browser walk" note): all 11 panels of P9, BOTH languages, 375px — first
+  pass banks 110 XP (11 × 10), a replay pays 55 (half), the catchphrase
+  renders once in panel 8's note, the map counter reads /53, no horizontal
+  overflow, 0 console errors. She should still play it herself before
+  teaching from it — a foreman walk is not her eye.
 
 ### ✅ Sessions 2–5 — T1/T2/T3/T4 arcs (P1–P8) · DONE, each committed
 Commits `a55d4dd`+`bb6b943` (T1), `5f6c0a7`+`823760b` (T2), `3439aaa`+`6b68ec3`
@@ -63,9 +68,13 @@ pattern. Each arc: a discovery round teaching one construction, a transfer
 round carrying it to a relabelled/rotated picture plus that theorem's
 signature trap (T3's wrong-radii join, T4's wrong-join-after-diameter), an
 error-spotting panel, and one legal-constructions panel with the catchphrase
-used once per arc. All checked clean at build time — see the commit log for
-each arc's own detail (this file wasn't updated between sessions 2–5; the
-git log is the record for that stretch).
+used once per arc. Every arc was foreman-reviewed before the next session
+started: hand-rechecked geometry, all four checkers re-run fresh, and a full
+browser walk of both rounds in BOTH languages at 375px including label-overlap
+measurements (two real placement bugs found and fixed that way — pr3's x/y
+labels rendering beside O instead of P, and pr5's "a"/"2c" head-on collision).
+The review-fix commit messages carry each arc's detail; the git log is the
+record for that stretch.
 
 ### ✅ Session 1 — scaffolding + P0 "Why proofs?" · DONE, reviewed, accepted
 Commits `834ac53` (the build) and `c7c8c07` (one review fix of mine).
@@ -126,12 +135,15 @@ teaches from tomorrow. One line fixes it, for her to approve:
 Stacking makes each figure full width (~314px, labels back to normal size); the
 only loss is seeing two figures at once, which at 6px nobody could read anyway.
 
-### 📌 To pick up this morning
+### 📌 To pick up when she's home (she teaches proofs from TOMORROW, 2026-08-12)
 1. **Her review first.** All ten proof rounds (P0–P9) are built, checked and
    committed LOCAL — nothing has shipped. Play through the group in the app
-   before class; she's teaching from it today.
+   tonight; tomorrow morning is the fix window before class.
 2. Decide the mini-diagram CSS question above (one line, or leave it) — still
-   open, still pre-existing, still her call.
+   open, still pre-existing, still her call. ⚠️ One NEW panel joins the
+   affected list: pr4's recap gallery puts THREE minis in the row (147px
+   each, labels 7–9px at phone width) — the same one-line fix would stack
+   those full-width too.
 3. Ship is a separate explicit step once she's happy: plain push, no
    migration, no edge-function change — this whole build never touched any of
    those.
@@ -1757,6 +1769,11 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
+- 💻 20 min **[blocking]**: open the dev server with `?local=1` → play the ten
+  proof rounds (map, after round 43) → say "ship it" or list fixes. Class is
+  tomorrow; tonight + early morning is the window.
+- 💻 1 min **[blocking]**: say yes/no to the one-line mini-diagram CSS fix
+  (section above) — yes makes small figures stack full-width on phones.
 - 🌐 1 min **[whenever]**: open megzieberr.github.io/circle-geo-quest in a fresh tab —
   the train strip should be GONE from the home screen. (GitHub was mid-outage at push
   time, so the deploy queued; if the train is still there, the queue just hasn't
