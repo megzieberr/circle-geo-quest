@@ -49,6 +49,8 @@ import { round as r21 } from "./round21-riders-mixed2.js";
 import { round as pr0 } from "./proof0-why-proofs.js";           // g7 · Proof rounds (P0 built; P1-P9 arrive later)
 import { round as pr1 } from "./proof1-t1-discovery.js";         // g7 · Proof rounds — T1 discovery (session 2)
 import { round as pr2 } from "./proof2-t1-transfer.js";          // g7 · Proof rounds — T1 transfer (session 2)
+import { round as pr3 } from "./proof3-t2-discovery.js";         // g7 · Proof rounds — T2 discovery (session 3)
+import { round as pr4 } from "./proof4-t2-transfer.js";          // g7 · Proof rounds — T2 transfer (session 3)
 import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
 import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
@@ -83,7 +85,7 @@ const ORDER = [
   // Investigation Station is hidden (stationsLive: false in config.js) and
   // its unlock chain is pinned to FINAL_QUEST_ROUND_ID (below), not to
   // whatever round happens to sit last in this array — see js/stations.js.
-  pr0, pr1, pr2,
+  pr0, pr1, pr2, pr3, pr4,
   inv1, inv2, inv3, inv4, inv5, inv6,                    // g6 · Investigation Station 🚂
 ];
 
@@ -108,7 +110,7 @@ const GROUP = {
   tanintro: "g3", tanchordintro: "g3", dtanchord: "g3", r10: "g3", r10b: "g3", dtanrad: "g3", r9: "g3", dtanpoint: "g3", r11: "g3", eprovetan: "g3",
   r12: "g4", r14: "g4", r15: "g4", r16: "g4",
   r18: "g5", r19: "g5", r20: "g5", r21: "g5",
-  pr0: "g7", pr1: "g7", pr2: "g7",   // P3-P9 join this line as they're built
+  pr0: "g7", pr1: "g7", pr2: "g7", pr3: "g7", pr4: "g7",   // P5-P9 join this line as they're built
   inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
 };
 
