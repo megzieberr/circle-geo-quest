@@ -59,15 +59,22 @@ const FIG_PQ_CLAIM = {
 
 /* ---- panels 2 & 3 (variant B, then C): the "before" picture ----
    N is given as the midpoint (PN = NQ, tick-marked) — no radii drawn yet,
-   no angle marked, because that is exactly what these two panels are
-   asking HOW to prove. Deliberately the SAME figure for both panels: the
-   picture does not change between "prove ⊥" and "prove the perpendicular
-   bisector passes through O" — only the question's wording does. */
+   because that is exactly what these two panels are asking HOW to prove.
+   Deliberately the SAME figure for both panels: the picture does not
+   change between "prove ⊥" and "prove the perpendicular bisector passes
+   through O" — only the question's wording does.
+
+   ON IS DRAWN, PLAIN, NO RIGHT-ANGLE MARK (FIX-ROUND-1.md item 3): panel
+   2's own prompt says "you must prove ON ⊥ PQ", and panel 3 talks about
+   the perpendicular bisector, which IS the segment ON extended — both
+   name it, so it has to be on the picture. It carries no 90° mark because
+   that is exactly the fact these two panels are asking the learner to
+   establish, not something the figure may hand them for free. */
 const FIG_PQ_MID = {
   O: true,
   pts: { P: 55, Q: 195 },
   mid: [{ name: "N", of: ["P", "Q"] }],
-  chords: [{ a: "P", b: "N", mk: "t1" }, { a: "N", b: "Q", mk: "t1" }],
+  chords: [{ a: "P", b: "N", mk: "t1" }, { a: "N", b: "Q", mk: "t1" }, { a: "O", b: "N" }],
 };
 
 /* ---- panels 4 & 6: the full construction — OP, OQ (ticked radii), ON,

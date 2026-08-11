@@ -67,6 +67,17 @@ function angleSVG(cx, cy, from, to, text, o, accent, W, H) {
   const s = sweepOf(from, to);
   const col = o.c || colorFor(text, accent);
   let out = "";
+  /* Marker-pen wedge highlight (FIX-ROUND-1.md, additive, opt-in via o.hl):
+     a translucent filled pie-slice from the vertex out to a fixed radius,
+     drawn BEFORE the arc/mark/text below it — so it reads as a highlighter
+     stroke sitting under the normal drawing, never replacing it. Nothing
+     without o.hl set is affected. */
+  if (o.hl) {
+    const wr = o.hlR || 34;
+    const [wx1, wy1] = pol(cx, cy, wr, from);
+    const [wx2, wy2] = pol(cx, cy, wr, from + s);
+    out += `<path d="M ${N(cx)} ${N(cy)} L ${N(wx1)} ${N(wy1)} A ${wr} ${wr} 0 ${s > 180 ? 1 : 0} 0 ${N(wx2)} ${N(wy2)} Z" fill="${o.hl}" fill-opacity="0.32" stroke="none"/>`;
+  }
   if (o.mark) {
     const m = 12;
     const p1 = pol(cx, cy, m, from), p2 = pol(cx, cy, m * Math.SQRT2, from + s / 2), p3 = pol(cx, cy, m, from + s);
@@ -113,6 +124,14 @@ function chordMark(c) {
     }
   }
   return out;
+}
+/* Marker-pen highlight for a chord (FIX-ROUND-1.md, additive, opt-in via
+   c.hl): a translucent thick stroke along the same segment, drawn BEFORE
+   the normal thin line so it sits UNDER it, like a highlighter pass.
+   Nothing without hl set is affected. */
+function chordHighlight(c) {
+  if (!c.hl) return "";
+  return `<line x1="${N(c.p1.x)}" y1="${N(c.p1.y)}" x2="${N(c.p2.x)}" y2="${N(c.p2.y)}" stroke="${c.hl}" stroke-width="7" stroke-opacity="0.32" stroke-linecap="round"/>`;
 }
 function dot(x, y, col) {
   return `<circle cx="${N(x)}" cy="${N(y)}" r="2.6" fill="${col || INK}"/>`;
@@ -242,7 +261,8 @@ export function computeGeometry(d) {
     const a = Array.isArray(c) ? c[0] : c.a;
     const b = Array.isArray(c) ? c[1] : c.b;
     const mk = Array.isArray(c) ? null : (c.mk || null);   // "p1"/"p2" parallel arrows · "t1"/"t2"/"t3" equal ticks
-    return { a, b, mk, p1: { x: pts[a].x, y: pts[a].y }, p2: { x: pts[b].x, y: pts[b].y } };
+    const hl = Array.isArray(c) ? null : (c.hl || null);   // marker-pen highlight colour (FIX-ROUND-1.md, additive)
+    return { a, b, mk, hl, p1: { x: pts[a].x, y: pts[a].y }, p2: { x: pts[b].x, y: pts[b].y } };
   });
 
   /* resolve every angle to a vertex, sweep and a clamped label position */
@@ -302,8 +322,9 @@ export function renderDiagram(d, accent, opts = {}) {
   /* tangent segments from external points */
   g.extTangents.forEach(s => out += lineEl(s.p1.x, s.p1.y, s.p2.x, s.p2.y));
 
-  /* chords (+ optional equal-tick / parallel-arrow marks) */
-  g.chordSegs.forEach(c => { out += lineEl(c.p1.x, c.p1.y, c.p2.x, c.p2.y); out += chordMark(c); });
+  /* chords (+ optional marker-pen highlight UNDER the line, then the line
+     itself, then optional equal-tick / parallel-arrow marks) */
+  g.chordSegs.forEach(c => { out += chordHighlight(c); out += lineEl(c.p1.x, c.p1.y, c.p2.x, c.p2.y); out += chordMark(c); });
 
   /* angles */
   g.angles.forEach(a => {

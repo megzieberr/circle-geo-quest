@@ -82,7 +82,12 @@ const FIG_CLAIM = {
 };
 
 /* ---- panel 2: the construction has appeared — OB, OD joined, no angle
-   marks yet (panel 2 is about WHY, before any angle gets a letter). ---- */
+   marks yet (panel 2 is about WHY, before any angle gets a letter).
+   Chord BD is drawn too (FIX-ROUND-1.md item 3): the panel's own correct
+   option and note both name "BD is the chord both angles look at" — that
+   sentence needs the segment on the picture, not just OB/OD either side
+   of it. Plain, no tick or mark: it is explanatory, nothing is being
+   proven about its length. ---- */
 const FIG_CONSTRUCT_BARE = {
   O: true,
   pts: { A: 160, B: 80, C: 350, D: 240 },
@@ -90,6 +95,7 @@ const FIG_CONSTRUCT_BARE = {
     ["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"],
     { a: "O", b: "B", mk: "t1" },
     { a: "O", b: "D", mk: "t1" },
+    { a: "B", b: "D" },
   ],
 };
 
@@ -148,8 +154,8 @@ export const round = {
     {
       type: "predict",
       prompt: {
-        en: "Here is the picture: ABCD is a cyclic quadrilateral — all four vertices sit on the circle with centre O. ∠A and ∠C are OPPOSITE angles (marked, no numbers — this has to hold for every cyclic quad, not just one). The claim is that ∠A + ∠C always equals 180°. What do you THINK could prove that?",
-        af: "Hier is die prentjie: ABCD is 'n koordevierhoek — al vier hoekpunte sit op die sirkel met middelpunt O. ∠A en ∠C is TEENOORSTAANDE hoeke (gemerk, geen getalle nie — dit moet vir elke koordevierhoek geld, nie net een nie). Die bewering is dat ∠A + ∠C altyd gelyk is aan 180°. Wat dink jy sou dit kon bewys?",
+        en: "Here is the picture: ABCD is a cyclic quadrilateral — all four vertices sit on the circle with centre O. ∠A and ∠C are OPPOSITE angles (marked, no numbers — this has to hold for every cyclic quad, not just one). The claim is that ∠A + ∠C always equals 180°. What other geometry theorem do you THINK can prove that this claim is ALWAYS true?",
+        af: "Hier is die prentjie: ABCD is 'n koordevierhoek — al vier hoekpunte sit op die sirkel met middelpunt O. ∠A en ∠C is TEENOORSTAANDE hoeke (gemerk, geen getalle nie — dit moet vir elke koordevierhoek geld, nie net een nie). Die bewering is dat ∠A + ∠C altyd gelyk is aan 180°. Watter ander meetkundestelling dink jy kan bewys dat hierdie bewering ALTYD waar is?",
       },
       diagram: FIG_CLAIM,
       options: [

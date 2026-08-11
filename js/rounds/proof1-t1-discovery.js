@@ -86,8 +86,8 @@ export const round = {
     {
       type: "predict",
       prompt: {
-        en: "Here is the picture: O is the centre, AB is a chord, and OM ⊥ AB at M — that right angle is given. The claim is that this forces AM = MB, the line cuts the chord into two equal pieces. What do you THINK could prove that?",
-        af: "Hier is die prentjie: O is die middelpunt, AB is 'n koord, en OM ⊥ AB by M — daardie regte hoek is gegee. Die bewering is dat dit AM = MB dwing, die lyn sny die koord in twee gelyke stukke. Wat dink jy sou dit kon bewys?",
+        en: "Here is the picture: O is the centre, AB is a chord, and OM ⊥ AB at M — that right angle is given. The claim is that this forces AM = MB, the line cuts the chord into two equal pieces. What other geometry theorem do you THINK can prove that this claim is ALWAYS true?",
+        af: "Hier is die prentjie: O is die middelpunt, AB is 'n koord, en OM ⊥ AB by M — daardie regte hoek is gegee. Die bewering is dat dit AM = MB dwing, die lyn sny die koord in twee gelyke stukke. Watter ander meetkundestelling dink jy kan bewys dat hierdie bewering ALTYD waar is?",
       },
       diagram: FIG_CLAIM,
       options: [

@@ -140,7 +140,10 @@ const FIG_SEMI = {
   angles: [
     { at: "T", legs: ["tg+", "A"], t: "a", o: { v: 64 } },
     { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1 } },
-    { at: "T", legs: ["D", "A"], t: "90°−a", o: { v: 26 } },
+    /* r pins this label to its arc (FIX-ROUND-1.md item 13's general
+       re-sweep): a 26° sweep with a 5-char label defaults to r≈66, which
+       risks drifting near the canvas edge this close to T at 270°. */
+    { at: "T", legs: ["D", "A"], t: "90°−a", o: { v: 26, r: 40 } },
     { at: "A", legs: ["T", "D"], t: "", o: { v: 90, mark: 1 } },
   ],
 };
@@ -176,8 +179,8 @@ export const round = {
     {
       type: "predict",
       prompt: {
-        en: "Here is the picture: STU is a tangent, touching the circle at T. TA is a chord from the point of contact, making a tangent–chord angle at T (marked, no number). P is a point on the circle, on the OTHER side of the chord — ∠TPA is the angle in the alternate segment (also marked, no number). The claim is that these two angles are always equal. What do you THINK could prove that?",
-        af: "Hier is die prentjie: STU is 'n raaklyn wat die sirkel by T raak. TA is 'n koord vanaf die raakpunt, wat 'n raaklyn–koord-hoek by T maak (gemerk, geen getal nie). P is 'n punt op die sirkel, aan die ANDER kant van die koord — ∠TPA is die hoek in die oorstaande segment (ook gemerk, geen getal nie). Die bewering is dat hierdie twee hoeke altyd gelyk is. Wat dink jy sou dit kon bewys?",
+        en: "Here is the picture: STU is a tangent, touching the circle at T. TA is a chord from the point of contact, making a tangent–chord angle at T (marked, no number). P is a point on the circle, on the OTHER side of the chord — ∠TPA is the angle in the alternate segment (also marked, no number). The claim is that these two angles are always equal. What other geometry theorem do you THINK can prove that this claim is ALWAYS true?",
+        af: "Hier is die prentjie: STU is 'n raaklyn wat die sirkel by T raak. TA is 'n koord vanaf die raakpunt, wat 'n raaklyn–koord-hoek by T maak (gemerk, geen getal nie). P is 'n punt op die sirkel, aan die ANDER kant van die koord — ∠TPA is die hoek in die oorstaande segment (ook gemerk, geen getal nie). Die bewering is dat hierdie twee hoeke altyd gelyk is. Watter ander meetkundestelling dink jy kan bewys dat hierdie bewering ALTYD waar is?",
       },
       diagram: FIG_CLAIM,
       options: [

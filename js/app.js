@@ -8,6 +8,7 @@ import { renderHome, renderPlay, renderResults } from "./game.js";
 import { renderDiscover } from "./discover.js";
 import { renderInvestigate } from "./investigate.js";
 import { renderStations, stationsVisible } from "./stations.js";
+import { renderProofs } from "./proofs.js";
 import { renderCutscene } from "./cutscene.js";
 import { renderLeaderboard } from "./leaderboard.js";
 import { renderAdventures, renderAdventure } from "./adventure.js";
@@ -127,11 +128,12 @@ const app = {
       case "home": renderHome(this, view); renderCustomizeLink(this, view); break;
       case "play": renderPlay(this, view, this.params); break;
       case "discover": renderDiscover(this, view, this.params); break;
-      // Proof rounds (kind "proof", PROOF-ROUNDS-PLAN.md) live on the main map,
-      // not the hidden branch line — unlike "investigate" below, this route is
-      // NOT gated on stationsVisible(). That gate exists only to hide the
-      // Investigation Station; a proof round is reached the same way any other
-      // main-line round is (the round grid, the continue card, "next round").
+      // Proofs (kind "proof", g7) came OFF the main quest map on 2026-08-11
+      // (FIX-ROUND-1.md item 1) into their own grouped entry, reached from the
+      // ALWAYS-visible home-screen card (js/proofs.js's proofsCard) — never
+      // gated like "investigate" below, because there is nothing to hide: every
+      // learner can open pr0 from day one, independent of main-map progress.
+      case "proofs": renderProofs(this, view); break;
       case "proof": renderInvestigate(this, view, this.params); break;
       // Both station routes bounce home while the line is hidden from learners
       // (CONFIG.stationsLive) — the train strip is already gone, and this closes

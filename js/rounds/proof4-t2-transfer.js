@@ -102,8 +102,11 @@ const FIG_REFLEX_CONSTRUCT = {
     ["P", "A"], ["P", "B"],
   ],
   angles: [
-    { at: "P", legs: ["O", "A"], t: "x", o: { v: 55 } },
-    { at: "P", legs: ["O", "B"], t: "y", o: { v: 55 } },
+    /* r pins the x/y labels to their arcs (FIX-ROUND-1.md item 13 — they
+       drifted far from their vertex on Megan's playtest; the engine's
+       default radius for a 55° sweep, 50, was still too generous here). */
+    { at: "P", legs: ["O", "A"], t: "x", o: { v: 55, r: 36 } },
+    { at: "P", legs: ["O", "B"], t: "y", o: { v: 55, r: 36 } },
     { at: "O", legs: ["A", "Q"], t: "2x", o: { v: 110 } },
     { at: "O", legs: ["B", "Q"], t: "2y", o: { v: 110 } },
   ],
@@ -200,8 +203,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "The diameter is drawn, the two isosceles triangles give x and y (marked), and the exterior angle theorem doubles each one at O — ∠AOQ = 2x = 110°, ∠BOQ = 2y = 110°, exactly as before. Add them together. What do you get, and which angle actually is it?",
-        af: "Die middellyn is getrek, die twee gelykbenige driehoeke gee x en y (gemerk), en die buitehoekstelling verdubbel elkeen by O — ∠AOQ = 2x = 110°, ∠BOQ = 2y = 110°, presies soos voorheen. Tel hulle bymekaar. Wat kry jy, en watter hoek is dit eintlik?",
+        en: "The diameter is drawn, the two isosceles triangles give x and y (marked), and the exterior angle theorem doubles each one at O — O₁ = 2x = 110°, O₂ = 2y = 110°, exactly as before. Add them together. What do you get, and which angle actually is it?",
+        af: "Die middellyn is getrek, die twee gelykbenige driehoeke gee x en y (gemerk), en die buitehoekstelling verdubbel elkeen by O — O₁ = 2x = 110°, O₂ = 2y = 110°, presies soos voorheen. Tel hulle bymekaar. Wat kry jy, en watter hoek is dit eintlik?",
       },
       diagram: FIG_REFLEX_CONSTRUCT,
       options: [

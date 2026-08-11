@@ -12,6 +12,7 @@ import { addMistake, clearMistake, mistakeCount } from "./mistakes.js";
 import { getDaily, dailyUnlocked, isDoneToday, syncStreakOnce } from "./daily.js";
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
+import { proofsCard, nextProofToPlay } from "./proofs.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
 import { maybeShowBoostAnnounce, maybeShowReplayAnnounce } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
@@ -117,6 +118,12 @@ export function renderHome(app, host) {
   // appendChild(null) throws, so this is guarded rather than inlined.
   const strip = trainStrip(app);
   if (strip) host.appendChild(strip);
+
+  // Proofs 🔗 — a standing invitation, ALWAYS shown (FIX-ROUND-1.md item 1,
+  // her explicit ruling): every learner can open pr0 from day one, whatever
+  // their main-map progress. Unlike the Investigation Station strip above,
+  // there is no visibility flag to check here — there is nothing to hide.
+  host.appendChild(proofsCard(app));
 
   const ladder = renderRankLadder(progress);
   if (ladder) host.appendChild(ladder);            // hidden until the first badge is earned
@@ -621,6 +628,13 @@ export function renderResults(app, host, params) {
   // the main round map the learner didn't come from.
   const isStation = round.kind === "investigate";
   const nextStation = isStation ? nextStationToPlay(app.state.progress || {}) : null;
+  // A proof round belongs to its own grouped entry off the main map
+  // (FIX-ROUND-1.md item 1) — "next" is the next proof round, and "back"
+  // returns to the proofs map, never home directly and never the main
+  // quest's own "next round" (nextRound above, computed from MAIN_ROUNDS,
+  // no longer even contains a proof round to point at).
+  const isProofRound = round.kind === "proof";
+  const nextProof = isProofRound ? nextProofToPlay(app.state.progress || {}) : null;
 
   const actions = screen.querySelector(".result-actions");
   const mkBtn = (label, primary, fn) => { const b = el("button", "btn " + (primary ? "primary" : "ghost"), label); b.addEventListener("click", fn); actions.appendChild(b); };
@@ -639,6 +653,16 @@ export function renderResults(app, host, params) {
     }
     // NOT t("backHome") — that reads "Back to map", which next to "Station map"
     // would leave the learner with two buttons both claiming to be a map.
+    mkBtn("🏠 " + tx({ en: "Home", af: "Tuis" }), false, goHome);
+  } else if (isProofRound) {
+    const proofMapLabel = "🔗 " + tx({ en: "Proofs map", af: "Bewyse-kaart" });
+    if (nextProof && nextProof.id !== round.id) {
+      mkBtn("▶ " + tx({ en: "Next proof", af: "Volgende bewys" }), true,
+        () => app.go("proof", { roundId: nextProof.id }));
+      mkBtn(proofMapLabel, false, () => app.go("proofs"));
+    } else {
+      mkBtn(proofMapLabel, true, () => app.go("proofs"));
+    }
     mkBtn("🏠 " + tx({ en: "Home", af: "Tuis" }), false, goHome);
   } else if (!saved && !params.discovery) {
     // The pass is only queued locally — be honest and don't let them move on as
@@ -691,11 +715,13 @@ export function renderResults(app, host, params) {
 
   // Finishing the very last round of the quest → one-time anonymous survey popup.
   // (No-ops if they've already given feedback or been prompted before.)
-  // PINNED to FINAL_QUEST_ROUND_ID (r21), not to "the last entry in
-  // MAIN_ROUNDS" — that entry became a proof round (pr0) the moment the proof
-  // group was appended to the map, and the class has already met this survey.
-  // It must fire exactly once, on finishing the 43 main rounds, and never
-  // again on a proof round (PROOF-ROUNDS-PLAN.md build checklist item #1).
+  // PINNED to FINAL_QUEST_ROUND_ID (r21) rather than read off "the last entry
+  // in MAIN_ROUNDS" — belt and braces (FIX-ROUND-1.md item 1): MAIN_ROUNDS
+  // ends on r21 again now that proof rounds left it for their own grouped
+  // entry, but this pin costs nothing and means the survey trigger can never
+  // silently drift again if the main quest's own ORDER ever changes shape.
+  // The class has already met this survey; it must fire exactly once, on
+  // finishing the 43 main rounds, and never again on a proof round.
   const isFinalRound = round.id === FINAL_QUEST_ROUND_ID;
   if (isFinalRound && passed && !params.discovery) {
     try { maybeShowSurveyPopup(app); } catch { /* non-critical */ }

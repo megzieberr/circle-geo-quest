@@ -118,10 +118,12 @@ export function renderInvestigate(app, host, params) {
 
   // Two kinds render through this one function (added 2026-08-11 for the
   // proof rounds, PROOF-ROUNDS-PLAN.md): "investigate" is a station on the
-  // hidden branch line, "proof" is a graded round on the main map. Both get
+  // hidden branch line, "proof" is a round in its own grouped Proofs entry
+  // (js/proofs.js, off the main map since FIX-ROUND-1.md item 1). Both get
   // predict/choice/blank/note panels and per-panel XP for free — these three
   // small kind-aware branches are the only places that differ.
   const isStation = round.kind === "investigate";
+  const isProofRound = round.kind === "proof";
 
   clear(host);
   const screen = el("div", "play discover investigate");
@@ -130,10 +132,12 @@ export function renderInvestigate(app, host, params) {
   top.innerHTML = `<button class="link-btn quit">✕</button>
     <div class="play-title">${isStation ? "🚂" : "🔗"} ${tx(round.title)}</div>
     <div class="play-count"><span class="pc-n"></span><span class="pc-xp"></span></div>`;
-  // ✕ goes back to the station map for a station — the learner came in off
-  // the train strip, so that is the screen behind them. A proof round is on
-  // the main map, so its ✕ goes straight home, same as a graded round's.
-  top.querySelector(".quit").addEventListener("click", () => app.go(isStation ? "stations" : "home"));
+  // ✕ goes back to the station map for a station, or the proofs map for a
+  // proof round — the learner came in off that screen in both cases, not
+  // home directly (FIX-ROUND-1.md item 1: a proof round is no longer on
+  // the main map, it lives behind its own grouped entry, same shape as the
+  // station line).
+  top.querySelector(".quit").addEventListener("click", () => app.go(isStation ? "stations" : (isProofRound ? "proofs" : "home")));
   const bar = el("div", "pbar"); bar.appendChild(el("i"));
   const stepHost = el("div", "discover-host");
   mount(screen, top, bar, stepHost);

@@ -136,7 +136,17 @@ export const ROUND_BY_ID = Object.fromEntries(ROUNDS.map(r => [r.id, r]));
    seventh station would need no change here.
    ------------------------------------------------------------ */
 export const STATIONS = ROUNDS.filter(r => r.kind === "investigate");
-export const MAIN_ROUNDS = ROUNDS.filter(r => r.kind !== "investigate");
+/* Proof rounds (group g7) came OFF the main quest map on 2026-08-11
+   (FIX-ROUND-1.md item 1, Megan's first-playtest fix round) — they now
+   live behind their own home-screen card, like the Grand Master Arena
+   "Adventures" card, open to every learner from the start regardless of
+   main-map progress. Same pattern as STATIONS above: PROOFS is its own
+   filtered view for the card + its map screen (js/proofs.js); ROUNDS
+   stays the full list so ROUND_BY_ID, verify-node and the admin
+   dashboard still see everything, and MAIN_ROUNDS goes back to exactly
+   the 43-round quest. */
+export const PROOFS = ROUNDS.filter(r => r.kind === "proof");
+export const MAIN_ROUNDS = ROUNDS.filter(r => r.kind !== "investigate" && r.kind !== "proof");
 
 /* Which rounds are unlocked: the first always, every other once the
    round BEFORE it in the play order has been passed. It lives here
