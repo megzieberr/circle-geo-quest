@@ -46,6 +46,7 @@ import { round as r18 } from "./round18-riders-twochord.js";
 import { round as r19 } from "./round19-riders-diameter.js";
 import { round as r20 } from "./round20-riders-mixed1.js";
 import { round as r21 } from "./round21-riders-mixed2.js";
+import { round as pr0 } from "./proof0-why-proofs.js";           // g7 · Proof rounds (P0 built; P1-P9 arrive later)
 import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
 import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
@@ -72,9 +73,30 @@ const ORDER = [
   dTanPoint, r11,                                        // g3 · tangents from a point
   eProveTan,                                             // g3 · prove a tangent
   r12, r14, r15, r16,                                    // g4 · Circle Detective
-  r18, r19, r20, r21,                                    // g5 · Circle Grand Master
+  r18, r19, r20, r21,                                    // g5 · Circle Grand Master · FINAL_QUEST_ROUND_ID = r21
+  // g7 · Proof rounds (PROOF-ROUNDS-PLAN.md). P0 built this session; P1-P9
+  // arrive in later sessions as a one-line addition to the import list above
+  // and to this line (pr0, pr1, pr2, … pr9,) — nothing else in this file
+  // needs to change for them. MUST stay AFTER r21 and BEFORE inv1: the
+  // Investigation Station is hidden (stationsLive: false in config.js) and
+  // its unlock chain is pinned to FINAL_QUEST_ROUND_ID (below), not to
+  // whatever round happens to sit last in this array — see js/stations.js.
+  pr0,
   inv1, inv2, inv3, inv4, inv5, inv6,                    // g6 · Investigation Station 🚂
 ];
+
+/* The last round of the 43-round MAIN quest, pinned on purpose (Megan's
+   ruling, PROOF-ROUNDS-PLAN.md build checklist item #1). Two things read
+   this instead of "the last entry in MAIN_ROUNDS", because that entry moves
+   every time a proof round is appended above:
+     · js/game.js's end-of-quest survey trigger — the class already met the
+       survey; it must fire once, on finishing the 43 rounds, and never
+       again on a proof round.
+     · js/stations.js's stop-1 gate — the Investigation Station's first stop
+       has to keep opening on "the main quest is done", not silently start
+       requiring every proof round to be passed first (which would make it
+       unreachable until P9 exists, several sessions from now). */
+export const FINAL_QUEST_ROUND_ID = "r21";
 
 /* group membership (intro rounds carry no badge) */
 const GROUP = {
@@ -84,6 +106,7 @@ const GROUP = {
   tanintro: "g3", tanchordintro: "g3", dtanchord: "g3", r10: "g3", r10b: "g3", dtanrad: "g3", r9: "g3", dtanpoint: "g3", r11: "g3", eprovetan: "g3",
   r12: "g4", r14: "g4", r15: "g4", r16: "g4",
   r18: "g5", r19: "g5", r20: "g5", r21: "g5",
+  pr0: "g7",   // P1-P9 join this line as they're built
   inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
 };
 

@@ -116,16 +116,24 @@ export function renderInvestigate(app, host, params) {
   const prev = app.state?.progress?.[round.id];
   const alreadyDone = !!(prev && prev.passed);
 
+  // Two kinds render through this one function (added 2026-08-11 for the
+  // proof rounds, PROOF-ROUNDS-PLAN.md): "investigate" is a station on the
+  // hidden branch line, "proof" is a graded round on the main map. Both get
+  // predict/choice/blank/note panels and per-panel XP for free — these three
+  // small kind-aware branches are the only places that differ.
+  const isStation = round.kind === "investigate";
+
   clear(host);
   const screen = el("div", "play discover investigate");
   screen.style.setProperty("--accent", round.accent);
   const top = el("div", "play-top");
   top.innerHTML = `<button class="link-btn quit">✕</button>
-    <div class="play-title">🚂 ${tx(round.title)}</div>
+    <div class="play-title">${isStation ? "🚂" : "🔗"} ${tx(round.title)}</div>
     <div class="play-count"><span class="pc-n"></span><span class="pc-xp"></span></div>`;
-  // ✕ goes back to the station map, not home — the learner came in off the
-  // train strip, so that is the screen behind them.
-  top.querySelector(".quit").addEventListener("click", () => app.go("stations"));
+  // ✕ goes back to the station map for a station — the learner came in off
+  // the train strip, so that is the screen behind them. A proof round is on
+  // the main map, so its ✕ goes straight home, same as a graded round's.
+  top.querySelector(".quit").addEventListener("click", () => app.go(isStation ? "stations" : "home"));
   const bar = el("div", "pbar"); bar.appendChild(el("i"));
   const stepHost = el("div", "discover-host");
   mount(screen, top, bar, stepHost);
@@ -158,10 +166,16 @@ export function renderInvestigate(app, host, params) {
      promise-a-number-you-cannot-keep bug the panel copy rules forbid.
 
      The settle is a setTimeout, not an animation-end event: the preview pane
-     never fires rAF, and the total must appear even where nothing animates. */
+     never fires rAF, and the total must appear even where nothing animates.
+
+     XP_RATE picks the right sibling CONFIG key for the round's kind (added
+     2026-08-11 for the proof rounds — see the isStation note above). Never
+     hard-code either number here: a station or a proof round that gains a
+     panel must pay for it automatically, computed from panels.length below. */
+  const XP_RATE = isStation ? CONFIG.investigationXpPerPanel : CONFIG.proofXpPerPanel;
   const RATE = alreadyDone
-    ? Math.round(CONFIG.investigationXpPerPanel * CONFIG.replayXpFactor)
-    : CONFIG.investigationXpPerPanel;
+    ? Math.round(XP_RATE * CONFIG.replayXpFactor)
+    : XP_RATE;
   const countN = top.querySelector(".pc-n");
   const countXp = top.querySelector(".pc-xp");
   let earned = 0;
@@ -198,8 +212,9 @@ export function renderInvestigate(app, host, params) {
   async function finish() {
     bar.querySelector("i").style.width = "100%";
     // The one bank, computed from the panels that actually exist — so a station
-    // that gains a panel in Chunk D pays for it without anyone editing a number.
-    const xpEarned = panels.length * CONFIG.investigationXpPerPanel;
+    // (or a proof round) that gains a panel later pays for it without anyone
+    // editing a number.
+    const xpEarned = panels.length * XP_RATE;
     /* 2026-07-30: a replay is submitted too, because replays pay again (plays 2
        and 3 at half). The FULL amount is always sent — the server halves it and
        stops paying after the third play, so the client never has to know which

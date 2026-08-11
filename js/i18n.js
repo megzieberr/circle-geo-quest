@@ -137,6 +137,13 @@ const UI = {
   youGotIt:       { en: "You've got it!", af: "Jy het dit!" },
   tapBlank:       { en: "Tap a blank above, then choose your answer.", af: "Klik op 'n oop spasie hierbo, kies dan jou antwoord." },
   discoverComplete:{ en: "Theorem discovered!", af: "Stelling ontdek!" },
+  // Proof rounds (kind "proof", PROOF-ROUNDS-PLAN.md) reuse the results
+  // screen's `params.discovery` branch — same as the Investigation Station —
+  // but "Theorem discovered!" reads wrong for an intro round like P0 that
+  // proves nothing itself, and the 🔭 telescope belongs to the OTHER kind of
+  // exploring. This is that branch's own heading, added 2026-08-11 rather
+  // than inventing a new results-screen system (js/game.js picks it by kind).
+  proofComplete:  { en: "Nice reasoning!", af: "Goeie redenasie!" },
   introDone:      { en: "You've met every part!", af: "Jy ken nou elke deel!" },
   discoverUnlocked:{ en: "Nice exploring — the next round is unlocked.", af: "Goed verken — die volgende rondte is oopgesluit." },
   dragHint:       { en: "Drag the dot to explore.", af: "Sleep die kol om te verken." },

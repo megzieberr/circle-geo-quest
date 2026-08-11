@@ -1,4 +1,32 @@
-# Project status — updated 2026-08-07 (audit fixes applied, NOT committed or deployed)
+# Project status — updated 2026-08-10 (proof rounds + dynamic geo PLANNED; overnight build scheduled)
+
+## 📋 2026-08-10 — planning day (Fable session, nothing built)
+
+The class finished circle geo; **proofs are next (she teaches them from
+2026-08-12), then dynamic geometry (build week of 2026-08-17).** Two plan files
+written in the repo root, both LOCAL and uncommitted — the build day commits
+them:
+
+- **PROOF-ROUNDS-PLAN.md** — new main-map group, 10 rounds: P0 "Why proofs?"
+  intro (conjecture vs theorem; the every-triangle-is-cyclic wonder moment) +
+  four guided-discovery theorem arcs (probe → construction draws → probe →
+  recap; traps for the wrong-radii and wrong-join mistakes; legal-constructions
+  thread with her assume-pun in English in BOTH languages) + mixed tool-match
+  finale. Rulings: tap/drag only (no typing), options not point-taps, XP per
+  panel Station-style, 9+intro rounds first then expand, never the nuked
+  order-the-steps shape. Six numbered dispatch prompts inside.
+- **DYNAMIC-GEO-PLAN.md** — six arcs for the chapter after proofs: moving
+  points, the UNROLL arc-length animation (her idea), diagram-from-words,
+  adding lines, folding (Tripo WebP intro + engine reflection interactive),
+  and the trig bridge (max area + **the ambiguous case is a moving point** —
+  also flagged for blipwork's trig rounds). Four new engine capabilities
+  listed; daytime build, not overnight.
+
+**⏰ Overnight build scheduled:** a one-time scheduled task
+(`circle-quest-proof-rounds-overnight`) fires 2026-08-11 01:15 (after her
+usage-limit reset) and runs the foreman pattern: six Sonnet build sessions,
+foreman reviews each, commits LOCAL only, morning report in that session's
+chat. She reviews in the morning; ship is a separate explicit step.
 
 ## 🔧 2026-08-07 — overnight audit fixes (all local, nothing shipped)
 

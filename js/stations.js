@@ -22,7 +22,7 @@
    lands on a screen showing the same locomotive at the same size —
    the painted track really does run on into the station map.
    ============================================================ */
-import { STATIONS, unlockedIds } from "./rounds/index.js";
+import { STATIONS, unlockedIds, FINAL_QUEST_ROUND_ID } from "./rounds/index.js";
 import { CONFIG, GROUPS } from "./config.js";
 import { tx } from "./i18n.js";
 import { el, clear } from "./ui.js";
@@ -89,8 +89,18 @@ export function stationsVisible() {
 }
 
 /* Per-stop state. `passed` comes from progress; unlocking follows the same
-   play-order chain as the main map (rounds/index.js), so station 1 opens when
-   the last main round is passed and each later stop opens on the one before. */
+   play-order chain as the main map (rounds/index.js), so each stop from the
+   second onward opens once the stop before it is passed.
+
+   Stop 1 is the exception (added 2026-08-11 for the proof rounds,
+   PROOF-ROUNDS-PLAN.md): `unlockedIds()` chains on ORDER position, and the
+   proof rounds now sit between the main quest and inv1 in that order. Left
+   alone, stop 1 would silently start requiring every proof round up to P9 to
+   be passed before it opened — unreachable for however many sessions it
+   takes to build them. It is pinned instead to FINAL_QUEST_ROUND_ID (the
+   last round of the 43-round quest, currently r21), exactly like the survey
+   trigger in js/game.js is. Stops 2-6 are untouched: they still chain off
+   the STATION before them, which the proof rounds never sit between. */
 export function stationStatus(app) {
   const progress = (app.state && app.state.progress) || {};
   const unlocked = unlockedIds(progress);
@@ -98,7 +108,7 @@ export function stationStatus(app) {
     round,
     stop: i + 1,
     passed: !!(progress[round.id] && progress[round.id].passed),
-    unlocked: unlocked.has(round.id),
+    unlocked: i === 0 ? !!(progress[FINAL_QUEST_ROUND_ID] && progress[FINAL_QUEST_ROUND_ID].passed) : unlocked.has(round.id),
   }));
 }
 

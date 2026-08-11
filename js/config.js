@@ -41,6 +41,12 @@ export const CONFIG = {
   // hard-code any of those numbers in copy — compute them from panels.length, so
   // a station that gains a panel in Chunk D cannot start promising the old total.
   investigationXpPerPanel: 10,
+  // Proof rounds (group g7, PROOF-ROUNDS-PLAN.md) pay the same way and, for now,
+  // the same rate — one sibling key rather than reusing investigationXpPerPanel,
+  // because the two lines are allowed to diverge later without a rename. Same
+  // rules apply: per PANEL, never per attempt, computed from panels.length in
+  // js/investigate.js's finish(), never hard-coded as a round total.
+  proofXpPerPanel: 10,
   // ---- IS THE INVESTIGATION STATION RELEASED TO LEARNERS? ----
   // false = the line is completely invisible: no train strip on the home screen,
   // and the `stations` / `investigate` routes bounce back home, so a learner who
@@ -117,6 +123,18 @@ export const GROUPS = [
   { id: "g6", icon: "🚂", name: "Line Inspector", hidden: true,
     blurb: { en: "Investigation Station — conjecture, counterexample, proof and explanation.",
              af: "Ondersoekstasie — vermoede, teenvoorbeeld, bewys en verduideliking." } },
+  // g7 = the proof rounds (PROOF-ROUNDS-PLAN.md), built incrementally starting
+  // with P0. `hidden` for the same reason as g6 above: LADDER_GROUPS filters it
+  // out of the ladder and the "x/5 badges" stat, so a learner who has finished
+  // the 43 main rounds keeps reading 5/5 badges and rank 🏆 Circle Grand Master —
+  // not a demotion to 5/6 the moment this group exists at all, and not a
+  // demotion again on every session that adds another proof round to it before
+  // the group is complete. The badge is still earned and still celebrates once
+  // every round CURRENTLY in the group is passed (js/game.js's groupEarned
+  // check doesn't look at `hidden`) — it just never sits on the rank ladder.
+  { id: "g7", icon: "🔗", name: "Proof Pioneer", hidden: true,
+    blurb: { en: "Proof rounds — why proofs matter, then construct, prove and spot the trap for each theorem.",
+             af: "Bewysrondtes — hoekom bewyse saak maak, en dan konstrueer, bewys en vang die strik vir elke stelling." } },
 ];
 /* The badges that count towards the rank ladder and the "x/5 badges" stat. */
 export const LADDER_GROUPS = GROUPS.filter(g => !g.hidden);

@@ -45,8 +45,11 @@ const LENGTH_GAP = 1.6;        // correct/longest-other ratio worth flagging
 /* Select by `kind`, NOT by filename: two of the discovery rounds are
    `converse-intro.js` / `cyclic-quad-intro.js`, so a `discover-*` glob misses
    them — which is how the first run of this came out at 5 discovery panels
-   instead of 7. Graded rounds are excluded; js/game.js already shuffles. */
-const KINDS = new Set(["discover", "investigate"]);
+   instead of 7. Graded rounds are excluded; js/game.js already shuffles. "proof"
+   (added 2026-08-11, PROOF-ROUNDS-PLAN.md) renders through the SAME
+   renderInvestigate() as "investigate" and shuffles its options the same way —
+   it belongs in this set for exactly the reason "investigate" is here. */
+const KINDS = new Set(["discover", "investigate", "proof"]);
 const files = readdirSync(DIR).filter(f => f.endsWith(".js") && f !== "index.js").sort();
 
 const rows = [];

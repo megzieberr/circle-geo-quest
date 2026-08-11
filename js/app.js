@@ -127,6 +127,12 @@ const app = {
       case "home": renderHome(this, view); renderCustomizeLink(this, view); break;
       case "play": renderPlay(this, view, this.params); break;
       case "discover": renderDiscover(this, view, this.params); break;
+      // Proof rounds (kind "proof", PROOF-ROUNDS-PLAN.md) live on the main map,
+      // not the hidden branch line — unlike "investigate" below, this route is
+      // NOT gated on stationsVisible(). That gate exists only to hide the
+      // Investigation Station; a proof round is reached the same way any other
+      // main-line round is (the round grid, the continue card, "next round").
+      case "proof": renderInvestigate(this, view, this.params); break;
       // Both station routes bounce home while the line is hidden from learners
       // (CONFIG.stationsLive) — the train strip is already gone, and this closes
       // the other way in, so a guessed or shared URL cannot reach an unreleased

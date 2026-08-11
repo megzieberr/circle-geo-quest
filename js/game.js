@@ -1,5 +1,5 @@
 /* Game screens: the progress map (home), the play loop, and results. */
-import { ROUNDS, MAIN_ROUNDS, STATIONS, ROUND_BY_ID, unlockedIds } from "./rounds/index.js";
+import { ROUNDS, MAIN_ROUNDS, STATIONS, ROUND_BY_ID, unlockedIds, FINAL_QUEST_ROUND_ID } from "./rounds/index.js";
 import { CONFIG, GROUPS, LADDER_GROUPS } from "./config.js";
 import { api } from "./api.js";
 import { getSession } from "./session.js";
@@ -24,6 +24,7 @@ function screenFor(round) {
   if (round.kind === "cutscene") return "cutscene";
   if (round.kind === "discover") return "discover";
   if (round.kind === "investigate") return "investigate";
+  if (round.kind === "proof") return "proof";
   return "play";
 }
 // Investigation stations are deliberately NOT "learning" rounds: they pay XP and
@@ -170,7 +171,8 @@ export function renderHome(app, host) {
     const best = p ? Math.round(p.best_score * 100) : 0;
     const kindTag = r.kind === "cutscene" ? `<span class="rc-kind">▶ ${t("watch")}</span>`
                   : r.kind === "discover" ? `<span class="rc-kind">🔭 ${t("discover")}</span>`
-                  : r.kind === "investigate" ? `<span class="rc-kind">🚂 ${tx({ en: "Investigate", af: "Ondersoek" })}</span>` : "";
+                  : r.kind === "investigate" ? `<span class="rc-kind">🚂 ${tx({ en: "Investigate", af: "Ondersoek" })}</span>`
+                  : r.kind === "proof" ? `<span class="rc-kind">🔗 ${tx({ en: "Proof", af: "Bewys" })}</span>` : "";
     card.innerHTML = `
       <div class="rc-top">
         <span class="rc-num">${r.n}</span>
@@ -183,7 +185,14 @@ export function renderHome(app, host) {
     if (isCurrent) card.querySelector(".rc-top").appendChild(el("span", "rc-next-tag", t("upNext")));
     const foot = card.querySelector(".rc-foot");
     if (isUnlocked) {
-      if (!learn && p && p.attempts) foot.appendChild(el("span", "rc-best", `${t("bestScore")} ${best}%`));
+      // A proof round always submits `score: 1` (finish() in js/investigate.js:
+      // "completing IS passing", same as the Investigation Station) — so its
+      // best_score is trivially 100% on every play, and a "Best score: 100%"
+      // badge would be true but meaningless. Suppressed the same way a
+      // learning round's badge is, without folding proof rounds into `learn`
+      // (they still say "Play"/"Replay", not "Explore"/"Watch").
+      const scoreIsMeaningful = !learn && r.kind !== "proof";
+      if (scoreIsMeaningful && p && p.attempts) foot.appendChild(el("span", "rc-best", `${t("bestScore")} ${best}%`));
       const label = learn
         ? (passed ? t("replay") : (r.kind === "cutscene" ? t("watch") : t("explore")))
         : (p && p.attempts ? t("replay") : t("play"));
@@ -543,18 +552,24 @@ export function renderResults(app, host, params) {
   if (params.discovery) {
     // Learning round (cutscene / discovery): no score. Cutscenes and discovery
     // rounds pay no XP either and pass xp: 0, so the pill below stays hidden for
-    // them — but an Investigation Station reuses this branch and DOES pay, per
-    // panel. It was banking 50, and now 10 a panel, while this screen said
-    // nothing about it: the learner's total jumped and the screen that was
-    // supposed to celebrate it stayed quiet. Gated on the number rather than on
-    // the round kind, so whatever pays, shows.
+    // them — but an Investigation Station (and now a proof round) reuses this
+    // branch and DOES pay, per panel. It was banking 50, and now 10 a panel,
+    // while this screen said nothing about it: the learner's total jumped and
+    // the screen that was supposed to celebrate it stayed quiet. Gated on the
+    // number rather than on the round kind, so whatever pays, shows.
     const isCut = round.kind === "cutscene";
+    // "Theorem discovered!" under a 🔭 reads wrong for a proof round — P0
+    // proves nothing itself, and the telescope belongs to the OTHER kind of
+    // exploring. Its own heading (added 2026-08-11, PROOF-ROUNDS-PLAN.md).
+    const isProof = round.kind === "proof";
+    const emoji = isCut ? "🎬" : isProof ? "🔗" : "🔭";
+    const heading = isCut ? t("introDone") : isProof ? t("proofComplete") : t("discoverComplete");
     const xpPill = params.xp > 0
       ? `<div class="result-pills"><span class="pill xp">★ +${params.xp} ${t("xpEarned")}</span></div>` : "";
     screen.innerHTML = `
       <div class="result-card card">
-        <div class="result-emoji">${isCut ? "🎬" : "🔭"}</div>
-        <h1>${isCut ? t("introDone") : t("discoverComplete")}</h1>
+        <div class="result-emoji">${emoji}</div>
+        <h1>${heading}</h1>
         <p class="muted">${tx(round.title)}</p>
         ${xpPill}
         <div class="result-msg good">${params.alreadyPassed ? (params.xp > 0 ? t("replayHalfMsg") : t("replayDoneMsg")) : t("discoverUnlocked")}</div>
@@ -676,9 +691,12 @@ export function renderResults(app, host, params) {
 
   // Finishing the very last round of the quest → one-time anonymous survey popup.
   // (No-ops if they've already given feedback or been prompted before.)
-  // The last round of the MAIN line — the stations sit after it in ROUNDS, but
-  // finishing the quest is finishing the 43 rounds.
-  const isFinalRound = MAIN_ROUNDS.length > 0 && round.id === MAIN_ROUNDS[MAIN_ROUNDS.length - 1].id;
+  // PINNED to FINAL_QUEST_ROUND_ID (r21), not to "the last entry in
+  // MAIN_ROUNDS" — that entry became a proof round (pr0) the moment the proof
+  // group was appended to the map, and the class has already met this survey.
+  // It must fire exactly once, on finishing the 43 main rounds, and never
+  // again on a proof round (PROOF-ROUNDS-PLAN.md build checklist item #1).
+  const isFinalRound = round.id === FINAL_QUEST_ROUND_ID;
   if (isFinalRound && passed && !params.discovery) {
     try { maybeShowSurveyPopup(app); } catch { /* non-critical */ }
   }
