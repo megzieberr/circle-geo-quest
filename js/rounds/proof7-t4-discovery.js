@@ -137,9 +137,9 @@ const FIG_LABEL_A = {
   tang: [{ at: "T", lab: ["S", "U"] }],
   chords: [["T", "A"], ["P", "T"], ["P", "A"], ["T", "D"]],
   angles: [
-    { at: "T", legs: ["tg+", "A"], t: "a", o: { v: 64 } },
+    { at: "T", legs: ["tg+", "A"], t: "T₁ = a", o: { v: 64 } },
     { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1 } },
-    { at: "T", legs: ["D", "A"], t: "", o: { v: 26 } },
+    { at: "T", legs: ["D", "A"], t: "T₂", o: { v: 26, r: 40 } },
   ],
 };
 
@@ -152,12 +152,12 @@ const FIG_SEMI = {
   tang: [{ at: "T", lab: ["S", "U"] }],
   chords: [["T", "A"], ["P", "T"], ["P", "A"], ["T", "D"], ["D", "A"]],
   angles: [
-    { at: "T", legs: ["tg+", "A"], t: "a", o: { v: 64 } },
+    { at: "T", legs: ["tg+", "A"], t: "T₁ = a", o: { v: 64 } },
     { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1 } },
     /* r pins this label to its arc (FIX-ROUND-1.md item 13's general
-       re-sweep): a 26° sweep with a 5-char label defaults to r≈66, which
+       re-sweep): a 26° sweep with a long label defaults to r≈66, which
        risks drifting near the canvas edge this close to T at 270°. */
-    { at: "T", legs: ["D", "A"], t: "90°−a", o: { v: 26, r: 40 } },
+    { at: "T", legs: ["D", "A"], t: "T₂", o: { v: 26, r: 40 } },
     { at: "A", legs: ["T", "D"], t: "", o: { v: 90, mark: 1 } },
   ],
 };
@@ -172,10 +172,10 @@ const FIG_FINAL = {
   tang: [{ at: "T", lab: ["S", "U"] }],
   chords: [["T", "A"], ["P", "T"], ["P", "A"], ["T", "D"], ["D", "A"]],
   angles: [
-    { at: "T", legs: ["tg+", "A"], t: "a", o: { v: 64 } },
+    { at: "T", legs: ["tg+", "A"], t: "T₁ = a", o: { v: 64 } },
     { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1 } },
     { at: "A", legs: ["T", "D"], t: "", o: { v: 90, mark: 1 } },
-    { at: "D", legs: ["T", "A"], t: "a", o: { v: 64 } },
+    { at: "D", legs: ["T", "A"], t: "D₁ = a", o: { v: 64 } },
     { at: "P", legs: ["T", "A"], t: "a", o: { v: 64 } },
   ],
 };

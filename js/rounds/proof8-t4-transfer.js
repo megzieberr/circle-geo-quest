@@ -141,9 +141,9 @@ const FIG_CORRECT = {
     /* r pins "35°" to its arc (FIX-ROUND-1.md item 13's general re-sweep):
        a 35° sweep defaults to r=64, and T sits at 270°, close to the
        canvas's bottom edge where a far label risks clamping/drifting. */
-    { at: "T", legs: ["tg-", "B"], t: "35°", o: { v: 35, r: 40 } },
+    { at: "T", legs: ["tg-", "B"], t: "T₁ = 35°", o: { v: 35, r: 40 } },
     { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1 } },
-    { at: "T", legs: ["D", "B"], t: "55°", o: { v: 55 } },
+    { at: "T", legs: ["D", "B"], t: "T₂ = 55°", o: { v: 55 } },
     { at: "B", legs: ["T", "D"], t: "", o: { v: 90, mark: 1 } },
   ],
 };

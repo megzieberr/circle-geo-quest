@@ -120,7 +120,7 @@ const FIG_CENTRAL_C = {
   ],
   angles: [
     { at: "C", legs: ["B", "D"], t: "c", o: { v: 80 } },
-    { at: "O", legs: ["B", "D"], t: "", o: { v: 160 } },
+    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34 } },
   ],
 };
 
@@ -143,7 +143,7 @@ const FIG_CENTRAL_BOTH = {
        measured in the browser at 375px, foreman review session 4. */
     { at: "A", legs: ["D", "B"], t: "a", o: { v: 100, r: 26 } },
     { at: "C", legs: ["B", "D"], t: "c", o: { v: 80 } },
-    { at: "O", legs: ["B", "D"], t: "2c", o: { v: 160, r: 34 } },
+    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34 } },
   ],
 };
 

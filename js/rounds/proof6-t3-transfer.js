@@ -117,7 +117,7 @@ const FIG_CORRECT = {
   ],
   angles: [
     { at: "P", legs: ["S", "Q"], t: "60°", o: { v: 60 } },
-    { at: "O", legs: ["Q", "S"], t: "", o: { v: 120 } },
+    { at: "O", legs: ["Q", "S"], t: "O₁", o: { v: 120 } },
   ],
 };
 

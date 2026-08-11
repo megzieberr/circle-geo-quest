@@ -176,7 +176,10 @@ const FIG_XY = {
   angles: [
     { at: "P", legs: ["O", "A"], t: "x", o: { v: 40, r: 40, c: X_COLOR } },
     { at: "P", legs: ["O", "B"], t: "y", o: { v: 35, r: 40, c: Y_COLOR } },
-    { at: "O", legs: ["A", "Q"], t: "", o: { v: 80, hl: X_COLOR } },
+    /* her ask mid-playtest: the isosceles twin ∠OAP = x is VISIBLE, so the
+       exterior wedge visibly collects x + x. Exact by isosceles (v 40). */
+    { at: "A", legs: ["O", "P"], t: "x", o: { v: 40, c: X_COLOR } },
+    { at: "O", legs: ["A", "Q"], t: "O₁", o: { v: 80, r: 36, c: X_COLOR, hl: X_COLOR } },
   ],
 };
 
@@ -198,8 +201,12 @@ const FIG_COMBINE = {
   angles: [
     { at: "P", legs: ["O", "A"], t: "x", o: { v: 40, r: 40, c: X_COLOR } },
     { at: "P", legs: ["O", "B"], t: "y", o: { v: 35, r: 40, c: Y_COLOR } },
-    { at: "O", legs: ["A", "Q"], t: "2x", o: { v: 80, r: 36, c: X_COLOR } },
-    { at: "O", legs: ["B", "Q"], t: "2y", o: { v: 70, r: 36, c: Y_COLOR, hl: Y_COLOR } },
+    /* both isosceles twins visible (her ask): x at A feeds O₁, y at B
+       feeds O₂ — the picture shows where each doubled piece comes from. */
+    { at: "A", legs: ["O", "P"], t: "x", o: { v: 40, c: X_COLOR } },
+    { at: "B", legs: ["O", "P"], t: "y", o: { v: 35, c: Y_COLOR } },
+    { at: "O", legs: ["A", "Q"], t: "O₁ = 2x", o: { v: 80, r: 36, c: X_COLOR } },
+    { at: "O", legs: ["B", "Q"], t: "O₂ = 2y", o: { v: 70, r: 36, c: Y_COLOR, hl: Y_COLOR } },
   ],
 };
 

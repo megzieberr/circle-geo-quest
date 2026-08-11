@@ -107,8 +107,8 @@ const FIG_REFLEX_CONSTRUCT = {
        default radius for a 55° sweep, 50, was still too generous here). */
     { at: "P", legs: ["O", "A"], t: "x", o: { v: 55, r: 36 } },
     { at: "P", legs: ["O", "B"], t: "y", o: { v: 55, r: 36 } },
-    { at: "O", legs: ["A", "Q"], t: "2x", o: { v: 110 } },
-    { at: "O", legs: ["B", "Q"], t: "2y", o: { v: 110 } },
+    { at: "O", legs: ["A", "Q"], t: "O₁ = 2x", o: { v: 110 } },
+    { at: "O", legs: ["B", "Q"], t: "O₂ = 2y", o: { v: 110 } },
   ],
 };
 
