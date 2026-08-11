@@ -40,6 +40,20 @@
          of tangency; the two free right angles and a triangle chase you
          straight to the result." Genuinely the last panel of this round.
 
+   REVISED 2026-08-11 (Megan's numbering follow-up, same convention as the
+   T2 and T3 arcs): vertex T carries the crowd — three marked angles at
+   one point (the free 90°, and its two pieces) — so T₁ = the
+   tangent–chord angle (marked a) and T₂ = ∠DTA (marked 90°−a), each
+   introduced in prose the panel it first gets marked/solved (T₁ + T₂ in
+   panel 3). D₁ = ∠TDA (panel 4's own result) — a single angle at its own
+   vertex, but "∠TDA" was doing a lot of repeating by panels 4-5, so it
+   gets the same shorthand treatment. The 90° at A stays literal prose
+   ("the 90° at A") since it's the round's one single fact there, not a
+   crowd. ∠TPA — the punchline angle the whole proof is chasing, and the
+   theorem's own name for it — stays literal throughout, on purpose: it's
+   the one thing this round wants remembered by its real name. Figure
+   glyphs (a, 90°−a) are untouched, same split as the earlier arcs.
+
    Every diagram stays SYMBOLIC throughout (labels a, 90°−a, a — never a
    literal spoiler number for the thing being proven), matching pr3/pr5's
    own no-spoilers convention for a discovery round; the actual numbers
@@ -236,26 +250,26 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Label the tangent–chord angle a (marked). Tan ⊥ diameter gives you a free 90° between the tangent and TD (also marked). What does that hand you for ∠DTA, the angle between the diameter and the chord?",
-        af: "Merk die raaklyn–koord-hoek a (gemerk). Raaklyn ⊥ middellyn gee jou 'n verniet 90° tussen die raaklyn en TD (ook gemerk). Wat gee dit jou vir ∠DTA, die hoek tussen die middellyn en die koord?",
+        en: "Label the tangent–chord angle T₁ = a (marked). Tan ⊥ diameter gives you a free 90° between the tangent and TD (also marked). What does that hand you for T₂ — ∠DTA, the angle between the diameter and the chord?",
+        af: "Merk die raaklyn–koord-hoek T₁ = a (gemerk). Raaklyn ⊥ middellyn gee jou 'n verniet 90° tussen die raaklyn en TD (ook gemerk). Wat gee dit jou vir T₂ — ∠DTA, die hoek tussen die middellyn en die koord?",
       },
       diagram: FIG_LABEL_A,
       options: [
-        { text: { en: "∠DTA = 90° − a", af: "∠DTA = 90° − a" }, correct: true },
-        { text: { en: "∠DTA = a", af: "∠DTA = a" } },
-        { text: { en: "∠DTA = 90° + a", af: "∠DTA = 90° + a" } },
-        { text: { en: "∠DTA = 2a", af: "∠DTA = 2a" } },
+        { text: { en: "T₂ = 90° − a", af: "T₂ = 90° − a" }, correct: true },
+        { text: { en: "T₂ = a", af: "T₂ = a" } },
+        { text: { en: "T₂ = 90° + a", af: "T₂ = 90° + a" } },
+        { text: { en: "T₂ = 2a", af: "T₂ = 2a" } },
       ],
       hints: [
-        { en: "The chord TA sits INSIDE the 90° angle between the tangent and the diameter — a splits into two pieces: the tangent-chord angle a, and ∠DTA next to it.",
-          af: "Die koord TA sit BINNE die 90°-hoek tussen die raaklyn en die middellyn — dit verdeel in twee stukke: die raaklyn–koord-hoek a, en ∠DTA daarnaas." },
-        { en: "The whole 90° angle is made of two adjacent pieces: a (tangent to TA) and ∠DTA (TA to TD). So ∠DTA = 90° − a.",
-          af: "Die hele 90°-hoek bestaan uit twee aangrensende stukke: a (raaklyn na TA) en ∠DTA (TA na TD). Dus ∠DTA = 90° − a." },
+        { en: "The chord TA sits INSIDE the 90° angle between the tangent and the diameter — a splits into two pieces: T₁ (= a), and T₂ (= ∠DTA) next to it.",
+          af: "Die koord TA sit BINNE die 90°-hoek tussen die raaklyn en die middellyn — dit verdeel in twee stukke: T₁ (= a), en T₂ (= ∠DTA) daarnaas." },
+        { en: "The whole 90° angle is made of two adjacent pieces: T₁ (tangent to TA) and T₂ (TA to TD). So T₂ = 90° − a.",
+          af: "Die hele 90°-hoek bestaan uit twee aangrensende stukke: T₁ (raaklyn na TA) en T₂ (TA na TD). Dus T₂ = 90° − a." },
       ],
       reason: "tanDiameter",
       note: {
-        en: "Tan ⊥ diameter gives 90° between the tangent and TD, and TA splits that 90° into two adjacent pieces: a, and ∠DTA. So ∠DTA = 90° − a — no measuring, just subtraction from an already-known right angle.",
-        af: "Raaklyn ⊥ middellyn gee 90° tussen die raaklyn en TD, en TA verdeel daardie 90° in twee aangrensende stukke: a, en ∠DTA. Dus ∠DTA = 90° − a — geen meting nodig nie, net aftrekking van 'n reeds-bekende regte hoek.",
+        en: "Tan ⊥ diameter gives 90° between the tangent and TD, and TA splits that 90° into two adjacent pieces: T₁ (= a), and T₂ (= ∠DTA). So T₂ = 90° − a — no measuring, just subtraction from an already-known right angle.",
+        af: "Raaklyn ⊥ middellyn gee 90° tussen die raaklyn en TD, en TA verdeel daardie 90° in twee aangrensende stukke: T₁ (= a), en T₂ (= ∠DTA). Dus T₂ = 90° − a — geen meting nodig nie, net aftrekking van 'n reeds-bekende regte hoek.",
       },
     },
 
@@ -263,26 +277,26 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "D has been joined to A, closing triangle TDA. The angle in a semicircle hands you a SECOND free 90°, at A (marked) — TD is a diameter, so any point on the circle sees it at 90°. Triangle TDA's angles must sum to 180°. What is ∠TDA?",
-        af: "D is aan A verbind, wat driehoek TDA sluit. Die hoek in 'n halfsirkel gee jou 'n TWEEDE verniet 90°, by A (gemerk) — TD is 'n middellyn, dus sien enige punt op die sirkel dit teen 90°. Driehoek TDA se hoeke moet optel tot 180°. Wat is ∠TDA?",
+        en: "D has been joined to A, closing triangle TDA. The angle in a semicircle hands you a SECOND free 90°, at A (marked) — TD is a diameter, so any point on the circle sees it at 90°. Triangle TDA's angles must sum to 180°: T₂ + the 90° at A + D₁ (∠TDA) = 180°. What is D₁?",
+        af: "D is aan A verbind, wat driehoek TDA sluit. Die hoek in 'n halfsirkel gee jou 'n TWEEDE verniet 90°, by A (gemerk) — TD is 'n middellyn, dus sien enige punt op die sirkel dit teen 90°. Driehoek TDA se hoeke moet optel tot 180°: T₂ + die 90° by A + D₁ (∠TDA) = 180°. Wat is D₁?",
       },
       diagram: FIG_SEMI,
       options: [
-        { text: { en: "∠TDA = 180° − (90° − a) − 90° = a", af: "∠TDA = 180° − (90° − a) − 90° = a" }, correct: true },
-        { text: { en: "∠TDA = 90° − a, the same as ∠DTA", af: "∠TDA = 90° − a, dieselfde as ∠DTA" } },
-        { text: { en: "∠TDA = 180° − a", af: "∠TDA = 180° − a" } },
-        { text: { en: "∠TDA can't be found without an actual number for a", af: "∠TDA kan nie gevind word sonder 'n werklike getal vir a nie" } },
+        { text: { en: "D₁ = 180° − (90° − a) − 90° = a", af: "D₁ = 180° − (90° − a) − 90° = a" }, correct: true },
+        { text: { en: "D₁ = 90° − a, the same as T₂", af: "D₁ = 90° − a, dieselfde as T₂" } },
+        { text: { en: "D₁ = 180° − a", af: "D₁ = 180° − a" } },
+        { text: { en: "D₁ can't be found without an actual number for a", af: "D₁ kan nie gevind word sonder 'n werklike getal vir a nie" } },
       ],
       hints: [
-        { en: "You have two of the triangle's three angles already: ∠DTA = 90° − a, and ∠TAD = 90°. The third angle is whatever's left of 180°.",
-          af: "Jy het reeds twee van die driehoek se drie hoeke: ∠DTA = 90° − a, en ∠TAD = 90°. Die derde hoek is wat ook al van 180° oorbly." },
+        { en: "You have two of the triangle's three angles already: T₂ = 90° − a, and the 90° at A. The third angle, D₁, is whatever's left of 180°.",
+          af: "Jy het reeds twee van die driehoek se drie hoeke: T₂ = 90° − a, en die 90° by A. Die derde hoek, D₁, is wat ook al van 180° oorbly." },
         { en: "180° − (90° − a) − 90° = 180° − 90° + a − 90° = a. The two 90°s cancel each other out, and you're left with exactly a.",
           af: "180° − (90° − a) − 90° = 180° − 90° + a − 90° = a. Die twee 90°'e kanselleer mekaar uit, en jy bly met presies a." },
       ],
       reason: "triSum",
       note: {
-        en: "∠DTA = 90° − a and ∠TAD = 90° — substitute into the triangle's angle sum: ∠TDA = 180° − (90° − a) − 90° = a. The two right angles cancel out completely, and ∠TDA lands back on exactly the same letter you started with.",
-        af: "∠DTA = 90° − a en ∠TAD = 90° — vervang in die driehoek se hoeksom: ∠TDA = 180° − (90° − a) − 90° = a. Die twee regte hoeke kanselleer heeltemal uit, en ∠TDA land terug op presies dieselfde letter waarmee jy begin het.",
+        en: "T₂ = 90° − a and the 90° at A — substitute into the triangle's angle sum: D₁ = 180° − (90° − a) − 90° = a. The two right angles cancel out completely, and D₁ lands back on exactly the same letter you started with.",
+        af: "T₂ = 90° − a en die 90° by A — vervang in die driehoek se hoeksom: D₁ = 180° − (90° − a) − 90° = a. Die twee regte hoeke kanselleer heeltemal uit, en D₁ land terug op presies dieselfde letter waarmee jy begin het.",
       },
     },
 
@@ -290,26 +304,26 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "So ∠TDA = a — exactly the tangent–chord angle you started with. D sits in the alternate segment, the SAME segment as P (both on the far side of chord TA from the tangent-chord angle). What does \"angles in the same segment are equal\" — a fact you already know — then hand you for ∠TPA, the angle we actually wanted?",
-        af: "So ∠TDA = a — presies die raaklyn–koord-hoek waarmee jy begin het. D sit in die oorstaande segment, DIESELFDE segment as P (albei aan die verste kant van koord TA vanaf die raaklyn–koord-hoek). Wat gee \"hoeke in dieselfde segment is gelyk\" — 'n feit wat jy reeds ken — dan vir ∠TPA, die hoek wat ons eintlik wou hê?",
+        en: "So D₁ = a — exactly T₁, the tangent–chord angle you started with. D sits in the alternate segment, the SAME segment as P (both on the far side of chord TA from the tangent-chord angle). What does \"angles in the same segment are equal\" — a fact you already know — then hand you for ∠TPA, the angle we actually wanted?",
+        af: "So D₁ = a — presies T₁, die raaklyn–koord-hoek waarmee jy begin het. D sit in die oorstaande segment, DIESELFDE segment as P (albei aan die verste kant van koord TA vanaf die raaklyn–koord-hoek). Wat gee \"hoeke in dieselfde segment is gelyk\" — 'n feit wat jy reeds ken — dan vir ∠TPA, die hoek wat ons eintlik wou hê?",
       },
       diagram: FIG_FINAL,
       options: [
         { text: { en: "∠TPA = a too — D and P share a segment, and angles in the same segment are equal", af: "∠TPA = a ook — D en P deel 'n segment, en hoeke in dieselfde segment is gelyk" }, correct: true },
-        { text: { en: "∠TPA = 90° − a, the same as ∠DTA", af: "∠TPA = 90° − a, dieselfde as ∠DTA" } },
+        { text: { en: "∠TPA = 90° − a, the same as T₂", af: "∠TPA = 90° − a, dieselfde as T₂" } },
         { text: { en: "∠TPA can't be pinned down without knowing exactly where P sits", af: "∠TPA kan nie vasgepen word sonder om presies te weet waar P sit nie" } },
-        { text: { en: "∠TPA = 2a, double the tangent-chord angle", af: "∠TPA = 2a, dubbel die raaklyn–koord-hoek" } },
+        { text: { en: "∠TPA = 2a, double T₁", af: "∠TPA = 2a, dubbel T₁" } },
       ],
       hints: [
         { en: "D and P are two DIFFERENT points, but they're on the SAME side of chord TA. Is there a theorem about two circumference points on the same side of a chord?",
           af: "D en P is twee VERSKILLENDE punte, maar hulle is aan DIESELFDE kant van koord TA. Is daar 'n stelling oor twee omtrekpunte aan dieselfde kant van 'n koord?" },
-        { en: "Angles in the same segment, standing on the same chord, are always equal — no matter which two points you pick. So ∠TPA = ∠TDA = a.",
-          af: "Hoeke in dieselfde segment, wat op dieselfde koord staan, is altyd gelyk — ongeag watter twee punte jy kies. Dus ∠TPA = ∠TDA = a." },
+        { en: "Angles in the same segment, standing on the same chord, are always equal — no matter which two points you pick. So ∠TPA = D₁ = a.",
+          af: "Hoeke in dieselfde segment, wat op dieselfde koord staan, is altyd gelyk — ongeag watter twee punte jy kies. Dus ∠TPA = D₁ = a." },
       ],
       reason: "tanChord",
       note: {
-        en: "∠TDA = a, and D and P sit in the same segment relative to chord TA — so \"angles in the same segment\" hands you ∠TPA = ∠TDA = a as well. That is the whole proof, for ANY point P in the alternate segment, not just D: draw the diameter from the point of tangency, chase two free right angles through a triangle, then let the same-segment fact carry the result the rest of the way.",
-        af: "∠TDA = a, en D en P sit in dieselfde segment relatief tot koord TA — dus gee \"hoeke in dieselfde segment\" jou ∠TPA = ∠TDA = a ook. Dit is die hele bewys, vir ENIGE punt P in die oorstaande segment, nie net D nie: trek die middellyn vanaf die raakpunt, jaag twee verniet-regte-hoeke deur 'n driehoek, en laat die selfde-segment-feit die resultaat dan die res van die pad dra.",
+        en: "D₁ = a, and D and P sit in the same segment relative to chord TA — so \"angles in the same segment\" hands you ∠TPA = D₁ = a as well. That is the whole proof, for ANY point P in the alternate segment, not just D: draw the diameter from the point of tangency, chase two free right angles through a triangle, then let the same-segment fact carry the result the rest of the way.",
+        af: "D₁ = a, en D en P sit in dieselfde segment relatief tot koord TA — dus gee \"hoeke in dieselfde segment\" jou ∠TPA = D₁ = a ook. Dit is die hele bewys, vir ENIGE punt P in die oorstaande segment, nie net D nie: trek die middellyn vanaf die raakpunt, jaag twee verniet-regte-hoeke deur 'n driehoek, en laat die selfde-segment-feit die resultaat dan die res van die pad dra.",
       },
     },
 

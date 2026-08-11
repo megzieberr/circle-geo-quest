@@ -47,6 +47,21 @@
          the trap named, the "always equal" result. Last panel of the
          round.
 
+   REVISED 2026-08-11 (Megan's numbering follow-up, same convention as
+   pr7): T₁ = the 35° tangent-chord angle, T₂ = the 55° (= ∠DTB), D₁ = the
+   35° result (= ∠TDB) — all introduced together in panel 3's prompt, the
+   one panel that builds the whole construction compressed (matching pr6's
+   own compression of pr5's multi-panel build-up). Panel 4's error-spot
+   solution renames its symbol-only `st` lines and the options that quote
+   them verbatim, the same as pr6. ∠STD and ∠TBD stay literal throughout —
+   S is the ray name the "tan ⊥ diameter" reason genuinely needs to name,
+   and this is the one panel where the whole point is telling those two
+   90°s apart by WHERE they sit, so collapsing them into a shared alias
+   would erase the exact distinction being tested. THE TRAP PANEL (panel
+   2) is untouched — it has no T₁/T₂/D₁ marked yet at the point it's
+   sprung. The 90° at B (semicircle) stays "the 90° at B" in prose, same
+   as pr7's "the 90° at A".
+
    GEOMETRY — the OTHER side of the same tangent, new letters (B for the
    chord, Q for the trap's decoy point) so pr7's A and P keep meaning what
    they meant there. T:270 and D:90 are UNCHANGED from pr7 — T is always
@@ -202,26 +217,26 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Back to the correct join: D has been joined to B, closing the triangle. The tangent-chord angle is 35° (given, marked), tan ⊥ diameter gives 90° at T (marked), so ∠DTB = 90° − 35° = 55° (marked) — and the angle in a semicircle gives a second 90°, at B (marked). Triangle TDB's angles sum to 180°. What is ∠TDB, and what does that tell you?",
-        af: "Terug na die regte verbinding: D is aan B verbind, wat die driehoek sluit. Die raaklyn–koord-hoek is 35° (gegee, gemerk), raaklyn ⊥ middellyn gee 90° by T (gemerk), dus ∠DTB = 90° − 35° = 55° (gemerk) — en die hoek in 'n halfsirkel gee 'n tweede 90°, by B (gemerk). Driehoek TDB se hoeke tel op tot 180°. Wat is ∠TDB, en wat vertel dit jou?",
+        en: "Back to the correct join: D has been joined to B, closing the triangle. The tangent-chord angle is T₁ = 35° (given, marked), tan ⊥ diameter gives 90° at T (marked), so T₂ (= ∠DTB) = 90° − 35° = 55° (marked) — and the angle in a semicircle gives a second 90°, at B (marked). Triangle TDB's angles sum to 180°. What is D₁ (∠TDB), and what does that tell you?",
+        af: "Terug na die regte verbinding: D is aan B verbind, wat die driehoek sluit. Die raaklyn–koord-hoek is T₁ = 35° (gegee, gemerk), raaklyn ⊥ middellyn gee 90° by T (gemerk), dus T₂ (= ∠DTB) = 90° − 35° = 55° (gemerk) — en die hoek in 'n halfsirkel gee 'n tweede 90°, by B (gemerk). Driehoek TDB se hoeke tel op tot 180°. Wat is D₁ (∠TDB), en wat vertel dit jou?",
       },
       diagram: FIG_CORRECT,
       options: [
-        { text: { en: "∠TDB = 180° − 55° − 90° = 35° — exactly the tangent-chord angle you started with", af: "∠TDB = 180° − 55° − 90° = 35° — presies die raaklyn–koord-hoek waarmee jy begin het" }, correct: true },
-        { text: { en: "∠TDB = 55°, the same as ∠DTB", af: "∠TDB = 55°, dieselfde as ∠DTB" } },
-        { text: { en: "∠TDB = 145°, the supplementary angle instead", af: "∠TDB = 145°, die supplementêre hoek in plaas daarvan" } },
-        { text: { en: "∠TDB can't be pinned down without measuring it directly", af: "∠TDB kan nie vasgepen word sonder om dit direk te meet nie" } },
+        { text: { en: "D₁ = 180° − 55° − 90° = 35° — exactly T₁, the tangent-chord angle you started with", af: "D₁ = 180° − 55° − 90° = 35° — presies T₁, die raaklyn–koord-hoek waarmee jy begin het" }, correct: true },
+        { text: { en: "D₁ = 55°, the same as T₂", af: "D₁ = 55°, dieselfde as T₂" } },
+        { text: { en: "D₁ = 145°, the supplementary angle instead", af: "D₁ = 145°, die supplementêre hoek in plaas daarvan" } },
+        { text: { en: "D₁ can't be pinned down without measuring it directly", af: "D₁ kan nie vasgepen word sonder om dit direk te meet nie" } },
       ],
       hints: [
-        { en: "You have two of the triangle's three angles marked: 55° and 90°. The third is whatever's left of 180°.",
-          af: "Jy het twee van die driehoek se drie hoeke gemerk: 55° en 90°. Die derde is wat ook al van 180° oorbly." },
+        { en: "You have two of the triangle's three angles marked: T₂ = 55° and the 90° at B. The third, D₁, is whatever's left of 180°.",
+          af: "Jy het twee van die driehoek se drie hoeke gemerk: T₂ = 55° en die 90° by B. Die derde, D₁, is wat ook al van 180° oorbly." },
         { en: "180° − 55° − 90° = 35°. Same as the last round: the construction hands the tangent-chord angle straight back to itself, at a point in the alternate segment — this time on the other side.",
           af: "180° − 55° − 90° = 35°. Dieselfde as die vorige rondte: die konstruksie gee die raaklyn–koord-hoek reguit terug aan homself, by 'n punt in die oorstaande segment — hierdie keer aan die ander kant." },
       ],
       reason: "tanChord",
       note: {
-        en: "∠TDB = 180° − 55° − 90° = 35° — exactly the tangent-chord angle this round started with. The picture flipped to the other side of the chord, the numbers are new, but the result is exactly what the last round proved: the tangent-chord angle always equals the angle in the alternate segment, whichever side you measure it from.",
-        af: "∠TDB = 180° − 55° − 90° = 35° — presies die raaklyn–koord-hoek waarmee hierdie rondte begin het. Die prentjie het na die ander kant van die koord omgeswaai, die getalle is nuut, maar die resultaat is presies wat die vorige rondte bewys het: die raaklyn–koord-hoek is altyd gelyk aan die hoek in die oorstaande segment, ongeag van watter kant jy dit meet.",
+        en: "D₁ = 180° − 55° − 90° = 35° — exactly T₁, the tangent-chord angle this round started with. The picture flipped to the other side of the chord, the numbers are new, but the result is exactly what the last round proved: the tangent-chord angle always equals the angle in the alternate segment, whichever side you measure it from.",
+        af: "D₁ = 180° − 55° − 90° = 35° — presies T₁, die raaklyn–koord-hoek waarmee hierdie rondte begin het. Die prentjie het na die ander kant van die koord omgeswaai, die getalle is nuut, maar die resultaat is presies wat die vorige rondte bewys het: die raaklyn–koord-hoek is altyd gelyk aan die hoek in die oorstaande segment, ongeag van watter kant jy dit meet.",
       },
     },
 
@@ -229,25 +244,25 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "This solution reaches the right conclusion, ∠TDB = 35° — but one line has the WRONG reason written next to it. Which one?",
-        af: "Hierdie oplossing kom by die regte gevolgtrekking uit, ∠TDB = 35° — maar een reël het die VERKEERDE rede langsaan geskryf. Watter een?",
+        en: "This solution reaches the right conclusion, D₁ = 35° — but one line has the WRONG reason written next to it. Which one?",
+        af: "Hierdie oplossing kom by die regte gevolgtrekking uit, D₁ = 35° — maar een reël het die VERKEERDE rede langsaan geskryf. Watter een?",
       },
       diagram: FIG_CORRECT,
       solution: {
         caption: SOL_CAP,
         lines: [
           { st: "∠STD = 90°", rs: { en: "tan ⊥ diameter", af: "raaklyn ⊥ middellyn" } },
-          { st: "∠DTB = 90° − 35° = 55°" },
+          { st: "T₂ = 90° − 35° = 55°" },
           { st: "∠TBD = 90°", rs: { en: "tan ⊥ diameter", af: "raaklyn ⊥ middellyn" } },
-          { st: "∠TDB = 180° − 90° − 55° = 35°", rs: { en: "Int ∠s Δ", af: "binne ∠e Δ" } },
-          { st: "∴ ∠TDB = ∠STB (both 35°)" },
+          { st: "D₁ = 180° − 90° − 55° = 35°", rs: { en: "Int ∠s Δ", af: "binne ∠e Δ" } },
+          { st: "∴ D₁ = T₁ (both 35°)" },
         ],
       },
       options: [
         { text: { en: "∠TBD = 90°   (tan ⊥ diameter)", af: "∠TBD = 90°   (raaklyn ⊥ middellyn)" }, correct: true },
         { text: { en: "∠STD = 90°   (tan ⊥ diameter)", af: "∠STD = 90°   (raaklyn ⊥ middellyn)" } },
-        { text: { en: "∠DTB = 90° − 35° = 55°", af: "∠DTB = 90° − 35° = 55°" } },
-        { text: { en: "∠TDB = 180° − 90° − 55° = 35°   (Int ∠s Δ)", af: "∠TDB = 180° − 90° − 55° = 35°   (binne ∠e Δ)" } },
+        { text: { en: "T₂ = 90° − 35° = 55°", af: "T₂ = 90° − 35° = 55°" } },
+        { text: { en: "D₁ = 180° − 90° − 55° = 35°   (Int ∠s Δ)", af: "D₁ = 180° − 90° − 55° = 35°   (binne ∠e Δ)" } },
       ],
       hints: [
         { en: "This proof uses TWO different 90°s, from TWO different theorems. Check each one is credited to the theorem that actually produces it — one of them has borrowed the OTHER one's reason.",

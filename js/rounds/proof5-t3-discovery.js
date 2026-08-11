@@ -12,6 +12,15 @@
    relabelled, rotated picture — and springs the classic wrong-radii trap
    (joining OA and OC instead, which reaches nothing).
 
+   REVISED 2026-08-11 (Megan's numbering follow-up, extending the T2 arc's
+   NUMBERED ANGLE NAMES to T3 — pr3/pr4's own item 10, same convention):
+   the two pieces at the centre are now O₁ (the non-reflex ∠BOD, = 2c) and
+   O₂ (the reflex ∠BOD, = 2a), introduced in prose the moment each one
+   first gets marked on its own panel (panels 3 and 4), then used bare for
+   the rest of the round. ∠A and ∠C stay literal — single angles at their
+   own vertices, already one letter each, nothing to shorten. Figure glyphs
+   (a, c, 2c) are untouched, same split as the T2 precedent.
+
    SIX PANELS, all taps, rendered through renderInvestigate() exactly like
    pr0-pr4 — `kind: "proof"` gets predict/choice/note panels and per-panel
    XP for free, no new engine surface:
@@ -214,26 +223,26 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Label ∠C = c (marked). The angle-at-centre theorem says a central angle is double the circumference angle standing on the SAME arc. The non-reflex ∠BOD (marked, unlabelled) stands on the same arc as ∠C. What does the theorem give you for it?",
-        af: "Merk ∠C = c (gemerk). Die hoek-by-middelpunt-stelling sê 'n middelpuntshoek is dubbel die omtrekhoek wat op DIESELFDE boog staan. Die nie-inspringende ∠BOD (gemerk, nog nie benoem nie) staan op dieselfde boog as ∠C. Wat gee die stelling jou daarvoor?",
+        en: "Label ∠C = c (marked). The angle-at-centre theorem says a central angle is double the circumference angle standing on the SAME arc. O₁ — the non-reflex ∠BOD (marked, unlabelled) — stands on the same arc as ∠C. What does the theorem give you for O₁?",
+        af: "Merk ∠C = c (gemerk). Die hoek-by-middelpunt-stelling sê 'n middelpuntshoek is dubbel die omtrekhoek wat op DIESELFDE boog staan. O₁ — die nie-inspringende ∠BOD (gemerk, nog nie benoem nie) — staan op dieselfde boog as ∠C. Wat gee die stelling jou vir O₁?",
       },
       diagram: FIG_CENTRAL_C,
       options: [
-        { text: { en: "∠BOD (non-reflex) = 2c", af: "∠BOD (nie-inspringend) = 2c" }, correct: true },
-        { text: { en: "∠BOD (non-reflex) = c", af: "∠BOD (nie-inspringend) = c" } },
-        { text: { en: "∠BOD (non-reflex) = c + 90°", af: "∠BOD (nie-inspringend) = c + 90°" } },
-        { text: { en: "∠BOD (non-reflex) = half of c", af: "∠BOD (nie-inspringend) = die helfte van c" } },
+        { text: { en: "O₁ = 2c", af: "O₁ = 2c" }, correct: true },
+        { text: { en: "O₁ = c", af: "O₁ = c" } },
+        { text: { en: "O₁ = c + 90°", af: "O₁ = c + 90°" } },
+        { text: { en: "O₁ = half of c", af: "O₁ = die helfte van c" } },
       ],
       hints: [
         { en: "This is the same theorem from the last two rounds — a central angle standing on the same arc as a circumference angle is not equal to it, and not a fraction of it.",
           af: "Dit is dieselfde stelling van die vorige twee rondtes — 'n middelpuntshoek wat op dieselfde boog as 'n omtrekhoek staan, is nie gelyk daaraan nie, en ook nie 'n breukdeel daarvan nie." },
-        { en: "The angle at the centre is DOUBLE the angle at the circumference, on the same arc: ∠BOD (non-reflex) = 2 × c = 2c.",
-          af: "Die hoek by die middelpunt is DUBBEL die hoek by die omtrek, op dieselfde boog: ∠BOD (nie-inspringend) = 2 × c = 2c." },
+        { en: "The angle at the centre is DOUBLE the angle at the circumference, on the same arc: O₁ = 2 × c = 2c.",
+          af: "Die hoek by die middelpunt is DUBBEL die hoek by die omtrek, op dieselfde boog: O₁ = 2 × c = 2c." },
       ],
       reason: "centreDouble",
       note: {
-        en: "Non-reflex ∠BOD stands on the same arc as ∠C, so the angle-at-centre theorem hands you ∠BOD (non-reflex) = 2c straight away — no new triangles needed, just the theorem you already proved, aimed at this picture.",
-        af: "Nie-inspringende ∠BOD staan op dieselfde boog as ∠C, dus gee die hoek-by-middelpunt-stelling jou dadelik ∠BOD (nie-inspringend) = 2c — geen nuwe driehoeke nodig nie, net die stelling wat jy reeds bewys het, gerig op hierdie prentjie.",
+        en: "O₁ stands on the same arc as ∠C, so the angle-at-centre theorem hands you O₁ = 2c straight away — no new triangles needed, just the theorem you already proved, aimed at this picture.",
+        af: "O₁ staan op dieselfde boog as ∠C, dus gee die hoek-by-middelpunt-stelling jou dadelik O₁ = 2c — geen nuwe driehoeke nodig nie, net die stelling wat jy reeds bewys het, gerig op hierdie prentjie.",
       },
     },
 
@@ -241,8 +250,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Label ∠A = a too. OB and OD are just two rays out of O — together they split the WHOLE turn around O into exactly two pieces: the non-reflex ∠BOD you just found (2c), and the rest of the way around — the reflex ∠BOD, which stands on the same arc as ∠A, so it equals 2a by that same theorem. What do the two pieces add up to, all the way around O?",
-        af: "Merk ∠A = a ook. OB en OD is net twee strale uit O — saam verdeel hulle die HELE draai om O in presies twee stukke: die nie-inspringende ∠BOD wat jy pas gekry het (2c), en die res van die pad om — die inspringende ∠BOD, wat op dieselfde boog as ∠A staan, dus is dit 2a deur dieselfde stelling. Wat tel die twee stukke op tot, heeltemal om O?",
+        en: "Label ∠A = a too. OB and OD are just two rays out of O — together they split the WHOLE turn around O into exactly two pieces: O₁, the non-reflex ∠BOD you just found (2c), and the rest of the way around — O₂, the reflex ∠BOD, which stands on the same arc as ∠A, so it equals 2a by that same theorem. What do the two pieces add up to, all the way around O?",
+        af: "Merk ∠A = a ook. OB en OD is net twee strale uit O — saam verdeel hulle die HELE draai om O in presies twee stukke: O₁, die nie-inspringende ∠BOD wat jy pas gekry het (2c), en die res van die pad om — O₂, die inspringende ∠BOD, wat op dieselfde boog as ∠A staan, dus is dit 2a deur dieselfde stelling. Wat tel die twee stukke op tot, heeltemal om O?",
       },
       diagram: FIG_CENTRAL_BOTH,
       options: [
@@ -254,13 +263,13 @@ export const round = {
       hints: [
         { en: "Two rays out of a single point always split the plane around that point into exactly two angles. If you swept all the way around, back to where you started, how far did you turn?",
           af: "Twee strale uit een enkele punt verdeel altyd die vlak om daardie punt in presies twee hoeke. As jy heeltemal om gaan, terug na waar jy begin het, hoe ver het jy gedraai?" },
-        { en: "A full turn around any point is always 360°, no matter where the two rays point. Non-reflex ∠BOD + reflex ∠BOD = 360°, always — this doesn't even need a and c yet.",
-          af: "'n Volledige draai om enige punt is altyd 360°, ongeag waarheen die twee strale wys. Nie-inspringende ∠BOD + inspringende ∠BOD = 360°, altyd — dit het nie eers a en c nog nodig nie." },
+        { en: "A full turn around any point is always 360°, no matter where the two rays point. O₁ + O₂ = 360°, always — this doesn't even need a and c yet.",
+          af: "'n Volledige draai om enige punt is altyd 360°, ongeag waarheen die twee strale wys. O₁ + O₂ = 360°, altyd — dit het nie eers a en c nog nodig nie." },
       ],
       reason: "roundPt",
       note: {
-        en: "OB and OD are two rays out of O, and two rays always split the full turn around a point into exactly two angles that add to 360° — a fact that needs no measuring, no matter where B and D actually sit. Non-reflex ∠BOD + reflex ∠BOD = 360°, and by the SAME angle-at-centre theorem, reflex ∠BOD (standing on the same arc as ∠A) = 2a.",
-        af: "OB en OD is twee strale uit O, en twee strale verdeel altyd die volledige draai om 'n punt in presies twee hoeke wat optel tot 360° — 'n feit wat geen meting benodig nie, ongeag waar B en D werklik sit. Nie-inspringende ∠BOD + inspringende ∠BOD = 360°, en deur DIESELFDE hoek-by-middelpunt-stelling, inspringende ∠BOD (wat op dieselfde boog as ∠A staan) = 2a.",
+        en: "OB and OD are two rays out of O, and two rays always split the full turn around a point into exactly two angles that add to 360° — a fact that needs no measuring, no matter where B and D actually sit. O₁ + O₂ = 360°, and by the SAME angle-at-centre theorem, O₂ (standing on the same arc as ∠A) = 2a.",
+        af: "OB en OD is twee strale uit O, en twee strale verdeel altyd die volledige draai om 'n punt in presies twee hoeke wat optel tot 360° — 'n feit wat geen meting benodig nie, ongeag waar B en D werklik sit. O₁ + O₂ = 360°, en deur DIESELFDE hoek-by-middelpunt-stelling, O₂ (wat op dieselfde boog as ∠A staan) = 2a.",
       },
     },
 
@@ -268,8 +277,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "So non-reflex ∠BOD + reflex ∠BOD = 360°, and you now know non-reflex ∠BOD = 2c and reflex ∠BOD = 2a. Substitute and simplify. What do you get?",
-        af: "So nie-inspringende ∠BOD + inspringende ∠BOD = 360°, en jy weet nou nie-inspringende ∠BOD = 2c en inspringende ∠BOD = 2a. Vervang en vereenvoudig. Wat kry jy?",
+        en: "So O₁ + O₂ = 360°, and you now know O₁ = 2c and O₂ = 2a. Substitute and simplify. What do you get?",
+        af: "So O₁ + O₂ = 360°, en jy weet nou O₁ = 2c en O₂ = 2a. Vervang en vereenvoudig. Wat kry jy?",
       },
       diagram: FIG_FINAL,
       options: [
@@ -286,8 +295,8 @@ export const round = {
       ],
       reason: "cyclicOpp",
       note: {
-        en: "2c + 2a = 360° — divide both sides by 2, and a + c = 180°. That's the whole proof: join the radii to the two vertices NOT in the angle pair, run the angle-at-centre theorem twice on the SAME central angle, and add. Opposite angles of a cyclic quad are always supplementary.",
-        af: "2c + 2a = 360° — deel albei kante deur 2, en a + c = 180°. Dit is die hele bewys: verbind die radiusse na die twee hoekpunte wat NIE in die hoekpaar is nie, laat die hoek-by-middelpunt-stelling twee keer op DIESELFDE middelpuntshoek loop, en tel bymekaar. Teenoorstaande hoeke van 'n koordevierhoek is altyd supplementêr.",
+        en: "O₁ + O₂ = 360°, so 2c + 2a = 360° — divide both sides by 2, and a + c = 180°. That's the whole proof: join the radii to the two vertices NOT in the angle pair, run the angle-at-centre theorem twice on the SAME central angle, and add. Opposite angles of a cyclic quad are always supplementary.",
+        af: "O₁ + O₂ = 360°, dus 2c + 2a = 360° — deel albei kante deur 2, en a + c = 180°. Dit is die hele bewys: verbind die radiusse na die twee hoekpunte wat NIE in die hoekpaar is nie, laat die hoek-by-middelpunt-stelling twee keer op DIESELFDE middelpuntshoek loop, en tel bymekaar. Teenoorstaande hoeke van 'n koordevierhoek is altyd supplementêr.",
       },
     },
 

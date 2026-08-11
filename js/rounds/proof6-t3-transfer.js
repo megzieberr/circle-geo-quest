@@ -37,6 +37,16 @@
      6 · note   — recap: same construction, new letters, the trap named
          and the "always 180°" result. Last panel of the round.
 
+   REVISED 2026-08-11 (Megan's numbering follow-up, same convention as
+   pr5): O₁ = the non-reflex ∠QOS (= 2∠P), O₂ = the reflex ∠QOS (= 2∠R),
+   introduced together in panel 3's prompt (both pieces appear on that
+   panel's figure at once, unlike pr5's two-panel build-up) and carried
+   into panel 4's error-spot solution — `st` stays symbol-only there
+   ("O₁ = 2∠P"), and the options quoting those lines verbatim were renamed
+   the same way. THE TRAP PANEL (panel 2, ∠POR) is UNTOUCHED on purpose:
+   it's a different construction on its own figure with only one marked
+   central angle, so O₃ there would be noise, not clarity.
+
    GEOMETRY — new orientation, new letters (P, Q, R, S instead of pr5's
    A, B, C, D), per the plan's "relabelled and rotated" instruction, so the
    letters keep meaning what they meant last time rather than colliding.
@@ -180,8 +190,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Back to the correct pair: OQ and OS are drawn, and ∠P = 60° is given (marked). The exact same theorem, run on the exact same central angle ∠QOS, doubles ∠P to get the non-reflex piece, and the reflex piece completes the turn to 360°. What is ∠R, and what does that make ∠P + ∠R?",
-        af: "Terug na die regte paar: OQ en OS is getrek, en ∠P = 60° is gegee (gemerk). Presies dieselfde stelling, uitgevoer op presies dieselfde middelpuntshoek ∠QOS, verdubbel ∠P om die nie-inspringende stuk te kry, en die inspringende stuk voltooi die draai na 360°. Wat is ∠R, en wat maak dit ∠P + ∠R?",
+        en: "Back to the correct pair: OQ and OS are drawn, and ∠P = 60° is given (marked). The exact same theorem, run on the exact same central angle — O₁, the non-reflex ∠QOS (marked) — doubles ∠P to get O₁. O₂, the rest of the turn (the reflex ∠QOS), then completes it to 360°. What is ∠R, and what does that make ∠P + ∠R?",
+        af: "Terug na die regte paar: OQ en OS is getrek, en ∠P = 60° is gegee (gemerk). Presies dieselfde stelling, uitgevoer op presies dieselfde middelpuntshoek — O₁, die nie-inspringende ∠QOS (gemerk) — verdubbel ∠P om O₁ te kry. O₂, die res van die draai (die inspringende ∠QOS), voltooi dit dan na 360°. Wat is ∠R, en wat maak dit ∠P + ∠R?",
       },
       diagram: FIG_CORRECT,
       options: [
@@ -191,15 +201,15 @@ export const round = {
         { text: { en: "∠R can't be found at all without measuring it directly", af: "∠R kan glad nie gevind word sonder om dit direk te meet nie" } },
       ],
       hints: [
-        { en: "Non-reflex ∠QOS = 2 × 60° = 120°. That leaves 360° − 120° = 240° for the reflex piece — and the reflex piece is 2 × ∠R, the same doubling rule, aimed at the other angle.",
-          af: "Nie-inspringende ∠QOS = 2 × 60° = 120°. Dit laat 360° − 120° = 240° vir die inspringende stuk — en die inspringende stuk is 2 × ∠R, dieselfde verdubbelingsreël, gerig op die ander hoek." },
+        { en: "O₁ = 2 × 60° = 120°. That leaves 360° − 120° = 240° for O₂ — and O₂ is 2 × ∠R, the same doubling rule, aimed at the other angle.",
+          af: "O₁ = 2 × 60° = 120°. Dit laat 360° − 120° = 240° vir O₂ — en O₂ is 2 × ∠R, dieselfde verdubbelingsreël, gerig op die ander hoek." },
         { en: "2 × ∠R = 240°, so ∠R = 120°. Then ∠P + ∠R = 60° + 120° = 180° — supplementary, exactly as the last round proved it always must be.",
           af: "2 × ∠R = 240°, dus ∠R = 120°. Dan ∠P + ∠R = 60° + 120° = 180° — supplementêr, presies soos die vorige rondte bewys het dit altyd moet wees." },
       ],
       reason: "cyclicOpp",
       note: {
-        en: "Non-reflex ∠QOS = 2 × 60° = 120°, so the reflex piece is 360° − 120° = 240° = 2 × ∠R, giving ∠R = 120°. ∠P + ∠R = 60° + 120° = 180° — the picture rotated and the numbers are new, but the result is exactly what the last round proved: opposite angles of a cyclic quad are always supplementary.",
-        af: "Nie-inspringende ∠QOS = 2 × 60° = 120°, dus is die inspringende stuk 360° − 120° = 240° = 2 × ∠R, wat ∠R = 120° gee. ∠P + ∠R = 60° + 120° = 180° — die prentjie het gedraai en die getalle is nuut, maar die resultaat is presies wat die vorige rondte bewys het: teenoorstaande hoeke van 'n koordevierhoek is altyd supplementêr.",
+        en: "O₁ = 2 × 60° = 120°, so O₂ is 360° − 120° = 240° = 2 × ∠R, giving ∠R = 120°. ∠P + ∠R = 60° + 120° = 180° — the picture rotated and the numbers are new, but the result is exactly what the last round proved: opposite angles of a cyclic quad are always supplementary.",
+        af: "O₁ = 2 × 60° = 120°, dus is O₂ 360° − 120° = 240° = 2 × ∠R, wat ∠R = 120° gee. ∠P + ∠R = 60° + 120° = 180° — die prentjie het gedraai en die getalle is nuut, maar die resultaat is presies wat die vorige rondte bewys het: teenoorstaande hoeke van 'n koordevierhoek is altyd supplementêr.",
       },
     },
 
@@ -215,28 +225,28 @@ export const round = {
         caption: SOL_CAP,
         lines: [
           { st: "OQ = OS", rs: { en: "radii", af: "radii" } },
-          { st: "∠QOS = 2∠P", rs: { en: "∠ at centre = 2 × ∠ at circumference", af: "Midpt∠ = 2 × Omtreks∠" } },
-          { st: "reflex ∠QOS = 2∠R", rs: { en: "∠ at centre = 2 × ∠ at circumference", af: "Midpt∠ = 2 × Omtreks∠" } },
-          { st: "∠QOS + reflex ∠QOS = 360°", rs: { en: "∠ at centre = 2 × ∠ at circumference", af: "Midpt∠ = 2 × Omtreks∠" } },
+          { st: "O₁ = 2∠P", rs: { en: "∠ at centre = 2 × ∠ at circumference", af: "Midpt∠ = 2 × Omtreks∠" } },
+          { st: "O₂ = 2∠R", rs: { en: "∠ at centre = 2 × ∠ at circumference", af: "Midpt∠ = 2 × Omtreks∠" } },
+          { st: "O₁ + O₂ = 360°", rs: { en: "∠ at centre = 2 × ∠ at circumference", af: "Midpt∠ = 2 × Omtreks∠" } },
           { st: "∴ ∠P + ∠R = 180°" },
         ],
       },
       options: [
-        { text: { en: "∠QOS + reflex ∠QOS = 360°   (∠ at centre = 2 × ∠ at circumference)", af: "∠QOS + inspringende ∠QOS = 360°   (Midpt∠ = 2 × Omtreks∠)" }, correct: true },
+        { text: { en: "O₁ + O₂ = 360°   (∠ at centre = 2 × ∠ at circumference)", af: "O₁ + O₂ = 360°   (Midpt∠ = 2 × Omtreks∠)" }, correct: true },
         { text: { en: "OQ = OS   (radii)", af: "OQ = OS   (radii)" } },
-        { text: { en: "∠QOS = 2∠P   (∠ at centre = 2 × ∠ at circumference)", af: "∠QOS = 2∠P   (Midpt∠ = 2 × Omtreks∠)" } },
-        { text: { en: "reflex ∠QOS = 2∠R   (∠ at centre = 2 × ∠ at circumference)", af: "inspringende ∠QOS = 2∠R   (Midpt∠ = 2 × Omtreks∠)" } },
+        { text: { en: "O₁ = 2∠P   (∠ at centre = 2 × ∠ at circumference)", af: "O₁ = 2∠P   (Midpt∠ = 2 × Omtreks∠)" } },
+        { text: { en: "O₂ = 2∠R   (∠ at centre = 2 × ∠ at circumference)", af: "O₂ = 2∠R   (Midpt∠ = 2 × Omtreks∠)" } },
       ],
       hints: [
         { en: "Check each reason against what it actually needs. \"∠ at centre = 2 × ∠ at circumference\" only ever compares ONE central angle to ONE circumference angle on the same arc. Which line isn't doing that at all?",
           af: "Toets elke rede teen wat dit werklik nodig het. \"Midpt∠ = 2 × Omtreks∠\" vergelyk net ooit EEN middelpuntshoek met EEN omtrekhoek op dieselfde boog. Watter reël doen dit glad nie?" },
-        { en: "\"∠QOS + reflex ∠QOS = 360°\" never mentions a circumference angle at all — it's two rays out of O splitting a full turn in half. That reason is \"∠s round a pt\", not the doubling theorem.",
-          af: "\"∠QOS + inspringende ∠QOS = 360°\" noem glad nie 'n omtrekhoek nie — dit is twee strale uit O wat 'n volledige draai in twee verdeel. Daardie rede is \"∠e om 'n punt\", nie die verdubbelingstelling nie." },
+        { en: "\"O₁ + O₂ = 360°\" never mentions a circumference angle at all — it's two rays out of O splitting a full turn in half. That reason is \"∠s round a pt\", not the doubling theorem.",
+          af: "\"O₁ + O₂ = 360°\" noem glad nie 'n omtrekhoek nie — dit is twee strale uit O wat 'n volledige draai in twee verdeel. Daardie rede is \"∠e om 'n punt\", nie die verdubbelingstelling nie." },
       ],
       reason: "roundPt",
       note: {
-        en: "∠QOS + reflex ∠QOS = 360° is correct maths, but \"∠ at centre = 2 × ∠ at circumference\" is the wrong reason for it — that reason needs a circumference angle in the sentence, and this line doesn't have one. Two rays out of a point completing a full turn is a separate, more basic fact: \"∠s round a pt\".",
-        af: "∠QOS + inspringende ∠QOS = 360° is korrekte wiskunde, maar \"Midpt∠ = 2 × Omtreks∠\" is die verkeerde rede daarvoor — daardie rede benodig 'n omtrekhoek in die sin, en hierdie reël het nie een nie. Twee strale uit 'n punt wat 'n volledige draai voltooi, is 'n aparte, meer basiese feit: \"∠e om 'n punt\".",
+        en: "O₁ + O₂ = 360° is correct maths, but \"∠ at centre = 2 × ∠ at circumference\" is the wrong reason for it — that reason needs a circumference angle in the sentence, and this line doesn't have one. Two rays out of a point completing a full turn is a separate, more basic fact: \"∠s round a pt\".",
+        af: "O₁ + O₂ = 360° is korrekte wiskunde, maar \"Midpt∠ = 2 × Omtreks∠\" is die verkeerde rede daarvoor — daardie rede benodig 'n omtrekhoek in die sin, en hierdie reël het nie een nie. Twee strale uit 'n punt wat 'n volledige draai voltooi, is 'n aparte, meer basiese feit: \"∠e om 'n punt\".",
       },
     },
 
