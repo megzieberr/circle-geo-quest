@@ -86,7 +86,7 @@ export function proofsCard(app) {
   card.innerHTML = `
     <div class="adv-bn-icon">🔗</div>
     <div class="adv-bn-text">
-      <span class="eyebrow">${tx(UI.cardTitle)}</span>
+      <span class="eyebrow">${tx(UI.mapEyebrow)}</span>
       <h3>${tx(UI.cardTitle)}</h3>
       <p class="muted small">${tx(UI.cardBlurb)}</p>
       <p class="muted small">${tx(UI.done).replace("{n}", done).replace("{total}", rows.length)}</p>
