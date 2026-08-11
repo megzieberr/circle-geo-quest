@@ -47,6 +47,35 @@
    it's a different construction on its own figure with only one marked
    central angle, so O₃ there would be noise, not clarity.
 
+   REVISED AGAIN 2026-08-11 night (FIX-ROUND-2.md item 3b + the item 3
+   wording echo — overnight foreman rebuild, session B, landed alongside
+   pr5's one-variable rebuild): her before-bed sweep found O₂ — the
+   reflex 240° piece, the star of this round's own 60→120→240→120 chain —
+   was never actually drawn or labelled on FIG_CORRECT (the engine
+   couldn't draw a reflex arc until FIX-ROUND-2.md item 2 landed earlier
+   the same night), and the round was monochrome throughout. Fixed:
+     · FIG_CORRECT now draws O₂ = 240° with the new engine reflex mark
+       (o.reflex, item 2), labelled "O₂", in ORANGE (#f76707) — the exact
+       same hex pr5 uses for ITS O₂. O₁ (120°) is PINK (#e64980, pr5's
+       O₁ colour) and the ∠P = 60° mark is GREEN (#0ea271, pr5's x
+       colour) — same family, same colour, across both rounds, per her
+       rule. FIG_CORRECT is reused verbatim by panels 3, 4 (error-spot)
+       and 6 (recap), so the fix reaches all three without touching them.
+     · o.r: 70 on O₂'s reflex mark (headless-checked, renderDiagram into
+       a fixed 340px container) — the default label radius landed O₂'s
+       text on top of ∠P's own "60°" label (both sit close together near
+       P/Q's side of the circle); 70 clears it with room. O₁ keeps the
+       engine's own default radius (46) — untouched, no collision there.
+     · FIG_TRAP and FIG_CLAIM are deliberately UNTOUCHED: their angle
+       marks are either unlabelled (no-spoilers, FIG_TRAP's ∠POR) or
+       absent (FIG_CLAIM has no O-vertex angle at all yet) — item 3b is
+       about the TEACHING figures, not the bare ones, per the brief.
+     · Panel 3's prompt/note were re-worded to echo pr5's own one-x-chain
+       language ("theorem once… before any second letter… theorem
+       again…") — its concrete numbers (60 → 120 → 240 → 120) already
+       WERE that chain; only the telling changed, not the maths. See
+       panel 3 below.
+
    GEOMETRY — new orientation, new letters (P, Q, R, S instead of pr5's
    A, B, C, D), per the plan's "relabelled and rotated" instruction, so the
    letters keep meaning what they meant last time rather than colliding.
@@ -76,6 +105,9 @@
        nothing, no arc-pair subtends it", which is true FOR ∠P and ∠R.) */
 
 const AC = "#9c36b5";
+const GREEN = "#0ea271";    // ∠P — same value as pr5's x colour
+const PINK = "#e64980";     // O₁ — same value as pr5's O₁ colour
+const ORANGE = "#f76707";   // O₂ — same value as pr5's O₂ colour
 
 /* ---- panel 1 (+ reused on panels 5-ish bare use): bare quad, before
    any construction. ∠P and ∠R marked but UNLABELLED — nothing spoiled. ---- */
@@ -104,9 +136,14 @@ const FIG_TRAP = {
 };
 
 /* ---- panels 3-4, 6: the correct construction — OQ, OS joined (ticked),
-   ∠P given and marked, the non-reflex central angle marked 120°. Reused
-   for the error-spot panel (the figure that solution is working from) and
-   the closing recap. */
+   ∠P given and marked (green), the non-reflex central angle O₁ (pink),
+   and — item 3b, 2026-08-11 night — the reflex central angle O₂ (orange),
+   drawn with the engine's reflex mark and labelled, the star of this
+   round's own 60→120→240→120 chain, previously never drawn at all.
+   Reused for the error-spot panel (the figure that solution is working
+   from) and the closing recap. o.r: 70 on O₂ is headless-checked (see the
+   header's LABEL PLACEMENT note) — the default radius collided with ∠P's
+   own "60°" label; O₁ keeps the engine's own default. */
 const FIG_CORRECT = {
   O: true,
   pts: { P: 40, Q: 150, R: 210, S: 270 },
@@ -116,8 +153,9 @@ const FIG_CORRECT = {
     { a: "O", b: "S", mk: "t1" },
   ],
   angles: [
-    { at: "P", legs: ["S", "Q"], t: "60°", o: { v: 60 } },
-    { at: "O", legs: ["Q", "S"], t: "O₁", o: { v: 120 } },
+    { at: "P", legs: ["S", "Q"], t: "60°", o: { v: 60, c: GREEN } },
+    { at: "O", legs: ["Q", "S"], t: "O₁", o: { v: 120, c: PINK } },
+    { at: "O", legs: ["Q", "S"], t: "O₂", o: { v: 240, reflex: 1, r: 70, c: ORANGE } },
   ],
 };
 
@@ -190,8 +228,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Back to the correct pair: OQ and OS are drawn, and ∠P = 60° is given (marked). The exact same theorem, run on the exact same central angle — O₁, the non-reflex ∠QOS (marked) — doubles ∠P to get O₁. O₂, the rest of the turn (the reflex ∠QOS), then completes it to 360°. What is ∠R, and what does that make ∠P + ∠R?",
-        af: "Terug na die regte paar: OQ en OS is getrek, en ∠P = 60° is gegee (gemerk). Presies dieselfde stelling, uitgevoer op presies dieselfde middelpuntshoek — O₁, die nie-inspringende ∠QOS (gemerk) — verdubbel ∠P om O₁ te kry. O₂, die res van die draai (die inspringende ∠QOS), voltooi dit dan na 360°. Wat is ∠R, en wat maak dit ∠P + ∠R?",
+        en: "Back to the correct pair: OQ and OS are drawn, and ∠P = 60° is given (green, marked). Same chain as last round, one number instead of a letter: the theorem once on O₁ (pink) doubles ∠P to 120°. Before ∠R gets a value, O₂ (orange) — the rest of the turn around O, drawn the long way round — is 360° − 120° = 240°, for free. Run the theorem AGAIN, on O₂, to reach ∠R. What is ∠R, and what does that make ∠P + ∠R?",
+        af: "Terug na die regte paar: OQ en OS is getrek, en ∠P = 60° is gegee (groen, gemerk). Dieselfde ketting as die vorige rondte, een getal in plaas van 'n letter: die stelling een keer op O₁ (pienk) verdubbel ∠P na 120°. Voordat ∠R 'n waarde kry, is O₂ (oranje) — die res van die draai om O, die lang pad om geteken — 360° − 120° = 240°, verniet. Laat die stelling weer loop, op O₂, om ∠R te kry. Wat is ∠R, en wat maak dit ∠P + ∠R?",
       },
       diagram: FIG_CORRECT,
       options: [
@@ -201,15 +239,15 @@ export const round = {
         { text: { en: "∠R can't be found at all without measuring it directly", af: "∠R kan glad nie gevind word sonder om dit direk te meet nie" } },
       ],
       hints: [
-        { en: "O₁ = 2 × 60° = 120°. That leaves 360° − 120° = 240° for O₂ — and O₂ is 2 × ∠R, the same doubling rule, aimed at the other angle.",
-          af: "O₁ = 2 × 60° = 120°. Dit laat 360° − 120° = 240° vir O₂ — en O₂ is 2 × ∠R, dieselfde verdubbelingsreël, gerig op die ander hoek." },
-        { en: "2 × ∠R = 240°, so ∠R = 120°. Then ∠P + ∠R = 60° + 120° = 180° — supplementary, exactly as the last round proved it always must be.",
-          af: "2 × ∠R = 240°, dus ∠R = 120°. Dan ∠P + ∠R = 60° + 120° = 180° — supplementêr, presies soos die vorige rondte bewys het dit altyd moet wees." },
+        { en: "O₁ = 2 × 60° = 120°. Two rays out of O split the whole turn into two pieces, no new letter needed: O₂ = 360° − 120° = 240° — the same move as last round, before ∠R has any value at all.",
+          af: "O₁ = 2 × 60° = 120°. Twee strale uit O verdeel die hele draai in twee stukke, geen nuwe letter nodig nie: O₂ = 360° − 120° = 240° — dieselfde skuif as die vorige rondte, voordat ∠R enige waarde het." },
+        { en: "Now run the theorem again, on O₂ this time: ∠R = O₂ ÷ 2 = 240° ÷ 2 = 120°. Then ∠P + ∠R = 60° + 120° = 180° — supplementary, exactly as the last round proved it always must be.",
+          af: "Laat die stelling nou weer loop, hierdie keer op O₂: ∠R = O₂ ÷ 2 = 240° ÷ 2 = 120°. Dan ∠P + ∠R = 60° + 120° = 180° — supplementêr, presies soos die vorige rondte bewys het dit altyd moet wees." },
       ],
       reason: "cyclicOpp",
       note: {
-        en: "O₁ = 2 × 60° = 120°, so O₂ is 360° − 120° = 240° = 2 × ∠R, giving ∠R = 120°. ∠P + ∠R = 60° + 120° = 180° — the picture rotated and the numbers are new, but the result is exactly what the last round proved: opposite angles of a cyclic quad are always supplementary.",
-        af: "O₁ = 2 × 60° = 120°, dus is O₂ 360° − 120° = 240° = 2 × ∠R, wat ∠R = 120° gee. ∠P + ∠R = 60° + 120° = 180° — die prentjie het gedraai en die getalle is nuut, maar die resultaat is presies wat die vorige rondte bewys het: teenoorstaande hoeke van 'n koordevierhoek is altyd supplementêr.",
+        en: "The exact same chain as last round, numbers instead of a second letter: O₁ = 2 × 60° = 120° (theorem once). Before ∠R has a value, O₂ = 360° − 120° = 240° (∠s round a point — no new letter needed). Theorem again, on O₂: ∠R = 240° ÷ 2 = 120°. ∠P + ∠R = 60° + 120° = 180° — the picture rotated and the numbers are new, but the result is exactly what the last round proved: opposite angles of a cyclic quad are always supplementary.",
+        af: "Presies dieselfde ketting as die vorige rondte, getalle in plaas van 'n tweede letter: O₁ = 2 × 60° = 120° (stelling een keer). Voordat ∠R 'n waarde het, is O₂ = 360° − 120° = 240° (∠e om 'n punt — geen nuwe letter nodig nie). Stelling weer, op O₂: ∠R = 240° ÷ 2 = 120°. ∠P + ∠R = 60° + 120° = 180° — die prentjie het gedraai en die getalle is nuut, maar die resultaat is presies wat die vorige rondte bewys het: teenoorstaande hoeke van 'n koordevierhoek is altyd supplementêr.",
       },
     },
 
