@@ -26,7 +26,7 @@ detail, process rules and repo state are in that file. She teaches proofs
 from 2026-08-12; the morning is the fix window; ship stays a separate
 explicit step after her yes.
 
-Repo stands at 23 local commits ahead of origin, NOTHING pushed, working
+Repo stands at 23 local commits ahead of origin (this wrap commit included), NOTHING pushed, working
 tree clean, all four checkers green (477 diagrams / 871 angles / 0
 mismatches).
 
