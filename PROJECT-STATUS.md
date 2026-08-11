@@ -1,4 +1,98 @@
-# Project status — updated 2026-08-10 (proof rounds + dynamic geo PLANNED; overnight build scheduled)
+# Project status — updated 2026-08-11 (proof rounds: P0 BUILT, T1 arc half-written, run cut short by wifi)
+
+## 🌙 2026-08-11 — overnight build, STOPPED EARLY (unstable wifi). Nothing pushed.
+
+The scheduled overnight run fired and got through **one and a bit of its six
+sessions** before her connection dropped the second build session mid-task. She
+called it there; **we try again tonight.** Everything below is LOCAL — no push,
+no deploy, no migration, no edge-function change, nothing that cost money.
+
+**Where the app actually stands: P0 is finished and wired in. Nothing else is.**
+The app runs exactly as it did, plus one new round on the map.
+
+### ✅ Session 1 — scaffolding + P0 "Why proofs?" · DONE, reviewed, accepted
+Commits `834ac53` (the build) and `c7c8c07` (one review fix of mine).
+
+- **New round kind `"proof"`, rendered by the EXISTING `renderInvestigate()`** —
+  no new renderer, no new panel type, no new engine surface. Proof rounds get
+  `predict` / `choice` / `note` panels and per-panel XP for free.
+  `CONFIG.proofXpPerPanel: 10`, computed from `panels.length`, never hard-coded.
+- **Round ids are `pr0` … `pr9`, group `g7`.** ⚠️ **`g7` is `hidden: true`**, the
+  same as the Investigation Station's `g6` — so a learner who finished the 43
+  rounds still reads **5/5 badges** and still ranks 🏆 Circle Grand Master
+  instead of being silently demoted to 5/6 the moment this group exists.
+  Verified in the browser: the badge counter still says 0/5. Easy to reverse if
+  she'd rather proofs sat on the ladder.
+- ⚠️ **The proof rounds sit in `ORDER` AFTER `r21` and BEFORE `inv1`, and that
+  position is load-bearing.** `unlockedIds()` chains on ORDER position, and the
+  Investigation Station is hidden (`stationsLive: false`), so nobody can pass
+  `inv6` — putting the proof rounds after the stations would mean **P0 never
+  unlocks for anyone.** Don't "tidy" them to the end of the array.
+- **The survey is PINNED** (build-checklist item #1). New export
+  `FINAL_QUEST_ROUND_ID = "r21"`; `js/game.js` fires the end-of-quest survey on
+  that id instead of "the last entry in MAIN_ROUNDS", which had become a proof
+  round the moment the group was appended. The class has already met the
+  survey; it cannot re-fire on a proof round. `js/stations.js`'s stop-1 gate is
+  pinned to the same id for the same reason.
+- **P0 itself: five panels, all taps.** Conjecture vs theorem → why a hundred
+  measured circles still prove nothing → what actually turns a conjecture into
+  a theorem → **the wonder moment** (a `predict` guess on three bare dots: how
+  many circles pass through all three?) → the reveal: exactly one, always,
+  because two perpendicular bisectors meet at exactly one point. Every triangle
+  they've ever drawn had a secret circle around it. The two figures reuse
+  Investigation Station 3's already-verified coordinates rather than new ones.
+- **Checked:** verify-node **427 diagrams / 774 angles / 0 mismatches**;
+  audit-options, check-bilingual, check-table-summary all clean. Walked in the
+  browser at phone width (375px) in **both languages**: all five panels render
+  and advance, a wrong tap on the predict panel gets "Fair guess — …" with no
+  scolding and no gating, results screen reads 🔗 "Nice reasoning!", no "Next
+  station" button, no horizontal overflow, no console errors.
+- **My one review fix (`c7c8c07`):** a choice panel shows its first nudge after
+  one wrong tap, and that nudge said *"Use the diagram and the hint below."* P0
+  is the first round here with choice panels that have **no diagram at all**, so
+  a learner was being pointed at a picture that isn't on the screen. Now the
+  wording depends on whether the panel actually has a figure. Every existing
+  station and discovery panel has one, so nothing else changed.
+
+### ⏸️ Session 2 — the T1 arc (P1, P2) · CUT OFF MID-TASK, UNVERIFIED
+Two files exist on disk and are **untracked, unregistered and unchecked**:
+`js/rounds/proof1-t1-discovery.js` and `js/rounds/proof2-t1-transfer.js`.
+
+**They are inert — nothing imports them, so the app is completely unaffected.**
+The session died just before registering them in `js/rounds/index.js`.
+
+⚠️ **Treat them as unreviewed drafts.** I never read their content, never ran a
+checker over them, never opened them in a browser. Nobody has verified their
+geometry, their Afrikaans, or their options. Tonight's run should either finish
+and check them properly or start the arc again — don't assume they're good.
+
+### ⛔ Sessions 3–6 — never started
+T2 arc (P3/P4), T3 arc (P5/P6), T4 arc (P7/P8), and the P9 finale + full sweep.
+
+### 🔍 One open finding, NOT fixed (pre-existing, app-wide — her call)
+**Two-up mini diagrams are unreadable on a phone.** A panel using the
+`diagrams: [...]` row renders each figure only ~147px wide at 375px, which puts
+the point labels at about **6 effective pixels**. This is NOT new — it already
+affects `converse-intro`, `discover-line-centre`, `invest03` and `round10b`, so
+I deliberately did not change shared CSS unreviewed overnight on rounds she
+teaches from tomorrow. One line fixes it, for her to approve:
+
+```css
+@media (max-width:420px){ .dp-mini{ flex-basis:100%; max-width:none; } }
+```
+
+Stacking makes each figure full width (~314px, labels back to normal size); the
+only loss is seeing two figures at once, which at 6px nobody could read anyway.
+
+### 📌 To pick up tonight
+1. Decide the mini-diagram CSS question above (one line, or leave it).
+2. Session 2 again: finish or redo the T1 arc, register `pr1`/`pr2` in
+   `js/rounds/index.js` (import + `ORDER` right after `pr0`, still before
+   `inv1` + `GROUP` entries), then all four checkers and a both-languages
+   phone-width walk.
+3. Then sessions 3, 4, 5, 6 in order.
+4. Ship is still a separate explicit step after she has reviewed — plain push,
+   no migration.
 
 ## 📋 2026-08-10 — planning day (Fable session, nothing built)
 
