@@ -16,6 +16,23 @@ built and wired into the map.** `MAIN_ROUNDS` now reads **53** (43 + 10).
 Nobody has this yet outside her review — the group (`g7`) is `hidden: true`,
 so a learner finishing the 43 rounds still reads 5/5 badges, same as before.
 
+### ✅ FIX ROUND 1 — her first playtest, 14 adjustments · DONE (same day)
+Commits `6bfdb4b` (build, off `FIX-ROUND-1.md` — the full adjustment list
+lives there) + `8826abc` (foreman review fix). The big one: **the proof
+rounds came OFF the main map into their own always-visible home-screen
+"Proofs" card** (open to everyone from day one, her ruling; sequential
+unlock inside the group; `MAIN_ROUNDS` back to 43; Teacher Preview sees it
+all unlocked). Plus: clearer discovery-probe wording on all four discovery
+rounds, ON drawn on pr2's variant figure, pr3 rebuilt (bigger base angles
+x=40°/y=35°, teal-x/orange-y colours, a NEW earn-the-isosceles-step page,
+marker-pen triangle+wedge highlights on the O₁ and O₂ pages, numbered
+angle names O₁/O₂/P₁/P₂ in the T2 arc's prose, chord AB and the OQ tick
+removed), label-drift pins across pr4/pr7/pr8, and two small additive
+engine options (per-angle colour, chord/wedge highlight). All four
+checkers green (477 diagrams / 868 angles / 0 mismatches); foreman
+browser-walked the lot in both languages at 375px. "Proofs"/"Bewyse" card
+naming is a working title — hers to rename.
+
 ### ✅ Session 6 — P9 mixed finale + full-group checklist sweep · DONE
 Commits `bd2e67e` (build) + `b232ca7` (foreman review fix: the T1 tool card
 now says "RHS or SSS", because the variant-B claim genuinely runs on SSS).
