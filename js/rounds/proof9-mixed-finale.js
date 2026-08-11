@@ -49,8 +49,11 @@
 const AC = "#9c36b5";
 
 const TOOL_T1 = {
-  en: "Join the two radii to the chord's endpoints; prove the triangles congruent (RHS).",
-  af: "Verbind die twee radiusse na die koord se eindpunte; bewys die driehoeke kongruent (RHS).",
+  /* "RHS of SSS" and not RHS alone: variant B (midpoint given, prove the
+     right angle) genuinely runs on SSS — pr2's own recap sentence is
+     "let RHS or SSS carry the rest", and panel 3 below IS that variant. */
+  en: "Join the two radii to the chord's endpoints; prove the triangles congruent (RHS or SSS).",
+  af: "Verbind die twee radiusse na die koord se eindpunte; bewys die driehoeke kongruent (RHS of SSS).",
 };
 const TOOL_T2 = {
   en: "Draw the diameter through the circumference point; two isosceles triangles, doubled by the exterior angle theorem.",
