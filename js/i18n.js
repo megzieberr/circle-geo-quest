@@ -132,6 +132,9 @@ const UI = {
   continue:       { en: "Continue", af: "Gaan voort" },
   notQuiteTry:    { en: "Not quite — try again.", af: "Nie heeltemal nie — probeer weer." },
   notQuiteThink:  { en: "Not quite. Use the diagram and the hint below.", af: "Nie heeltemal nie. Gebruik die diagram en die wenk hieronder." },
+  // Same message for a panel with no diagram to look at (js/investigate.js
+  // picks between the two) — the proof rounds are the first to have those.
+  notQuiteThinkNoFig: { en: "Not quite. Have a look at the hint below.", af: "Nie heeltemal nie. Kyk na die wenk hieronder." },
   hereIsAnswer:   { en: "Here's the answer — read it through so it makes sense, then carry on. You'll get the next one!", af: "Hier is die antwoord — lees dit deur sodat dit sin maak, en gaan dan voort. Jy kry die volgende een reg!" },
   hint:           { en: "Hint", af: "Wenk" },
   youGotIt:       { en: "You've got it!", af: "Jy het dit!" },

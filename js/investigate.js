@@ -439,13 +439,21 @@ function mountPanel(host, panel, accent, scratch, onDone) {
      Blank and written panels keep the original 3-miss ladder: their wrong
      count is unbounded, so every rung was always reachable there. */
   const hintAfter = panel.type === "choice" ? 1 : HINT_AFTER;
+  /* "Use the diagram and the hint below" is a lie on a panel that HAS no
+     diagram, and the proof rounds are the first thing here to have such panels
+     (P0 asks about measuring in general — a picture would be decoration). Every
+     station and discovery panel carries one, so they keep the original string
+     and nothing existing changes. Added 2026-08-11 during the proof-rounds
+     review, after walking P0 on a phone and being told to look at nothing. */
+  const hasFigure = !!(panel.interactive || panel.diagram || panel.diagrams);
+  const nudge = () => hasFigure ? t("notQuiteThink") : t("notQuiteThinkNoFig");
   function onWrong(customMsg) {
     wrong++;
     feedback.hidden = false;
     feedback.className = "dp-feedback bad";
     // The checker's nudge replaces the generic message when we have one.
     // textContent, never innerHTML — model output must stay inert.
-    feedback.textContent = customMsg || (wrong < hintAfter ? t("notQuiteTry") : t("notQuiteThink"));
+    feedback.textContent = customMsg || (wrong < hintAfter ? t("notQuiteTry") : nudge());
     if (wrong >= hintAfter) {
       const hints = panel.hints || [];
       const idx = Math.min(wrong - hintAfter, hints.length - 1);
