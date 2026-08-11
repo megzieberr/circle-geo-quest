@@ -1,14 +1,71 @@
-# Project status — updated 2026-08-11 (proof rounds: P0 BUILT, T1 arc half-written, run cut short by wifi)
+# Project status — updated 2026-08-11 (proof rounds: ALL TEN ROUNDS BUILT, P0–P9, awaiting her morning review)
 
-## 🌙 2026-08-11 — overnight build, STOPPED EARLY (unstable wifi). Nothing pushed.
+## 🌙 2026-08-11 — overnight build resumed after the wifi drop, ALL SIX SESSIONS DONE. Nothing pushed.
 
-The scheduled overnight run fired and got through **one and a bit of its six
-sessions** before her connection dropped the second build session mid-task. She
-called it there; **we try again tonight.** Everything below is LOCAL — no push,
-no deploy, no migration, no edge-function change, nothing that cost money.
+The run that stopped early (session 2, wifi) was picked back up and finished:
+**all six build sessions are done, reviewed against the four checkers, and
+committed LOCAL.** No push, no deploy, no migration, no edge-function change,
+nothing that cost money. She reviews this morning and teaches proofs today —
+ship is a separate explicit step after her yes.
 
-**Where the app actually stands: P0 is finished and wired in. Nothing else is.**
-The app runs exactly as it did, plus one new round on the map.
+**Where the app actually stands: P0 through P9, all ten proof rounds, are
+built and wired into the map.** `MAIN_ROUNDS` now reads **53** (43 + 10).
+Nobody has this yet outside her review — the group (`g7`) is `hidden: true`,
+so a learner finishing the 43 rounds still reads 5/5 badges, same as before.
+
+### ✅ Session 6 — P9 mixed finale + full-group checklist sweep · DONE
+Commit `bd2e67e`.
+
+- **P9 (`pr9`), 11 panels, all taps, figure-free throughout** (the claim is
+  entirely in words, so a diagram would be decoration — same call P0 made).
+  Six speed-match panels ("claim → tap the construction+engine that proves
+  it") cover all four theorems, with T1 and T2 each getting a second, harder
+  phrasing (T1's variant-B direction; T2's reflex angle, and "angles in the
+  same segment" — which is T2's own construction in disguise, established in
+  P4). All six panels share the same four options (the four theorems' own
+  recap sentences, expanded into construction+engine phrases), so a wrong tap
+  is always a real tool, just the wrong one. Three fresh legal/illegal
+  lightning panels follow (binary Legal/Illegal tap, not a clone of the
+  earlier four-option "which is legal" shape) — one classroom-catchphrase use,
+  verbatim English in both languages, as her ruling requires. Opening and
+  closing `note` panels bookend it; the closing one recaps all four tools
+  side by side and ends on the actual takeaway line.
+- **Full-group sweep, all items checked against the actual code, not assumed:**
+  - Survey still pinned: `FINAL_QUEST_ROUND_ID = "r21"` unchanged; read
+    `js/game.js`'s trigger (`round.id === FINAL_QUEST_ROUND_ID`) and
+    `js/stations.js`'s stop-1 gate directly — both still read the pinned id.
+  - `MAIN_ROUNDS.length` = **53** in node; grepped `js/` for stray `43`/`46`
+    literals outside comments — every hit is an unrelated diagram-label
+    radius or angle-degree value, not a round count.
+  - All four checkers green: `verify-node` **476 diagrams / 867 angles / 0
+    mismatches** (unchanged from before P9 — it added no diagrams, all
+    figure-free); `audit-options` clean, no positional or length tell;
+    `check-bilingual` clean; `check-table-summary` clean (pre-existing,
+    unrelated to proof rounds).
+  - Grepped pr0–pr9 for "Last one"/"Laaste een" (none present, nothing to
+    strand), real-name leaks (none), "radii" inside AF prose (none — the
+    only AF "radii" hits are the fixed IEB reason-tag values, which are
+    supposed to stay "radii"), "reguit hoek" (none), and internal round-ids
+    inside learner-facing `en:`/`af:` strings (none — `pr9` only appears in
+    the `id:` field and header comments).
+  - `git diff origin/main --stat -- supabase sw.js css` is empty — nothing
+    under those paths touched across the whole six-session run.
+- **Not done / deferred:** no browser walk this session (Browser pane
+  automation doesn't apply here since nothing renders live without her
+  dev-server setup) — the checkers are the evidence for this round; she
+  should still eyeball P9 in the app before teaching from it, same as every
+  other arc.
+
+### ✅ Sessions 2–5 — T1/T2/T3/T4 arcs (P1–P8) · DONE, each committed
+Commits `a55d4dd`+`bb6b943` (T1), `5f6c0a7`+`823760b` (T2), `3439aaa`+`6b68ec3`
+(T3), `74ab931`+`3c30a84` (T4) — build + review-fix pairs, per the foreman
+pattern. Each arc: a discovery round teaching one construction, a transfer
+round carrying it to a relabelled/rotated picture plus that theorem's
+signature trap (T3's wrong-radii join, T4's wrong-join-after-diameter), an
+error-spotting panel, and one legal-constructions panel with the catchphrase
+used once per arc. All checked clean at build time — see the commit log for
+each arc's own detail (this file wasn't updated between sessions 2–5; the
+git log is the record for that stretch).
 
 ### ✅ Session 1 — scaffolding + P0 "Why proofs?" · DONE, reviewed, accepted
 Commits `834ac53` (the build) and `c7c8c07` (one review fix of mine).
@@ -54,21 +111,6 @@ Commits `834ac53` (the build) and `c7c8c07` (one review fix of mine).
   wording depends on whether the panel actually has a figure. Every existing
   station and discovery panel has one, so nothing else changed.
 
-### ⏸️ Session 2 — the T1 arc (P1, P2) · CUT OFF MID-TASK, UNVERIFIED
-Two files exist on disk and are **untracked, unregistered and unchecked**:
-`js/rounds/proof1-t1-discovery.js` and `js/rounds/proof2-t1-transfer.js`.
-
-**They are inert — nothing imports them, so the app is completely unaffected.**
-The session died just before registering them in `js/rounds/index.js`.
-
-⚠️ **Treat them as unreviewed drafts.** I never read their content, never ran a
-checker over them, never opened them in a browser. Nobody has verified their
-geometry, their Afrikaans, or their options. Tonight's run should either finish
-and check them properly or start the arc again — don't assume they're good.
-
-### ⛔ Sessions 3–6 — never started
-T2 arc (P3/P4), T3 arc (P5/P6), T4 arc (P7/P8), and the P9 finale + full sweep.
-
 ### 🔍 One open finding, NOT fixed (pre-existing, app-wide — her call)
 **Two-up mini diagrams are unreadable on a phone.** A panel using the
 `diagrams: [...]` row renders each figure only ~147px wide at 375px, which puts
@@ -84,15 +126,17 @@ teaches from tomorrow. One line fixes it, for her to approve:
 Stacking makes each figure full width (~314px, labels back to normal size); the
 only loss is seeing two figures at once, which at 6px nobody could read anyway.
 
-### 📌 To pick up tonight
-1. Decide the mini-diagram CSS question above (one line, or leave it).
-2. Session 2 again: finish or redo the T1 arc, register `pr1`/`pr2` in
-   `js/rounds/index.js` (import + `ORDER` right after `pr0`, still before
-   `inv1` + `GROUP` entries), then all four checkers and a both-languages
-   phone-width walk.
-3. Then sessions 3, 4, 5, 6 in order.
-4. Ship is still a separate explicit step after she has reviewed — plain push,
-   no migration.
+### 📌 To pick up this morning
+1. **Her review first.** All ten proof rounds (P0–P9) are built, checked and
+   committed LOCAL — nothing has shipped. Play through the group in the app
+   before class; she's teaching from it today.
+2. Decide the mini-diagram CSS question above (one line, or leave it) — still
+   open, still pre-existing, still her call.
+3. Ship is a separate explicit step once she's happy: plain push, no
+   migration, no edge-function change — this whole build never touched any of
+   those.
+4. After proofs: Dynamic Geometry (Ch 8) is planned in `DYNAMIC-GEO-PLAN.md`,
+   build week of 2026-08-17.
 
 ## 📋 2026-08-10 — planning day (Fable session, nothing built)
 
