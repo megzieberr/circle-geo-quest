@@ -168,7 +168,7 @@ export const round = {
   title: { en: "T4 discovery: tangent–chord", af: "T4-ontdekking: raaklyn–koord" },
   blurb: {
     en: "Prove the tangent-chord angle equals the angle in the alternate segment — the diameter hands you two right angles for free.",
-    af: "Bewys die raaklyn–koord-hoek is gelyk aan die hoek in die oorstaande segment — die middellyn gee jou twee reguit hoeke verniet.",
+    af: "Bewys die raaklyn–koord-hoek is gelyk aan die hoek in die oorstaande segment — die middellyn gee jou twee regte hoeke verniet.",
   },
   panels: [
 

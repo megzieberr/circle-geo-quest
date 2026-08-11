@@ -268,7 +268,7 @@ export const round = {
       },
       diagram: FIG_LEGAL,
       options: [
-        { text: { en: "Join the diameter TD, from the point of tangency", af: "Trek die middellyn TD, vanaf die raakpunt" }, correct: true },
+        { text: { en: "Draw the diameter TD, from the point of tangency", af: "Trek die middellyn TD, vanaf die raakpunt" }, correct: true },
         { text: { en: "Draw a line through B parallel to the tangent", af: "Teken 'n lyn deur B ewewydig aan die raaklyn" } },
         { text: { en: "Construct a second tangent to the circle at B", af: "Konstrueer 'n tweede raaklyn aan die sirkel by B" } },
         { text: { en: "Assume ∠TDB = 35° first, then use that to finish the proof", af: "Neem eers aan ∠TDB = 35°, gebruik dit dan om die bewys klaar te maak" } },
