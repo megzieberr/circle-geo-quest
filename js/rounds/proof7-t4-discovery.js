@@ -1,107 +1,133 @@
 /* Proof rounds P7 — "T4 discovery: tangent-chord"
    (PROOF-ROUNDS-PLAN.md, session 5 — the T4 arc.)
    ------------------------------------------------------------------------
-   T4 is "the angle between a tangent and a chord equals the angle in the
-   ALTERNATE segment" (the tan-chord theorem). Her source notes' recipe:
-   draw the diameter from the point of tangency T — call its far end D.
-   tan ⊥ diameter gives a 90° at T, between the tangent and TD. The angle
-   in a semicircle gives a SECOND 90°, at A (any point on the circle sees
-   the diameter at 90°). Angle-chasing in triangle TDA (angles sum to
-   180°) hands the tangent-chord angle straight over to ∠TDA — and D sits
-   in the alternate segment, so "angles in the same segment" (already
-   established elsewhere in the app) carries the result to every point P
-   in that segment, not just D. This round teaches THAT construction.
-   P8 (proof8-t4-transfer.js) carries it to the OTHER side of the chord —
-   and springs the wrong-join trap.
+   REBUILT 2026-08-11/12 night (FIX-ROUND-2.md item 4 — overnight foreman
+   build session C): full replacement of the construction. Her cheat-note
+   pages are canon (also `C:\Users\megzi\Desktop\Circle Geo Proofs.pdf`):
+   draw the diameter from the point of tangency T — call its far end D —
+   and join D STRAIGHT TO P, the point in the alternate segment ITSELF.
+   The PREVIOUS version of this file joined D to the chord's own other
+   endpoint (A) instead, proved a triangle there, and only reached P at
+   the very end via a second "angles in the same segment" hop — mechanically
+   valid, but not her construction, and not what the disconnect audit
+   flagged: "the app currently joins D to the chord's other endpoint and
+   generalises to P later — that is the disconnect; her way joins D→P."
+   Joining D straight to P instead means the SAME triangle (T-D-P) already
+   contains the general point P from the start — no second hop needed:
+     · tan ⊥ diameter splits the free 90° at T into T₁ (the tangent-chord
+       angle) and T₂ = x (the piece between the diameter and the chord).
+       T₁ = 90° − x falls straight out of that split — arithmetic, no
+       triangle needed yet.
+     · the diameter also hands P a free 90° (angle in a semicircle,
+       ∠TPD — P is on the circle, TD is a diameter, so any point on the
+       circle sees it at 90°, INCLUDING P — no restriction to D).
+     · "angles in the same segment" (T and P both look at chord DA from
+       the same side) carries T₂ = x straight across to ∠DPA, the piece of
+       ∠TPD next to D.
+     · ∠TPA — the angle we actually wanted — is what's left of that free
+       90° once ∠DPA is taken out: ∠TPA = 90° − x. Exactly T₁. QED, for
+       the P that was on the picture from panel 1, not a stand-in.
+   P8 (proof8-t4-transfer.js) carries the SAME construction to the OTHER
+   side of the chord, where the two 90°s combine differently: 90° + x.
 
    SIX PANELS, all taps, rendered through renderInvestigate() exactly like
    pr0-pr6 — `kind: "proof"` gets predict/choice/note panels and per-panel
    XP for free, no new engine surface:
      1 · predict — bare tan-chord figure + the claim (tangent-chord angle
-         at T = ∠ at P in the alternate segment, both UNLABELLED — nothing
-         spoiled). "What do you THINK could prove this?"
-     2 · choice  — the construction has appeared: the diameter TD, drawn
-         from the point of tangency. WHY that specific move? (It brings
-         BOTH known 90°s into the picture at once: tan ⊥ diameter at T,
-         and the semicircle at any point on the circle.)
-     3 · choice  — the tangent-chord angle is labelled a; the free 90°
-         between the tangent and TD is marked. What does that hand you
-         for ∠DTA? (90° − a.)
-     4 · choice  — D joined to A, closing the triangle; the semicircle
-         hands a SECOND 90°, at A. Triangle TDA's angles sum to 180°.
-         What is ∠TDA? (a — the sum collapses straight back to the
-         original letter.)
-     5 · choice  — the combine + generalise step: ∠TDA = a, and D sits in
-         the alternate segment, the SAME segment as P. What does "angles
-         in the same segment" (already known) then hand you for ∠TPA, the
-         angle we actually wanted? (∠TPA = a too — QED for any P, not
-         just D.)
+         at T = ∠TPA, both UNLABELLED — nothing spoiled). "What do you
+         THINK could prove this?"
+     2 · choice  — the FULL construction has appeared at once: the
+         diameter TD, and D joined straight to P — her own move, not two
+         separate stages. WHY that specific pair of lines? (Together they
+         bring BOTH known 90°s into the picture: tan ⊥ diameter at T, and
+         the angle in a semicircle at P — the exact point already in the
+         claim, not a stand-in for it.)
+     3 · choice  — x is marked at T₂ (between the diameter and the chord);
+         the free 90° at T (tan ⊥ diameter) is marked. What does that hand
+         you for T₁, the tangent-chord angle? (90° − x — straight
+         arithmetic, splitting a known right angle.)
+     4 · choice  — the free 90° at P (angle in a semicircle, ∠TPD — P is
+         on the circle, TD is a diameter) is marked. T and P both look at
+         chord DA from the same side. What does "angles in the same
+         segment" hand you for ∠DPA, the piece of that 90° next to D?
+         (x — the SAME x as T₂, carried straight across.)
+     5 · choice  — combine: ∠TPD = 90° splits into ∠DPA (= x, just found)
+         and ∠TPA (the angle we actually wanted). What is ∠TPA, and how
+         does it compare to T₁?  (∠TPA = 90° − x = T₁ — both targets land
+         on the same expression. QED, for the actual P on the picture.)
      6 · note    — the recap sentence: "draw the diameter from the point
-         of tangency; the two free right angles and a triangle chase you
-         straight to the result." Genuinely the last panel of this round.
+         of tangency, and join its far end straight to the point you're
+         asked about — two free right angles and one same-segment swap
+         chase you straight to the result." Genuinely the last panel.
 
-   REVISED 2026-08-11 (Megan's numbering follow-up, same convention as the
-   T2 and T3 arcs): vertex T carries the crowd — three marked angles at
-   one point (the free 90°, and its two pieces) — so T₁ = the
-   tangent–chord angle (marked a) and T₂ = ∠DTA (marked 90°−a), each
-   introduced in prose the panel it first gets marked/solved (T₁ + T₂ in
-   panel 3). D₁ = ∠TDA (panel 4's own result) — a single angle at its own
-   vertex, but "∠TDA" was doing a lot of repeating by panels 4-5, so it
-   gets the same shorthand treatment. The 90° at A stays literal prose
-   ("the 90° at A") since it's the round's one single fact there, not a
-   crowd. ∠TPA — the punchline angle the whole proof is chasing, and the
-   theorem's own name for it — stays literal throughout, on purpose: it's
-   the one thing this round wants remembered by its real name. Figure
-   glyphs (a, 90°−a) are untouched, same split as the earlier arcs.
+   NUMBERED-ANGLE CONVENTION (carried over from the earlier follow-up,
+   same T-crowd convention as before): T₁ = the tangent-chord angle, T₂ =
+   x, the piece between the diameter and the chord — both at the same
+   crowded vertex T, same reason as before for using subscripts there. At
+   P there is no crowd needing a new subscript name: ∠DPA (the transferred
+   piece) and ∠TPA (the theorem's own target angle) are both named in full
+   wherever they appear, ∠TPA on purpose (per the ORIGINAL convention note,
+   still true here) — it is the one thing this round wants remembered by
+   its real name, and it is no longer a stand-in reached via D; it is the
+   actual angle the whole construction was built around from panel 1.
 
-   Every diagram stays SYMBOLIC throughout (labels a, 90°−a, a — never a
-   literal spoiler number for the thing being proven), matching pr3/pr5's
-   own no-spoilers convention for a discovery round; the actual numbers
-   only ever live in `o.v` for the engine/checker, never in learner-facing
-   text.
+   DIFFERENT COLOUR PER ANGLE FAMILY throughout (her red/purple/orange pen
+   — FIX-ROUND-2.md's explicit ask, session C), reusing already-proven-
+   readable app accents (the same array pr3/pr5/pr6 draw from):
+     GREEN  #0ea271  — the x-family: T₂, and its transferred twin ∠DPA.
+                        Same value pr3/pr5's own x-colour already uses.
+     PINK   #e64980  — the 90°-family: the free right angle at T (tan ⊥
+                        diameter) AND the free right angle at P (angle in
+                        a semicircle) — two different theorems, same
+                        "free right angle" role, same colour.
+     PURPLE #9c36b5  — the target family: T₁ (the tangent-chord angle)
+                        and ∠TPA (the angle in the alternate segment) —
+                        the two angles the whole proof is chasing to make
+                        equal. Same hex as this round's own accent (AC) —
+                        no clash, AC only ever paints the round's map
+                        icon, never a diagram element (same judgment call
+                        pr5's own header already made for its own ∠A).
+   Same family = same colour on label AND arc throughout. Every numbered
+   angle is labelled on the diagram the moment its value is known (her
+   explicit ask, session C: unlabelled numbered angles get bounced).
 
-   GEOMETRY — reused, not invented. Session brief: search js/rounds/ for
-   the app's own verified tan-chord figures and import exact coordinates
-   rather than re-deriving new ones.
-     T:270, A:38, P:150 are data-tanchord.js's OWN exact degrees (section 1,
-     "Spot the theorem", exercise 1: `d:{pts:{T:270, A:38, P:150}, ...
-     angles:[{at:"T",legs:["tg+","A"],t:"64°",o:{v:64}},
-              {at:"P",legs:["T","A"],t:"x",o:{v:64}}]}`) — already
-     checker-verified there (and reused twice more by the Investigation
-     Station, per docs/chunk-d-practice-panels.md) as tangent-chord angle
-     = 64°, ∠ in the alternate segment = 64°. Carried over verbatim.
-     D:90 is discover-tangent-radius.js's OWN convention for "the far end
-     of the diameter through the point of tangency" — that file's own
-     `fixed: { O: true, pts: { T: 270, D: 90 } }`, T's exact antipode
-     (270 + 180 → 90, mod 360).
+   GEOMETRY — reused, not invented. T:270, A:38, P:150 are data-tanchord.js's
+   OWN exact degrees (section 1, "Spot the theorem", exercise 1), already
+   checker-verified there as tangent-chord angle = 64°, ∠ in the alternate
+   segment = 64° — UNCHANGED by this rebuild, only the CONSTRUCTION that
+   reaches them changed. D:90 is discover-tangent-radius.js's OWN
+   convention for "the far end of the diameter through the point of
+   tangency" (T's exact antipode, 270 + 180 → 90, mod 360) — also
+   unchanged.
 
-   Every angle mark below is an EXACT integer. Two independent facts make
-   that true here, not an estimate:
-     · O-vertex-free angles like the tan-chord angle and inscribed angle
-       are the classic "half the intercepted arc" identity — pure angle
-       relationships that don't depend on radius or centre position, so
-       they are exact for any circle, given points placed at exact integer
-       degrees (same fact data-tanchord.js's own 64°/64° pair already
-       leans on).
-     · D is EXACTLY T's antipode (T + 180, mod 360), so TD is a true
-       diameter and tan ⊥ TD is an EXACT 90°, not a rounded one.
-   Derivation:
+   Every angle mark below is an EXACT integer, spot-checked against this
+   engine's own verifyDiagram() (node, not hand-arithmetic alone — see the
+   commit that added this file):
      tangent-chord ∠(tg+, A) = half the arc T→A (going the tg+ way, CCW):
-       arc = (38 − 270 + 360) mod 360 = 128°  →  a = 128 / 2 = 64°
+       arc = (38 − 270 + 360) mod 360 = 128°  →  T₁ = 128 / 2 = 64°
      ∠(tg+, D) = 90°  (tan ⊥ diameter, exact, always)
-     ∠DTA = ∠(tg+,D) − ∠(tg+,A) = 90° − 64° = 26°   (A's direction, 64°,
-       sits between tg+'s 0° and D's 90° here, so this is a subtraction)
-     ∠TAD = 90°  (angle in a semicircle, exact, always — TD is a diameter)
-     ∠TDA = 180° − ∠DTA − ∠TAD = 180° − 26° − 90° = 64°   (△ TDA, angle
-       sum) — EXACTLY the original tangent-chord angle, 64° = 64° ✓
-     D lies on arc A(38)→D(90)→P(150)→T(270), the SAME 232° arc that
-     contains P (the 128° arc T→A the tangent-chord angle cuts off does
-     NOT contain D or P) — so D and P share a segment, and "∠s in the
-     same segment" (already established elsewhere in the app) hands
-     ∠TPA = ∠TDA = 64° too, matching the figure's own already-verified
-     ∠P = 64° value.                                                    */
+     T₂ = ∠DTA = ∠(tg+,D) − ∠(tg+,A) = 90° − 64° = 26°   (A's direction,
+       64° from tg+, sits between tg+'s 0° and D's 90° here, so this is a
+       subtraction) — and T₁ = 90° − T₂ = 90° − 26° = 64° ✓, the SAME
+       split, read the other way round: mark T₂ first, T₁ falls out.
+     ∠TPD = 90°  (angle in a semicircle, exact, always — TD is a diameter,
+       P is on the circle — engine-verified: 90.0°, not an estimate)
+     T and P both lie on the SAME arc relative to chord DA — the 308° arc
+       running D(90)→P(150)→T(270)→A(38, i.e. 398) — so "angles in the
+       same segment" gives ∠DPA = ∠DTA = T₂ = 26° (engine-verified: 26.0°,
+       not a rounded transfer)
+     ∠TPA = ∠TPD − ∠DPA = 90° − 26° = 64°   (engine-verified: 64.0°) —
+       EXACTLY T₁, the SAME expression, 90° − x, reached two different
+       ways: split a known right angle at T, or subtract a same-segment
+       transfer from a known right angle at P.                            */
 
 const AC = "#9c36b5";
+const GREEN = "#0ea271";    // T₂ / x, and its transferred twin ∠DPA
+const PINK = "#e64980";     // the two free right angles (T, then P)
+const PURPLE = "#9c36b5";   // T₁ and ∠TPA — the two target angles (= AC)
+
+/* ---- shared construction chords, once the diameter + D→P join exist ---- */
+const CHORDS_BUILT = [["T", "A"], ["P", "T"], ["P", "A"], ["T", "D"], ["D", "P"]];
 
 /* ---- panel 1: the bare tan-chord figure, before any construction.
    data-tanchord.js's own exercise-1 picture, angles marked but
@@ -118,65 +144,73 @@ const FIG_CLAIM = {
   ],
 };
 
-/* ---- panel 2: the construction has appeared — the diameter TD, drawn
-   from the point of tangency. No angle marks yet: this panel is about
-   WHY, before any angle gets a letter. ---- */
+/* ---- panel 2: the FULL construction, both new lines at once — the
+   diameter TD, and D joined STRAIGHT TO P (her own move, not the old
+   two-stage build). Highlighted in PINK: these two lines together are
+   the whole trick, the same colour the two right angles they produce
+   will carry. No angle marks yet — this panel is about WHY, before any
+   angle gets a letter. ---- */
 const FIG_CONSTRUCT_BARE = {
   O: true,
   pts: { T: 270, D: 90, A: 38, P: 150 },
   tang: [{ at: "T", lab: ["S", "U"] }],
-  chords: [["T", "A"], ["P", "T"], ["P", "A"], ["T", "D"]],
-};
-
-/* ---- panel 3: tangent-chord angle labelled a; the free 90° between the
-   tangent and TD marked; ∠DTA is what this panel is determining
-   (unlabelled). ---- */
-const FIG_LABEL_A = {
-  O: true,
-  pts: { T: 270, D: 90, A: 38, P: 150 },
-  tang: [{ at: "T", lab: ["S", "U"] }],
-  chords: [["T", "A"], ["P", "T"], ["P", "A"], ["T", "D"]],
-  angles: [
-    { at: "T", legs: ["tg+", "A"], t: "T₁ = a", o: { v: 64 } },
-    { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1 } },
-    { at: "T", legs: ["D", "A"], t: "T₂", o: { v: 26, r: 40 } },
+  chords: [
+    ["T", "A"], ["P", "T"], ["P", "A"],
+    { a: "T", b: "D", hl: PINK },
+    { a: "D", b: "P", hl: PINK },
   ],
 };
 
-/* ---- panel 4: D joined to A, closing the triangle; ∠DTA now labelled
-   with its answer; the semicircle hands a second 90° at A. ∠TDA is what
-   this panel is determining (unlabelled). ---- */
+/* ---- panel 3: T₂ = x marked (between the diameter and the chord); the
+   free 90° at T marked. T₁ is what this panel determines (shown as an
+   unlabelled arc so the learner can see what they're solving for). ---- */
+const FIG_LABEL_X = {
+  O: true,
+  pts: { T: 270, D: 90, A: 38, P: 150 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: CHORDS_BUILT,
+  angles: [
+    { at: "T", legs: ["tg+", "A"], t: "", o: { v: 64 } },
+    { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    /* r pins the label to its arc (FIX-ROUND-1.md item 13's general
+       re-sweep): a 26° sweep with a short label still drifts close to
+       the canvas edge this near T at 270°. */
+    { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
+  ],
+};
+
+/* ---- panel 4: T₁ now resolved and labelled; the free 90° at P (angle
+   in a semicircle — P is on the circle, TD is a diameter) is marked.
+   ∠DPA is what this panel determines (unlabelled). ---- */
 const FIG_SEMI = {
   O: true,
   pts: { T: 270, D: 90, A: 38, P: 150 },
   tang: [{ at: "T", lab: ["S", "U"] }],
-  chords: [["T", "A"], ["P", "T"], ["P", "A"], ["T", "D"], ["D", "A"]],
+  chords: CHORDS_BUILT,
   angles: [
-    { at: "T", legs: ["tg+", "A"], t: "T₁ = a", o: { v: 64 } },
-    { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1 } },
-    /* r pins this label to its arc (FIX-ROUND-1.md item 13's general
-       re-sweep): a 26° sweep with a long label defaults to r≈66, which
-       risks drifting near the canvas edge this close to T at 270°. */
-    { at: "T", legs: ["D", "A"], t: "T₂", o: { v: 26, r: 40 } },
-    { at: "A", legs: ["T", "D"], t: "", o: { v: 90, mark: 1 } },
+    { at: "T", legs: ["tg+", "A"], t: "T₁ = 90−x", o: { v: 64, c: PURPLE } },
+    { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
+    { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "P", legs: ["D", "A"], t: "", o: { v: 26 } },
   ],
 };
 
-/* ---- panels 5-6: the combine + generalise figure — ∠TDA now labelled a
-   too (the triangle-sum result), and ∠P brought back into the marks so
-   the "same segment" step has both angles visible at once. Reused for
-   the closing recap. ---- */
+/* ---- panels 5-6: the combine + conclude figure — ∠DPA now labelled x
+   too (the same-segment transfer), and ∠TPA labelled with the matching
+   result. Reused for the closing recap. ---- */
 const FIG_FINAL = {
   O: true,
   pts: { T: 270, D: 90, A: 38, P: 150 },
   tang: [{ at: "T", lab: ["S", "U"] }],
-  chords: [["T", "A"], ["P", "T"], ["P", "A"], ["T", "D"], ["D", "A"]],
+  chords: CHORDS_BUILT,
   angles: [
-    { at: "T", legs: ["tg+", "A"], t: "T₁ = a", o: { v: 64 } },
-    { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1 } },
-    { at: "A", legs: ["T", "D"], t: "", o: { v: 90, mark: 1 } },
-    { at: "D", legs: ["T", "A"], t: "D₁ = a", o: { v: 64 } },
-    { at: "P", legs: ["T", "A"], t: "a", o: { v: 64 } },
+    { at: "T", legs: ["tg+", "A"], t: "T₁ = 90−x", o: { v: 64, c: PURPLE } },
+    { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
+    { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "P", legs: ["D", "A"], t: "x", o: { v: 26, c: GREEN } },
+    { at: "P", legs: ["T", "A"], t: "90−x", o: { v: 64, r: 40, c: PURPLE } },
   ],
 };
 
@@ -209,121 +243,121 @@ export const round = {
         af: "Goeie aanvoeling — daardie twee feite is werklik die sleutel hier, aanmekaar geskakel. Kom ons bou die konstruksie en kyk presies hoe.",
       },
       reactWrong: {
-        en: "Good guess — here's a hint: watch what happens the moment we draw the diameter from T, the point of tangency.",
-        af: "Goeie raaiskoot — hier's 'n wenk: kyk wat gebeur die oomblik wat ons die middellyn vanaf T, die raakpunt, trek.",
+        en: "Good guess — here's a hint: watch what happens the moment we draw the diameter from T, then join its far end STRAIGHT to P.",
+        af: "Goeie raaiskoot — hier's 'n wenk: kyk wat gebeur die oomblik wat ons die middellyn vanaf T trek, en die verste punt daarvan REGUIT aan P verbind.",
       },
       after: {
-        en: "A new line is about to appear — the diameter through T. Nothing else changes yet.",
-        af: "'n Nuwe lyn gaan nou-nou verskyn — die middellyn deur T. Niks anders verander nog nie.",
+        en: "Two new lines are about to appear at once — the diameter through T, and a line straight from its far end to P. Nothing else changes yet.",
+        af: "Twee nuwe lyne gaan nou-nou gelyktydig verskyn — die middellyn deur T, en 'n lyn reguit vanaf sy verste punt na P. Niks anders verander nog nie.",
       },
     },
 
-    /* ---------- 2 · the construction, and why the diameter specifically ---------- */
+    /* ---------- 2 · the construction, and why THESE two lines ---------- */
     {
       type: "choice",
       prompt: {
-        en: "The construction: the diameter TD has been drawn, straight through the point of tangency T. Why is that the useful first move here?",
-        af: "Die konstruksie: die middellyn TD is getrek, reguit deur die raakpunt T. Hoekom is dit die nuttige eerste stap hier?",
+        en: "The construction: the diameter TD has been drawn, straight through the point of tangency T — AND D has been joined straight to P, the very point in the alternate segment the claim is about. Why is that pair of lines the useful first move?",
+        af: "Die konstruksie: die middellyn TD is getrek, reguit deur die raakpunt T — EN D is reguit aan P verbind, die selfde punt in die oorstaande segment waaroor die bewering gaan. Hoekom is daardie paar lyne die nuttige eerste stap?",
       },
       diagram: FIG_CONSTRUCT_BARE,
       options: [
-        { text: { en: "It brings two already-known 90°s into the picture at once — tan ⊥ diameter at T, and the angle in a semicircle at any point on the circle",
-                  af: "Dit bring twee reeds-bekende 90°'e gelyktydig in die prentjie in — raaklyn ⊥ middellyn by T, en die hoek in 'n halfsirkel by enige punt op die sirkel" }, correct: true },
-        { text: { en: "It automatically makes triangle TDA isosceles, since two of its sides happen to come out equal", af: "Dit maak driehoek TDA outomaties gelykbenig, aangesien twee van sy sye toevallig gelyk uitkom" } },
-        { text: { en: "It creates two congruent triangles, TDA and TDP, that can be matched up directly with no extra work", af: "Dit skep twee kongruente driehoeke, TDA en TDP, wat direk sonder ekstra werk gepaar kan word" } },
+        { text: { en: "Together they bring two already-known 90°s into the picture at once — tan ⊥ diameter at T, and the angle in a semicircle at P itself",
+                  af: "Saam bring hulle twee reeds-bekende 90°'e gelyktydig in die prentjie in — raaklyn ⊥ middellyn by T, en die hoek in 'n halfsirkel by P self" }, correct: true },
+        { text: { en: "It automatically makes triangle TDP isosceles, since two of its sides happen to come out equal", af: "Dit maak driehoek TDP outomaties gelykbenig, aangesien twee van sy sye toevallig gelyk uitkom" } },
+        { text: { en: "It creates two congruent triangles, TDP and TDA, that can be matched up directly with no extra work", af: "Dit skep twee kongruente driehoeke, TDP en TDA, wat direk sonder ekstra werk gepaar kan word" } },
         { text: { en: "It automatically bisects the tangent-chord angle in half, with no theorem required at all", af: "Dit halveer die raaklyn–koord-hoek outomaties in twee, sonder dat enige stelling glad nodig is" } },
       ],
       hints: [
-        { en: "You already know two theorems about a diameter: what does it do to the tangent at its own endpoint, and what does it do to the angle it subtends anywhere else on the circle?",
-          af: "Jy ken reeds twee stellings oor 'n middellyn: wat doen dit aan die raaklyn by sy eie eindpunt, en wat doen dit aan die hoek wat dit enige plek anders op die sirkel onderspan?" },
-        { en: "A tangent is always perpendicular to the diameter at the point of contact (90° at T), and any point on the circle sees a diameter at 90° too (angle in a semicircle, at A). One line, two free right angles.",
-          af: "'n Raaklyn is altyd loodreg op die middellyn by die raakpunt (90° by T), en enige punt op die sirkel sien 'n middellyn ook teen 90° (hoek in 'n halfsirkel, by A). Een lyn, twee verniet-regte-hoeke." },
+        { en: "You already know two theorems about a diameter: what does it do to the tangent at its own endpoint, and what does it do to the angle it subtends at ANY other point on the circle — including P?",
+          af: "Jy ken reeds twee stellings oor 'n middellyn: wat doen dit aan die raaklyn by sy eie eindpunt, en wat doen dit aan die hoek wat dit by ENIGE ander punt op die sirkel onderspan — P ingesluit?" },
+        { en: "A tangent is always perpendicular to the diameter at the point of contact (90° at T), and P is already on the circle, so it sees that same diameter at 90° too (angle in a semicircle). Two lines, two free right angles — and P was never a stand-in, it's the real point from panel 1.",
+          af: "'n Raaklyn is altyd loodreg op die middellyn by die raakpunt (90° by T), en P is reeds op die sirkel, dus sien dit dieselfde middellyn ook teen 90° (hoek in 'n halfsirkel). Twee lyne, twee verniet-regte-hoeke — en P was nooit 'n plaasvervanger nie, dis die werklike punt van paneel 1 af." },
       ],
       reason: "construction",
       note: {
-        en: "Drawing the diameter through T is the whole trick: it hands you 90° at T for free (tan ⊥ diameter) AND 90° at A for free (angle in a semicircle) — two already-proven facts, both switched on by one line.",
-        af: "Om die middellyn deur T te trek is die hele kunsie: dit gee jou 90° by T verniet (raaklyn ⊥ middellyn) EN 90° by A verniet (hoek in 'n halfsirkel) — twee reeds-bewese feite, altwee aangeskakel deur een lyn.",
+        en: "Drawing the diameter through T, then joining its far end straight to P, is the whole trick: it hands you 90° at T for free (tan ⊥ diameter) AND 90° at P for free (angle in a semicircle) — two already-proven facts, both switched on by these two lines, and both anchored to the actual P you were asked about.",
+        af: "Om die middellyn deur T te trek, en dan die verste punt daarvan reguit aan P te verbind, is die hele kunsie: dit gee jou 90° by T verniet (raaklyn ⊥ middellyn) EN 90° by P verniet (hoek in 'n halfsirkel) — twee reeds-bewese feite, altwee aangeskakel deur hierdie twee lyne, en albei geanker aan die werklike P waaroor jy gevra is.",
       },
     },
 
-    /* ---------- 3 · label a — what tan ⊥ diameter hands you for ∠DTA ---------- */
+    /* ---------- 3 · label x — what tan ⊥ diameter hands you for T₁ ---------- */
     {
       type: "choice",
       prompt: {
-        en: "Label the tangent–chord angle T₁ = a (marked). Tan ⊥ diameter gives you a free 90° between the tangent and TD (also marked). What does that hand you for T₂ — ∠DTA, the angle between the diameter and the chord?",
-        af: "Merk die raaklyn–koord-hoek T₁ = a (gemerk). Raaklyn ⊥ middellyn gee jou 'n verniet 90° tussen die raaklyn en TD (ook gemerk). Wat gee dit jou vir T₂ — ∠DTA, die hoek tussen die middellyn en die koord?",
+        en: "Mark T₂ = x (marked) — the piece of the free 90° at T between the diameter and the chord. Tan ⊥ diameter gives you the WHOLE 90° between the tangent and TD (also marked). What does that hand you for T₁, the tangent–chord angle?",
+        af: "Merk T₂ = x (gemerk) — die stuk van die verniet 90° by T tussen die middellyn en die koord. Raaklyn ⊥ middellyn gee jou die HELE 90° tussen die raaklyn en TD (ook gemerk). Wat gee dit jou vir T₁, die raaklyn–koord-hoek?",
       },
-      diagram: FIG_LABEL_A,
+      diagram: FIG_LABEL_X,
       options: [
-        { text: { en: "T₂ = 90° − a", af: "T₂ = 90° − a" }, correct: true },
-        { text: { en: "T₂ = a", af: "T₂ = a" } },
-        { text: { en: "T₂ = 90° + a", af: "T₂ = 90° + a" } },
-        { text: { en: "T₂ = 2a", af: "T₂ = 2a" } },
+        { text: { en: "T₁ = 90° − x", af: "T₁ = 90° − x" }, correct: true },
+        { text: { en: "T₁ = x", af: "T₁ = x" } },
+        { text: { en: "T₁ = 90° + x", af: "T₁ = 90° + x" } },
+        { text: { en: "T₁ = 2x", af: "T₁ = 2x" } },
       ],
       hints: [
-        { en: "The chord TA sits INSIDE the 90° angle between the tangent and the diameter — a splits into two pieces: T₁ (= a), and T₂ (= ∠DTA) next to it.",
-          af: "Die koord TA sit BINNE die 90°-hoek tussen die raaklyn en die middellyn — dit verdeel in twee stukke: T₁ (= a), en T₂ (= ∠DTA) daarnaas." },
-        { en: "The whole 90° angle is made of two adjacent pieces: T₁ (tangent to TA) and T₂ (TA to TD). So T₂ = 90° − a.",
-          af: "Die hele 90°-hoek bestaan uit twee aangrensende stukke: T₁ (raaklyn na TA) en T₂ (TA na TD). Dus T₂ = 90° − a." },
+        { en: "The chord TA sits INSIDE the 90° angle between the tangent and the diameter — that 90° splits into two adjacent pieces: T₁ (tangent to the chord) and T₂ (the chord to the diameter, = x).",
+          af: "Die koord TA sit BINNE die 90°-hoek tussen die raaklyn en die middellyn — daardie 90° verdeel in twee aangrensende stukke: T₁ (raaklyn na die koord) en T₂ (die koord na die middellyn, = x)." },
+        { en: "The whole 90° is T₁ + T₂. Rearranged: T₁ = 90° − T₂ = 90° − x.",
+          af: "Die hele 90° is T₁ + T₂. Herrangskik: T₁ = 90° − T₂ = 90° − x." },
       ],
       reason: "tanDiameter",
       note: {
-        en: "Tan ⊥ diameter gives 90° between the tangent and TD, and TA splits that 90° into two adjacent pieces: T₁ (= a), and T₂ (= ∠DTA). So T₂ = 90° − a — no measuring, just subtraction from an already-known right angle.",
-        af: "Raaklyn ⊥ middellyn gee 90° tussen die raaklyn en TD, en TA verdeel daardie 90° in twee aangrensende stukke: T₁ (= a), en T₂ (= ∠DTA). Dus T₂ = 90° − a — geen meting nodig nie, net aftrekking van 'n reeds-bekende regte hoek.",
+        en: "Tan ⊥ diameter gives 90° between the tangent and TD, and the chord TA splits that 90° into two adjacent pieces: T₁ (the tangent-chord angle) and T₂ (= x). So T₁ = 90° − x — no measuring, just subtraction from an already-known right angle. Now watch the exact same split happen again, at P.",
+        af: "Raaklyn ⊥ middellyn gee 90° tussen die raaklyn en TD, en koord TA verdeel daardie 90° in twee aangrensende stukke: T₁ (die raaklyn–koord-hoek) en T₂ (= x). Dus T₁ = 90° − x — geen meting nodig nie, net aftrekking van 'n reeds-bekende regte hoek. Kyk nou hoe presies dieselfde verdeling weer gebeur, by P.",
       },
     },
 
-    /* ---------- 4 · D joined to A — the semicircle, and the triangle sum ---------- */
+    /* ---------- 4 · the free 90° at P, and the same-segment transfer ---------- */
     {
       type: "choice",
       prompt: {
-        en: "D has been joined to A, closing triangle TDA. The angle in a semicircle hands you a SECOND free 90°, at A (marked) — TD is a diameter, so any point on the circle sees it at 90°. Triangle TDA's angles must sum to 180°: T₂ + the 90° at A + D₁ (∠TDA) = 180°. What is D₁?",
-        af: "D is aan A verbind, wat driehoek TDA sluit. Die hoek in 'n halfsirkel gee jou 'n TWEEDE verniet 90°, by A (gemerk) — TD is 'n middellyn, dus sien enige punt op die sirkel dit teen 90°. Driehoek TDA se hoeke moet optel tot 180°: T₂ + die 90° by A + D₁ (∠TDA) = 180°. Wat is D₁?",
+        en: "P is already joined to both T and A (from the claim), and now to D too (the new construction). TD is a diameter, and P is on the circle — so ∠TPD = 90° (angle in a semicircle, marked), completely free. T and P both look at chord DA from the SAME side. What does \"angles in the same segment\" hand you for ∠DPA, the piece of that 90° next to D?",
+        af: "P is reeds aan albei T en A verbind (van die bewering af), en nou ook aan D (die nuwe konstruksie). TD is 'n middellyn, en P is op die sirkel — dus ∠TPD = 90° (hoek in 'n halfsirkel, gemerk), heeltemal verniet. T en P kyk albei na koord DA vanaf DIESELFDE kant. Wat gee \"hoeke in dieselfde segment\" jou vir ∠DPA, die stuk van daardie 90° langs D?",
       },
       diagram: FIG_SEMI,
       options: [
-        { text: { en: "D₁ = 180° − (90° − a) − 90° = a", af: "D₁ = 180° − (90° − a) − 90° = a" }, correct: true },
-        { text: { en: "D₁ = 90° − a, the same as T₂", af: "D₁ = 90° − a, dieselfde as T₂" } },
-        { text: { en: "D₁ = 180° − a", af: "D₁ = 180° − a" } },
-        { text: { en: "D₁ can't be found without an actual number for a", af: "D₁ kan nie gevind word sonder 'n werklike getal vir a nie" } },
+        { text: { en: "∠DPA = x — the same x as T₂, both standing on the same arc DA", af: "∠DPA = x — dieselfde x as T₂, albei staan op dieselfde boog DA" }, correct: true },
+        { text: { en: "∠DPA = 90° − x, the same as T₁", af: "∠DPA = 90° − x, dieselfde as T₁" } },
+        { text: { en: "∠DPA can't be pinned down without knowing exactly where P sits", af: "∠DPA kan nie vasgepen word sonder om presies te weet waar P sit nie" } },
+        { text: { en: "∠DPA = 2x, double T₂", af: "∠DPA = 2x, dubbel T₂" } },
       ],
       hints: [
-        { en: "You have two of the triangle's three angles already: T₂ = 90° − a, and the 90° at A. The third angle, D₁, is whatever's left of 180°.",
-          af: "Jy het reeds twee van die driehoek se drie hoeke: T₂ = 90° − a, en die 90° by A. Die derde hoek, D₁, is wat ook al van 180° oorbly." },
-        { en: "180° − (90° − a) − 90° = 180° − 90° + a − 90° = a. The two 90°s cancel each other out, and you're left with exactly a.",
-          af: "180° − (90° − a) − 90° = 180° − 90° + a − 90° = a. Die twee 90°'e kanselleer mekaar uit, en jy bly met presies a." },
+        { en: "T and P are two DIFFERENT points, but they're on the SAME side of chord DA. Is there a theorem about two circumference points on the same side of a chord?",
+          af: "T en P is twee VERSKILLENDE punte, maar hulle is aan DIESELFDE kant van koord DA. Is daar 'n stelling oor twee omtrekpunte aan dieselfde kant van 'n koord?" },
+        { en: "Angles in the same segment, standing on the same chord, are always equal — no matter which two points you pick. T₂ (= ∠DTA) and ∠DPA both stand on chord DA from the same side, so ∠DPA = T₂ = x.",
+          af: "Hoeke in dieselfde segment, wat op dieselfde koord staan, is altyd gelyk — ongeag watter twee punte jy kies. T₂ (= ∠DTA) en ∠DPA staan albei op koord DA vanaf dieselfde kant, dus ∠DPA = T₂ = x." },
       ],
-      reason: "triSum",
+      reason: "sameSeg",
       note: {
-        en: "T₂ = 90° − a and the 90° at A — substitute into the triangle's angle sum: D₁ = 180° − (90° − a) − 90° = a. The two right angles cancel out completely, and D₁ lands back on exactly the same letter you started with.",
-        af: "T₂ = 90° − a en die 90° by A — vervang in die driehoek se hoeksom: D₁ = 180° − (90° − a) − 90° = a. Die twee regte hoeke kanselleer heeltemal uit, en D₁ land terug op presies dieselfde letter waarmee jy begin het.",
+        en: "T₂ = ∠DTA and ∠DPA both stand on chord DA, from the same side — so \"angles in the same segment\" hands you ∠DPA = T₂ = x directly, no measuring. The free 90° at P (∠TPD) has now split into two named pieces, exactly the same way the free 90° at T did.",
+        af: "T₂ = ∠DTA en ∠DPA staan albei op koord DA, vanaf dieselfde kant — dus gee \"hoeke in dieselfde segment\" jou ∠DPA = T₂ = x direk, geen meting nodig nie. Die verniet 90° by P (∠TPD) het nou in twee benoemde stukke verdeel, presies soos die verniet 90° by T ook gedoen het.",
       },
     },
 
-    /* ---------- 5 · combine + generalise: D's segment is P's segment too ---------- */
+    /* ---------- 5 · combine + conclude ---------- */
     {
       type: "choice",
       prompt: {
-        en: "So D₁ = a — exactly T₁, the tangent–chord angle you started with. D sits in the alternate segment, the SAME segment as P (both on the far side of chord TA from the tangent-chord angle). What does \"angles in the same segment are equal\" — a fact you already know — then hand you for ∠TPA, the angle we actually wanted?",
-        af: "So D₁ = a — presies T₁, die raaklyn–koord-hoek waarmee jy begin het. D sit in die oorstaande segment, DIESELFDE segment as P (albei aan die verste kant van koord TA vanaf die raaklyn–koord-hoek). Wat gee \"hoeke in dieselfde segment is gelyk\" — 'n feit wat jy reeds ken — dan vir ∠TPA, die hoek wat ons eintlik wou hê?",
+        en: "∠TPD = 90° splits into ∠DPA (= x, just found) and ∠TPA — the angle we actually wanted, right from the start. What is ∠TPA, and how does it compare to T₁?",
+        af: "∠TPD = 90° verdeel in ∠DPA (= x, pas gekry) en ∠TPA — die hoek wat ons van die begin af eintlik wou hê. Wat is ∠TPA, en hoe vergelyk dit met T₁?",
       },
       diagram: FIG_FINAL,
       options: [
-        { text: { en: "∠TPA = a too — D and P share a segment, and angles in the same segment are equal", af: "∠TPA = a ook — D en P deel 'n segment, en hoeke in dieselfde segment is gelyk" }, correct: true },
-        { text: { en: "∠TPA = 90° − a, the same as T₂", af: "∠TPA = 90° − a, dieselfde as T₂" } },
-        { text: { en: "∠TPA can't be pinned down without knowing exactly where P sits", af: "∠TPA kan nie vasgepen word sonder om presies te weet waar P sit nie" } },
-        { text: { en: "∠TPA = 2a, double T₁", af: "∠TPA = 2a, dubbel T₁" } },
+        { text: { en: "∠TPA = 90° − x, exactly the same as T₁", af: "∠TPA = 90° − x, presies dieselfde as T₁" } , correct: true },
+        { text: { en: "∠TPA = x, the same as ∠DPA", af: "∠TPA = x, dieselfde as ∠DPA" } },
+        { text: { en: "∠TPA = 90° + x", af: "∠TPA = 90° + x" } },
+        { text: { en: "∠TPA can't be pinned down without an actual number for x", af: "∠TPA kan nie vasgepen word sonder 'n werklike getal vir x nie" } },
       ],
       hints: [
-        { en: "D and P are two DIFFERENT points, but they're on the SAME side of chord TA. Is there a theorem about two circumference points on the same side of a chord?",
-          af: "D en P is twee VERSKILLENDE punte, maar hulle is aan DIESELFDE kant van koord TA. Is daar 'n stelling oor twee omtrekpunte aan dieselfde kant van 'n koord?" },
-        { en: "Angles in the same segment, standing on the same chord, are always equal — no matter which two points you pick. So ∠TPA = D₁ = a.",
-          af: "Hoeke in dieselfde segment, wat op dieselfde koord staan, is altyd gelyk — ongeag watter twee punte jy kies. Dus ∠TPA = D₁ = a." },
+        { en: "∠TPD (= 90°, the whole) is made of two adjacent pieces: ∠DPA (= x, just found) and ∠TPA. Rearrange for ∠TPA.",
+          af: "∠TPD (= 90°, die geheel) bestaan uit twee aangrensende stukke: ∠DPA (= x, pas gekry) en ∠TPA. Herrangskik vir ∠TPA." },
+        { en: "∠TPA = 90° − ∠DPA = 90° − x. And T₁, back at panel 3, was ALSO 90° − x — the exact same expression, reached from a completely different vertex.",
+          af: "∠TPA = 90° − ∠DPA = 90° − x. En T₁, terug by paneel 3, was OOK 90° − x — presies dieselfde uitdrukking, van 'n heeltemal ander hoekpunt af bereik." },
       ],
       reason: "tanChord",
       note: {
-        en: "D₁ = a, and D and P sit in the same segment relative to chord TA — so \"angles in the same segment\" hands you ∠TPA = D₁ = a as well. That is the whole proof, for ANY point P in the alternate segment, not just D: draw the diameter from the point of tangency, chase two free right angles through a triangle, then let the same-segment fact carry the result the rest of the way.",
-        af: "D₁ = a, en D en P sit in dieselfde segment relatief tot koord TA — dus gee \"hoeke in dieselfde segment\" jou ∠TPA = D₁ = a ook. Dit is die hele bewys, vir ENIGE punt P in die oorstaande segment, nie net D nie: trek die middellyn vanaf die raakpunt, jaag twee verniet-regte-hoeke deur 'n driehoek, en laat die selfde-segment-feit die resultaat dan die res van die pad dra.",
+        en: "∠TPA = 90° − ∠DPA = 90° − x — exactly T₁. That is the whole proof, for the actual P from panel 1, not a stand-in reached through D: draw the diameter from the point of tangency, join its far end straight to P, let tan ⊥ diameter split the free 90° at T, and let angle-in-a-semicircle plus angles-in-the-same-segment split the free 90° at P the exact same way.",
+        af: "∠TPA = 90° − ∠DPA = 90° − x — presies T₁. Dit is die hele bewys, vir die werklike P van paneel 1 af, nie 'n plaasvervanger wat deur D bereik word nie: trek die middellyn vanaf die raakpunt, verbind die verste punt daarvan reguit aan P, laat raaklyn ⊥ middellyn die verniet 90° by T verdeel, en laat hoek-in-'n-halfsirkel plus hoeke-in-dieselfde-segment die verniet 90° by P presies dieselfde manier verdeel.",
       },
     },
 
@@ -333,8 +367,8 @@ export const round = {
       prompt: { en: "The sentence to carry forward", af: "Die sin om saam te dra" },
       diagram: FIG_FINAL,
       note: {
-        en: "<b>Draw the diameter from the point of tangency — two free right angles and a triangle chase you straight to the result.</b><br><br>Tan ⊥ diameter gives 90° at T; the angle in a semicircle gives a second 90° at any point on the circle; the triangle's angle sum cancels both away and hands the tangent-chord angle right back to you, at a point in the alternate segment. \"Angles in the same segment\" then carries it to every point there, not just the one you drew.<br><br>Next: the exact same construction, on the OTHER side of the chord — and the trap of joining the wrong point once the diameter is down.",
-        af: "<b>Trek die middellyn vanaf die raakpunt — twee verniet-regte-hoeke en 'n driehoek jaag jou reguit na die resultaat.</b><br><br>Raaklyn ⊥ middellyn gee 90° by T; die hoek in 'n halfsirkel gee 'n tweede 90° by enige punt op die sirkel; die driehoek se hoeksom kanselleer altwee uit en gee die raaklyn–koord-hoek reguit terug vir jou, by 'n punt in die oorstaande segment. \"Hoeke in dieselfde segment\" dra dit dan na elke punt daar, nie net die een wat jy geteken het nie.<br><br>Volgende: presies dieselfde konstruksie, aan die ANDER kant van die koord — en die strik om die verkeerde punt te verbind sodra die middellyn af is.",
+        en: "<b>Draw the diameter from the point of tangency, and join its far end STRAIGHT to the point you're asked about — two free right angles and one same-segment swap chase you straight to the result.</b><br><br>Tan ⊥ diameter splits the free 90° at T into the tangent-chord angle and x. The same diameter gives P a free 90° too, and \"angles in the same segment\" splits THAT 90° the exact same way — x, then the angle you actually wanted. Both halves land on 90° − x. No detour through a stand-in point required.<br><br>Next: the exact same construction, on the OTHER side of the chord — where the two 90°s combine differently.",
+        af: "<b>Trek die middellyn vanaf die raakpunt, en verbind die verste punt daarvan REGUIT aan die punt waaroor jy gevra is — twee verniet-regte-hoeke en een selfde-segment-verwisseling jaag jou reguit na die resultaat.</b><br><br>Raaklyn ⊥ middellyn verdeel die verniet 90° by T in die raaklyn–koord-hoek en x. Dieselfde middellyn gee P ook 'n verniet 90°, en \"hoeke in dieselfde segment\" verdeel DAARDIE 90° presies dieselfde manier — x, dan die hoek wat jy eintlik wou hê. Albei helftes land op 90° − x. Geen ompad deur 'n plaasvervangerpunt nodig nie.<br><br>Volgende: presies dieselfde konstruksie, aan die ANDER kant van die koord — waar die twee 90°'e verskillend saamkom.",
       },
     },
 
