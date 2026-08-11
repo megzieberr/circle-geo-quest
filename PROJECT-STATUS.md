@@ -1,4 +1,34 @@
-# Project status — updated 2026-08-11 (proof rounds: ALL TEN ROUNDS BUILT, P0–P9, awaiting her review)
+# Project status — updated 2026-08-11 evening (proof rounds built + first playtest fixes IN; FIX-ROUND-2.md queued for the next foreman session)
+
+## 🌆 2026-08-11 evening — her live playtest, two fix batches landed, round 2 QUEUED
+
+She playtested during the afternoon and evening, sending adjustments live.
+Landed same-day (each built by a dispatched session or done as foreman
+review-fixes, each foreman-verified in the browser, both languages, 375px):
+- **Fix round 1** (14 items, `FIX-ROUND-1.md`): the Proofs home card
+  (rounds off the main map, open to everyone, sequential inside), clearer
+  probe wording, pr3 rebuilt (bigger angles, colours, new isosceles page,
+  triangle highlights), label pins, two additive engine options.
+- **Numbered angle names** across T2/T3/T4 arcs (O₁/O₂, T₁/T₂, D₁), then
+  **onto the diagrams themselves** (labels like "O₁ = 2x" on the wedges),
+  plus the isosceles twins x/y marked at A and B on pr3 — every changed
+  figure measured headless for overlap + clipping, zero of either.
+- Her ruling recorded: preview mode showing no "Next proof" button is fine
+  (it's because Teacher Preview marks everything passed — learners always
+  have the button).
+
+**⚠️ NEXT SESSION STARTS AT `FIX-ROUND-2.md`** — four collected items she
+couldn't wait on: pr4 up to pr3's visual standard, a reflex-arc engine
+mark, pr5 rebuilt on her ONE-VARIABLE method (her sketch is canon), and
+pr7/pr8 rebuilt on HER tan-chord construction (the app joined the wrong
+points — diameter's far end must join to P, per her cheat notes). Full
+detail, process rules and repo state are in that file. She teaches proofs
+from 2026-08-12; the morning is the fix window; ship stays a separate
+explicit step after her yes.
+
+Repo stands at 23 local commits ahead of origin, NOTHING pushed, working
+tree clean, all four checkers green (477 diagrams / 871 angles / 0
+mismatches).
 
 ## ☀️ 2026-08-11 — daytime resume after the wifi drop, ALL SIX SESSIONS DONE. Nothing pushed.
 
@@ -1796,11 +1826,12 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- 💻 20 min **[blocking]**: open the dev server with `?local=1` → play the ten
-  proof rounds (map, after round 43) → say "ship it" or list fixes. Class is
-  tomorrow; tonight + early morning is the window.
+- 💻 15 min **[blocking]**: after the next session runs FIX-ROUND-2.md, replay
+  pr4, pr5, pr7, pr8 in preview → then "ship it" or more fixes. Class starts
+  proofs tomorrow (2026-08-12).
 - 💻 1 min **[blocking]**: say yes/no to the one-line mini-diagram CSS fix
-  (section above) — yes makes small figures stack full-width on phones.
+  (fix-round-1 section) — yes makes small figures stack full-width on phones.
+- 💻 10 sec **[whenever]**: keep or rename the "Proofs"/"Bewyse" home-card title.
 - 🌐 1 min **[whenever]**: open megzieberr.github.io/circle-geo-quest in a fresh tab —
   the train strip should be GONE from the home screen. (GitHub was mid-outage at push
   time, so the deploy queued; if the train is still there, the queue just hasn't
