@@ -1,4 +1,62 @@
-# Project status — updated 2026-08-11 evening (proof rounds built + first playtest fixes IN; FIX-ROUND-2.md queued for the next foreman session)
+# Project status — updated 2026-08-12 overnight (FIX-ROUND-2 batch DONE: her cheat notes are now the app's proofs; NOTHING pushed — she reviews + ships in the morning)
+
+## 🌙 2026-08-11→12 overnight — the FIX-ROUND-2 foreman run, ALL DONE, local only
+
+Three Sonnet build sessions ran one after the other, each foreman-reviewed
+(fresh checkers + full browser walk in BOTH languages at 375px, labels
+measured) before the next started. Commits `bd7bc41` (A), `9d299e3` (B),
+`3d472f4` (C) + the wrap commit. **Nothing pushed, no migrations, no sw.js,
+no shared CSS.** All four checkers green at the end: **478 diagrams /
+895 angles / 0 mismatches**, audit-options, bilingual, table-summary.
+
+**The dig first (her ask):** her cheat-note PDF (9 pages, iLovePDF_Output\
+"3. Circle Geometry-64-72.pdf") was compared line-by-line against pr0–pr9.
+pr3 and the queued pr5/pr7/pr8 instructions checked out; three NEW
+disconnects were found and she ruled on them before bed (in FIX-ROUND-2.md):
+- **T1 SSS vs her SAS — DROPPED, her ruling**: "SSS is fine, not set in
+  stone." pr2/pr9 stay as built. Known, accepted app-vs-notes difference —
+  don't re-flag.
+- **Her bowtie = the subtraction case — BUILT** (session A): pr4 panel 3 is
+  now her page 6 (diameter outside the angle, ∠AOB = 2y − 2x); the old
+  same-segment-twice panel survives as panel 4 (renamed E/F), pr4 = 7 panels.
+- **pr5's closer — BUILT** (session B): ends on her B̂ + D̂ = 180°
+  ("int ∠s of quad") line, her page 7.
+
+**Session A (`bd7bc41`)** — engine: additive `o.reflex:1` angle mark (long-
+way-round arc; verifyDiagram checks the reflex value exactly). pr4 to pr3's
+visual standard: teal x-family / orange y-family on labels AND wedges,
+isosceles twins marked, `hl` triangle highlights, small reflex arc on panel
+1's claim figure so "the REFLEX ∠AOB" is visibly that angle.
+
+**Session B (`9d299e3`)** — pr5 rebuilt on her ONE-VARIABLE method (x green
+→ O₁ = 2x pink → O₂ = 360−2x orange, drawn with the new reflex mark →
+180−x purple → x + (180−x) = 180 → the B̂+D̂ closer). Same quad
+(A:160/B:80/C:350/D:240, x = ∠C = 80°). pr6: **her before-bed instinct was
+right** — its FIG_CORRECT never drew or labelled O₂ (the 240° reflex piece)
+and was monochrome. Now: O₂ drawn+labelled with the reflex mark, colours
+matched to pr5's families across both rounds, panel 3 re-worded to echo the
+one-x chain.
+
+**Session C (`3d472f4`)** — pr7/pr8 rebuilt on HER tan-chord construction:
+diameter from T, far end D joined STRAIGHT TO P (the app used to join the
+chord's other endpoint and generalise later). Case A lands 90°−x (T:270/
+A:38/D:90/P:150, x=26°, both targets 64°); case B lands 90°+x (T:270/D:90/
+B:30/P:330, x=30°, both targets 120°). Colour families green x / pink 90°s /
+purple targets; pr8's wrong-join trap re-aligned to her recipe.
+
+**Foreman colour/label audit (her before-bed ask, "don't trust done"):**
+every proof round checked with fresh eyes — pr0/pr1/pr2/pr9 have no
+numbered-angle figures by design; pr3 was already correct; pr4–pr8 verified
+in the browser after their rebuilds. The one real gap found (pr6's O₂) is
+fixed above.
+
+### 📌 Morning (she teaches proofs TODAY, 2026-08-12)
+1. **Play pr4–pr8** — the five rebuilt/re-coloured rounds. pr0–pr3, pr9
+   unchanged tonight.
+2. Standing open items: mini-diagram stacking CSS one-liner (her call);
+   "Proofs"/"Bewyse" card name (hers to rename).
+3. **Ship = her explicit yes**: plain `git push` (26 local commits), no
+   migration, no edge-function change. Pages deploys in ~1 min.
 
 ## 🌆 2026-08-11 evening — her live playtest, two fix batches landed, round 2 QUEUED
 
