@@ -117,7 +117,7 @@ export const round = {
       type: "choice",
       prompt: {
         en: "The construction: two radii have appeared, OA and OB, tick-marked equal — every radius is the same length, no measuring needed. Look at the right angle already marked at M. Which test proves triangles OMA and OMB congruent?",
-        af: "Die konstruksie: twee radii het verskyn, OA en OB, gemerk as gelyk — elke radius is dieselfde lengte, geen meting nodig nie. Kyk na die regte hoek wat reeds by M gemerk is. Watter toets bewys driehoeke OMA en OMB kongruent?",
+        af: "Die konstruksie: twee radiusse het verskyn, OA en OB, gemerk as gelyk — elke radius is dieselfde lengte, geen meting nodig nie. Kyk na die regte hoek wat reeds by M gemerk is. Watter toets bewys driehoeke OMA en OMB kongruent?",
       },
       diagram: FIG_CONSTRUCT,
       options: [
@@ -128,14 +128,14 @@ export const round = {
       ],
       hints: [
         { en: "Count what is actually marked on the diagram: one right angle in each triangle, and one pair of sides you know are equal because they're both radii.",
-          af: "Tel wat werklik op die diagram gemerk is: een regte hoek in elke driehoek, en een paar sye wat jy weet gelyk is omdat hulle albei radii is." },
+          af: "Tel wat werklik op die diagram gemerk is: een regte hoek in elke driehoek, en een paar sye wat jy weet gelyk is omdat hulle albei radiusse is." },
         { en: "OA and OB sit opposite the right angles — they are the hypotenuses, and they're marked equal. Right angle, Hypotenuse, Side: RHS.",
           af: "OA en OB sit teenoor die regte hoeke — hulle is die skuinssye, en hulle is gemerk as gelyk. Regte hoek, Skuinssy, Sy: RHS." },
       ],
       reason: "rhs",
       note: {
         en: "The right angle at M is marked in both triangles, and OA = OB because both are radii — that is the hypotenuse, matched. Two pieces of RHS down, with one more still to spot.",
-        af: "Die regte hoek by M is in albei driehoeke gemerk, en OA = OB omdat albei radii is — dit is die skuinssy, opgestel. Twee stukke van RHS klaar, met nog een om raak te sien.",
+        af: "Die regte hoek by M is in albei driehoeke gemerk, en OA = OB omdat albei radiusse is — dit is die skuinssy, opgestel. Twee stukke van RHS klaar, met nog een om raak te sien.",
       },
     },
 
@@ -155,7 +155,7 @@ export const round = {
       ],
       hints: [
         { en: "A shared side belongs to BOTH triangles at once. Trace triangle OMA with your finger, then trace OMB. Which segment did you draw twice?",
-          af: "'n Gedeelde sy behoort aan BEIDE driehoeke gelyktydig. Trek triangle OMA met jou vinger, trek dan OMB. Watter segment het jy twee keer getrek?" },
+          af: "'n Gedeelde sy behoort aan BEIDE driehoeke gelyktydig. Trek driehoek OMA met jou vinger, trek dan OMB. Watter segment het jy twee keer getrek?" },
         { en: "OM — the line from the centre itself. Triangle OMA uses it, and so does triangle OMB.",
           af: "OM — die lyn vanaf die middelpunt self. Driehoek OMA gebruik dit, en so ook driehoek OMB." },
       ],
@@ -203,7 +203,7 @@ export const round = {
       diagram: FIG_CONSTRUCT,
       note: {
         en: "<b>Construct two radii, then prove the triangles congruent.</b><br><br>That one sentence is what you carry into the next picture — not the write-up, not the letters, just the move. Every time you see a line from a circle's centre meeting a chord, this is the first thing to reach for: join the centre to both ends of the chord, and let RHS do the rest.<br><br>Next: the exact same move, a rotated picture, and new letters — because the construction never cared what the points were called.",
-        af: "<b>Konstrueer twee radii, bewys dan die driehoeke kongruent.</b><br><br>Daardie een sin is wat jy na die volgende prentjie toe saamdra — nie die uitskryfwerk nie, nie die letters nie, net die stap. Elke keer wanneer jy 'n lyn van 'n sirkel se middelpunt sien wat 'n koord ontmoet, is dit die eerste ding om na te gryp: verbind die middelpunt aan albei ente van die koord, en laat RHS die res doen.<br><br>Volgende: presies dieselfde stap, 'n gedraaide prentjie, en nuwe letters — want die konstruksie het nooit omgegee wat die punte genoem word nie.",
+        af: "<b>Konstrueer twee radiusse, bewys dan die driehoeke kongruent.</b><br><br>Daardie een sin is wat jy na die volgende prentjie toe saamdra — nie die uitskryfwerk nie, nie die letters nie, net die stap. Elke keer wanneer jy 'n lyn van 'n sirkel se middelpunt sien wat 'n koord ontmoet, is dit die eerste ding om na te gryp: verbind die middelpunt aan albei ente van die koord, en laat RHS die res doen.<br><br>Volgende: presies dieselfde stap, 'n gedraaide prentjie, en nuwe letters — want die konstruksie het nooit omgegee wat die punte genoem word nie.",
       },
     },
 

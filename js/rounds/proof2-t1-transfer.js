@@ -87,10 +87,13 @@ const FIG_PQ_CONSTRUCT = {
 };
 
 /* ---- panel 5: the legal-constructions panel — nothing drawn yet but the
-   chord and the centre, because the question is which NEW line is allowed. */
+   chord and the centre, because the question is which NEW line is allowed.
+   N stays LABELLED (it exists — the options talk about it) but carries no
+   line and no marks: the whole question is which new line may be drawn. */
 const FIG_PQ_BARE = {
   O: true,
   pts: { P: 55, Q: 195 },
+  mid: [{ name: "N", of: ["P", "Q"] }],
   chords: [["P", "Q"]],
 };
 
@@ -114,7 +117,7 @@ export const round = {
       },
       diagram: FIG_PQ_CLAIM,
       options: [
-        { text: { en: "Join the radii OP and OQ", af: "Verbind die radii OP en OQ" }, correct: true },
+        { text: { en: "Join the radii OP and OQ", af: "Verbind die radiusse OP en OQ" }, correct: true },
         { text: { en: "Join P directly to Q", af: "Verbind P direk aan Q" } },
         { text: { en: "Construct a line through N perpendicular to OP", af: "Konstrueer 'n lyn deur N loodreg op OP" } },
         { text: { en: "Measure ON and PQ with a ruler and compare", af: "Meet ON en PQ met 'n liniaal en vergelyk" } },
@@ -127,7 +130,7 @@ export const round = {
       ],
       note: {
         en: "Same tool, new letters: join the two radii, and the two right triangles are back — OPN and OQN this time. The picture rotated; the proof did not notice.",
-        af: "Dieselfde hulpmiddel, nuwe letters: verbind die twee radii, en die twee reghoekige driehoeke is terug — OPN en OQN hierdie keer. Die prentjie het gedraai; die bewys het dit nie eers agtergekom nie.",
+        af: "Dieselfde hulpmiddel, nuwe letters: verbind die twee radiusse, en die twee reghoekige driehoeke is terug — OPN en OQN hierdie keer. Die prentjie het gedraai; die bewys het dit nie eers agtergekom nie.",
       },
     },
 
@@ -140,7 +143,7 @@ export const round = {
       },
       diagram: FIG_PQ_MID,
       options: [
-        { text: { en: "Join the radii OP and OQ", af: "Verbind die radii OP en OQ" }, correct: true },
+        { text: { en: "Join the radii OP and OQ", af: "Verbind die radiusse OP en OQ" }, correct: true },
         { text: { en: "Assume ON ⊥ PQ, then work backwards to check it", af: "Neem aan ON ⊥ PQ, en werk dan agteruit om dit te toets" } },
         { text: { en: "Construct the tangent to the circle at N", af: "Konstrueer die raaklyn aan die sirkel by N" } },
         { text: { en: "Drop a perpendicular from O to PQ with a set square, and call it done", af: "Laat 'n loodlyn van O na PQ met 'n driehoeklat sak, en noem dit klaar" } },
@@ -149,7 +152,7 @@ export const round = {
         { en: "What are you GIVEN this time — the midpoint, or the right angle? Whichever it is, the tool that builds the two triangles never changes.",
           af: "Wat is hierdie keer GEGEE — die middelpunt, of die regte hoek? Watter een dit ook al is, die hulpmiddel wat die twee driehoeke bou, verander nooit." },
         { en: "You are given PN = NQ, not the right angle. Same move as always: join OP and OQ, the two radii, and let the triangles do the arguing.",
-          af: "PN = NQ is gegee, nie die regte hoek nie. Dieselfde stap soos altyd: verbind OP en OQ, die twee radii, en laat die driehoeke die argument voer." },
+          af: "PN = NQ is gegee, nie die regte hoek nie. Dieselfde stap soos altyd: verbind OP en OQ, die twee radiusse, en laat die driehoeke die argument voer." },
       ],
       note: {
         en: "Given the midpoint this time, not the right angle — but the construction is unchanged: join OP and OQ. Last round the congruent triangles handed you the equal pieces; this time, with the pieces already equal, they hand you the right angle instead.",
@@ -168,7 +171,7 @@ export const round = {
       },
       diagram: FIG_PQ_MID,
       options: [
-        { text: { en: "Join the radii OP and OQ", af: "Verbind die radii OP en OQ" }, correct: true },
+        { text: { en: "Join the radii OP and OQ", af: "Verbind die radiusse OP en OQ" }, correct: true },
         { text: { en: "Draw the perpendicular bisector first, and see by eye whether it looks like it passes through O", af: "Teken eers die middelloodlyn, en kyk met die oog of dit lyk of dit deur O gaan" } },
         { text: { en: "Construct a new circle centred at N", af: "Konstrueer 'n nuwe sirkel met middelpunt by N" } },
         { text: { en: "Assume O lies on the perpendicular bisector, because it looks like it does", af: "Neem aan O lê op die middelloodlyn, omdat dit lyk of dit so is" } },
@@ -181,7 +184,7 @@ export const round = {
       ],
       note: {
         en: "Same construction again: join OP and OQ. Once that gives you ON ⊥ PQ at the midpoint N, ON already IS the perpendicular bisector of PQ — and it runs straight out of O, because that is where it started. Three different-sounding claims, A, B and C, and every one of them comes from the same two radii.",
-        af: "Weer dieselfde konstruksie: verbind OP en OQ. Sodra dit vir jou ON ⊥ PQ by die middelpunt N gee, IS ON reeds die middelloodlyn van PQ — en dit loop reguit uit O uit, want dit het daar begin. Drie bewerings wat anders klink, A, B en C, en elkeen kom van dieselfde twee radii af.",
+        af: "Weer dieselfde konstruksie: verbind OP en OQ. Sodra dit vir jou ON ⊥ PQ by die middelpunt N gee, IS ON reeds die middelloodlyn van PQ — en dit loop reguit uit O uit, want dit het daar begin. Drie bewerings wat anders klink, A, B en C, en elkeen kom van dieselfde twee radiusse af.",
       },
     },
 
@@ -246,8 +249,8 @@ export const round = {
       ],
       reason: "construction",
       note: {
-        en: "Two points that already exist can always be joined — O and P give you nothing more exotic than an ordinary radius, a guaranteed true line. The other three all smuggle in something extra: that a line touches the circle only once (a tangent), that two lines never meet (parallel), that a perpendicular lands at some exact new point R — none of it proven. Lean a proof on one of those and the whole thing rests on a guess. Her classroom line for it: \"When we assume, we make an ass out of u and me.\"",
-        af: "Twee punte wat reeds bestaan kan altyd verbind word — O en P gee jou niks anders as 'n gewone radius nie, 'n gewaarborgde ware lyn. Die ander drie smokkel almal iets ekstra in: dat 'n lyn die sirkel net een keer raak (raaklyn), dat twee lyne nooit ontmoet nie (parallel), dat 'n loodlyn presies by 'n nuwe punt R beland — niks daarvan bewys nie. Steun 'n bewys op een van daardie, en die hele ding rus op 'n raaiskoot. Haar klaskamerreël daarvoor: \"When we assume, we make an ass out of u and me.\"",
+        en: "Two points that already exist can always be joined — O and P give you nothing more exotic than an ordinary radius, a guaranteed true line. The other three all smuggle in something extra: that a line touches the circle only once (a tangent), that two lines never meet (parallel), that a perpendicular lands at some exact new point R — none of it proven. Lean a proof on one of those and the whole thing rests on a guess. The classroom rule says it best: \"When we assume, we make an ass out of u and me.\"",
+        af: "Twee punte wat reeds bestaan kan altyd verbind word — O en P gee jou niks anders as 'n gewone radius nie, 'n gewaarborgde ware lyn. Die ander drie smokkel almal iets ekstra in: dat 'n lyn die sirkel net een keer raak (raaklyn), dat twee lyne nooit ontmoet nie (parallel), dat 'n loodlyn presies by 'n nuwe punt R beland — niks daarvan bewys nie. Steun 'n bewys op een van daardie, en die hele ding rus op 'n raaiskoot. Die klaskamerreël sê dit die beste: \"When we assume, we make an ass out of u and me.\"",
       },
     },
 
@@ -259,7 +262,7 @@ export const round = {
       diagram: FIG_PQ_CONSTRUCT,
       note: {
         en: "The picture rotated. The letters changed from A, B, M to P, Q, N. The construction did not: join the two radii, then let RHS or SSS carry the rest — a right angle hands you equal pieces, equal pieces hand you a right angle, and either way the perpendicular bisector of the chord runs straight through the centre.<br><br>That is the whole trick of a proof round: the tool travels. The picture never has to.",
-        af: "Die prentjie het gedraai. Die letters het verander van A, B, M na P, Q, N. Die konstruksie het nie verander nie: verbind die twee radii, laat RHS of SSS dan die res doen — 'n regte hoek gee jou gelyke stukke, gelyke stukke gee jou 'n regte hoek, en in albei gevalle loop die middelloodlyn van die koord reguit deur die middelpunt.<br><br>Dit is die hele kuns van 'n bewysrondte: die stelling reis. Die prentjie hoef nooit nie.",
+        af: "Die prentjie het gedraai. Die letters het verander van A, B, M na P, Q, N. Die konstruksie het nie verander nie: verbind die twee radiusse, laat RHS of SSS dan die res doen — 'n regte hoek gee jou gelyke stukke, gelyke stukke gee jou 'n regte hoek, en in albei gevalle loop die middelloodlyn van die koord reguit deur die middelpunt.<br><br>Dit is die hele kuns van 'n bewysrondte: die stelling reis. Die prentjie hoef nooit nie.",
       },
     },
 
