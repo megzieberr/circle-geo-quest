@@ -16,6 +16,16 @@ built and wired into the map.** `MAIN_ROUNDS` now reads **53** (43 + 10).
 Nobody has this yet outside her review — the group (`g7`) is `hidden: true`,
 so a learner finishing the 43 rounds still reads 5/5 badges, same as before.
 
+### ✅ NUMBERING FOLLOW-UP — T3/T4 arcs · DONE (same day, her ask mid-playtest)
+Commit `b0b470b`. The numbered angle names extended to pr5–pr8: O₁/O₂ for
+the two central pieces on both cyclic-quad rounds (trap panel's ∠POR stays
+literal on purpose — own figure, one angle), T₁/T₂/D₁ on both tan-chord
+rounds (the two 90°s in pr8's error-spot stay literal — telling them apart
+IS that panel's lesson; ∠TPA keeps its real name as the theorem's target).
+Solution blocks and their verbatim-quoting options renamed together. All
+four checkers green (477/868/0 unchanged — no figures touched); foreman
+walked all four rounds in AF and spot-walked EN at 375px, 0 console errors.
+
 ### ✅ FIX ROUND 1 — her first playtest, 14 adjustments · DONE (same day)
 Commits `6bfdb4b` (build, off `FIX-ROUND-1.md` — the full adjustment list
 lives there) + `8826abc` (foreman review fix). The big one: **the proof
