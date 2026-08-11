@@ -22,8 +22,13 @@
      ext            [{name, t:[contactA, contactB]}]  external point = tangent intersection
      tang           [{at, len, lab:[start,end]}]      full tangent line at a contact point
      chords         [[a,b], ...]
-     angles         [{at, legs:[legA,legB], t:labelText, o:{v,r,ar,mark,c}}]
+     angles         [{at, legs:[legA,legB], t:labelText, o:{v,r,ar,mark,c,hl,reflex}}]
                     a leg is a point name, or "tg+" (deg+90) / "tg-" (deg-90)
+                    o.reflex:1 (FIX-ROUND-2.md item 2, additive/opt-in) draws
+                    the arc the LONG way round between the legs instead of
+                    the default <=180° sweep — for marking a reflex angle.
+                    v must then be the reflex value (360 − the short sweep);
+                    verifyDiagram checks it exactly, not the short angle.
    ============================================================ */
 
 export const INK = "#2b2f4a";
@@ -270,8 +275,18 @@ export function computeGeometry(d) {
     const V = pts[a.at];
     let d1 = legDir(V, a.legs[0]), d2 = legDir(V, a.legs[1]);
     if (sweepOf(d1, d2) > 180) { const t = d1; d1 = d2; d2 = t; }
-    const s = sweepOf(d1, d2);
     const o = a.o || {};
+    /* Reflex angle mark (FIX-ROUND-2.md item 2, additive, opt-in via
+       o.reflex): the two lines above always resolve d1/d2 to the SHORT
+       (<=180°) sweep between the legs — every existing diagram still gets
+       exactly that, untouched. When o.reflex is set, swap d1/d2 BACK so
+       the arc goes the long way round instead: sweepOf(d1,d2) becomes
+       360 − (the short sweep), which is what "the reflex angle" means.
+       arcPath's own large-arc-flag (sweep > 180 ? 1 : 0) already draws
+       whichever sweep it's handed correctly, so nothing else needs to
+       change to render it — only the swap decides which way is drawn. */
+    if (o.reflex) { const t = d1; d1 = d2; d2 = t; }
+    const s = sweepOf(d1, d2);
     const bis = d1 + s / 2;
     const lr = o.r || labelR(s, a.t);
     let [lx, ly] = pol(V.x, V.y, lr, bis);
@@ -283,6 +298,7 @@ export function computeGeometry(d) {
     const [hx, hy] = pol(V.x, V.y, hitR, bis);
     return {
       index: i, at: a.at, legs: a.legs, t: a.t, v: o.v, mark: !!o.mark,
+      reflex: !!o.reflex,
       sweep: s, from: d1, to: d2, bis,
       vertex: { x: V.x, y: V.y }, label: { x: lx, y: ly }, hit: { x: hx, y: hy }
     };
@@ -360,8 +376,16 @@ export function verifyDiagram(d, tol = 1.5) {
   const results = [];
   g.angles.forEach(a => {
     if (a.v == null) return;            // unmarked angle: nothing to check
-    /* drawn sweep, mapped to the <=180 interior angle the engine actually draws */
-    const drawn = a.sweep > 180 ? 360 - a.sweep : a.sweep;
+    /* drawn sweep, mapped to the angle the engine actually draws.
+       Non-reflex marks are already clamped to <=180 by computeGeometry, so
+       the ">180" branch below was previously dead code for them (kept as a
+       defensive fallback). A reflex mark (o.reflex, FIX-ROUND-2.md item 2)
+       is the opposite case: a.sweep IS the intended >180 value already —
+       collapsing it to 360-a.sweep here would silently re-check it against
+       the SHORT angle instead of the reflex one, which is exactly the
+       "must verify exactly, not be skipped" failure mode the brief warned
+       about. So a reflex mark's drawn value is a.sweep, untouched. */
+    const drawn = a.reflex ? a.sweep : (a.sweep > 180 ? 360 - a.sweep : a.sweep);
     const diff = Math.abs(drawn - a.v);
     results.push({ at: a.at, t: a.t, drawn: Math.round(drawn * 10) / 10, v: a.v, diff: Math.round(diff * 10) / 10, ok: diff <= tol });
   });
