@@ -179,7 +179,7 @@ export const round = {
       diagram: FIG_REFLEX_CLAIM,
       options: [
         { text: { en: "Extend PO straight through O until it meets the circle again, at Q", af: "Verleng PO reguit deur O totdat dit weer die sirkel ontmoet, by Q" }, correct: true },
-        { text: { en: "Join OA and OB, and stop there without extending anything further", af: "Verbind OA en OB, en stop daar sonder om iets verder te verleng" } },
+        { text: { en: "Join A directly to B and work inside triangle APB instead", af: "Verbind A direk aan B en werk eerder binne driehoek APB" } },
         { text: { en: "Measure ∠AOB directly with a protractor and compare it to ∠APB", af: "Meet ∠AOB direk met 'n gradeboog en vergelyk dit met ∠APB" } },
         { text: { en: "Construct a tangent to the circle at P and work from that instead", af: "Konstrueer 'n raaklyn aan die sirkel by P en werk daarvandaan verder" } },
       ],
@@ -310,7 +310,7 @@ export const round = {
       reason: "construction",
       note: {
         en: "Extending a radius through the centre to its second meeting with the circle uses only points that already exist — that's always legal, it's just a diameter. The other three all smuggle something in: touching the circle exactly once (a tangent), running parallel forever, or assuming the very result you're trying to prove and working backwards from it. That last one is the sneakiest, because it FEELS like a shortcut. The classroom rule says it best: \"When we assume, we make an ass out of u and me.\"",
-        af: "Om 'n radius deur die middelpunt te verleng na sy tweede ontmoeting met die sirkel, gebruik net punte wat reeds bestaan — dit is altyd wettig, dis net 'n middellyn. Die ander drie smokkel almal iets in: raak die sirkel presies een keer (raaklyn), loop vir ewig ewewydig, of neem die presiese resultaat aan wat jy probeer bewys en werk agteruit daarvandaan. Daardie laaste een is die stinksste, want dit VOEL soos 'n kortpad. Die klaskamerreël sê dit die beste: \"When we assume, we make an ass out of u and me.\"",
+        af: "Om 'n radius deur die middelpunt te verleng na sy tweede ontmoeting met die sirkel, gebruik net punte wat reeds bestaan — dit is altyd wettig, dis net 'n middellyn. Die ander drie smokkel almal iets in: raak die sirkel presies een keer (raaklyn), loop vir ewig ewewydig, of neem die presiese resultaat aan wat jy probeer bewys en werk agteruit daarvandaan. Daardie laaste een is die slinksste, want dit VOEL soos 'n kortpad. Die klaskamerreël sê dit die beste: \"When we assume, we make an ass out of u and me.\"",
       },
     },
 

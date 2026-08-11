@@ -106,8 +106,8 @@ const FIG_XY = {
     ["P", "A"], ["P", "B"],
   ],
   angles: [
-    { at: "P", legs: ["O", "A"], t: "x", o: { v: 20 } },
-    { at: "P", legs: ["O", "B"], t: "y", o: { v: 20 } },
+    { at: "P", legs: ["O", "A"], t: "x", o: { v: 20, r: 40 } },
+    { at: "P", legs: ["O", "B"], t: "y", o: { v: 20, r: 40 } },
     { at: "O", legs: ["A", "Q"], t: "", o: { v: 40 } },
   ],
 };
@@ -125,8 +125,8 @@ const FIG_COMBINE = {
     ["P", "A"], ["P", "B"],
   ],
   angles: [
-    { at: "P", legs: ["O", "A"], t: "x", o: { v: 20 } },
-    { at: "P", legs: ["O", "B"], t: "y", o: { v: 20 } },
+    { at: "P", legs: ["O", "A"], t: "x", o: { v: 20, r: 40 } },
+    { at: "P", legs: ["O", "B"], t: "y", o: { v: 20, r: 40 } },
     { at: "O", legs: ["A", "Q"], t: "2x", o: { v: 40 } },
     { at: "O", legs: ["B", "Q"], t: "2y", o: { v: 40 } },
   ],
@@ -193,7 +193,7 @@ export const round = {
       type: "choice",
       prompt: {
         en: "The construction: P has been extended straight through the centre O to a new point, Q, on the far side of the circle — OP, OQ, OA and OB are all radii, tick-marked equal. Why is drawing this diameter through P the useful first move?",
-        af: "Die konstruksie: P is reguit deur die middelpunt O verleng na 'n nuwe punt, Q, aan die verste kant van die sirkel — OP, OQ, OA en OB is almal radiusse, gemerk as gelyk. Hoekom is dit om hierdie middellyn deur P te trek die nuttige eerste stap?",
+        af: "Die konstruksie: P is reguit deur die middelpunt O verleng na 'n nuwe punt, Q, aan die verste kant van die sirkel — OP, OQ, OA en OB is almal radiusse, gemerk as gelyk. Hoekom is dit die nuttige eerste stap om hierdie middellyn deur P te trek?",
       },
       diagram: FIG_CONSTRUCT_BARE,
       options: [
@@ -246,8 +246,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Label the two base angles: ∠OPA = ∠OAP = x (triangle OPA is isosceles), and ∠OPB = ∠OBP = y (triangle OPB is isosceles too, off-screen for now) — x is marked on the figure. O, P and Q lie on a straight line, so the angle at O between OA and OQ is the EXTERIOR angle of triangle OPA. What does the exterior angle theorem say it equals?",
-        af: "Merk die twee basishoeke: ∠OPA = ∠OAP = x (driehoek OPA is gelykbenig), en ∠OPB = ∠OBP = y (driehoek OPB is ook gelykbenig, nog nie op die prentjie nie) — x is op die figuur gemerk. O, P en Q lê op 'n reguit lyn, dus is die hoek by O tussen OA en OQ die BUITEHOEK van driehoek OPA. Wat sê die buitehoekstelling van 'n driehoek dit gelyk is aan?",
+        en: "Label the two base angles — both marked at P on the figure: ∠OPA = ∠OAP = x (triangle OPA is isosceles), and ∠OPB = ∠OBP = y (triangle OPB is isosceles the same way). O, P and Q lie on a straight line, so the angle at O between OA and OQ is the EXTERIOR angle of triangle OPA. What does the exterior angle theorem say it equals?",
+        af: "Merk die twee basishoeke — albei by P op die figuur gemerk: ∠OPA = ∠OAP = x (driehoek OPA is gelykbenig), en ∠OPB = ∠OBP = y (driehoek OPB is op dieselfde manier gelykbenig). O, P en Q lê op 'n reguit lyn, dus is die hoek by O tussen OA en OQ die BUITEHOEK van driehoek OPA. Wat sê die buitehoekstelling van 'n driehoek dit gelyk is aan?",
       },
       diagram: FIG_XY,
       options: [
