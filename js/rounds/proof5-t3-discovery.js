@@ -122,9 +122,13 @@ const FIG_CENTRAL_BOTH = {
     { a: "O", b: "D", mk: "t1" },
   ],
   angles: [
-    { at: "A", legs: ["D", "B"], t: "a", o: { v: 100 } },
+    /* r pulls each label toward its own vertex: the 160° central angle's
+       bisector points EXACTLY at A (A sits at 160° on this circle), so the
+       default radii drove the "a" and "2c" labels head-on into each other —
+       measured in the browser at 375px, foreman review session 4. */
+    { at: "A", legs: ["D", "B"], t: "a", o: { v: 100, r: 26 } },
     { at: "C", legs: ["B", "D"], t: "c", o: { v: 80 } },
-    { at: "O", legs: ["B", "D"], t: "2c", o: { v: 160 } },
+    { at: "O", legs: ["B", "D"], t: "2c", o: { v: 160, r: 34 } },
   ],
 };
 
@@ -205,7 +209,7 @@ export const round = {
       type: "choice",
       prompt: {
         en: "Label ∠C = c (marked). The angle-at-centre theorem says a central angle is double the circumference angle standing on the SAME arc. The non-reflex ∠BOD (marked, unlabelled) stands on the same arc as ∠C. What does the theorem give you for it?",
-        af: "Merk ∠C = c (gemerk). Die hoek-by-middelpunt-stelling sê 'n middelpuntshoek is dubbel die omtrekhoek wat op DIESELFDE boog staan. Die nie-inspringende ∠BOD (gemerk, ongelabel) staan op dieselfde boog as ∠C. Wat gee die stelling jou daarvoor?",
+        af: "Merk ∠C = c (gemerk). Die hoek-by-middelpunt-stelling sê 'n middelpuntshoek is dubbel die omtrekhoek wat op DIESELFDE boog staan. Die nie-inspringende ∠BOD (gemerk, nog nie benoem nie) staan op dieselfde boog as ∠C. Wat gee die stelling jou daarvoor?",
       },
       diagram: FIG_CENTRAL_C,
       options: [

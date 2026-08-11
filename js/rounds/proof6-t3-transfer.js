@@ -144,8 +144,8 @@ export const round = {
       ],
       reason: "construction",
       note: {
-        en: "Same tool as pr5, new letters: join the radii to the two vertices NOT in the angle pair — here that's Q and S, not P and R. The picture rotated; the construction did not.",
-        af: "Dieselfde hulpmiddel as pr5, nuwe letters: verbind die radiusse na die twee hoekpunte wat NIE in die hoekpaar is nie — hier is dit Q en S, nie P en R nie. Die prentjie het gedraai; die konstruksie het nie.",
+        en: "Same tool as the last round, new letters: join the radii to the two vertices NOT in the angle pair — here that's Q and S, not P and R. The picture rotated; the construction did not.",
+        af: "Dieselfde hulpmiddel as die vorige rondte, nuwe letters: verbind die radiusse na die twee hoekpunte wat NIE in die hoekpaar is nie — hier is dit Q en S, nie P en R nie. Die prentjie het gedraai; die konstruksie het nie.",
       },
     },
 
@@ -171,8 +171,8 @@ export const round = {
       ],
       reason: "construction",
       note: {
-        en: "Being legal and being USEFUL are two different things. OP and OR are honest radii — but they end at P and R themselves, so ∠POR can never stand on the same arc as ∠P or ∠R. The theorem needs the central angle built from the OTHER two vertices, the ones the angle pair is actually looking at. This is exactly the trap her cheat notes warn about: it feels like the obvious move, and it goes nowhere.",
-        af: "Om wettig te wees en om NUTTIG te wees is twee verskillende dinge. OP en OR is eerlike radiusse — maar hulle eindig by P en R self, dus kan ∠POR nooit op dieselfde boog as ∠P of ∠R staan nie. Die stelling benodig die middelpuntshoek gebou uit die ANDER twee hoekpunte, dié waarna die hoekpaar werklik kyk. Dit is presies die strik waarvoor haar spiekbrief-notas waarsku: dit voel soos die voor-die-hand-liggende skuif, en dit kom nêrens uit nie.",
+        en: "Being legal and being USEFUL are two different things. OP and OR are honest radii — but they end at P and R themselves, so ∠POR can never stand on the same arc as ∠P or ∠R. The theorem needs the central angle built from the OTHER two vertices, the ones the angle pair is actually looking at. This is the classic trap of this proof: it feels like the obvious move, and it goes nowhere.",
+        af: "Om wettig te wees en om NUTTIG te wees is twee verskillende dinge. OP en OR is eerlike radiusse — maar hulle eindig by P en R self, dus kan ∠POR nooit op dieselfde boog as ∠P of ∠R staan nie. Die stelling benodig die middelpuntshoek gebou uit die ANDER twee hoekpunte, dié waarna die hoekpaar werklik kyk. Dit is die klassieke strik van hierdie bewys: dit voel soos die voor-die-hand-liggende skuif, en dit kom nêrens uit nie.",
       },
     },
 
@@ -193,13 +193,13 @@ export const round = {
       hints: [
         { en: "Non-reflex ∠QOS = 2 × 60° = 120°. That leaves 360° − 120° = 240° for the reflex piece — and the reflex piece is 2 × ∠R, the same doubling rule, aimed at the other angle.",
           af: "Nie-inspringende ∠QOS = 2 × 60° = 120°. Dit laat 360° − 120° = 240° vir die inspringende stuk — en die inspringende stuk is 2 × ∠R, dieselfde verdubbelingsreël, gerig op die ander hoek." },
-        { en: "2 × ∠R = 240°, so ∠R = 120°. Then ∠P + ∠R = 60° + 120° = 180° — supplementary, exactly as pr5 proved it always must be.",
-          af: "2 × ∠R = 240°, dus ∠R = 120°. Dan ∠P + ∠R = 60° + 120° = 180° — supplementêr, presies soos pr5 bewys het dit altyd moet wees." },
+        { en: "2 × ∠R = 240°, so ∠R = 120°. Then ∠P + ∠R = 60° + 120° = 180° — supplementary, exactly as the last round proved it always must be.",
+          af: "2 × ∠R = 240°, dus ∠R = 120°. Dan ∠P + ∠R = 60° + 120° = 180° — supplementêr, presies soos die vorige rondte bewys het dit altyd moet wees." },
       ],
       reason: "cyclicOpp",
       note: {
-        en: "Non-reflex ∠QOS = 2 × 60° = 120°, so the reflex piece is 360° − 120° = 240° = 2 × ∠R, giving ∠R = 120°. ∠P + ∠R = 60° + 120° = 180° — the picture rotated and the numbers are new, but the result is exactly what pr5 proved: opposite angles of a cyclic quad are always supplementary.",
-        af: "Nie-inspringende ∠QOS = 2 × 60° = 120°, dus is die inspringende stuk 360° − 120° = 240° = 2 × ∠R, wat ∠R = 120° gee. ∠P + ∠R = 60° + 120° = 180° — die prentjie het gedraai en die getalle is nuut, maar die resultaat is presies wat pr5 bewys het: teenoorstaande hoeke van 'n koordevierhoek is altyd supplementêr.",
+        en: "Non-reflex ∠QOS = 2 × 60° = 120°, so the reflex piece is 360° − 120° = 240° = 2 × ∠R, giving ∠R = 120°. ∠P + ∠R = 60° + 120° = 180° — the picture rotated and the numbers are new, but the result is exactly what the last round proved: opposite angles of a cyclic quad are always supplementary.",
+        af: "Nie-inspringende ∠QOS = 2 × 60° = 120°, dus is die inspringende stuk 360° − 120° = 240° = 2 × ∠R, wat ∠R = 120° gee. ∠P + ∠R = 60° + 120° = 180° — die prentjie het gedraai en die getalle is nuut, maar die resultaat is presies wat die vorige rondte bewys het: teenoorstaande hoeke van 'n koordevierhoek is altyd supplementêr.",
       },
     },
 
