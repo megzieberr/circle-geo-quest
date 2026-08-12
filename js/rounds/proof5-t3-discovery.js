@@ -95,12 +95,56 @@
    from the one that follows onward — O₁ = 2x from panel 4 on (the panel
    after the O₁=2x choice), O₂ = 360−2x from panel 5 on (after the O₂
    choice). ∠A stays unmarked (t:"") through panel 5, the panel that
-   determines it, then carries "∠A = 180−x" from the panel 6 recap on.
+   determines it, then carries a bare "180−x" on the panel 6 recap (on the
+   sketch itself, not in the key — see the exception below).
    ONE exception, per the brief's own escape hatch for wide formulas: O₂'s
    full "O₂ = 360−2x" earns cleanly everywhere it was tried (see below) so
    it IS shown on the sketch from panel 5 onward, same as O₁ and ∠A —
    no fallback to prose-only was needed after all once real rendering
    replaced the estimate (see next paragraph).
+
+   VALUE KEY, 2026-08-12 (her playtest, with her own Canva mock-up as the
+   reference): the earned values no longer sit ON the wedges. O₁ and O₂
+   share a vertex — they are the two pieces of the same full turn at O —
+   so "O₁ = 2x" and "O₂ = 360−2x" were being written onto the same small
+   patch of canvas and overlapped however they were pinned (her
+   screenshot of panel 5 shows it plainly; the r-value tuning below was
+   only ever holding it at arm's length). Her fix, and it is the right
+   one and the way a textbook does it: the wedge keeps its SHORT NAME
+   (O₁ / O₂ / ∠A) where the learner needs it to read the picture, and the
+   VALUE moves to a colour-matched key beside the circle, via the new
+   additive `d.key` engine option. Panel 4 keys one line (only O₁ is
+   earned yet) and panels 5-6 key two — the key grows exactly as the
+   values are earned, which is the same "labels upgrade as they're
+   earned" rule FIX-ROUND-3 item 5 established, just relocated. Order is
+   the order they are earned (O₁, then O₂, then ∠A), not her mock-up's
+   O₂-first, which was an artefact of how she typed it.
+   ⚠️ Key text is SYMBOL-ONLY and untranslated — see the engine's own
+   note on `d.key`. Never put a sentence there.
+
+   ONE DELIBERATE EXCEPTION, panel 6 (her ask, same day): ∠A's value is
+   written ON its wedge as a bare "180−x", NOT parked in the key — "I want
+   them to see that 180−x + x = 180". The recap panel's whole job is the
+   two opposite angles sitting on the picture together, 180−x at A and x
+   at C, visibly adding to a straight angle; a learner cannot see that sum
+   if one half is on the sketch and the other is in a list. It's written
+   bare, with no "∠A =" prefix, exactly matching how x is written at C —
+   the vertex letter is right there on the circle either way. The key on
+   that panel therefore carries only O₁ and O₂, which are the two that
+   share the crowded centre vertex and genuinely cannot fit.
+   PLACING IT took a NEGATIVE label radius, `r: -42`. A is at 160° and O₁'s
+   label sits on the bisector at 160° out of O — the two are on the same
+   line, so "180−x" (5 characters, ~36px) and "O₁" are competing for the
+   one narrow corridor between A and the centre. Every inward placement
+   tried either overlapped O₁ or sat on top of point A itself; the
+   text-vs-text overlap probe passed several of them because it does not
+   know about dots and arcs, which is exactly why they were rendered and
+   looked at. A negative r flips the label to the OPPOSITE side of the
+   bisector — outside the circle, just beyond A — where there is open
+   canvas, it still reads as A's angle (same orange as A's arc, right next
+   to it), and it is how a textbook labels a cramped vertex anyway.
+   O₁ therefore stays at its original r: 34 — the inward-crowding fix it
+   briefly needed is no longer necessary.
 
    LABEL PLACEMENT — measured two ways. A quick headless estimate
    (vertex-to-label distance via computeGeometry, plus a hw=6+len×3.6
@@ -193,7 +237,7 @@ const FIG_MARK_X = {
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: CHORDS,
   angles: [
-    { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, c: GREEN } },
+    { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, r: 30, ar: 16, c: GREEN } },
     { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34, c: GREEN } },
   ],
 };
@@ -209,10 +253,11 @@ const FIG_O2 = {
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: CHORDS,
   angles: [
-    { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₁ = 2x", o: { v: 160, r: 40, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₂", o: { v: 200, reflex: 1, r: 34, c: ORANGE } },
+    { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, r: 30, ar: 16, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₂", o: { v: 200, reflex: 1, r: 36, c: ORANGE } },
   ],
+  key: [{ t: "O₁ = 2x", c: GREEN }],
 };
 
 /* ---- panel 5: theorem again on O₂ — this is the panel AFTER the
@@ -225,11 +270,12 @@ const FIG_COMBINE = {
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: CHORDS,
   angles: [
-    { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₁ = 2x", o: { v: 160, r: 40, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₂ = 360−2x", o: { v: 200, reflex: 1, r: 36, c: ORANGE } },
+    { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, r: 30, ar: 16, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₂", o: { v: 200, reflex: 1, r: 36, c: ORANGE } },
     { at: "A", legs: ["D", "B"], t: "", o: { v: 100, c: ORANGE } },
   ],
+  key: [{ t: "O₁ = 2x", c: GREEN }, { t: "O₂ = 360−2x", c: ORANGE }],
 };
 
 /* ---- panel 6: the recap figure — ∠A now labelled "∠A = 180−x" (orange,
@@ -242,10 +288,21 @@ const FIG_FINAL = {
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: CHORDS,
   angles: [
-    { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₁ = 2x", o: { v: 160, r: 36, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₂ = 360−2x", o: { v: 200, reflex: 1, r: 36, c: ORANGE } },
-    { at: "A", legs: ["D", "B"], t: "∠A = 180−x", o: { v: 100, r: 30, c: ORANGE } },
+    { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, r: 30, ar: 16, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₂", o: { v: 200, reflex: 1, r: 36, c: ORANGE } },
+    { at: "A", legs: ["D", "B"], t: "180−x", o: { v: 100, r: -42, ar: 14, c: ORANGE } },
+  ],
+  /* ∠A's value is written ON the wedge here, not in the key (her ask,
+     2026-08-12): "I want them to see that 180−x + x = 180". The whole
+     point of the recap panel is the two opposite angles sitting on the
+     picture at the same time — 180−x at A, x at C — visibly adding to a
+     straight angle. Bare "180−x", no "∠A =" prefix, exactly matching how
+     x is written at C. The key keeps only O₁ and O₂, whose vertex is the
+     crowded one. */
+  key: [
+    { t: "O₁ = 2x", c: GREEN },
+    { t: "O₂ = 360−2x", c: ORANGE },
   ],
 };
 

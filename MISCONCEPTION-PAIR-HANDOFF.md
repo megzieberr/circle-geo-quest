@@ -1,3 +1,13 @@
+# ✅ DONE 2026-08-12 — built as `pr8b`, see PROJECT-STATUS.md
+
+**She chose option 2** (a new short round, pure which-join drills on both of
+her figures) and added one requirement of her own: a slide explaining which
+two points we must always join. Built as `js/rounds/proof8b-t4-join-pairs.js`,
+11 panels, inserted between pr8 and pr9. Nothing below is outstanding any
+more — kept for the reasoning, not as a to-do list.
+
+---
+
 # Handoff — the tan-chord "paired exercise" (the one FIX-ROUND-3 item left out)
 
 Written 2026-08-12, end of the FIX-ROUND-3 foreman session. Megan's ruling:

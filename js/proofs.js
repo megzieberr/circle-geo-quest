@@ -34,8 +34,12 @@ import { el, clear } from "./ui.js";
    report — "Proofs" / "Bewyse" is a working title. */
 const UI = {
   cardTitle: { en: "Proofs", af: "Bewyse" },
-  cardBlurb: { en: "Learn the constructions behind the theorems — ten rounds, open from day one.",
-               af: "Leer die konstruksies agter die stellings — tien rondtes, oop vanaf dag een." },
+  /* No round count in this line on purpose (2026-08-12): it said "ten
+     rounds" and went stale the moment pr8b was inserted. The card already
+     renders the live "N of N proofs done" counter right underneath, so the
+     number was duplicated as well as fragile. */
+  cardBlurb: { en: "Learn the constructions behind the theorems — open from day one.",
+               af: "Leer die konstruksies agter die stellings — oop vanaf dag een." },
   mapEyebrow: { en: "Behind the theorems", af: "Agter die stellings" },
   mapTitle:   { en: "Proofs", af: "Bewyse" },
   mapBlurb:   { en: "Why proofs matter, then the construction behind each theorem — discovery, transfer, discovery, transfer, and a mixed finale.",

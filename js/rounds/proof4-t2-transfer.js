@@ -440,8 +440,32 @@ const FIG_BOWTIE = {
   angles: [
     { at: "C", legs: ["O", "A"], t: "x", o: { v: 35, r: 40, c: X_COLOR } },
     { at: "C", legs: ["O", "B"], t: "y", o: { v: 70, c: Y_COLOR } },
-    { at: "O", legs: ["B", "D"], t: "2y", o: { v: 140, c: Y_COLOR, hl: Y_COLOR } },
-    { at: "O", legs: ["A", "D"], t: "2x", o: { v: 70, c: X_COLOR, hl: X_COLOR } },
+    /* REBUILT 2026-08-12 on her playtest + her own Canva mock-up: "it kinda
+       looks like you are saying BÔA is 2y."
+       Two faults, both real:
+       · ∠BÔD (140°) and ∠AÔD (70°) OVERLAP — AÔD sits wholly inside BÔD,
+         since both close on OD. Their arcs were drawn at the SAME default
+         radius (25), so in the shared wedge the two arcs lay on top of each
+         other and neither could be traced to its own pair of arms. They now
+         NEST, exactly as she drew it: 2y outer (ar 48), 2x inner (ar 30).
+       · the "2y" LABEL sat on the bisector of ∠BÔD — which on this figure
+         is 200°, the exact direction of the radius OA. So it was printed
+         squarely along OA and read as the label for ∠BÔA. No value of `r`
+         fixes that; every point on that bisector is on OA. Hence the new
+         additive `o.rot` engine option: rot −40 slides the label to 160°,
+         off OA and clear inside the BÔD wedge, matching her mock-up's own
+         placement. 2x gets rot −10 for the same reason in miniature (its
+         bisector, 235°, runs close to nothing, but −10 keeps it centred in
+         the part of its wedge that 2y's arc does not cross).
+       · the two filled marker-pen WEDGES are gone from this one figure
+         (`hl` dropped on both O-angles; the arm highlights on the chords
+         stay). They overlapped each other in the shared ∠AÔD region —
+         green painted over orange — which is exactly the patch a learner
+         has to read carefully, and her mock-up has no filled wedges at O
+         at all. Every OTHER figure in this round keeps its wedge; this is
+         the only one where two wedges share a vertex. */
+    { at: "O", legs: ["B", "D"], t: "2y", o: { v: 140, ar: 48, r: 62, rot: -40, c: Y_COLOR } },
+    { at: "O", legs: ["A", "D"], t: "2x", o: { v: 70, ar: 30, r: 44, rot: -10, c: X_COLOR } },
   ],
 };
 

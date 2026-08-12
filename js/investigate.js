@@ -432,6 +432,37 @@ function mountPanel(host, panel, accent, scratch, onDone) {
   let revealAnswer = null;
   const hintBox = el("div", "dp-hint"); hintBox.hidden = true;
   const feedback = el("div", "dp-feedback"); feedback.hidden = true;
+  /* SCAFFOLD (additive, opt-in via panel.scaffold — added 2026-08-12 on
+     Megan's explicit yes). A panel may carry
+       scaffold: { diagram, note }
+     which stays hidden until the learner gets the question WRONG, then
+     appears under the hint: a full re-drawn figure plus an explanation.
+     It is the "show me why" rescue a text hint cannot give — pr7's bowtie
+     is the first user (the four arms highlighted, so a learner who missed
+     the same-segment step SEES the two equal angles instead of being told
+     about them again).
+     Deliberately NOT its own panel: making a panel conditional would mean
+     the "4 / 7" counter skipping a number and `panels.length * XP_RATE`
+     paying for a slide some learners never saw. Inline keeps the counter
+     honest, keeps XP identical for everyone, and puts the picture directly
+     under the question it rescues, with the options still on screen.
+     Fires on the same rung as the first hint, and stays up once shown. */
+  const scaffoldBox = el("div", "dp-scaffold"); scaffoldBox.hidden = true;
+  function showScaffold() {
+    if (!panel.scaffold || !scaffoldBox.hidden) return;
+    scaffoldBox.hidden = false;
+    const sc = panel.scaffold;
+    if (sc.diagram) {
+      const fig = el("div", "q-diagram");
+      fig.innerHTML = renderDiagram(sc.diagram, accent);
+      scaffoldBox.appendChild(fig);
+    }
+    if (sc.note) {
+      const txt = el("div", "dp-scaffold-note");
+      txt.innerHTML = tx(sc.note);
+      scaffoldBox.appendChild(txt);
+    }
+  }
 
   /* On a CHOICE panel every wrong tap advances the ladder one rung (her call,
      2026-07-31: "let the second hint already show before the right answer is
@@ -465,6 +496,7 @@ function mountPanel(host, panel, accent, scratch, onDone) {
         hintBox.hidden = false;
         hintBox.innerHTML = `<span class="dp-hint-tag">💡 ${t("hint")}</span> ${tx(hints[idx])}`;
       }
+      showScaffold();
     }
     if (wrong >= REVEAL_AFTER && revealAnswer) revealAnswer();
   }
@@ -499,6 +531,7 @@ function mountPanel(host, panel, accent, scratch, onDone) {
     const check = el("button", "btn primary", t("check"));
     check.disabled = true;
     body.appendChild(hintBox);
+    body.appendChild(scaffoldBox);
     body.appendChild(check);
     body.appendChild(feedback);
     let locked = false;
@@ -532,6 +565,7 @@ function mountPanel(host, panel, accent, scratch, onDone) {
     });
     body.appendChild(opts);
     body.appendChild(hintBox);
+    body.appendChild(scaffoldBox);
     body.appendChild(feedback);
     revealAnswer = () => {
       if (locked) return;
@@ -590,6 +624,7 @@ function mountPanel(host, panel, accent, scratch, onDone) {
     check.disabled = true;
     check.title = tx(UI.writeMore);
     body.appendChild(hintBox);
+    body.appendChild(scaffoldBox);
     body.appendChild(check);
     body.appendChild(feedback);
 

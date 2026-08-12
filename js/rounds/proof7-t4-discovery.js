@@ -32,7 +32,10 @@
 
    SIX PANELS, all taps, rendered through renderInvestigate() exactly like
    pr0-pr6 — `kind: "proof"` gets predict/choice/note panels and per-panel
-   XP for free, no new engine surface:
+   XP for free. ONE new engine surface was added 2026-08-12 on her explicit
+   yes: `panel.scaffold`, an opt-in picture-and-explanation block that stays
+   hidden until a learner answers wrong (see panel 4 below, and the block
+   comment on it in js/investigate.js):
      1 · predict — bare tan-chord figure + the claim (tangent-chord angle
          at T = ∠TPA, both UNLABELLED — nothing spoiled). "What do you
          THINK could prove this?"
@@ -51,10 +54,20 @@
          chord DA from the same side. What does "angles in the same
          segment" hand you for ∠DPA, the piece of that 90° next to D?
          (x — the SAME x as T₂, carried straight across.)
+         ⤷ carries the BOWTIE SCAFFOLD (2026-08-12, her ask): get this one
+           wrong and a picture appears under the hint with the four arms
+           T→D, T→A, P→D, P→A highlighted green, both x's marked, and the
+           shape named in words — two triangles meeting point-to-point,
+           both sharp corners on the circle, both looking at chord DA from
+           the same side. The panel ASSERTS the same-segment swap; the
+           scaffold SHOWS why it has to hold.
      5 · choice  — combine: ∠TPD = 90° splits into ∠DPA (= x, just found)
          and ∠TPA (the angle we actually wanted). What is ∠TPA, and how
          does it compare to T₁?  (∠TPA = 90° − x = T₁ — both targets land
          on the same expression. QED, for the actual P on the picture.)
+         Uses FIG_COMBINE_ASK, NOT FIG_FINAL: this panel asks what ∠TPA is,
+         so it must not print the answer on the figure (her playtest —
+         see FIG_COMBINE_ASK's own note).
      6 · note    — the recap sentence: "draw the diameter from the point
          of tangency, and join its far end straight to the point you're
          asked about — two free right angles and one same-segment swap
@@ -193,7 +206,23 @@ const FIG_SEMI = {
        label past its own arc, nearly touching the U tangent label; r:34
        hugs T's arc, still clear of the tangent line and the x-label
        above it). */
-    { at: "T", legs: ["tg+", "A"], t: "T₁ = 90−x", o: { v: 64, r: 34, c: PURPLE } },
+    /* THE "T₁ = " PREFIX IS GONE (her playtest, 2026-08-12, last item:
+       "we can remove the T1 label here, just keep the 90-x"). The wedge
+       now carries the bare VALUE, exactly like ∠TPA's own "90−x" at P and
+       exactly like pr5's bare "180−x" at A — the diagram states values,
+       the prose names angles. T₁ is still named in every prompt, hint and
+       note that needs it.
+       r:40, retuned twice. It was 34 originally, which her playtest caught
+       sitting on top of the pink right-angle square, its own purple arc
+       and the green x arc all at once (invisible to the text-vs-text
+       probe — all three are <path>s, not text). That forced it out to 58,
+       3 units past this round's ≤55 label-pinning standard, purely because
+       a nine-character label ~59px wide reaches a long way back toward its
+       vertex. Dropping the prefix to four characters removes the whole
+       problem: re-measured against the rendered path boxes, EVERY radius
+       from 34 to 58 now clears, so it comes back to 40 — comfortably
+       outside its own arc, comfortably inside the standard. */
+    { at: "T", legs: ["tg+", "A"], t: "90−x", o: { v: 64, r: 40, c: PURPLE } },
     { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
     { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
     { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
@@ -213,7 +242,23 @@ const FIG_FINAL = {
     /* FIX-ROUND-3.md item 8: r:34, same fix and same reason as FIG_SEMI
        above (this figure is reused for the recap gallery too, so both
        spots get it at once). */
-    { at: "T", legs: ["tg+", "A"], t: "T₁ = 90−x", o: { v: 64, r: 34, c: PURPLE } },
+    /* THE "T₁ = " PREFIX IS GONE (her playtest, 2026-08-12, last item:
+       "we can remove the T1 label here, just keep the 90-x"). The wedge
+       now carries the bare VALUE, exactly like ∠TPA's own "90−x" at P and
+       exactly like pr5's bare "180−x" at A — the diagram states values,
+       the prose names angles. T₁ is still named in every prompt, hint and
+       note that needs it.
+       r:40, retuned twice. It was 34 originally, which her playtest caught
+       sitting on top of the pink right-angle square, its own purple arc
+       and the green x arc all at once (invisible to the text-vs-text
+       probe — all three are <path>s, not text). That forced it out to 58,
+       3 units past this round's ≤55 label-pinning standard, purely because
+       a nine-character label ~59px wide reaches a long way back toward its
+       vertex. Dropping the prefix to four characters removes the whole
+       problem: re-measured against the rendered path boxes, EVERY radius
+       from 34 to 58 now clears, so it comes back to 40 — comfortably
+       outside its own arc, comfortably inside the standard. */
+    { at: "T", legs: ["tg+", "A"], t: "90−x", o: { v: 64, r: 40, c: PURPLE } },
     { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
     { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
     { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
@@ -223,6 +268,70 @@ const FIG_FINAL = {
        P's own arc mark, clear of the P-A and P-D chords). */
     { at: "P", legs: ["D", "A"], t: "x", o: { v: 26, r: 26, c: GREEN } },
     { at: "P", legs: ["T", "A"], t: "90−x", o: { v: 64, r: 40, c: PURPLE } },
+  ],
+};
+
+/* ---- panel 5 (NEW, her playtest 2026-08-12): the BOWTIE scaffold.
+   Her ask: "if the kids get the previous question wrong (meaning ∠APD = x),
+   can we add a scaffolding slide where you highlight the bowtie."
+   ⚠️ It shows for EVERYONE, not only after a wrong tap — proof rounds
+   render through renderInvestigate(), whose only response to a wrong
+   answer is a text hint ladder (the `q-hl` figure-highlight mechanism
+   lives in questions.js and serves the graded rounds, not this renderer).
+   Branching a panel on the previous panel's result would be new engine
+   surface. As a slide for everyone it still does the work: the learner who
+   guessed right gets the picture that explains WHY, and the one who missed
+   it gets the rescue.
+   GREEN highlight on the four bowtie arms — T→D and T→A out of one
+   vertex, P→D and P→A out of the other — which is exactly the shape her
+   screenshot marked. Chord DA is the base both angles stand on; it is NOT
+   drawn in this round (nothing needs it), and the bowtie reads without it.
+   P→T is deliberately left un-highlighted: it belongs to the claim, not to
+   this argument, and highlighting it would make the shape a quadrilateral
+   instead of the two-triangle bowtie. Both x's are labelled here — that IS
+   the point of the slide. ---- */
+const FIG_BOWTIE = {
+  O: true,
+  pts: { T: 270, D: 90, A: 38, P: 150 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: [
+    { a: "T", b: "A", hl: GREEN },
+    ["P", "T"],
+    { a: "P", b: "A", hl: GREEN },
+    { a: "T", b: "D", hl: GREEN },
+    { a: "D", b: "P", hl: GREEN },
+  ],
+  angles: [
+    { at: "T", legs: ["tg+", "A"], t: "90−x", o: { v: 64, r: 40, c: PURPLE } },
+    { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
+    { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "P", legs: ["D", "A"], t: "x", o: { v: 26, r: 26, c: GREEN } },
+  ],
+};
+
+/* ---- panel 6 (the combine question): identical to FIG_FINAL below EXCEPT
+   that ∠TPA is marked but UNLABELLED. Her playtest, same day: "we need to
+   remove the 90−x there at the top bc it is just giving away the answer."
+   She was right — this panel asks what ∠TPA is, and one of its four options
+   is "∠TPA = 90° − x, exactly the same as T₁", so printing 90−x on the
+   figure answered its own question. Same convention every other asking
+   panel in this round already used (panel 3 leaves T₁ unlabelled, panel 4
+   leaves ∠DPA unlabelled); this one had simply been handed the finished
+   recap figure. FIG_FINAL, with the label, now appears only on the recap
+   panel that follows. ---- */
+const FIG_COMBINE_ASK = {
+  O: true,
+  pts: { T: 270, D: 90, A: 38, P: 150 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: CHORDS_BUILT,
+  angles: [
+    { at: "T", legs: ["tg+", "A"], t: "90−x", o: { v: 64, r: 40, c: PURPLE } },
+    { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
+    { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "P", legs: ["D", "A"], t: "x", o: { v: 26, r: 26, c: GREEN } },
+    { at: "P", legs: ["T", "A"], t: "", o: { v: 64 } },
   ],
 };
 
@@ -340,6 +449,24 @@ export const round = {
           af: "Hoeke in dieselfde segment, wat op dieselfde koord staan, is altyd gelyk — ongeag watter twee punte jy kies. T₂ (= ∠DTA) en ∠DPA staan albei op koord DA vanaf dieselfde kant, dus ∠DPA = T₂ = x." },
       ],
       reason: "sameSeg",
+      /* THE BOWTIE SCAFFOLD (her ask, then her explicit yes to making it
+         conditional — 2026-08-12). Hidden unless the learner gets THIS
+         question wrong, then it appears under the hint: the four bowtie
+         arms highlighted, both x's marked, and the shape explained.
+         It was first built as its own always-visible panel 5; she asked
+         for it to fire only on a wrong answer, so it moved in here. Doing
+         it as a conditional PANEL was rejected — the "4 / 6" counter would
+         skip a number and `panels.length × XP_RATE` would pay for a slide
+         some learners never saw. As a scaffold the counter stays honest,
+         XP is identical for everyone, and the picture lands directly under
+         the question it rescues with the options still on screen. */
+      scaffold: {
+        diagram: FIG_BOWTIE,
+        note: {
+          en: "Look at the shape the green lines make — two triangles meeting point-to-point, like a bowtie.<br><br>The top corners are <b>D</b> and <b>A</b>, and both pointed corners sit on the circle: one at <b>T</b>, one at <b>P</b>. That means <b>∠DTA</b> and <b>∠DPA</b> are both standing on the SAME chord, DA, from the SAME side of it.<br><br>Angles like that are always equal — that is \"angles in the same segment\", and it doesn't matter how far apart T and P are, or how stretched the bowtie looks. Slide P anywhere along that arc and the angle at P never changes.<br><br>So the x you marked at T appears again at P, for free.<br><br>Whenever you're hunting for equal angles, look for this bowtie: two points on the circle, both looking at the same chord from the same side.",
+          af: "Kyk na die vorm wat die groen lyne maak — twee driehoeke wat punt-teen-punt ontmoet, soos 'n strikdas.<br><br>Die boonste hoeke is <b>D</b> en <b>A</b>, en albei skerp punte sit op die sirkel: een by <b>T</b>, een by <b>P</b>. Dit beteken <b>∠DTA</b> en <b>∠DPA</b> staan albei op DIESELFDE koord, DA, vanaf DIESELFDE kant daarvan.<br><br>Sulke hoeke is altyd gelyk — dit is \"hoeke in dieselfde segment\", en dit maak nie saak hoe ver T en P uitmekaar is nie, of hoe uitgerek die strikdas lyk nie. Skuif P enige plek langs daardie boog en die hoek by P verander nooit.<br><br>Die x wat jy by T gemerk het, verskyn dus verniet weer by P.<br><br>Wanneer jy ook al na gelyke hoeke soek, kyk vir hierdie strikdas: twee punte op die sirkel wat albei na dieselfde koord vanaf dieselfde kant kyk.",
+        },
+      },
       note: {
         en: "T₂ = ∠DTA and ∠DPA both stand on chord DA, from the same side — so \"angles in the same segment\" hands you ∠DPA = T₂ = x directly, no measuring. The free 90° at P (∠TPD) has now split into two named pieces, exactly the same way the free 90° at T did.",
         af: "T₂ = ∠DTA en ∠DPA staan albei op koord DA, vanaf dieselfde kant — dus gee \"hoeke in dieselfde segment\" jou ∠DPA = T₂ = x direk, geen meting nodig nie. Die verniet 90° by P (∠TPD) het nou in twee benoemde stukke verdeel, presies soos die verniet 90° by T ook gedoen het.",
@@ -353,7 +480,7 @@ export const round = {
         en: "∠TPD = 90° splits into ∠DPA (= x, just found) and ∠TPA — the angle we actually wanted, right from the start. What is ∠TPA, and how does it compare to T₁?",
         af: "∠TPD = 90° verdeel in ∠DPA (= x, pas gekry) en ∠TPA — die hoek wat ons van die begin af eintlik wou hê. Wat is ∠TPA, en hoe vergelyk dit met T₁?",
       },
-      diagram: FIG_FINAL,
+      diagram: FIG_COMBINE_ASK,
       options: [
         { text: { en: "∠TPA = 90° − x, exactly the same as T₁", af: "∠TPA = 90° − x, presies dieselfde as T₁" } , correct: true },
         { text: { en: "∠TPA = x, the same as ∠DPA", af: "∠TPA = x, dieselfde as ∠DPA" } },

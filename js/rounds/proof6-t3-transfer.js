@@ -173,10 +173,23 @@ const FIG_CORRECT = {
     { a: "O", b: "Q", mk: "t1" },
     { a: "O", b: "S", mk: "t1" },
   ],
+  /* VALUE KEY, 2026-08-12 (her explicit yes — the same treatment pr5 got,
+     so the two cyclic-quad rounds finally match). The centre here was the
+     tightest spot left in the whole proof group: O₁ and O₂ share vertex O
+     with the centre's own "O" label, and O₂ was measuring 0.6px from it —
+     touching, though not quite overlapping. It could not simply be nudged:
+     outward it hit the "60°" label at P, inward it hit "O".
+     Two changes free it. The given value moves off the wedge into the key
+     ("∠P = 60°", the wedge keeps the short name ∠P), and O₂'s label slides
+     25° along its own arc (the new o.rot) into the empty right-hand side of
+     the circle, where nothing is drawn at all. Browser-measured across
+     twelve combinations: this set opens the tightest gap on the figure from
+     0.6px to 10.8px. */
+  key: [{ t: "∠P = 60°", c: GREEN }],
   angles: [
-    { at: "P", legs: ["S", "Q"], t: "60°", o: { v: 60, r: 28, c: GREEN } },
-    { at: "O", legs: ["Q", "S"], t: "O₁", o: { v: 120, r: 30, c: GREEN } },
-    { at: "O", legs: ["Q", "S"], t: "O₂", o: { v: 240, reflex: 1, r: 32, c: ORANGE } },
+    { at: "P", legs: ["S", "Q"], t: "∠P", o: { v: 60, r: 26, c: GREEN } },
+    { at: "O", legs: ["Q", "S"], t: "O₁", o: { v: 120, r: 32, c: GREEN } },
+    { at: "O", legs: ["Q", "S"], t: "O₂", o: { v: 240, reflex: 1, r: 38, rot: -25, c: ORANGE } },
   ],
 };
 

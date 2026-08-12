@@ -190,6 +190,11 @@ svg.diag .al{font:700 13.5px "Instrument Sans",sans-serif; text-anchor:middle; d
   paint-order:stroke; stroke:#fff; stroke-width:4.5px; stroke-linejoin:round;}
 svg.diag .pl{font:700 13px "Instrument Sans",sans-serif; fill:#2b2f4a; text-anchor:middle; dominant-baseline:middle;
   paint-order:stroke; stroke:#fff; stroke-width:4px; stroke-linejoin:round;}
+/* value key beside the circle (engine d.key, 2026-08-12) — the wedge keeps
+   its short name, the long value lives out here. No text-anchor set: the
+   engine sets it per corner (end for right-hand keys, start for left). */
+svg.diag .ky{font:700 12.5px "Instrument Sans",sans-serif; dominant-baseline:middle;
+  paint-order:stroke; stroke:#fff; stroke-width:4px; stroke-linejoin:round;}
 /* hint pulse — softly shades the angle a hint is about (added on hint open) */
 svg.diag .q-hl{fill-opacity:.22; pointer-events:none; animation:qHlPulse 1.1s ease-in-out infinite alternate;}
 @keyframes qHlPulse{from{fill-opacity:.08} to{fill-opacity:.34}}
@@ -445,6 +450,13 @@ svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display
 /* hint + feedback + the formal note shown after a correct discovery */
 .dp-hint{background:#fff6e9; border:2px solid #e0a500; border-radius:12px; padding:10px 13px; margin:8px 0; font-size:.93rem;}
 .dp-hint-tag{font-weight:800;}
+/* Scaffold: the picture-and-explanation rescue that appears under the hint
+   only once a learner has the question wrong (investigate.js panel.scaffold,
+   2026-08-12). Same warm hint palette so it reads as part of the same help,
+   not as a new question. */
+.dp-scaffold{background:#fff6e9; border:2px solid #e0a500; border-radius:12px; padding:6px 13px 12px; margin:8px 0; font-size:.93rem;}
+.dp-scaffold .q-diagram{margin:2px 0 6px;}
+.dp-scaffold-note{line-height:1.5;}
 .dp-feedback{margin:8px 0; padding:9px 13px; border-radius:11px; font-weight:700; border:2px solid var(--ink);}
 .dp-feedback.good{background:#e8f8f1; border-color:#0ea271; color:#0a6b4c;}
 .dp-feedback.bad{background:#fdeef4; border-color:#e64980; color:#9c1f52;}

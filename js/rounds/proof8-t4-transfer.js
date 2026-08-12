@@ -253,16 +253,31 @@ const FIG_LEGAL = {
    instead of D joined straight to P. That join genuinely produces
    ∠TBD = 90° (angle in a semicircle again — marked, deliberately
    UNCOLOURED, see the header) — real, legal, and still the wrong point.
-   P is labelled (the prompt names it as the correct target) but carries
-   no line of its own, same convention as the old FIG_TRAP. Q is gone. ---- */
+
+   FIXED 2026-08-12 (her playtest, immediately): this figure used to drop
+   chords PT and PB — it drew only TB, TD and DB, leaving P as a bare
+   labelled dot with no lines attached. That was wrong twice over. It made
+   the picture LOSE information going from panel 1 to panel 2, which reads
+   as the app quietly rubbing out part of her question; and it undercut the
+   panel's own point, because "does this join get any closer to ∠TPB?" only
+   lands if ∠TPB is still visibly there to fail to be reached. PT and PB
+   are part of the CLAIM, not part of anyone's construction — nothing a
+   classmate does can remove them. They now stay, and ∠TPB stays marked
+   (unlabelled, exactly as panel 1 has it) so the learner can see the
+   target sitting untouched while the classmate's right angle lands
+   somewhere else entirely. Q is gone (item 12). ---- */
 const FIG_TRAP = {
   O: true,
   pts: { T: 270, D: 90, B: 30, P: 330 },
   tang: [{ at: "T", lab: ["S", "U"] }],
-  chords: [["T", "B"], ["T", "D"], ["D", "B"]],
+  chords: [["T", "B"], ["P", "T"], ["P", "B"], ["T", "D"], ["D", "B"]],
   angles: [
     { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
     { at: "B", legs: ["T", "D"], t: "", o: { v: 90, mark: 1 } },
+    /* uncoloured, exactly as panel 1 draws it — this panel is still before
+       any construction, so nothing here should look more "solved" than it
+       did one panel ago. */
+    { at: "P", legs: ["T", "B"], t: "", o: { v: 120 } },
   ],
 };
 
@@ -304,7 +319,7 @@ const FIG_LABEL_X = {
   chords: CHORDS_CORRECT,
   angles: [
     { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
-    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 20, c: GREEN } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 32, c: GREEN } },
     { at: "T", legs: ["tg-", "B"], t: "", o: { v: 120 } },
   ],
 };
@@ -320,8 +335,8 @@ const FIG_SEMI = {
   chords: CHORDS_CORRECT,
   angles: [
     { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
-    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 20, c: GREEN } },
-    { at: "T", legs: ["tg-", "B"], t: "T₁ = 90+x", o: { v: 120, r: 46, c: PURPLE } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 32, c: GREEN } },
+    { at: "T", legs: ["tg-", "B"], t: "90+x", o: { v: 120, r: 42, c: PURPLE } },
     { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
   ],
 };
@@ -335,19 +350,52 @@ const FIG_SAME_SEG_ASK = {
   chords: CHORDS_CORRECT,
   angles: [
     { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
-    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 20, c: GREEN } },
-    { at: "T", legs: ["tg-", "B"], t: "T₁ = 90+x", o: { v: 120, r: 46, c: PURPLE } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 32, c: GREEN } },
+    { at: "T", legs: ["tg-", "B"], t: "90+x", o: { v: 120, r: 42, c: PURPLE } },
     { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
     { at: "P", legs: ["D", "B"], t: "", o: { v: 30 } },
   ],
 };
 
-/* ---- panels 8 (combine), 9 (error-spot, same figure) and 11 (recap,
-   same figure): everything resolved — ∠DPB now labelled x too (the
-   same-segment transfer), ∠TPB labelled with the matching result.
-   r:22 (∠DPB) / r:48 (∠TPB) headless-probed and browser-pane-rendered
-   clean alongside the T-side pair above — see the item 11 note on
-   FIG_LABEL_X. ---- */
+/* ---- panel 8 (the combine QUESTION): identical to FIG_FINAL below except
+   ∠TPB is marked but UNLABELLED. Her playtest, 2026-08-12: "the 90+x
+   should not be visible on the sketch yet bc we are only asking now."
+   Exactly the same fault pr7's own combine panel had — the asking panel
+   had been handed the finished recap figure, so it printed its own answer
+   ("∠TPB = 90° + x, exactly the same as T₁" is one of the four options).
+   Every other asking panel in this round already leaves its target blank
+   (panel 5 leaves T₁ blank, panel 7 leaves ∠DPB blank); this brings panel
+   8 into line. FIG_FINAL now appears only on panels 9 and 11, both of
+   which come AFTER the answer is known. ---- */
+const FIG_COMBINE_ASK = {
+  O: true,
+  pts: { T: 270, D: 90, B: 30, P: 330 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: CHORDS_CORRECT,
+  angles: [
+    { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 32, c: GREEN } },
+    { at: "T", legs: ["tg-", "B"], t: "90+x", o: { v: 120, r: 42, c: PURPLE } },
+    { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "P", legs: ["D", "B"], t: "x", o: { v: 30, r: 34, c: GREEN } },
+    { at: "P", legs: ["T", "B"], t: "", o: { v: 120 } },
+  ],
+};
+
+/* ---- panels 9 (error-spot) and 11 (recap): everything resolved — ∠DPB
+   labelled x too (the same-segment transfer), ∠TPB labelled with the
+   matching result. Panel 8 used to use this figure as well; it no longer
+   does (see FIG_COMBINE_ASK above).
+   LABEL RADII, her playtest 2026-08-12 ("the label x needs to shift a bit
+   upwards" on the T side, "the other label x also needs to shift a bit up"
+   at P): x at T 20 → 32, x at P 22 → 34. Moving them up ran them straight
+   into the then-wide "T₁ = 90+x" label, so that moved too, 46 → 54 —
+   measured in the browser across a grid of twelve combinations.
+   Then her last item of the day removed the "T₁ = " prefix from the wedge
+   (see pr7's own note — the diagram states values, the prose names
+   angles), which shrank that label from nine characters to four and made
+   the crowding vanish: re-measured, every radius from 34 to 54 clears, so
+   it settles at 42, near its own arc. ---- */
 const FIG_FINAL = {
   O: true,
   pts: { T: 270, D: 90, B: 30, P: 330 },
@@ -355,10 +403,10 @@ const FIG_FINAL = {
   chords: CHORDS_CORRECT,
   angles: [
     { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
-    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 20, c: GREEN } },
-    { at: "T", legs: ["tg-", "B"], t: "T₁ = 90+x", o: { v: 120, r: 46, c: PURPLE } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 32, c: GREEN } },
+    { at: "T", legs: ["tg-", "B"], t: "90+x", o: { v: 120, r: 42, c: PURPLE } },
     { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
-    { at: "P", legs: ["D", "B"], t: "x", o: { v: 30, r: 22, c: GREEN } },
+    { at: "P", legs: ["D", "B"], t: "x", o: { v: 30, r: 34, c: GREEN } },
     { at: "P", legs: ["T", "B"], t: "90+x", o: { v: 120, r: 48, c: PURPLE } },
   ],
 };
@@ -443,8 +491,17 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Tan ⊥ diameter still gives 90° between the tangent ray (tg−) and TD, marked. Trace the tangent ray round to B — the full angle is outlined too. This time, does the diameter sit BETWEEN the tangent ray and the chord, or does the chord sit between the tangent ray and the diameter?",
-        af: "Raaklyn ⊥ middellyn gee steeds 90° tussen die raaklynstraal (tg−) en TD, gemerk. Volg die raaklynstraal rondom na B — die volle hoek is ook uitgestip. Sit die middellyn hierdie keer TUSSEN die raaklynstraal en die koord, of sit die koord tussen die raaklynstraal en die middellyn?",
+        /* "(tg−)" used to sit in this sentence — her playtest, 2026-08-12:
+           "what does that (-tg) in brackets mean?" It is the diagram
+           engine's INTERNAL name for the tangent ray in the minus
+           direction (see engine.js legDir: "tg-" = deg − 90) and it had no
+           business in front of a learner. The ray already has a letter on
+           the picture — S — so it is now named the way the figure names
+           it. Swept the whole rounds folder: this was the only place a tg
+           token had leaked out of a comment or a `legs:` array into
+           learner-facing prose. */
+        en: "Tan ⊥ diameter still gives 90° between the tangent ray TS and TD, marked. Trace the tangent ray round to B — the full angle is outlined too. This time, does the diameter sit BETWEEN the tangent ray and the chord, or does the chord sit between the tangent ray and the diameter?",
+        af: "Raaklyn ⊥ middellyn gee steeds 90° tussen die raaklynstraal TS en TD, gemerk. Volg die raaklynstraal rondom na B — die volle hoek is ook uitgestip. Sit die middellyn hierdie keer TUSSEN die raaklynstraal en die koord, of sit die koord tussen die raaklynstraal en die middellyn?",
       },
       diagram: FIG_STEP_T90,
       options: [
@@ -538,7 +595,7 @@ export const round = {
         en: "∠TPD (= 90°, the free right angle at P) and ∠DPB (= x, just transferred) sit NEXT to each other, both inside ∠TPB. What is ∠TPB, and how does it compare to T₁?",
         af: "∠TPD (= 90°, die verniet regte hoek by P) en ∠DPB (= x, pas oorgedra) sit langs mekaar, albei binne ∠TPB. Wat is ∠TPB, en hoe vergelyk dit met T₁?",
       },
-      diagram: FIG_FINAL,
+      diagram: FIG_COMBINE_ASK,
       options: [
         { text: { en: "∠TPB = 90° + x, exactly the same as T₁", af: "∠TPB = 90° + x, presies dieselfde as T₁" }, correct: true },
         { text: { en: "∠TPB = x, the same as ∠DPB", af: "∠TPB = x, dieselfde as ∠DPB" } },

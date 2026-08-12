@@ -22,7 +22,9 @@
      ext            [{name, t:[contactA, contactB]}]  external point = tangent intersection
      tang           [{at, len, lab:[start,end]}]      full tangent line at a contact point
      chords         [[a,b], ...]
-     angles         [{at, legs:[legA,legB], t:labelText, o:{v,r,ar,mark,c,hl,reflex}}]
+     angles         [{at, legs:[legA,legB], t:labelText, o:{v,r,ar,rot,mark,c,hl,reflex}}]
+                    o.rot slides the label along its arc by N degrees
+                    instead of parking it on the bisector (see angleSVG).
                     a leg is a point name, or "tg+" (deg+90) / "tg-" (deg-90)
                     o.reflex:1 (FIX-ROUND-2.md item 2, additive/opt-in) draws
                     the arc the LONG way round between the legs instead of
@@ -93,7 +95,14 @@ function angleSVG(cx, cy, from, to, text, o, accent, W, H) {
   }
   if (text) {
     const lr = o.r || labelR(s, text);
-    const bis = from + s / 2;
+    /* o.rot (additive, opt-in, 2026-08-12): slide the label ALONG its own
+       arc by N degrees instead of leaving it on the bisector. Needed where
+       the bisector happens to lie along a drawn line — pr4's ∠BOD is
+       bisected by the radius OA, so "2y" sat exactly on top of OA and read
+       as though it labelled ∠BOA (her playtest: "it kinda looks like you
+       are saying BOA is 2y"). Only `r` existed before, and every radius on
+       that bisector has the same problem. Nothing without o.rot moves. */
+    const bis = from + s / 2 + (o.rot || 0);
     let [tx, ty] = pol(cx, cy, lr, bis);
     const hw = 6 + (text.length * 3.6);
     tx = Math.max(hw, Math.min(W - hw, tx));
@@ -362,7 +371,68 @@ export function renderDiagram(d, accent, opts = {}) {
     out += `<text class="pl" x="${N(lx)}" y="${N(ly)}">${k}</text>`;
   }
 
+  out += keySVG(d.key, W, H);
+
   return svgWrap(W, H, out, opts.extraClass);
+}
+
+/* --------------------------------------------------------------
+   VALUE KEY (additive, opt-in via d.key — added 2026-08-12 on
+   Megan's ask, with her own Canva mock-up as the reference).
+
+   The problem it solves: a wedge whose value is long ("O₂ = 360−2x")
+   cannot be written ON the wedge without colliding with its neighbour —
+   at the centre of a cyclic quad, O₁ and O₂ share a vertex, so their
+   labels sit on the same small patch of canvas and overlap however
+   they're pinned. Her fix, and it's the right one: keep the SHORT NAME
+   on the wedge (O₁ / O₂ / ∠A, where the learner needs it to read the
+   picture) and move the VALUE to a colour-matched key beside the circle,
+   the way a textbook does it.
+
+   d.key = [{ t, c }, ...]            — defaults to the top-right corner
+   d.key = { at: "tr"|"tl"|"br"|"bl", lines: [{ t, c }, ...] }
+
+   Lines are always LEFT-ALIGNED with each other (her ask, 2026-08-12:
+   "can we align them to the left instead of to the right") — the block
+   shares one left edge and the right edge goes ragged, which reads as a
+   list rather than as text pushed into a corner. For a right-hand corner
+   that means the block's left edge has to be worked out from the widest
+   line, and the engine has no text metrics — so CHW below is a measured
+   per-character estimate. It is deliberately a slight OVER-estimate:
+   too wide only slides the block a few px further from the edge, while
+   too narrow would push the longest line off the canvas.
+   spec.x overrides the computed left edge if a figure ever needs it.
+
+   ⚠️ SYMBOL-ONLY, never prose. This text is rendered verbatim and is
+   NOT translated — same rule as `solution.lines[].st`. "O₁ = 2x" is
+   language-neutral; a sentence here would silently ship English into the
+   Afrikaans version, which no checker would catch (check-bilingual
+   doesn't scan symbol fields, by design).
+   -------------------------------------------------------------- */
+function keySVG(key, W, H) {
+  if (!key) return "";
+  const spec = Array.isArray(key) ? { lines: key } : key;
+  const lines = spec.lines || [];
+  if (!lines.length) return "";
+  const at = spec.at || "tr";
+  const right = at === "tr" || at === "br";
+  const top = at === "tr" || at === "tl";
+  /* LH 20 and y0 16, both set from real getBBox() measurements in the
+     browser, not estimated: at 12.5px bold the glyph box is ~19px tall,
+     so LH 16 made consecutive lines overlap by ~3px and y0 13 pushed the
+     first line's box 2px off the top of the canvas. */
+  /* CHW: real measured advance at 12.5px bold ranges 5.8–6.6 px/char
+     across these strings (subscripts narrow, digits wide), so 7.0 keeps
+     a small safety margin without leaving an obvious gap at the edge. */
+  const LH = 20, PAD = 6, CHW = 7.0;
+  const widest = Math.max(...lines.map(l => (l.t || "").length));
+  const x = spec.x != null ? spec.x
+    : right ? Math.max(PAD, W - PAD - widest * CHW)
+    : PAD;
+  const y0 = top ? 16 : H - PAD - (lines.length - 1) * LH - 4;
+  return lines.map((l, i) =>
+    `<text x="${N(x)}" y="${N(y0 + i * LH)}" class="ky" fill="${l.c || INK}" text-anchor="start">${l.t}</text>`
+  ).join("");
 }
 
 /* --------------------------------------------------------------

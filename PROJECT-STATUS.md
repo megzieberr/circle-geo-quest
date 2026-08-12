@@ -1,3 +1,348 @@
+# Project status — updated 2026-08-12 (pr8b, the misconception paired round, BUILT; NOTHING pushed — still awaiting her playthrough + ship word)
+
+## 🔗 2026-08-12 — pr8b "Which point do you join?" · BUILT, local only
+
+The `MISCONCEPTION-PAIR-HANDOFF.md` item, built in its own session on her
+word ("we need to build the rounds for this misconception construction
+now... you can build this yourself"). New file
+`js/rounds/proof8b-t4-join-pairs.js`, **11 panels**, wired into `index.js`.
+
+- **Her PDF is canon, both figures, all four questions.** Page 1-2's figure
+  becomes figure 1 in the app's own letters (T tangency, D the diameter's
+  far end, A and B the two circumference points); pages 3-4's becomes
+  figure 2, which shares no letter with the first (S tangency, Q the far
+  end, U and V — her tangent R–S–T becomes R–S–**W**, because T means
+  "point of tangency" everywhere else in this app).
+- **The shape she asked for**: choose which chord to join, and judge whether
+  another learner's construction is right — 4 join-choices, 2 judge panels,
+  1 reverse drill ("which question is this construction FOR?"), 4 notes.
+- **Panel 4 is the slide she asked for** — 🔑 "Which two points do we always
+  join?": the far end of the diameter, and the point that HOSTS the angle
+  you are proving. Closes on her verbatim rule.
+- **The swap is the lesson.** On figure 1, D→B is the mistake for Question 1
+  and the correct answer for Question 2 — same picture, opposite answer.
+  Figure 2 repeats it with Q→U. Verified independently, not just asserted:
+  a probe re-derived from the raw coordinates that at EVERY join-choice
+  panel the trap point also gives a genuine 90°, so the wrong answer is a
+  real construction, never a strawman.
+- **No catchphrase panel** — pr8 already spends the T4 arc's one use of her
+  assume-pun, and her ruling is once per arc.
+- **Position**: `pr8b` sits between pr8 and pr9 in `ORDER`, not after pr9,
+  so the mixed finale stays the finale. Same `r2b`/`r10b` convention the
+  main quest already uses. Still after `r21` and before `inv1`, so the
+  load-bearing unlock chain is untouched; `FINAL_QUEST_ROUND_ID` unchanged.
+- **One stale string fixed on the way past**: the Proofs home card said
+  "ten rounds" / "tien rondtes". The count is now dropped from that line
+  entirely — the card already renders a live "N of N proofs done" counter
+  underneath, so the number was both duplicated and fragile.
+
+**Checked, not assumed:** all four checkers green — verify-node **500
+diagrams / 966 angles / 0 mismatches** (up from 489/918), audit-options
+(all 7 new choice panels shuffled, 25/25/25/26, no length tell),
+check-bilingual, check-table-summary. Every angle label measured ≤55 units
+from its vertex, no clipping, no pairwise overlap. All 11 figures rendered
+out and eyeballed — two fixes came from actually looking: panel 1 was
+showing D floating with no line attached (her "Sketch given" pages don't
+have it yet) and figure 2's `x` label read as a letter loose in the middle
+of the circle. Browser-walked at 375px in **BOTH languages**: 11/11 panels
+advance, all 7 correct options found and marked correct, 11/11 diagrams
+render, 0 horizontal overflow, 0 console errors.
+
+## 🔧 2026-08-12 — her playtest, same session: pr8's trap figure was RUBBING OUT her lines
+
+Her words, with two screenshots: *"the second image throws the lines BP and
+PT away… I don't want that please."* She was right and it was a real defect,
+not a preference.
+
+- **pr8 panel 1 → panel 2.** `FIG_TRAP` drew only TB, TD and DB, so going
+  from the claim to the trap the picture LOST chords PT and PB and left P
+  as a bare labelled dot. Those two are **claim lines, not construction
+  lines** — nothing a classmate does can remove them — and their loss also
+  undercut the panel's own question ("does this join get any closer to
+  ∠TPB?"), which only bites if ∠TPB is still visibly sitting there. Fixed:
+  PT and PB stay, and ∠TPB stays marked, uncoloured, exactly as panel 1
+  draws it. Verified in the browser off the live module — panel 1 renders
+  4 lines, panel 2 renders 6; it only ever gains.
+- **Then swept every proof round for the same class of bug** (a figure
+  losing a line or a point the previous panel had). Result: the only other
+  genuine one is **pr5 panel 2 → 3, chord BD** — panel 2 draws it and its
+  own note says "BD is the chord both angles look at", then panel 3 drops
+  it for the rest of the round. It reads far more mildly than pr8's did,
+  because BD sits almost on top of the OB+OD radii. **Left alone, flagged
+  to her** — pr5 is a round she has already signed off twice and the call
+  is hers.
+- Everything else the sweep flagged is legitimate and stays: undoing a
+  classmate's wrong construction (pr6 p2→3, pr8 p2→3, pr8b p3→4 and p8→9),
+  a genuinely different picture (pr4's bowtie cases and recap gallery,
+  pr8b's figure-1 → figure-2 hop), and the deliberately-bare
+  legal-constructions panels (pr2 p5, pr6 p5, pr8 p10 — all documented as
+  such, because the question there is which NEW line may be drawn).
+- Re-checked after the fix: all four checkers green (verify-node **500
+  diagrams / 967 angles / 0 mismatches**), and pr8 + pr8b both walked end
+  to end at 375px in **both languages** — 11/11 panels each, every correct
+  option marked correct, 0 overflow, 0 console errors.
+
+## 🏷️ 2026-08-12 — her playtest: pr5's O₁/O₂ labels overlapped → NEW ENGINE OPTION `d.key`
+
+Her screenshot of pr5 panel 5 plus a **Canva mock-up of the fix she wanted**:
+put the values in a list beside the circle, keep the short names O₁ / O₂ on
+the wedges themselves. She was solving it the way a textbook does.
+
+- **Why it could never be fixed by nudging.** O₁ and O₂ share a vertex —
+  they are the two pieces of the same full turn at O — so "O₁ = 2x" and
+  "O₂ = 360−2x" were being written onto the same small patch of canvas.
+  No amount of `r` tuning separates two long strings that want the same
+  spot; the previous values were only ever held at arm's length.
+- **New additive engine option `d.key`** (`js/engine.js` + a `.ky` rule in
+  `css/styles.css`): a colour-matched value key drawn outside the circle.
+  `key: [{t, c}]` defaults to the top-right; `{at:"tr"|"tl"|"br"|"bl",
+  lines:[…]}` for the other corners. **Opt-in and additive — no existing
+  figure changes.** ⚠️ Key text is SYMBOL-ONLY and untranslated, same rule
+  as `solution.lines[].st`; a sentence there would ship English into the
+  Afrikaans version and no checker would catch it.
+- **Lines are LEFT-ALIGNED with each other** (her follow-up: "can we align
+  them to the left instead of to the right") — one shared left edge, ragged
+  right, so it reads as a list rather than text shoved into a corner. For a
+  right-hand corner that means the left edge is computed from the widest
+  line, and the engine has no text metrics, so `CHW` is a per-character
+  estimate deliberately set slightly WIDE (7.0 against a real 5.8–6.6):
+  over-estimating only slides the block a few px off the edge, while
+  under-estimating would push the longest line off the canvas. `spec.x`
+  overrides it if a figure ever needs that.
+- **pr5 panels 4/5/6** now key one, two and three lines respectively — the
+  key grows exactly as the values are earned, which is FIX-ROUND-3 item 5's
+  "labels upgrade as they're earned" rule, just relocated. Order is the
+  order they're earned (O₁ → O₂ → ∠A), not her mock-up's O₂-first, which
+  was how she happened to type it.
+- **pr6 needed nothing** — it already used bare O₁/O₂ on the wedges.
+- **Every label re-measured with real `getBBox()` in the browser**, not
+  estimated — the node-side box guess was too crude to arbitrate 3px and
+  gave both false positives and false negatives. That measurement drove
+  four real fixes: the key's line height (16→20, lines were overlapping by
+  3px) and first-line offset (13→16, the top line's box hung 2px off the
+  canvas), and re-pinning `x` at C (r 30 / ar 16) and `∠A` (r 24 / ar 13)
+  so neither label sits on top of its own arc, and pulling `O₂` in to r 36
+  (at r 40 it cleared `x` by 0.3px — not visible, but a boundary case worth
+  opening up).
+  ⚠️ **Font loading changes the answer.** An earlier sweep called a
+  placement clean that a later one flagged, because the first ran before
+  "Instrument Sans" had loaded and measured fallback metrics. Any future
+  label measuring must `await document.fonts.ready` first.
+- **∠A's value goes ON the sketch, not in the key** (her follow-up: "let's
+  put the label 180−x of angle A on the sketch, I want them to see that
+  180−x + x = 180"). The recap panel's whole job is the two opposite angles
+  sitting on the picture together — 180−x at A, x at C — visibly making a
+  straight angle; a learner cannot see that sum if one half is in a list.
+  Written bare, no "∠A =" prefix, matching how x is written at C. Panel 6's
+  key therefore carries only O₁ and O₂, the two that share the crowded
+  centre vertex.
+  Placing it needed a **negative label radius** (`r: -42`), which flips the
+  label to the far side of the vertex — outside the circle, just beyond A.
+  A sits at 160° and O₁'s label sits on the 160° bisector out of O, so the
+  two are on the same line and "180−x" (~36px) and "O₁" were competing for
+  one narrow corridor; every inward placement either hit O₁ or sat on top
+  of point A. O₁ is back at its original r: 34 as a result.
+- ⚠️ **The overlap probe was blind to this class of fault** — it compared
+  text against text, so a label sitting squarely on a point dot passed
+  clean and only rendering the figure and LOOKING caught it. The sweep now
+  also checks every angle label against every point's coordinates.
+- **Final sweep: all 71 figures in the whole proof group (pr0–pr9 + pr8b)
+  measured with real getBBox — text-vs-text, text-vs-point-dot, clipping
+  and key alignment all clean.**
+- Re-checked: all four checkers green; pr5 and pr6 both walked end to end
+  at 375px in **both languages** — 6/6 panels each, 3 panels carrying the
+  key in pr5, 0 in pr6, 0 overflow, 0 console errors.
+- **Flagged, NOT changed — pr6's centre is genuinely tight.** Its `O₂` sits
+  0.6px from the centre's own `O` label (touching, not overlapping). It is
+  boxed in: moving it out collides with the `60°` label, moving it in
+  collides with `O`. The real fix is to give pr6 a key too (put
+  "∠P = 60°" in it and leave `∠P` on the wedge), which would also make the
+  two cyclic-quad rounds match — but that changes what a learner reads on a
+  round she has signed off, so it is hers to approve.
+
+## 🎀 2026-08-12 — pr7: label pin, a giveaway removed, and the BOWTIE scaffold
+
+Three more from her playtest, all in pr7 (T4 discovery). **pr7 is now 7
+panels** (was 6).
+
+- **"T₁ = 90−x" moved right** (r 34 → 58). At 34 it sat squarely on top of
+  the pink right-angle square, its own purple arc AND the green x arc.
+  ⚠️ **The text-overlap probe never saw it** — all three of those are
+  `<path>`s, not text. Measured against the rendered path boxes this time;
+  34/42/48/54 all still touch something, 58 is the first clear radius.
+  3 units past the ≤55 label-pinning standard, deliberately: that standard
+  was set for 1–2 character labels, and this one is nine characters wide,
+  so its box reaches much further back toward the vertex.
+- **The giveaway is gone** (her words: "we need to remove the 90−x there at
+  the top bc it is just giving away the answer"). Panel 6 asks what ∠TPA is
+  and one of its options is "∠TPA = 90° − x, exactly the same as T₁" — but
+  it had been handed the finished recap figure, which printed 90−x on the
+  picture. New `FIG_COMBINE_ASK` marks ∠TPA and leaves it unlabelled, the
+  same convention panels 3 and 4 already used. FIG_FINAL now appears only
+  on the recap.
+- **NEW panel 5: the bowtie made visible** (her ask, with her own marked-up
+  screenshot as the reference). The four arms T→D, T→A, P→D, P→A
+  highlighted green, both x's labelled, and the shape named in words — two
+  triangles meeting point-to-point, both sharp corners on the circle, both
+  looking at chord DA from the same side, and P slides anywhere on that arc
+  without the angle changing.
+  ⚠️ **It shows for EVERYONE, not only after a wrong answer.** She asked
+  for it as a rescue ("if the kids get the previous question wrong"), but
+  proof rounds render through `renderInvestigate()`, whose only response to
+  a wrong tap is the text hint ladder — the `q-hl` figure-highlight
+  mechanism lives in `questions.js` and serves the graded rounds only.
+  Branching a panel on the previous panel's result is new engine surface,
+  so it was not built unasked. As a slide for everyone it still works both
+  ways: right-answerers get the WHY, wrong-answerers get the rescue. **If
+  she wants it conditional, that is a real (small) engine change — hers to
+  approve.**
+
+### ⚠️ What the label probes can and cannot see (learned the hard way today)
+Three separate faults this session were invisible to the measuring and only
+turned up by rendering the figure and LOOKING at it:
+1. a label sitting on a point dot (pr5's "180−x" on point A),
+2. a label sitting on its own arc (pr5's x and ∠A),
+3. a label sitting on a right-angle mark (pr7's "T₁ = 90−x").
+The sweep now covers **text-vs-text, text-vs-point-dot, clipping and key
+alignment** — those four are reliable. An arc-vs-label check was tried and
+**abandoned as useless**: `getBBox()` on an arc returns a rectangle
+covering the whole arc span, so a label correctly sitting just outside its
+own arc still lands inside that box — it fired on a dozen long-standing,
+perfectly fine figures. **Rendering and looking is not optional here.**
+
+**Current state: 72 figures swept, all clean on the four reliable checks;
+all four checkers green (501 diagrams / 972 angles / 0 mismatches).**
+
+## 🩹 2026-08-12 — her playtest, later batch: pr8 labels + the CONDITIONAL scaffold
+
+- **`(tg−)` removed from learner prose.** Her question: *"what does that
+  (-tg) in brackets mean?"* — it is the diagram engine's INTERNAL name for
+  the tangent ray in the minus direction (`engine.js` legDir: `"tg-"` =
+  deg − 90) and it had no business in front of a learner. The ray already
+  has a letter on the picture, so pr8 panel 4 now says "the tangent ray
+  **TS**". Swept the whole rounds folder: that was the **only** place a tg
+  token had escaped a comment or a `legs:` array into learner-facing text.
+- **pr8's two x labels lifted** (her ask: "the label x needs to shift a bit
+  upwards", "the other label x also needs to shift a bit up"): x at T
+  20 → 32, x at P 22 → 34. Lifting them ran straight into the wide
+  "T₁ = 90+x" label, so that moved too, 46 → 54 — a twelve-combination
+  grid measured in the browser; this is the tightest set that clears.
+- **pr8 panel 8's giveaway removed** ("the 90+x should not be visible on
+  the sketch yet bc we are only asking now") — new `FIG_COMBINE_ASK`, same
+  fix as pr7's own combine panel. **The same fault existed in both T4
+  rounds**: each asking panel had been handed the finished recap figure.
+  FIG_FINAL now appears only after the answer is known.
+
+### ✅ HER RULINGS (2026-08-12, later)
+- **pr5's chord BD: LEAVE IT.** Her words: *"No, leave that one, it has a
+  purpose."* Not a defect — do not re-flag it in a future sweep.
+- **The bowtie scaffold: YES, make it conditional.** Built as a NEW opt-in
+  engine surface, `panel.scaffold` (`js/investigate.js` + a `.dp-scaffold`
+  rule in `css/styles.css`): a choice panel may carry
+  `scaffold: { diagram, note }`, hidden until the learner answers WRONG,
+  then rendered under the hint — a full re-drawn figure plus an
+  explanation, which is the "show me why" a text hint cannot give.
+  **Not done as a conditional PANEL, deliberately**: the "4 / 6" counter
+  would skip a number and `panels.length × XP_RATE` would pay everyone for
+  a slide only some learners saw. Inline keeps the counter honest, keeps XP
+  identical for everyone, and puts the picture directly under the question
+  it rescues with the options still on screen. pr7 is back to **6 panels**;
+  the bowtie now lives on panel 4 as its scaffold.
+  **Proven in the browser, both paths**: answer panel 4 correctly → the
+  scaffold stays hidden; answer it wrong → it appears, with the figure,
+  all four green bowtie arms, and the explanation. 0 console errors.
+
+## 🎨 2026-08-12 — final playtest batch: pr4 bowtie, pr6 key, pr9 gets diagrams
+
+- **pr4's bowtie punchline rebuilt** (her words: *"it kinda looks like you
+  are saying BÔA is 2y"*, plus her own Canva mock-up). Two real faults:
+  · ∠BÔD (140°) and ∠AÔD (70°) **overlap** — AÔD sits wholly inside BÔD,
+    both closing on OD — and their arcs were drawn at the SAME default
+    radius, so in the shared wedge neither could be traced to its own
+    arms. They now NEST: 2y outer (ar 48), 2x inner (ar 30).
+  · the "2y" LABEL sat on the bisector of ∠BÔD, which on this figure is
+    200° — **the exact direction of the radius OA**. So it printed along
+    OA and read as ∠BÔA's label. No value of `r` could fix that; every
+    point on that bisector is on OA.
+  · **NEW additive engine option `o.rot`** (`js/engine.js`): slide a label
+    ALONG its arc by N degrees instead of parking it on the bisector.
+    2y gets rot −40, landing where her mock-up put it. Nothing without
+    `o.rot` moves.
+  · the two filled marker-pen wedges are dropped **on this one figure** —
+    they overlapped each other in the shared region (green over orange),
+    which is exactly the patch a learner must read, and her mock-up has
+    none. Every other figure in the round keeps its wedge; this is the
+    only one where two wedges share a vertex.
+- **pr6 gets a key** (her explicit yes) — the same treatment pr5 got, so
+  the two cyclic-quad rounds finally match. `∠P = 60°` moves into the key,
+  the wedge keeps the short name `∠P`, and `O₂`'s label slides 25° along
+  its arc (the new `o.rot`) into the empty right-hand side of the circle.
+  **Its tightest gap goes from 0.6px to 10.8px.**
+- **pr9's six speed-match panels get STARTING DIAGRAMS** (her ask: "without
+  the constructions, just the starting diagrams"). This round was built
+  figure-free on the argument that the claim is all words — her playtest
+  overturned it and she was right: parsing "prove that a line from the
+  centre, perpendicular to a chord, bisects the chord" cold is a paragraph
+  of work before the actual question starts.
+  ⚠️ **CLAIM ONLY, NEVER THE CONSTRUCTION** — no radii joined, no diameter
+  drawn, no far-end joins, and target angles marked but never given a
+  value. Drawing the construction would hand over the answer, which is the
+  exact fault her playtest caught on pr7's and pr8's combine panels.
+  Five of the six reuse coordinates already verified in the round that
+  teaches that theorem; only the reflex picture is new (A:200, B:340,
+  P:270 → reflex ∠AOB = 220°, ∠APB = 110°). Panels 8-10 stay figure-free:
+  they propose a move in the abstract, with no particular circle behind it.
+
+**Checked:** all four checkers green — verify-node **506 diagrams / 976
+angles / 0 mismatches** (up from 500/967). **83 proof figures swept** with
+real getBBox (text/text, text/point-dot, clipping, key alignment): all
+clean. Every new and changed figure rendered out and eyeballed. Six key
+panels mounted through the app's own renderer in **both languages**:
+figures present, no overflow, 0 console errors.
+
+⚠️ **What was NOT done:** a full click-through of pr4/pr6/pr9. The
+automated walker kept stalling on its own option-matching (markup inside
+option text, a "Next" vs "Continue" button label, and orphaned earlier
+runs mutating round state concurrently) — every stall was the test
+harness, never an app fault, and each was confirmed by inspecting the
+live screen. The per-panel mount check above replaced it. **Her own
+playthrough is still the gate.**
+
+## 🏷️ 2026-08-12 — last item: the "T₁ = " prefix comes off the wedge
+
+Her words: *"we can remove the T1 label here, just keep the 90-x."*
+
+- pr7's wedge at T now reads a bare **`90−x`**, matching ∠TPA's own bare
+  `90−x` at P — so the recap shows the two equal angles as a matched pair,
+  which is the whole theorem. Same house rule she set on pr5's `180−x`:
+  **the diagram states values, the prose names angles.** T₁ is still named
+  in every prompt, hint and note that needs it, and the written solution
+  line in pr8's error-spot panel keeps `T₁ = 90° + x` — that is a learner's
+  working, where naming the angle is correct.
+- **pr8 got the same treatment** (`90+x`), unasked but deliberate: the two
+  T4 rounds are explicitly built to read as one continuous story, and she
+  has twice this session chosen consistency between paired rounds. **Easy
+  to revert if she wanted only pr7.**
+- **A pleasant side effect: the crowding problem solved itself.** The
+  earlier fix had pushed this label out to r 58 (pr7) / 54 (pr8), past the
+  round's own ≤55 standard, purely because a nine-character label reaches
+  a long way back toward its vertex. At four characters every radius from
+  34 upward measures clear, so both come back in — 40 and 42 — sitting
+  just outside their own arcs.
+
+**Final state of the batch: all four checkers green (506 diagrams / 976
+angles / 0 mismatches); 83 proof figures swept clean.**
+
+### 📌 Still hers, unchanged
+1. 💻 Her playthrough of pr4–pr8 **and now pr8b** — dev server
+   `circle-quest`, `localhost:5180/?preview=1`.
+2. Ship only after that, on her explicit yes: plain push, no migration.
+
+**Nothing else is waiting on a decision — every open question from the
+2026-08-12 playtest has been answered and built.**
+
+---
+
 # Project status — updated 2026-08-12 morning (FIX-ROUND-3 playtest batch DONE on top of the overnight run; NOTHING pushed — awaiting her final playtest + ship word)
 
 ## ☀️ 2026-08-12 morning — her playtest → FIX-ROUND-3, ALL 12 ITEMS DONE

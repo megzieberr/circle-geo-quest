@@ -19,11 +19,13 @@
          Every one of these six panels offers the SAME four options — the
          four theorems' own recap sentences, expanded to name both the
          construction and the engine — so the "wrong" options are always a
-         genuine tool from a genuine round, just the wrong one. Figure-free
-         throughout: the claim is entirely in words, so a picture would be
-         decoration (the same call P0 made for its general panels, and the
-         reason investigate.js grew a no-diagram nudge string during this
-         build's review).
+         genuine tool from a genuine round, just the wrong one.
+         These six were figure-free until 2026-08-12, on the argument that
+         the claim is entirely in words so a picture would be decoration.
+         Her playtest overturned it and she was right — see the STARTING
+         DIAGRAMS block below. Each now carries a CLAIM-ONLY picture (never
+         the construction). Panels 8-10 stay figure-free: they propose a
+         move in the abstract, with no particular circle behind them.
      8-10 · choice — the legal/illegal lightning set. THREE fresh moves
          (not a clone of pr2/pr4/pr6/pr8's four-option "which is legal"
          panels): each panel proposes ONE move and asks Legal or Illegal,
@@ -77,6 +79,111 @@ function toolOptions(correctId) {
   ];
 }
 
+/* ============================================================
+   STARTING DIAGRAMS for the six speed-match panels (added
+   2026-08-12 on her ask: "for the mixed finale, please give them
+   diagrams (without the constructions, just the starting diagrams)").
+
+   This round was built figure-free on purpose — the claim is entirely in
+   words, so a picture would have been decoration. Her playtest says
+   otherwise, and she is right: reading "prove that a line from the centre,
+   perpendicular to a chord, bisects the chord" cold is a paragraph of
+   parsing before the actual question (which TOOL?) even starts. A picture
+   of the claim removes that tax without answering anything.
+
+   ⚠️ CLAIM ONLY, NEVER THE CONSTRUCTION. Each figure shows exactly what a
+   question would give you and not one line more — no radii joined, no
+   diameter drawn, no far-end joins. The whole point of the panel is to
+   pick the construction, so drawing it would be handing over the answer,
+   the same fault her playtest caught on pr7's and pr8's combine panels.
+   Target angles are marked but never labelled with a value.
+
+   COORDINATES ARE REUSED, NOT INVENTED — every one is lifted from a
+   figure the checkers have already verified in the round that teaches
+   that theorem, so these add no new geometry to trust:
+     T1 pair  ← proof2-t1-transfer.js  (P:55, Q:195, N = midpoint)
+     same-seg ← proof4-t2-transfer.js  (A:216, B:324, E:52, F:128)
+     reflex   ← the one genuinely new picture (A:200, B:340, P:270): the
+                reflex ∠AOB = 220° and ∠APB = 110° = half of it, P sitting
+                on the arc the reflex angle looks across. Engine-verified
+                like everything else.
+     cyc quad ← proof5-t3-discovery.js (A:160, B:80, C:350, D:240)
+     tan-chd  ← proof7-t4-discovery.js (T:270, A:38, P:150)
+   ============================================================ */
+
+/* p2 · T1 variant A — GIVEN: the line from the centre meets the chord at
+   90°. Nothing joined to P or Q; that join IS the answer. */
+const FIG_T1_PERP = {
+  O: true,
+  pts: { P: 55, Q: 195 },
+  mid: [{ name: "N", of: ["P", "Q"] }],
+  chords: [["P", "Q"], { a: "O", b: "N" }],
+  angles: [{ at: "N", legs: ["O", "Q"], t: "", o: { v: 90, mark: 1 } }],
+};
+
+/* p3 · T1 variant B — GIVEN: N is the midpoint (ticked). No right-angle
+   mark: that is the thing being proven. */
+const FIG_T1_MID = {
+  O: true,
+  pts: { P: 55, Q: 195 },
+  mid: [{ name: "N", of: ["P", "Q"] }],
+  chords: [{ a: "P", b: "N", mk: "t1" }, { a: "N", b: "Q", mk: "t1" }, { a: "O", b: "N" }],
+};
+
+/* p4 · T2 in its "same segment" disguise — GIVEN: chord AB and two points
+   E and F on the same arc, each joined to A and B. The radii OA/OB are
+   the construction, so they are NOT drawn. */
+const FIG_SAME_SEG = {
+  O: true,
+  pts: { A: 216, B: 324, E: 52, F: 128 },
+  chords: [["A", "B"], ["E", "A"], ["E", "B"], ["F", "A"], ["F", "B"]],
+  angles: [
+    { at: "E", legs: ["A", "B"], t: "", o: { v: 54 } },
+    { at: "F", legs: ["A", "B"], t: "", o: { v: 54 } },
+  ],
+};
+
+/* p5 · T2 in its reflex phrasing — GIVEN: the reflex angle at the centre
+   and the angle at P standing on the same arc. OA and OB are given here
+   (the claim is ABOUT the angle at the centre, so it cannot be stated
+   without them); the diameter through P is the construction and is not
+   drawn. */
+const FIG_REFLEX = {
+  O: true,
+  pts: { A: 200, B: 340, P: 270 },
+  chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]],
+  angles: [
+    { at: "O", legs: ["B", "A"], t: "", o: { v: 220, reflex: 1 } },
+    { at: "P", legs: ["A", "B"], t: "", o: { v: 110 } },
+  ],
+};
+
+/* p6 · T3 — GIVEN: a bare cyclic quadrilateral, the opposite pair marked.
+   No radii: joining them is the construction. */
+const FIG_CYCLIC_QUAD = {
+  O: true,
+  pts: { A: 160, B: 80, C: 350, D: 240 },
+  chords: [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"]],
+  angles: [
+    { at: "A", legs: ["D", "B"], t: "", o: { v: 100 } },
+    { at: "C", legs: ["B", "D"], t: "", o: { v: 80 } },
+  ],
+};
+
+/* p7 · T4 — GIVEN: the tangent, the chord, and the point in the alternate
+   segment, with both angles marked. The diameter from T is the
+   construction and is not drawn. */
+const FIG_TAN_CHORD = {
+  O: true,
+  pts: { T: 270, A: 38, P: 150 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: [["T", "A"], ["P", "T"], ["P", "A"]],
+  angles: [
+    { at: "T", legs: ["tg+", "A"], t: "", o: { v: 64 } },
+    { at: "P", legs: ["T", "A"], t: "", o: { v: 64 } },
+  ],
+};
+
 export const round = {
   id: "pr9", n: 0, accent: AC, kind: "proof", group: "g7",
   title: { en: "Mixed finale: pick your tool", af: "Gemengde eindronde: kies jou werktuig" },
@@ -103,6 +210,7 @@ export const round = {
         en: "Speed match: prove that a line from the centre, perpendicular to a chord, bisects the chord. Which construction and engine actually proves it?",
         af: "Spoed-passing: bewys dat 'n lyn vanaf die middelpunt, loodreg op 'n koord, die koord halveer. Watter konstruksie en werktuig bewys dit werklik?",
       },
+      diagram: FIG_T1_PERP,
       options: toolOptions("T1"),
       hints: [
         { en: "This claim is about a line from the centre meeting a chord — no tangent, no cyclic quad, no second circumference point. Which tool builds two triangles straight from the two ends of the chord?",
@@ -124,6 +232,7 @@ export const round = {
         en: "Speed match: prove that a line from the centre which bisects a chord meets that chord at 90°. Which construction and engine actually proves it?",
         af: "Spoed-passing: bewys dat 'n lyn vanaf die middelpunt wat 'n koord halveer, daardie koord teen 90° ontmoet. Watter konstruksie en werktuig bewys dit werklik?",
       },
+      diagram: FIG_T1_MID,
       options: toolOptions("T1"),
       hints: [
         { en: "Same ingredients as the last claim — a line from the centre, one chord, nothing else — just said the other way round: this time the midpoint is the starting fact and the right angle is what's being chased.",
@@ -145,6 +254,7 @@ export const round = {
         en: "Speed match: prove that two angles standing in the same segment, on the same chord, are equal. Which construction and engine actually proves it?",
         af: "Spoed-passing: bewys dat twee hoeke wat in dieselfde segment staan, op dieselfde koord, gelyk is. Watter konstruksie en werktuig bewys dit werklik?",
       },
+      diagram: FIG_SAME_SEG,
       options: toolOptions("T2"),
       hints: [
         { en: "\"Same segment\" doesn't name a new tool — it's a claim about two circumference angles on one chord, and you already met the construction that PROVES that fact, not just states it.",
@@ -166,6 +276,7 @@ export const round = {
         en: "Speed match: prove that the reflex angle at the centre is double the angle at the circumference standing on the same arc. Which construction and engine actually proves it?",
         af: "Spoed-passing: bewys dat die inspringende hoek by die middelpunt dubbel die hoek by die omtrek is wat op dieselfde boog staan. Watter konstruksie en werktuig bewys dit werklik?",
       },
+      diagram: FIG_REFLEX,
       options: toolOptions("T2"),
       hints: [
         { en: "Reflex just means the angle going the long way round — the construction that produces it is still the one built from a diameter through the circumference point.",
@@ -187,6 +298,7 @@ export const round = {
         en: "Speed match: prove that the opposite angles of a cyclic quadrilateral are supplementary. Which construction and engine actually proves it?",
         af: "Spoed-passing: bewys dat die teenoorstaande hoeke van 'n koordevierhoek supplementêr is. Watter konstruksie en werktuig bewys dit werklik?",
       },
+      diagram: FIG_CYCLIC_QUAD,
       options: toolOptions("T3"),
       hints: [
         { en: "This claim is about a cyclic quadrilateral's OPPOSITE angles — not a single angle at the centre versus one at the circumference. Which tool needed TWO applications of a theorem, on the SAME central angle, to reach two angles at once?",
@@ -208,6 +320,7 @@ export const round = {
         en: "Speed match: prove that the tangent-chord angle equals the angle in the alternate segment, on the far side of the chord. Which construction and engine actually proves it?",
         af: "Spoed-passing: bewys dat die raaklyn–koord-hoek gelyk is aan die hoek in die oorstaande segment, aan die verste kant van die koord. Watter konstruksie en werktuig bewys dit werklik?",
       },
+      diagram: FIG_TAN_CHORD,
       options: toolOptions("T4"),
       hints: [
         { en: "This claim pairs a tangent with a chord, not a chord with the centre. Which tool starts by drawing a diameter from the point where the TANGENT touches?",

@@ -55,6 +55,7 @@ import { round as pr5 } from "./proof5-t3-discovery.js";         // g7 · Proof 
 import { round as pr6 } from "./proof6-t3-transfer.js";          // g7 · Proof rounds — T3 transfer (session 4)
 import { round as pr7 } from "./proof7-t4-discovery.js";         // g7 · Proof rounds — T4 discovery (session 5)
 import { round as pr8 } from "./proof8-t4-transfer.js";          // g7 · Proof rounds — T4 transfer (session 5)
+import { round as pr8b } from "./proof8b-t4-join-pairs.js";      // g7 · Proof rounds — T4 paired which-join drills (MISCONCEPTION-PAIR-HANDOFF.md)
 import { round as pr9 } from "./proof9-mixed-finale.js";         // g7 · Proof rounds — mixed finale (session 6)
 import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
@@ -88,7 +89,12 @@ const ORDER = [
   // Station is hidden (stationsLive: false in config.js) and its unlock
   // chain is pinned to FINAL_QUEST_ROUND_ID (below), not to whatever round
   // happens to sit last in this array — see js/stations.js.
-  pr0, pr1, pr2, pr3, pr4, pr5, pr6, pr7, pr8, pr9,
+  // pr8b sits BETWEEN pr8 and pr9 on purpose: it belongs to the T4 arc
+  // (it drills pr7/pr8's own construction), and pr9 must stay the mixed
+  // FINALE — appending pr8b after it would leave the round that recaps all
+  // four theorems sitting in the middle of the group. Same convention the
+  // main quest already uses for inserted rounds (r2b, r10b).
+  pr0, pr1, pr2, pr3, pr4, pr5, pr6, pr7, pr8, pr8b, pr9,
   inv1, inv2, inv3, inv4, inv5, inv6,                    // g6 · Investigation Station 🚂
 ];
 
@@ -113,7 +119,7 @@ const GROUP = {
   tanintro: "g3", tanchordintro: "g3", dtanchord: "g3", r10: "g3", r10b: "g3", dtanrad: "g3", r9: "g3", dtanpoint: "g3", r11: "g3", eprovetan: "g3",
   r12: "g4", r14: "g4", r15: "g4", r16: "g4",
   r18: "g5", r19: "g5", r20: "g5", r21: "g5",
-  pr0: "g7", pr1: "g7", pr2: "g7", pr3: "g7", pr4: "g7", pr5: "g7", pr6: "g7", pr7: "g7", pr8: "g7", pr9: "g7",
+  pr0: "g7", pr1: "g7", pr2: "g7", pr3: "g7", pr4: "g7", pr5: "g7", pr6: "g7", pr7: "g7", pr8: "g7", pr8b: "g7", pr9: "g7",
   inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
 };
 
