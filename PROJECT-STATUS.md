@@ -22,14 +22,27 @@ Public-repo scan clean: no learner names, no keys, no personal email.
   43 main quest**, and pr8b renders as "Which point do you join?", 11
   panels, with its rule-slide figure drawing all nine labels off live code
 
+### ✅ Confirmed by her, same session
+She did the phone double-load AND played it: **"Did both, it looks great."**
+The proof group is live, on her phone, and accepted. Nothing is pending.
+
 ### 📌 Pending on Megan
-- 📱 2 min: open the live site on your phone, **close and reopen it twice**
-  — the service worker needs a double load before a returning device shows
-  new code.
-- 💻 10 min: play the Proofs card end to end — this is the first time the
-  whole group has been live, and an automated walk is not your eye.
-- ⏳ Whenever: pr8 also lost its "T₁ = " prefix, which she only asked for on
-  pr7. One word reverts it.
+*(nothing)*
+
+## 🔭 Next up
+1. **Learners still don't have the proof rounds pointed out to them.** The
+   group is live and open to everyone from the home screen's Proofs card,
+   but no announcement has gone out. Her call whether it needs one — pr8b
+   in particular is built for the exact mistake she watches them make.
+2. **Dynamic Geometry (Ch 8)** — planned in `DYNAMIC-GEO-PLAN.md`, build
+   week of 2026-08-17. Six arcs; four new engine capabilities listed there.
+   Worth knowing before that build: three additive engine options landed
+   today (`d.key`, `o.rot`, `panel.scaffold`) and the dynamic-geo plan
+   predates them.
+3. **Standing, both hers, both unchanged all session**: the mini-diagram
+   stacking CSS one-liner, and the "Proofs"/"Bewyse" card name.
+4. **One-word revert available**: pr8 lost its "T₁ = " prefix along with
+   pr7, though she only asked about pr7.
 
 ---
 
