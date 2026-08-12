@@ -1,3 +1,83 @@
+# Project status — updated 2026-08-12 (evening) — ADMIN TIDY-UP, SHIPPED AND VERIFIED LIVE
+
+## Where we are
+
+Two small teacher-dashboard jobs, both live. Commit `3e7c0e5`, pushed
+`6d38dc9..3e7c0e5`, **no migration, no `sw.js` change, no shared app CSS**
+(`css/admin.css` and `js/admin.js` only). Verified on the live host, not just
+pushed: `admin.html`, `js/admin.js`, `css/admin.css` all 200, and the live
+`admin.js` carries the new `SHOW` block and `PROOF_ROUND_IDS` while the live
+`admin.css` carries the `.proof-strip` rules.
+
+**1. Four panels hidden — HIDDEN, NOT REMOVED.** One `SHOW` block at the top of
+`js/admin.js` switches off 🙋 "I don't get it", 🏆 Circle Champion and 🔬
+Investigation Station activity. Every render function, CSS rule and database
+RPC behind them is untouched — flip a flag back to `true` and the panel returns
+exactly as it was. The matching fetch in `load()` is skipped too, so a hidden
+panel costs nothing to load either.
+⚠️ **"Who to sit next to" is not its own panel** — it is the by-learner table
+INSIDE the "I don't get it" report, so it hides and returns with it. She asked
+for both hidden, so this matches; it matters only if she ever wants one back.
+
+**2. Proof rounds now show properly in the "every attempt" panel.** They were
+never actually missing — they rendered as the grey dashed "👁️ … explored" line
+a cutscene gets, no tick and no XP, because a proof round carries `panels`
+rather than `questions` and so falls outside `SCORED_ROUND_IDS`. Now:
+- a proof finish gets its own green line — 🔗, the round name, "done", the XP,
+  and "N plays" when the learner went back for another go;
+- a **🔗 Proofs strip** sits at the top of the panel: "N of 11 done" plus a chip
+  per proof round, green for done, each naming its round on hover.
+- ⚠️ **The strip reads the dashboard SUMMARY (`data.rows[].rounds`), not the
+  timeline rows below it** — the timeline is capped at the most recent 400
+  events, so on a busy learner an early proof finish could scroll out of the
+  fetch and the strip would silently under-count.
+- **No percentage chain on proof lines, deliberately**: a proof round banks
+  score 1 every time (completing IS passing — `investigate.js finish()`), so a
+  chain would read "100% › 100%" and say nothing.
+- Both are built from `PROOFS` / `kind`, so a twelfth proof round needs no
+  change here.
+
+**Checked before shipping** on a local copy (`admin.html?local=1`, seeded
+learner): the four panels are gone from the rendered dashboard, the strip reads
+3 of 11 with exactly the right chips green, a replay shows as "2 plays" with
+the two XP amounts summed, chips wrap inside the strip at 420px, 0 page
+overflow, 0 console errors. ⚠️ Browser-pane screenshots still time out on this
+machine (rAF dead), so this was measured through the DOM, not eyeballed.
+
+**Live data note, checked against Supabase the same session:** exactly ONE
+proof round has ever been finished — a single learner did `pr0` on 2026-08-12
+at 19:00 UTC. So the new strip will read 0 or 1 of 11 for everybody until the
+class actually starts playing the group.
+
+Her word after the deploy: *"looks good, thanks."*
+
+## Decisions
+- **2026-08-12 (evening) — dashboard panels are switched off with a flag, never
+  deleted.** Her ask was "just hide, don't nuke or remove". The `SHOW` block in
+  `js/admin.js` is the one place to flip; nothing else about a hidden panel
+  changes. Any future "hide this panel" request goes in that block.
+- **2026-08-12 (evening) — proof progress belongs in the learner timeline, not
+  a new panel.** She asked to see it in the "every attempt" panel specifically,
+  and the proof rounds live off the main map, so the timeline is the only place
+  a teacher sees one learner's whole picture.
+
+## 📌 Pending on Megan
+*(nothing)*
+
+## 🔭 Next up
+1. **Dynamic Geometry (Ch 8)** — planned in `DYNAMIC-GEO-PLAN.md`, build week of
+   2026-08-17. Read the note in the section below first: three additive engine
+   options (`d.key`, `o.rot`, `panel.scaffold`) landed after that plan was
+   written.
+2. **Learners still haven't been told the proof rounds exist.** Live and open
+   from the home screen's Proofs card, but no announcement — and the Supabase
+   check above confirms only one learner has found them. Her call.
+3. **Standing, all hers, all unchanged**: the mini-diagram stacking CSS
+   one-liner, the "Proofs"/"Bewyse" card name, and the one-word revert of pr8's
+   "T₁ = " prefix.
+
+---
+
 # Project status — updated 2026-08-12 — 🚀 SHIPPED AND LIVE
 
 ## 🚀 2026-08-12 — SHIPPED, on her word ("yes, you can ship the circle geo quest")
