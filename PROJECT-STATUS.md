@@ -1,4 +1,34 @@
-# Project status — updated 2026-08-12 overnight (FIX-ROUND-2 batch DONE: her cheat notes are now the app's proofs; NOTHING pushed — she reviews + ships in the morning)
+# Project status — updated 2026-08-12 morning (FIX-ROUND-3 playtest batch DONE on top of the overnight run; NOTHING pushed — awaiting her final playtest + ship word)
+
+## ☀️ 2026-08-12 morning — her playtest → FIX-ROUND-3, ALL 12 ITEMS DONE
+
+She playtested the overnight batch and gave 12 fixes one by one (full list +
+her misconception-PDF transcription in `FIX-ROUND-3.md`); three Sonnet
+sessions (D: pr4 · E: pr5/pr6 · F: pr7/pr8), each foreman-reviewed. Commits
+`be06e20`+`216aae0` (D + review fix), `3345c06` (E), `d4c3133`+`590f288`
+(F + review fix). All four checkers green: **489 diagrams / 918 angles /
+0 mismatches**; every proof-round label measured ≤55 units from its vertex.
+
+- **pr4 (13 panels now)**: bowtie split into her six-step build; options
+  algebra-only (2y − 2x); recap mini cleaned; all drifted labels pinned.
+- **pr5/pr6**: TWO colour families (green x+O₁ doubling pair, orange
+  O₂+∠A derived pair — her ruling, replaces the 4-colour scheme); labels
+  upgrade as values are earned (O₁ → "O₁ = 2x" the moment it's chosen);
+  radii ticks removed from pr5; pr6 drifted labels pulled in.
+- **pr8 (11 panels now)**: chain split stepwise + algebra-only; the trap is
+  now the REAL classroom mistake — D joined to B (legal, gives a genuine
+  90°, wrong point) — invented point Q gone. Canon: her Tan-chord Proof
+  Misconception.pdf, rule **"You must join the point that you are trying
+  to prove!"** (in the trap note, the correct-join panel and the recap;
+  AF: "verbind die punt wat jy probeer bewys"). pr7: two label pins.
+- **Declined by the build (flagged to her)**: the optional paired-exercise
+  closing panel (prove the OTHER angle, join swaps — her PDF's structure)
+  — a second full verified chain was too big to rush pre-class. Candidate
+  for the next batch if she wants it.
+
+### 📌 Now
+1. **Her final playtest** of pr4–pr8 (localhost:5180/?preview=1).
+2. **Ship on her yes**: plain push (~31 local commits), no migration.
 
 ## 🌙 2026-08-11→12 overnight — the FIX-ROUND-2 foreman run, ALL DONE, local only
 
