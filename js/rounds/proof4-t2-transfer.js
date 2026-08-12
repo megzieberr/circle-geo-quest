@@ -438,7 +438,7 @@ const FIG_BOWTIE = {
     { a: "C", b: "A", hl: X_COLOR }, { a: "C", b: "B", hl: Y_COLOR },
   ],
   angles: [
-    { at: "C", legs: ["O", "A"], t: "x", o: { v: 35, c: X_COLOR } },
+    { at: "C", legs: ["O", "A"], t: "x", o: { v: 35, r: 40, c: X_COLOR } },
     { at: "C", legs: ["O", "B"], t: "y", o: { v: 70, c: Y_COLOR } },
     { at: "O", legs: ["B", "D"], t: "2y", o: { v: 140, c: Y_COLOR, hl: Y_COLOR } },
     { at: "O", legs: ["A", "D"], t: "2x", o: { v: 70, c: X_COLOR, hl: X_COLOR } },
