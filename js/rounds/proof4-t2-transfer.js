@@ -51,8 +51,68 @@
        panel 7 (recap) keeps its gallery of three, with the third mini
        swapped for the subtraction picture and re-captioned.
 
-   SEVEN PANELS (was six), same renderInvestigate() as pr0-pr3 — no new
-   panel type, no typed answers:
+   REVISED 2026-08-12 (FIX-ROUND-3.md, Session D, items 1-4 — her morning
+   playtest of the FIX-ROUND-2 rebuild above, pre-class fix window):
+     · item 1 — FIG_REFLEX_CONSTRUCT's x/y-at-P labels and their isosceles
+       twins at A/B were drifting mid-triangle on her screenshot. A headless
+       probe (computeGeometry, distance from each angle's label to its own
+       vertex, plus every pairwise label-to-label distance) found the real
+       cause: each label individually sat within a plausible radius of ITS
+       OWN vertex, but the x-at-P label and the x-at-A twin landed only
+       16.8 SVG units apart from EACH OTHER (P and A's bisector directions
+       both aim into the same patch of triangle OPA) — same story for y-at-P
+       / y-at-B. Pinned tighter: P's x/y now r:24 (was r:36), the twins at
+       A/B now r:22 (was unset, defaulting to ~50), the O-vertex O₁/O₂
+       labels r:44 (was unset, defaulting to ~52). Re-probed: every label
+       sits ≤44 SVG units from its own vertex (well inside the ~55 aim) and
+       every pairwise distance is ≥22 — no more collisions, nothing clamped
+       against the canvas edge.
+     · item 2 — the bowtie panel (old panel 3, one slide) is now a SIX-STEP
+       build, pr3's earned-step rhythm copied and doubled: pr3 fully proves
+       triangle OPA's x, then only STATES triangle OPB's twin y in a note
+       (one-panel shortcut, six→seven panels). This round's brief explicitly
+       numbered six distinct beats — ① the construction still works here →
+       ② the equal radii → ③ triangle OCA's twin base angle (x) → ④ its
+       exterior angle (2x) → ⑤ triangle OCB's twin base angle (y) → ⑥ its
+       exterior angle (2y) — so BOTH triangles are earned in full this time,
+       not one earned and one stated. Step ① is a `note` (nothing new to
+       ask — the "does the construction still work here" question was
+       already earned twice, reflex panel 1 and all of pr3; per the brief's
+       own instruction, a step with nothing to ask stays a note rather than
+       inventing filler). Steps ②-⑥ are `choice` panels, XP per panel, each
+       showing ONLY the marks relevant to that step (not the full combine)
+       so no step ever crowds C, A and B's tight 110°-arc cluster — the
+       full accumulated picture (x, y, 2x, 2y all together) stays exactly
+       the OLD FIG_BOWTIE, reused unchanged as the seventh bowtie panel
+       (below). Every new step figure was headless-probed the same way as
+       item 1: r values chosen so each label sits ≤46 SVG units from its
+       vertex and ≥20 units from every other label/point. The round grows
+       from seven panels to thirteen (six bowtie-build + one bowtie-subtract
+       replacing the old single bowtie panel; same-segment, error-spot,
+       legal-constructions and recap all shift down but are otherwise
+       unchanged) — expected and approved per the brief.
+     · item 3 — the (now seventh) bowtie panel that actually combines
+       AÔD and BÔD algebraically dropped every numeric degree value from
+       its prompt, options, hints and note (Megan's words: "why are we
+       working with numerical values? A proof works in variables"). The
+       chain now reads purely as ∠AOB = BÔD − AÔD = 2y − 2x = 2(y − x) —
+       no 70°/140°/35° anywhere in the panel copy. The figure marks were
+       already symbol-only (t: "x"/"y"/"2x"/"2y", never a degree string),
+       so only the panel's own prose needed the edit; FIG_BOWTIE itself is
+       untouched. Steps ①-⑥ above were written algebra-only from the start
+       for the same reason (no "35°"/"70°" ever appears in their prompts,
+       options, hints or notes either — only x, y, 2x, 2y, AÔD, BÔD).
+     · item 4 — the recap gallery's MINI_BOWTIE dropped its hl marker-pen
+       highlights and tick marks ("the hundred coloured lines") for a plain
+       figure, same convention as MINI_STANDARD/MINI_REFLEX. It now carries
+       two algebraic labels instead of the old bare wedges: ∠ACB = y − x
+       at C, ∠AOB = 2(y − x) at O — same letter order as the main bowtie
+       panels (BÔD − AÔD, ∠OCB − ∠OCA) so the difference reads positive.
+       Headless-probed at r:40 (C) / r:50 (O): both ≤50 SVG units from
+       their vertex, no overlap with each other or the point labels.
+
+   THIRTEEN PANELS (was seven), same renderInvestigate() as pr0-pr3 — no
+   new panel type, no typed answers:
      1 · choice — reflex picture, restated with the SAME letters (A, B, P,
          O — round03-centre-circumference.js's own reflex figure, reused
          letter-for-letter). "What's the first move?" Warms up the
@@ -65,36 +125,58 @@
          WHICH angle at O does 2x + 2y actually trace out this time? The
          reflex one — because P sits on the short arc, so Q lands on the
          far side.
-     3 · choice — NEW (item 6): the true bowtie. One circumference point
-         C, diameter CD, and A/B both on the SAME side of CD so the two
-         doubled wedges AÔD (=2x) and BÔD (=2y) overlap. The chain
-         subtracts: ∠AOB = BÔD − AÔD = 2y − 2x, so ∠ACB = y − x. Distinct
-         x/y-family colours on the two overlapping wedges make the overlap
-         readable.
-     4 · choice — the same-segment insight, carried over from the old
-         panel 3 and renamed to E, F (item 6): two circumference points on
-         ONE arc, both proofs landing on the same central angle, so their
-         circumference angles must be equal. Explicitly flagged as a
-         DIFFERENT picture from the bowtie just shown — this one still
-         adds, it doesn't subtract.
-     5 · choice — error-spotting (invest04-prove-it.js's DNA, pr2 panel 4's
-         shape): a learner's solution on the reflex picture reaches the
-         right numbers with ONE line's reason mismatched (a doubled angle
-         credited to "∠s opp equal sides" instead of "ext ∠ of Δ").
-         `solution.lines[].st` is symbol-only throughout — every English
-         word lives in `rs` (a short reason TAG) or in the panel's own
-         bilingual `prompt`/`note`, never inside `st`.
-     6 · choice — the legal-constructions thread, continued from pr2 with
-         DIFFERENT specific moves (not a clone of pr2's four options): this
-         time the trap is assuming the theorem's own conclusion partway
-         through its own proof. Carries the catchphrase, VERBATIM ENGLISH
-         in both language versions — used ONCE in this build (pr2 already
-         used it once for T1; this is its one appearance for T2).
-     7 · note   — recap: three pictures, one set of five steps. A small
+     3 · note   — NEW (item 6, rebuilt item 2): the bowtie's construction
+         step ①. One circumference point C, diameter CD, and A/B both on
+         the SAME side of CD this time. Nothing to ask yet — just the
+         picture and its twist — so this step stays a note.
+     4 · choice — step ②, the equal radii: OC, OA, OB are marked equal —
+         what makes them equal, here too? (pr3's own radii-reason question,
+         re-earned on the new picture.)
+     5 · choice — step ③, triangle OCA's twin base angle: ∠OCA = x is
+         marked (highlighted X_COLOR); which OTHER angle in that triangle
+         must also equal x? (∠OAC, isosceles base angles.)
+     6 · choice — step ④, triangle OCA's exterior angle: C, O, D collinear,
+         so AÔD (highlighted) is its exterior angle. What does the exterior
+         angle theorem give? (AÔD = x + x = 2x.)
+     7 · choice — step ⑤, triangle OCB's twin base angle: the identical
+         move as step ③, run on the SECOND triangle (highlighted Y_COLOR)
+         — both triangles earned in full this round, unlike pr3's one-panel
+         shortcut for its own twin. (∠OBC = y.)
+     8 · choice — step ⑥, triangle OCB's exterior angle: the identical move
+         as step ④, on triangle OCB. (BÔD = y + y = 2y.)
+     9 · choice — the bowtie's punchline (item 6's original question,
+         rebuilt algebra-only per item 3): AÔD (=2x) and BÔD (=2y) both
+         marked and overlapping — how do you get ∠AOB from them? Reuses
+         the ORIGINAL FIG_BOWTIE unchanged (every mark this panel needs was
+         already on it); only the prompt/options/hints/note are new, and
+         carry no numeric degree value anywhere in the chain (item 3).
+     10 · choice — the same-segment insight, carried over from the old
+         panel 3 and renamed to E, F (item 6, unchanged by this revision):
+         two circumference points on ONE arc, both proofs landing on the
+         same central angle, so their circumference angles must be equal.
+         Explicitly flagged as a DIFFERENT picture from the bowtie just
+         shown — this one still adds, it doesn't subtract.
+     11 · choice — error-spotting (invest04-prove-it.js's DNA, pr2 panel 4's
+         shape, unchanged by this revision): a learner's solution on the
+         reflex picture reaches the right numbers with ONE line's reason
+         mismatched (a doubled angle credited to "∠s opp equal sides"
+         instead of "ext ∠ of Δ"). `solution.lines[].st` is symbol-only
+         throughout — every English word lives in `rs` (a short reason
+         TAG) or in the panel's own bilingual `prompt`/`note`, never
+         inside `st`.
+     12 · choice — the legal-constructions thread, continued from pr2 with
+         DIFFERENT specific moves (not a clone of pr2's four options,
+         unchanged by this revision): this time the trap is assuming the
+         theorem's own conclusion partway through its own proof. Carries
+         the catchphrase, VERBATIM ENGLISH in both language versions —
+         used ONCE in this build (pr2 already used it once for T1; this is
+         its one appearance for T2).
+     13 · note   — recap: three pictures, one set of five steps. A small
          `diagrams` gallery (discover-line-centre.js's two-mini-figure
          convention) puts standard/reflex/bowtie side by side — the
-         bowtie mini now shows the subtraction picture (item 6). Last
-         panel.
+         bowtie mini (item 4) now shows plain chords, no hl highlights,
+         and two algebraic labels (∠ACB = y − x, ∠AOB = 2(y − x)) instead
+         of the old bare wedges. Last panel.
 
    GEOMETRY — reused, not invented, and NEW orientations so the letters
    keep meaning what they meant last time they were used, rather than
@@ -156,12 +238,21 @@
               hand-arithmetic alone — see the commit that added this file.
               Judgment call, item 1 vs item 6: the reflex figure marks the
               isosceles TWINS ∠OAP/∠OBP because item 1 explicitly asked for
-              them there; item 6 doesn't ask for the bowtie's own twins
-              ∠OAC/∠OBC, and adding them crowded the picture — C, A and B
-              all sit within 110° of each other, so a twin mark's label
-              lands right on top of C's own x/y labels at every A/B
-              placement tried. Left off rather than fought with `r`
-              overrides that would just relocate the collision.)
+              them there; item 6's FIG_BOWTIE — the fully-combined figure,
+              reused unchanged as the seventh bowtie panel in the FIX-
+              ROUND-3 build-up below — doesn't ask for the bowtie's own
+              twins ∠OAC/∠OBC together with the 2x/2y wedges, and adding
+              both at once crowded the picture — C, A and B all sit within
+              110° of each other, so a twin mark's label lands right on top
+              of C's own x/y labels at every A/B placement tried, once the
+              O-vertex wedges are ALSO on the same figure. FIX-ROUND-3's new
+              build-up steps (panels 5-8) DO show each twin, one triangle
+              at a time, with nothing else competing for the same patch of
+              canvas — headless-probed clean at r:24-26 (x-family) and
+              r:20 (y-family), see the item 1/2 note above. The crowding
+              was never the twins themselves, only ALL of them plus the
+              two overlapping O-wedges on one figure at once — which is
+              exactly what the build-up spreads across six panels instead.)
      Same-segment (E, F) — the central angle is ∠AOB (chord A–B, geometry
               unchanged from the old panel): ∠AOB = |324−216| = 108°.
               E(52), F(128) both sit outside [216,324] ⇒ both on the arc
@@ -188,7 +279,7 @@ const FIG_REFLEX_CLAIM = {
   ],
 };
 
-/* ---- panel 2 (+ reused on panel 5's error-spot): the reflex construction,
+/* ---- panel 2 (+ reused on panel 11's error-spot): the reflex construction,
    complete. Q added (P's antipode), radii ticked, x/y at P and 2x/2y at O
    all marked (as before) PLUS the isosceles twins ∠OAP=x and ∠OBP=y (item
    1's ask — the exact same twins pr3's playtest added to ITS figures).
@@ -198,8 +289,24 @@ const FIG_REFLEX_CLAIM = {
    has room for one combined panel here. OP/OQ (the shared spine of both
    triangles) is left uncoloured — a single segment can't carry two
    highlight colours, and OA+PA / OB+PB already carry each triangle's own
-   shape. Reused verbatim on panel 5 (the error-spot panel is ABOUT these
-   same lines, so the extra visual grounding only helps, never spoils). */
+   shape. Reused verbatim on panel 11 (the error-spot panel is ABOUT these
+   same lines, so the extra visual grounding only helps, never spoils).
+
+   FIX-ROUND-3.md item 1: every r below is pinned from a headless probe
+   (computeGeometry, distance from each angle's label to ITS OWN vertex,
+   plus every pairwise label-to-label distance), not eyeballed. The old
+   r:36 on P's x/y (FIX-ROUND-1.md item 13) individually looked fine —
+   36 units from P — but sat only 16.8 units from the UNPINNED twin label
+   at A (default r≈50), which is what actually read as "floats mid-
+   triangle" on her screenshot: two separately-reasonable radii, aimed at
+   two nearby vertices, landing on top of each other. Tightened to r:24
+   (P's x/y) and r:22 (the twins at A/B) — re-probed at ≥22 units apart,
+   ≤24 units from each own vertex, nothing clamped against the canvas
+   edge. The O-vertex O₁/O₂ labels were unpinned before (default ≈52,
+   already not colliding with anything) and are now pinned too at r:44
+   for the same reason every other label in this figure now is: a
+   default is a moving target the next content edit can silently drift,
+   an explicit r is not. */
 const FIG_REFLEX_CONSTRUCT = {
   O: true,
   pts: { A: 160, B: 20, P: 90, Q: 270 },
@@ -211,29 +318,115 @@ const FIG_REFLEX_CONSTRUCT = {
     { a: "P", b: "A", hl: X_COLOR }, { a: "P", b: "B", hl: Y_COLOR },
   ],
   angles: [
-    /* r pins the x/y labels to their arcs (FIX-ROUND-1.md item 13 — they
-       drifted far from their vertex on Megan's playtest; the engine's
-       default radius for a 55° sweep, 50, was still too generous here). */
-    { at: "P", legs: ["O", "A"], t: "x", o: { v: 55, r: 36, c: X_COLOR } },
-    { at: "P", legs: ["O", "B"], t: "y", o: { v: 55, r: 36, c: Y_COLOR } },
+    { at: "P", legs: ["O", "A"], t: "x", o: { v: 55, r: 24, c: X_COLOR } },
+    { at: "P", legs: ["O", "B"], t: "y", o: { v: 55, r: 24, c: Y_COLOR } },
     /* isosceles twins (item 1) — OP = OA makes ∠OAP the triangle's OTHER
        base angle, so it's the same x; same reasoning at B gives y. */
-    { at: "A", legs: ["O", "P"], t: "x", o: { v: 55, c: X_COLOR } },
-    { at: "B", legs: ["O", "P"], t: "y", o: { v: 55, c: Y_COLOR } },
-    { at: "O", legs: ["A", "Q"], t: "O₁ = 2x", o: { v: 110, c: X_COLOR, hl: X_COLOR } },
-    { at: "O", legs: ["B", "Q"], t: "O₂ = 2y", o: { v: 110, c: Y_COLOR, hl: Y_COLOR } },
+    { at: "A", legs: ["O", "P"], t: "x", o: { v: 55, r: 22, c: X_COLOR } },
+    { at: "B", legs: ["O", "P"], t: "y", o: { v: 55, r: 22, c: Y_COLOR } },
+    { at: "O", legs: ["A", "Q"], t: "O₁ = 2x", o: { v: 110, r: 44, c: X_COLOR, hl: X_COLOR } },
+    { at: "O", legs: ["B", "Q"], t: "O₂ = 2y", o: { v: 110, r: 44, c: Y_COLOR, hl: Y_COLOR } },
   ],
 };
 
-/* ---- panel 3 (NEW, item 6): the true bowtie — one circumference point,
-   its diameter, and A/B on the SAME side of it, so the two doubled wedges
-   at O overlap instead of adding. x-family (C→A side) is X_COLOR,
-   y-family (C→B side) is Y_COLOR throughout: the base angles at C and the
-   two overlapping wedges at O (isosceles twins at A/B deliberately left
-   off — see the header's judgment-call note, item 1 vs item 6). OC/OA/OB
-   are ticked equal (all radii) same as every other picture in this
-   theorem. See the header derivation for the exact integers; every label
-   position here is headless-checked for overlap/clipping. */
+/* ---- panels 3-8 (FIX-ROUND-3.md item 2): the bowtie's SIX-step build-up,
+   pr3's earned-step rhythm doubled across both triangles — one circumference
+   point C, its diameter CD, and A/B both on the SAME side of it, so the two
+   doubled wedges at O will end up overlapping instead of adding. Every step
+   shares the same pts {A:200, B:130, C:90, D:270}; only the chord highlight
+   and the angle marks change, so the picture never resets, it only reveals
+   more of itself — same convention as pr3's FIG_CONSTRUCT_BARE →
+   FIG_ISOSCELES → FIG_XY → FIG_COMBINE chain. x-family (triangle OCA) is
+   X_COLOR, y-family (triangle OCB) is Y_COLOR; OC — the shared spine of
+   both triangles — is left uncoloured throughout, same reasoning as OP/OQ
+   in the reflex figure above (a single segment can't carry two highlight
+   colours). Every r below is headless-probed the same way as item 1: each
+   label ≤46 SVG units from its own vertex, ≥20 units from every other
+   label or point — see the item 1/2 header note for the method. */
+const BOWTIE_CHORDS = (side) => [
+  { a: "O", b: "C", mk: "t1" },
+  { a: "O", b: "D" },
+  { a: "O", b: "A", mk: "t1", hl: side === "x" ? X_COLOR : null },
+  { a: "O", b: "B", mk: "t1", hl: side === "y" ? Y_COLOR : null },
+  { a: "C", b: "A", hl: side === "x" ? X_COLOR : null },
+  { a: "C", b: "B", hl: side === "y" ? Y_COLOR : null },
+];
+
+/* ---- panels 3-4: step ① (note, the construction) and step ② (choice,
+   the equal radii) share this bare figure — OC/OD/OA/OB ticked equal,
+   CA/CB drawn, nothing highlighted, nothing angle-marked yet. ---- */
+const FIG_BOWTIE_BARE = {
+  O: true,
+  pts: { A: 200, B: 130, C: 90, D: 270 },
+  chords: BOWTIE_CHORDS(null),
+};
+
+/* ---- panel 5: step ③ — triangle OCA (highlighted) is isosceles, its
+   base angle at C is x; which OTHER angle must also equal x? Only x@C is
+   marked — the twin at A is the answer, not yet drawn (same convention as
+   pr3's FIG_ISOSCELES, which shows x@P but not yet ∠OAP). ---- */
+const FIG_BOWTIE_TRI1_X = {
+  O: true,
+  pts: { A: 200, B: 130, C: 90, D: 270 },
+  chords: BOWTIE_CHORDS("x"),
+  angles: [
+    { at: "C", legs: ["O", "A"], t: "x", o: { v: 35, r: 26, c: X_COLOR } },
+  ],
+};
+
+/* ---- panel 6: step ④ — both base angles of OCA now marked x (the twin
+   from panel 5 proven and drawn); AÔD (highlighted, unlabelled value —
+   "AÔD", not "2x", since that's what this panel asks for) is triangle
+   OCA's exterior angle on the straight line C-O-D. ---- */
+const FIG_BOWTIE_TRI1_EXT = {
+  O: true,
+  pts: { A: 200, B: 130, C: 90, D: 270 },
+  chords: BOWTIE_CHORDS("x"),
+  angles: [
+    { at: "C", legs: ["O", "A"], t: "x", o: { v: 35, r: 26, c: X_COLOR } },
+    { at: "A", legs: ["O", "C"], t: "x", o: { v: 35, r: 24, c: X_COLOR } },
+    { at: "O", legs: ["A", "D"], t: "AÔD", o: { v: 70, r: 40, c: X_COLOR, hl: X_COLOR } },
+  ],
+};
+
+/* ---- panel 7: step ⑤ — the identical move as panel 5, run on triangle
+   OCB (highlighted Y_COLOR) instead: y@C marked, ∠OBC (the twin) asked
+   for. Both triangles earned in full this round — pr3's own one-panel
+   shortcut for its twin isn't repeated here (FIX-ROUND-3.md item 2). ---- */
+const FIG_BOWTIE_TRI2_Y = {
+  O: true,
+  pts: { A: 200, B: 130, C: 90, D: 270 },
+  chords: BOWTIE_CHORDS("y"),
+  angles: [
+    { at: "C", legs: ["O", "B"], t: "y", o: { v: 70, r: 20, c: Y_COLOR } },
+  ],
+};
+
+/* ---- panel 8: step ⑥ — the identical move as panel 6, on triangle OCB:
+   both base angles marked y, BÔD (highlighted, unlabelled value) is its
+   exterior angle on the same straight line C-O-D. ---- */
+const FIG_BOWTIE_TRI2_EXT = {
+  O: true,
+  pts: { A: 200, B: 130, C: 90, D: 270 },
+  chords: BOWTIE_CHORDS("y"),
+  angles: [
+    { at: "C", legs: ["O", "B"], t: "y", o: { v: 70, r: 20, c: Y_COLOR } },
+    { at: "B", legs: ["O", "C"], t: "y", o: { v: 70, r: 20, c: Y_COLOR } },
+    { at: "O", legs: ["B", "D"], t: "BÔD", o: { v: 140, r: 46, c: Y_COLOR, hl: Y_COLOR } },
+  ],
+};
+
+/* ---- panel 9: the true bowtie's punchline — AÔD and BÔD both now proven
+   and marked, overlapping. This is the ORIGINAL FIG_BOWTIE, unchanged by
+   FIX-ROUND-3 (every mark this panel needs was already on it — only its
+   panel's own prompt/options/hints/note changed, item 3's algebra-only
+   rewrite). x-family (C→A side) is X_COLOR, y-family (C→B side) is
+   Y_COLOR throughout: the base angles at C and the two overlapping wedges
+   at O (isosceles twins at A/B deliberately left off THIS figure — see
+   the header's judgment-call note, item 1 vs item 6/2). OC/OA/OB are
+   ticked equal (all radii) same as every other picture in this theorem.
+   See the header derivation for the exact integers; every label position
+   here is headless-checked for overlap/clipping. */
 const FIG_BOWTIE = {
   O: true,
   pts: { A: 200, B: 130, C: 90, D: 270 },
@@ -252,17 +445,11 @@ const FIG_BOWTIE = {
   ],
 };
 
-/* ---- panel 3, bare version reused nowhere else: the FULL bowtie above
-   already carries every mark panel 3 needs, so there is no separate
-   "before" figure this time — unlike the reflex picture's two-panel
-   warm-up (1 then 2), the bowtie's own construction is the whole
-   question (its five steps were already taught twice by this point in
-   the round). ---- */
-
-/* ---- panel 4 (was panel 3, item 6 rename only): the same-segment
-   insight — two circumference points, E and F, sharing one arc. Renamed
-   from the old C/D since this round's C/D now belong to the bowtie
-   (panel 3). Geometry unchanged from before the rename. ---- */
+/* ---- panel 10 (was panel 3/4, item 6 rename only, unchanged by FIX-
+   ROUND-3): the same-segment insight — two circumference points, E and F,
+   sharing one arc. Renamed from the old C/D since this round's OWN C/D
+   name the bowtie's diameter pair. Geometry unchanged from before the
+   rename. ---- */
 const FIG_SAME_SEG = {
   O: true,
   pts: { A: 216, B: 324, E: 52, F: 128 },
@@ -277,16 +464,16 @@ const FIG_SAME_SEG = {
   ],
 };
 
-/* ---- panel 6: bare reflex figure — the legal-constructions panel.
-   Nothing constructed yet: the question is which NEW line may be drawn. */
+/* ---- panel 12 (was panel 6, unchanged by FIX-ROUND-3): bare reflex
+   figure — the legal-constructions panel. Nothing constructed yet: the
+   question is which NEW line may be drawn. */
 const FIG_REFLEX_BARE = {
   O: true,
   pts: { A: 160, B: 20, P: 90 },
   chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]],
 };
 
-/* ---- panel 7: the recap gallery — three pictures, side by side.
-   Third mini rebuilt on the true (subtracting) bowtie, item 6. ---- */
+/* ---- panel 13: the recap gallery — three pictures, side by side. ---- */
 const MINI_STANDARD = {
   O: true,
   pts: { A: 230, B: 310, P: 90 },
@@ -302,17 +489,24 @@ const MINI_REFLEX = {
   chords: [["O", "A"], ["O", "B"], ["P", "A"], ["P", "B"]],
   angles: [{ at: "P", legs: ["A", "B"], t: "110°", o: { v: 110 } }],
 };
+/* MINI_BOWTIE (FIX-ROUND-3.md item 4) — rebuilt PLAIN, same convention as
+   MINI_STANDARD/MINI_REFLEX above: no hl marker-pen highlights, no tick
+   marks ("the hundred coloured lines", her words). Two algebraic labels
+   instead of the old bare unlabelled wedges: ∠ACB = y − x at C, ∠AOB =
+   2(y − x) at O — same letter order as the main bowtie panels (BÔD − AÔD,
+   ∠OCB − ∠OCA) so the difference reads positive both places. Geometry
+   unchanged (see the header derivation: ∠ACB = y−x = 35°, ∠AOB =
+   2(y−x) = 70°); r:40/r:50 headless-probed clean — both ≤50 SVG units
+   from their vertex, no overlap with each other or the point labels. */
 const MINI_BOWTIE = {
   O: true,
   pts: { A: 200, B: 130, C: 90, D: 270 },
   chords: [
-    { a: "O", b: "D" },
-    { a: "O", b: "A", hl: X_COLOR }, { a: "O", b: "B", hl: Y_COLOR },
-    { a: "C", b: "A", hl: X_COLOR }, { a: "C", b: "B", hl: Y_COLOR },
+    ["O", "C"], ["O", "D"], ["O", "A"], ["O", "B"], ["C", "A"], ["C", "B"],
   ],
   angles: [
-    { at: "O", legs: ["B", "D"], t: "", o: { v: 140, c: Y_COLOR, hl: Y_COLOR } },
-    { at: "O", legs: ["A", "D"], t: "", o: { v: 70, c: X_COLOR, hl: X_COLOR } },
+    { at: "C", legs: ["A", "B"], t: "y − x", o: { v: 35, r: 40 } },
+    { at: "O", legs: ["A", "B"], t: "2(y − x)", o: { v: 70, r: 50 } },
   ],
 };
 
@@ -381,34 +575,183 @@ export const round = {
       },
     },
 
-    /* ---------- 3 · the true bowtie — the same five steps, but subtract ---------- */
+    /* ---------- 3 · bowtie step ① — the construction, on a new picture ---------- */
+    {
+      type: "note",
+      prompt: {
+        en: "A third picture — the real bowtie",
+        af: "'n Derde prentjie — die regte strikdas",
+      },
+      diagram: FIG_BOWTIE_BARE,
+      note: {
+        en: "Circumference point C, diameter CD drawn — the SAME construction as always. But this time A and B sit on the SAME side of line CD, instead of opposite sides. Watch what that does to the two triangles' doubled angles at O.",
+        af: "Omtrekpunt C, middellyn CD getrek — DIESELFDE konstruksie soos altyd. Maar hierdie keer sit A en B aan DIESELFDE kant van lyn CD, in plaas van weerskante. Kyk wat dit met die twee driehoeke se verdubbelde hoeke by O gaan doen.",
+      },
+    },
+
+    /* ---------- 4 · bowtie step ② — the equal radii ---------- */
     {
       type: "choice",
       prompt: {
-        en: "A third picture — the real bowtie: ONE circumference point, C, with its diameter CD drawn (same construction as always). This time A and B sit on the SAME side of line CD, so the two isosceles triangles' doubled wedges at O overlap: AÔD = 2x = 70° and BÔD = 2y = 140°, both marked. Since AÔD sits INSIDE BÔD, how do you get ∠AOB from them this time?",
-        af: "'n Derde prentjie — die regte strikdas: EEN omtrekpunt, C, met sy middellyn CD getrek (dieselfde konstruksie soos altyd). Hierdie keer sit A en B aan DIESELFDE kant van lyn CD, sodat die twee gelykbenige driehoeke se verdubbelde stukke by O oorvleuel: AÔD = 2x = 70° en BÔD = 2y = 140°, albei gemerk. Aangesien AÔD BINNE BÔD sit, hoe kry jy ∠AOB hierdie keer uit hulle?",
+        en: "OC, OA and OB are marked equal on the figure. What makes them equal, forcing both triangles OCA and OCB to be isosceles — even with this new arrangement?",
+        af: "OC, OA en OB is op die figuur as gelyk gemerk. Wat maak hulle gelyk, wat albei driehoeke OCA en OCB gelykbenig maak — selfs met hierdie nuwe rangskikking?",
+      },
+      diagram: FIG_BOWTIE_BARE,
+      options: [
+        { text: { en: "OC, OA and OB are all radii of the same circle", af: "OC, OA en OB is almal radiusse van dieselfde sirkel" }, correct: true },
+        { text: { en: "CA and CB happen to look about the same length in this picture", af: "CA en CB lyk toevallig omtrent dieselfde lengte in hierdie prentjie" } },
+        { text: { en: "∠OCA and ∠OCB are vertically opposite, so their arms must match", af: "∠OCA en ∠OCB is regoorstaande hoeke, dus moet hulle arms ooreenstem" } },
+        { text: { en: "OD is a diameter, so OC must equal half of OD", af: "OD is 'n middellyn, dus moet OC gelyk wees aan die helfte van OD" } },
+      ],
+      hints: [
+        { en: "Ignore how anything LOOKS on screen — a proof needs a reason true everywhere. What do you know for certain about O (the centre) and C, A, B (all on the circle)?",
+          af: "Ignoreer hoe enigiets op die skerm LYK — 'n bewys benodig 'n rede wat orals waar is. Wat weet jy vir seker van O (die middelpunt) en C, A, B (almal op die sirkel)?" },
+        { en: "O is the centre and C, A, B are all on the circle, so OC, OA and OB are all radii — always equal, by definition, no matter where A and B sit relative to CD.",
+          af: "O is die middelpunt en C, A, B is almal op die sirkel, dus is OC, OA en OB almal radiusse — altyd gelyk, per definisie, ongeag waar A en B relatief tot CD sit." },
+      ],
+      reason: "radii",
+      note: {
+        en: "OC, OA and OB are radii of the same circle — the identical fact that built every isosceles triangle in this theorem so far, unaffected by where A and B happen to sit. That's what makes triangle OCA isosceles (OC = OA) and triangle OCB isosceles (OC = OB).",
+        af: "OC, OA en OB is radiusse van dieselfde sirkel — dieselfde feit wat elke gelykbenige driehoek in hierdie stelling tot dusver gebou het, ongeag waar A en B toevallig sit. Dit is wat driehoek OCA gelykbenig maak (OC = OA) en driehoek OCB gelykbenig maak (OC = OB).",
+      },
+    },
+
+    /* ---------- 5 · bowtie step ③ — triangle OCA's twin base angle ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "Triangle OCA (highlighted) is isosceles, OC = OA, and its base angle at C is marked x. Which OTHER angle in that triangle must also equal x?",
+        af: "Driehoek OCA (uitgelig) is gelykbenig, OC = OA, en sy basishoek by C is gemerk x. Watter ANDER hoek in daardie driehoek moet ook gelyk wees aan x?",
+      },
+      diagram: FIG_BOWTIE_TRI1_X,
+      options: [
+        { text: { en: "∠OAC", af: "∠OAC" }, correct: true },
+        { text: { en: "∠COA", af: "∠COA" } },
+        { text: { en: "∠OCB", af: "∠OCB" } },
+        { text: { en: "∠OBC", af: "∠OBC" } },
+      ],
+      hints: [
+        { en: "An isosceles triangle's two BASE angles — the ones opposite its two equal sides — are always equal. OC and OA are the equal sides here; which two angles sit opposite them?",
+          af: "'n Gelykbenige driehoek se twee BASISHOEKE — dié teenoor sy twee gelyke sye — is altyd gelyk. OC en OA is hier die gelyke sye; watter twee hoeke sit teenoor hulle?" },
+        { en: "OC sits opposite ∠OAC; OA sits opposite ∠OCA (= x, marked). So ∠OAC = x too.",
+          af: "OC sit teenoor ∠OAC; OA sit teenoor ∠OCA (= x, gemerk). Dus is ∠OAC ook = x." },
+      ],
+      reason: "isosBase",
+      note: {
+        en: "OC = OA makes triangle OCA isosceles, so its base angles are equal: ∠OCA = ∠OAC = x. Both are now proven facts — the next step puts them to work.",
+        af: "OC = OA maak driehoek OCA gelykbenig, dus is sy basishoeke gelyk: ∠OCA = ∠OAC = x. Albei is nou bewese feite — die volgende stap gebruik hulle.",
+      },
+    },
+
+    /* ---------- 6 · bowtie step ④ — triangle OCA's exterior angle ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "Both base angles of triangle OCA are marked x now. C, O and D lie on a straight line (the diameter), so AÔD — highlighted — is the EXTERIOR angle of triangle OCA. What does the exterior angle theorem say AÔD equals?",
+        af: "Albei basishoeke van driehoek OCA is nou gemerk x. C, O en D lê op 'n reguit lyn (die middellyn), dus is AÔD — uitgelig — die BUITEHOEK van driehoek OCA. Wat sê die buitehoekstelling is AÔD gelyk aan?",
+      },
+      diagram: FIG_BOWTIE_TRI1_EXT,
+      options: [
+        { text: { en: "AÔD = x + x = 2x", af: "AÔD = x + x = 2x" }, correct: true },
+        { text: { en: "AÔD = x", af: "AÔD = x" } },
+        { text: { en: "AÔD = 180° − x", af: "AÔD = 180° − x" } },
+        { text: { en: "AÔD = 90° − x", af: "AÔD = 90° − x" } },
+      ],
+      hints: [
+        { en: "The exterior angle of a triangle equals the SUM of its two remote interior angles — the two NOT next to it. ∠OCA (= x) is one of them. What's the other?",
+          af: "Die buitehoek van 'n driehoek is gelyk aan die SOM van sy twee ver binnehoeke — dié twee wat nie daarnaas lê nie. ∠OCA (= x) is een daarvan. Wat is die ander?" },
+        { en: "The other remote angle is ∠OAC, which you proved equals x too last step. So AÔD = x + x = 2x.",
+          af: "Die ander ver hoek is ∠OAC, wat jy verlede stap ook al bewys het gelyk is aan x. Dus AÔD = x + x = 2x." },
+      ],
+      reason: "triExt",
+      note: {
+        en: "The exterior angle of a triangle equals the sum of its two remote interior angles. For triangle OCA those are ∠OCA and ∠OAC — both x — so AÔD = x + x = 2x. The same reasoning is about to run again on the second triangle.",
+        af: "Die buitehoek van 'n driehoek is gelyk aan die som van sy twee ver binnehoeke. Vir driehoek OCA is dit ∠OCA en ∠OAC — albei x — dus AÔD = x + x = 2x. Dieselfde redenasie gaan nou-nou weer op die tweede driehoek loop.",
+      },
+    },
+
+    /* ---------- 7 · bowtie step ⑤ — triangle OCB's twin base angle ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "The same move on triangle OCB (highlighted): it's isosceles too, OC = OB, and its base angle at C is marked y. Which OTHER angle in THIS triangle must also equal y?",
+        af: "Dieselfde skuif op driehoek OCB (uitgelig): dit is ook gelykbenig, OC = OB, en sy basishoek by C is gemerk y. Watter ANDER hoek in HIERDIE driehoek moet ook gelyk wees aan y?",
+      },
+      diagram: FIG_BOWTIE_TRI2_Y,
+      options: [
+        { text: { en: "∠OBC", af: "∠OBC" }, correct: true },
+        { text: { en: "∠COB", af: "∠COB" } },
+        { text: { en: "∠OCA", af: "∠OCA" } },
+        { text: { en: "∠OAC", af: "∠OAC" } },
+      ],
+      hints: [
+        { en: "Same rule as last time: the two BASE angles, opposite the two equal sides, are equal. OC and OB are the equal sides here — which two angles sit opposite them?",
+          af: "Dieselfde reël as verlede keer: die twee BASISHOEKE, teenoor die twee gelyke sye, is gelyk. OC en OB is hier die gelyke sye — watter twee hoeke sit teenoor hulle?" },
+        { en: "OC sits opposite ∠OBC; OB sits opposite ∠OCB (= y, marked). So ∠OBC = y too.",
+          af: "OC sit teenoor ∠OBC; OB sit teenoor ∠OCB (= y, gemerk). Dus is ∠OBC ook = y." },
+      ],
+      reason: "isosBase",
+      note: {
+        en: "OC = OB makes triangle OCB isosceles, so ∠OCB = ∠OBC = y — the twin fact, proven the identical way as triangle OCA's x.",
+        af: "OC = OB maak driehoek OCB gelykbenig, dus ∠OCB = ∠OBC = y — die tweelingfeit, bewys op presies dieselfde manier as driehoek OCA se x.",
+      },
+    },
+
+    /* ---------- 8 · bowtie step ⑥ — triangle OCB's exterior angle ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "Both base angles of triangle OCB are marked y now. C, O and D are still that same straight line, so BÔD — highlighted — is the exterior angle of triangle OCB. What is BÔD?",
+        af: "Albei basishoeke van driehoek OCB is nou gemerk y. C, O en D is steeds daardie selfde reguit lyn, dus is BÔD — uitgelig — die buitehoek van driehoek OCB. Wat is BÔD?",
+      },
+      diagram: FIG_BOWTIE_TRI2_EXT,
+      options: [
+        { text: { en: "BÔD = y + y = 2y", af: "BÔD = y + y = 2y" }, correct: true },
+        { text: { en: "BÔD = y", af: "BÔD = y" } },
+        { text: { en: "BÔD = 180° − y", af: "BÔD = 180° − y" } },
+        { text: { en: "BÔD = 90° − y", af: "BÔD = 90° − y" } },
+      ],
+      hints: [
+        { en: "Same theorem as last step, on the other triangle: the exterior angle is the sum of the two remote interior angles, ∠OCB and ∠OBC — both y now.",
+          af: "Dieselfde stelling as die vorige stap, op die ander driehoek: die buitehoek is die som van die twee ver binnehoeke, ∠OCB en ∠OBC — albei nou y." },
+        { en: "BÔD = y + y = 2y — exactly the same move that gave AÔD = 2x, just run on triangle OCB this time.",
+          af: "BÔD = y + y = 2y — presies dieselfde skuif wat AÔD = 2x gegee het, net nou op driehoek OCB uitgevoer." },
+      ],
+      reason: "triExt",
+      note: {
+        en: "BÔD = y + y = 2y, the same exterior angle theorem that gave AÔD = 2x on the other triangle. Both doubled wedges are now marked at O — and they overlap, because A and B sit on the same side of CD. Next: what to do with two overlapping wedges.",
+        af: "BÔD = y + y = 2y, dieselfde buitehoekstelling wat AÔD = 2x op die ander driehoek gegee het. Albei verdubbelde stukke is nou by O gemerk — en hulle oorvleuel, want A en B sit aan dieselfde kant van CD. Volgende: wat om met twee oorvleuelende stukke te doen.",
+      },
+    },
+
+    /* ---------- 9 · the true bowtie's punchline — subtract, algebra only (item 3) ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "AÔD = 2x and BÔD = 2y, both marked — and because A and B sit on the same side of CD, AÔD sits INSIDE BÔD instead of beside it. How do you get ∠AOB from them?",
+        af: "AÔD = 2x en BÔD = 2y, albei gemerk — en omdat A en B aan dieselfde kant van CD sit, lê AÔD BINNE BÔD in plaas van daarnaas. Hoe kry jy ∠AOB uit hulle?",
       },
       diagram: FIG_BOWTIE,
       options: [
-        { text: { en: "Subtract: ∠AOB = BÔD − AÔD = 140° − 70° = 70°", af: "Trek af: ∠AOB = BÔD − AÔD = 140° − 70° = 70°" }, correct: true },
-        { text: { en: "Add: ∠AOB = BÔD + AÔD = 140° + 70° = 210°", af: "Tel bymekaar: ∠AOB = BÔD + AÔD = 140° + 70° = 210°" } },
-        { text: { en: "They must be equal, so ∠AOB = 0°", af: "Hulle moet gelyk wees, dus ∠AOB = 0°" } },
-        { text: { en: "Average them: ∠AOB = (140° + 70°) ÷ 2 = 105°", af: "Vind die gemiddeld: ∠AOB = (140° + 70°) ÷ 2 = 105°" } },
+        { text: { en: "Subtract: ∠AOB = BÔD − AÔD = 2y − 2x = 2(y − x)", af: "Trek af: ∠AOB = BÔD − AÔD = 2y − 2x = 2(y − x)" }, correct: true },
+        { text: { en: "Add: ∠AOB = BÔD + AÔD = 2y + 2x = 2(y + x)", af: "Tel bymekaar: ∠AOB = BÔD + AÔD = 2y + 2x = 2(y + x)" } },
+        { text: { en: "They must be equal, so ∠AOB = 2x − 2x = 0", af: "Hulle moet gelyk wees, dus ∠AOB = 2x − 2x = 0" } },
+        { text: { en: "Average them: ∠AOB = (2y + 2x) ÷ 2 = x + y", af: "Vind die gemiddeld: ∠AOB = (2y + 2x) ÷ 2 = x + y" } },
       ],
       hints: [
         { en: "Picture two wedges sharing the same starting edge (OD), one tucked entirely inside the other. What's left over once you take the small one away from the big one?",
           af: "Verbeel jou twee stukke wat dieselfde beginrand (OD) deel, een heeltemal binne die ander. Wat bly oor sodra jy die klein een van die groot een af wegneem?" },
-        { en: "∠AOB is exactly the LEFTOVER sliver between the two overlapping wedges — the big one (BÔD) minus the small one (AÔD) it contains: 140° − 70° = 70°.",
-          af: "∠AOB is presies die OORBLYWENDE stukkie tussen die twee oorvleuelende stukke — die groot een (BÔD) minus die klein een (AÔD) wat dit bevat: 140° − 70° = 70°." },
+        { en: "∠AOB is exactly the LEFTOVER sliver between the two overlapping wedges — the big one (BÔD) minus the small one (AÔD) it contains: BÔD − AÔD = 2y − 2x.",
+          af: "∠AOB is presies die OORBLYWENDE stukkie tussen die twee oorvleuelende stukke — die groot een (BÔD) minus die klein een (AÔD) wat dit bevat: BÔD − AÔD = 2y − 2x." },
       ],
-      reason: "triExt",
+      reason: "centreDouble",
       note: {
-        en: "Same construction as every other picture — diameter through the circumference point, two isosceles triangles, exterior angle theorem doubles each base angle. What's different is the LAST step: because A and B sit on the same side of CD, the wedge AÔD (70°) is nested INSIDE the wedge BÔD (140°) instead of sitting beside it, so ∠AOB is the difference, not the sum: ∠AOB = BÔD − AÔD = 2y − 2x = 70°. Halve that and you get ∠ACB = y − x = 35° — the same theorem, run the same five steps, just subtracted instead of added at the very end.",
-        af: "Dieselfde konstruksie as elke ander prentjie — middellyn deur die omtrekpunt, twee gelykbenige driehoeke, die buitehoekstelling verdubbel elke basishoek. Wat verskil, is die LAASTE stap: omdat A en B aan dieselfde kant van CD sit, lê die stuk AÔD (70°) BINNE die stuk BÔD (140°) in plaas van daarnaas, dus is ∠AOB die verskil, nie die som nie: ∠AOB = BÔD − AÔD = 2y − 2x = 70°. Halveer dit en jy kry ∠ACB = y − x = 35° — dieselfde stelling, dieselfde vyf stappe, net afgetrek in plaas van bygetel aan die einde.",
+        en: "Same construction as every other picture — diameter through the circumference point, two isosceles triangles, exterior angle theorem doubles each base angle. What's different is the LAST step: because A and B sit on the same side of CD, the wedge AÔD is nested INSIDE the wedge BÔD instead of sitting beside it, so ∠AOB is the difference, not the sum: ∠AOB = BÔD − AÔD = 2y − 2x = 2(y − x). Halve that and you get ∠ACB = y − x — the same theorem, the same five steps, just subtracted instead of added at the very end.",
+        af: "Dieselfde konstruksie as elke ander prentjie — middellyn deur die omtrekpunt, twee gelykbenige driehoeke, die buitehoekstelling verdubbel elke basishoek. Wat verskil, is die LAASTE stap: omdat A en B aan dieselfde kant van CD sit, lê die stuk AÔD BINNE die stuk BÔD in plaas van daarnaas, dus is ∠AOB die verskil, nie die som nie: ∠AOB = BÔD − AÔD = 2y − 2x = 2(y − x). Halveer dit en jy kry ∠ACB = y − x — dieselfde stelling, dieselfde vyf stappe, net afgetrek in plaas van bygetel aan die einde.",
       },
     },
 
-    /* ---------- 4 · the same-segment insight (was panel 3, renamed E/F) ---------- */
+    /* ---------- 10 · the same-segment insight (was panel 3/4, renamed E/F, unchanged by FIX-ROUND-3) ---------- */
     {
       type: "choice",
       prompt: {
@@ -435,7 +778,7 @@ export const round = {
       },
     },
 
-    /* ---------- 5 · error-spotting: right numbers, wrong reason on one line ---------- */
+    /* ---------- 11 · error-spotting: right numbers, wrong reason on one line (unchanged by FIX-ROUND-3) ---------- */
     {
       type: "choice",
       prompt: {
@@ -472,7 +815,7 @@ export const round = {
       },
     },
 
-    /* ---------- 6 · the legal-constructions thread, continued ---------- */
+    /* ---------- 12 · the legal-constructions thread, continued (unchanged by FIX-ROUND-3) ---------- */
     {
       type: "choice",
       prompt: {
@@ -499,7 +842,7 @@ export const round = {
       },
     },
 
-    /* ---------- 7 · recap — three pictures, one set of five steps ---------- */
+    /* ---------- 13 · recap — three pictures, one set of five steps ---------- */
     {
       type: "note",
       prompt: { en: "What actually transferred", af: "Wat werklik oorgedra het" },
