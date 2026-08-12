@@ -16,14 +16,16 @@
    2c + 2a = 360°). Her cheat-note page 7 never introduces a second
    letter — the chain runs:
      1 · mark x at ∠C only (green).
-     2 · theorem once: O₁ = 2x (pink), the non-reflex ∠BOD.
+     2 · theorem once: O₁ = 2x (green, same family as x), the non-reflex
+         ∠BOD.
      3 · BEFORE any second letter exists — what is O₂, the REFLEX ∠BOD?
          → 360° − 2x, by ∠s round a point (orange), drawn with the new
          engine reflex mark (FIX-ROUND-2.md item 2), labelled on the
          diagram.
      4 · theorem AGAIN, this time on O₂: the opposite angle (∠A, still
          unnamed as its own letter) = O₂ ÷ 2 = (360° − 2x) ÷ 2 = 180° − x
-         (purple).
+         (orange, same family as O₂ — FIX-ROUND-3.md item 6's two-colour
+         ruling, see below).
      5 · combine: x + (180° − x) = 180° — the x's cancel, true for every
          x. Then her page 7's own closing line (3-addendum): the SECOND
          pair falls out just as fast — B̂ + D̂ = 180° too, because the
@@ -36,23 +38,23 @@
    4 = step 3, 5 = steps 4-5 + the addendum closer). Six panels total,
    same length as before.
 
-   ONE COLOUR FAMILY PER ANGLE (her rule, item 3), reusing already-proven-
+   TWO COLOUR FAMILIES (her ruling, FIX-ROUND-3.md item 6, replacing the
+   overnight rebuild's four-colour scheme above) — reusing already-proven-
    readable app accents from config.js's ACCENTS array — the same array
    pr3's X_COLOR/Y_COLOR draw from — so nothing new needs contrast-
    checking against the parchment background:
-     GREEN  #0ea271  — x, the one and only letter (∠C). Same value as
+     GREEN  #0ea271  — the DOUBLING pair: x (∠C, the one and only letter)
+                        and O₁ (= 2x, the non-reflex ∠BOD). Same value as
                         pr3/pr4's own X_COLOR, reused because it already
                         reads as "the first thing you mark" across the app.
-     PINK   #e64980  — O₁ (= 2x), the non-reflex ∠BOD.
-     ORANGE #f76707  — O₂ (= 360° − 2x), the reflex ∠BOD. Same value as
-                        pr3/pr4's Y_COLOR (still "the second angle" role).
-     PURPLE #9c36b5  — ∠A (= 180° − x), the opposite angle the whole
-                        chain was aimed at. Same hex as this file's own
-                        round accent (AC) — no clash, AC only ever paints
-                        the round's map icon, never a diagram element.
+     ORANGE #f76707  — the DERIVED pair: O₂ (= 360° − 2x, the reflex
+                        ∠BOD) and ∠A (= 180° − x, the opposite angle the
+                        whole chain was aimed at). Same value as pr3/pr4's
+                        Y_COLOR (still "the second angle" role).
    Same family = same colour on label AND arc throughout; pr6 (transfer)
-   reuses these exact hexes for its own O₁/O₂/∠P marks (FIX-ROUND-2.md
-   item 3b), so the two rounds read as one continuous story.
+   reuses these exact hexes for its own O₁/O₂/∠P/∠R marks (FIX-ROUND-3.md
+   item 7), so the two rounds read as one continuous story: 60°/O₁ green,
+   O₂ (and ∠R in copy) orange.
 
    GEOMETRY — reused, not invented. Round07-cyclic-opposite.js's OWN exact
    degrees: A:160, B:80, C:350, D:240 — already checker-verified there as
@@ -81,49 +83,73 @@
    the general "sum of a quad's four angles" fact this round's closing
    line leans on.)
 
-   Every diagram stays SYMBOLIC throughout — labels x, O₁, O₂, and
-   (recap only) "180−x", never a literal degree number for the thing
-   being proven. No "°" symbol on the algebraic labels either (matching
-   pr3's own "2(x+y)"/"x+y" recap glyphs, which are bare coefficients —
-   "180" here is a structural constant, a half-turn, the same category as
-   pr3's "2", not a spoiler of this instance's actual angle value); the
-   one literal-degree label in the whole round is "180−x" — the constant
-   is structural, the letter is still the only unknown.
+   Every diagram stays SYMBOLIC throughout — labels x, O₁, O₂, ∠A, never a
+   literal degree number for the thing being proven. No "°" symbol on the
+   algebraic labels either (matching pr3's own "O₁ = 2x"/"O₂ = 2y" and
+   pr7's "T₁ = 90−x" precedent — bare coefficients and a bare structural
+   constant, not a spoiler of this instance's actual angle value).
 
-   LABEL PLACEMENT — headless-checked (renderDiagram/computeGeometry into
-   a fixed 340px container, per the brief), not eyeballed. Two genuine
-   geometric coincidences repeat from the OLD two-letter version and had
-   to be re-solved for the new (longer) label text:
-     · O₁'s bisector (from O, toward B/D's shared arc) lands EXACTLY on
-       A's own placement degree (both are 160°) — same collision the old
-       file's own comment already flagged for the "a"/"O₁" pair. o.r: 26
-       pulls O₁'s recap-panel label in far enough to clear "180−x" at A
-       (panels 3-4, where ∠A isn't labelled yet, keep the old o.r: 34 —
-       there's nothing at A to collide with there).
-     · ∠A's own bisector, symmetrically, points almost exactly BACK along
-       the same O–A line (bis ≈ −20°, i.e. 160° + 180°) — so its label and
-       O₁'s are forced onto one collinear ray no matter what radius either
-       one gets; o.r: 22 for ∠A (recap panel only) was chosen by sweeping
-       both radii and keeping the pair that cleared the OLD shipped "a"/
-       "O₁" collision distance (dx 18.8, dy 10.9 achieved here vs 18.8/6.8
-       on the version Megan already approved — strictly no tighter on
-       either axis).
-     · O₂'s reflex bisector (≈30° swept the long way from B round to D)
-       sits close to x's own label at C; o.r: 55 (panels 4-5) / a touch
-       more headroom wasn't needed once O₁'s "= 2x" suffix was dropped
-       from the on-diagram text (see below) — 55 clears it with room. */
+   EARNED LABELS (FIX-ROUND-3.md items 5-6, her morning-of playtest):
+   O₁ and O₂ start BARE (just the name, no spoiler) on the panel that
+   ASKS for their value, then carry the full "= …" answer on every panel
+   from the one that follows onward — O₁ = 2x from panel 4 on (the panel
+   after the O₁=2x choice), O₂ = 360−2x from panel 5 on (after the O₂
+   choice). ∠A stays unmarked (t:"") through panel 5, the panel that
+   determines it, then carries "∠A = 180−x" from the panel 6 recap on.
+   ONE exception, per the brief's own escape hatch for wide formulas: O₂'s
+   full "O₂ = 360−2x" earns cleanly everywhere it was tried (see below) so
+   it IS shown on the sketch from panel 5 onward, same as O₁ and ∠A —
+   no fallback to prose-only was needed after all once real rendering
+   replaced the estimate (see next paragraph).
+
+   LABEL PLACEMENT — measured two ways. A quick headless estimate
+   (vertex-to-label distance via computeGeometry, plus a hw=6+len×3.6
+   pairwise-bbox guess matching this engine's own canvas-edge clamp
+   formula) flagged several false-positive collisions once the earned
+   labels made the on-diagram text longer — e.g. "O₂ = 360−2x" (11
+   chars) against the "C" point label. Cross-checked against the browser's
+   REAL getBBox() on the rendered SVG (actual glyph metrics, not the
+   clamp-formula estimate), every one of those flagged pairs turned out
+   already clear — the estimate's flat per-character width is generous
+   padding meant for edge-clamping, not a true collision test. Final o.r
+   values below are the real-DOM-checked set, zero pairwise overlaps
+   among angle labels AND point labels (A, B, C, D, O) confirmed panel by
+   panel:
+     · Panel 3 (FIG_MARK_X): x default (44), O₁ bare, o.r: 34 — "on the
+       arc" like item 5 wants, ~9 units past its own 25-unit arc radius.
+     · Panel 4 (FIG_O2, the O₂ question): O₁ earns "O₁ = 2x", o.r: 40. O₂
+       stays bare (this panel's own question), pulled in from the old
+       collision-avoidance 55 down to o.r: 34 — the SAME ~9-unit
+       arc-clearance as O₁'s panel-3 treatment (item 5's "like O₁'s is
+       fine"). x stays at its default 44; real rendering shows no
+       collision with the tighter O₂ even though the length-estimate
+       method (which does NOT match real glyph widths) flagged one.
+     · Panel 5 (FIG_COMBINE): O₁ = 2x carries forward (o.r: 40). O₂ now
+       earns "O₂ = 360−2x" (o.r: 36, pulled in from the old 62 — real
+       rendering shows it clears x, O₁ and the point labels at radii as
+       low as 20, so 36 leaves comfortable headroom rather than sitting
+       at the bare minimum). ∠A stays unmarked (t:"").
+     · Panel 6 (FIG_FINAL, the recap): all three earned values on screen
+       at once — O₁ = 2x (o.r: 36), O₂ = 360−2x (o.r: 36), ∠A = 180−x
+       (o.r: 30). O₁'s bisector (toward B/D's shared arc) lands almost
+       exactly on A's own placement degree (both ≈160°) — the same
+       collinearity the pre-FIX-ROUND-3 file already had to solve for
+       the shorter "O₁"/"180−x" pair — but real getBBox() confirms this
+       combination of radii clears it with the full "O₁ = 2x"/"∠A =
+       180−x" text too, so no fallback to shorter on-diagram text was
+       needed here either. */
 
 const AC = "#9c36b5";
-const GREEN = "#0ea271";    // x — same value as pr3/pr4's X_COLOR
-const PINK = "#e64980";     // O₁ — new to this round, config.js ACCENTS[0]
-const ORANGE = "#f76707";   // O₂ — same value as pr3/pr4's Y_COLOR
-const PURPLE = "#9c36b5";   // ∠A — same value as this round's own accent
+const GREEN = "#0ea271";    // doubling pair: x, O₁ — same value as pr3/pr4's X_COLOR
+const ORANGE = "#f76707";   // derived pair: O₂, ∠A — same value as pr3/pr4's Y_COLOR
 
-/* ---- shared construction chords: quad + radii OB/OD (ticked) + chord BD ---- */
+/* ---- shared construction chords: quad + radii OB/OD (untouched by any
+   tick mark — FIX-ROUND-3.md item 6: this proof never needs OB=OD shown,
+   only that they ARE radii, which the construction panel's own copy
+   already says in words) ---- */
 const CHORDS = [
   ["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"],
-  { a: "O", b: "B", mk: "t1" },
-  { a: "O", b: "D", mk: "t1" },
+  ["O", "B"], ["O", "D"],
 ];
 
 /* ---- panel 1: bare quad, before the construction ----
@@ -141,75 +167,85 @@ const FIG_CLAIM = {
 };
 
 /* ---- panel 2: the construction has appeared — OB, OD joined, no angle
-   marks yet (panel 2 is about WHY, before any angle gets a letter).
-   UNTOUCHED, per the brief: chord BD is drawn too (its own correct option
-   and note both name "BD is the chord both angles look at"), plain, no
-   tick or mark — explanatory, nothing proven about its length yet. ---- */
+   marks yet (panel 2 is about WHY, before any angle gets a letter). Its
+   panel SHAPE is untouched, per the brief — but FIX-ROUND-3.md item 6
+   drops the equal-tick marks that used to sit on OB/OD (not needed in
+   this proof; OB=OD is already true by definition, not something the
+   proof leans on). Chord BD is drawn too (its own correct option and
+   note both name "BD is the chord both angles look at"), plain, no tick
+   or mark — explanatory, nothing proven about its length yet. ---- */
 const FIG_CONSTRUCT_BARE = {
   O: true,
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: [
     ["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"],
-    { a: "O", b: "B", mk: "t1" },
-    { a: "O", b: "D", mk: "t1" },
-    { a: "B", b: "D" },
+    ["O", "B"], ["O", "D"],
+    ["B", "D"],
   ],
 };
 
-/* ---- panel 3: mark x at ∠C (green); theorem once gives O₁ (pink),
-   the non-reflex ∠BOD — the ONLY letter this proof ever introduces. ---- */
+/* ---- panel 3: mark x at ∠C (green); theorem once gives O₁ (green, same
+   doubling-pair family as x) — the ONLY letter this proof ever
+   introduces. O₁ is still UNEARNED here (this panel is the question that
+   determines it), so it stays the bare name. ---- */
 const FIG_MARK_X = {
   O: true,
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: CHORDS,
   angles: [
     { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34, c: PINK } },
+    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34, c: GREEN } },
   ],
 };
 
-/* ---- panel 4: BEFORE any second letter — O₂, the reflex ∠BOD, drawn
-   with the new engine reflex mark (FIX-ROUND-2.md item 2). x and O₁ carry
-   forward from panel 3, still in terms of x alone. ---- */
+/* ---- panel 4: the panel AFTER the learner chose "O₁ = 2x" — so O₁
+   carries its earned value on the diagram from here on (item 5). O₂,
+   the reflex ∠BOD this panel is asking about, is drawn with the new
+   engine reflex mark (FIX-ROUND-2.md item 2), bare and pulled in close
+   against its own arc — the same "on the arc" treatment as O₁'s (item
+   5's first half). x carries forward from panel 3, still just x. ---- */
 const FIG_O2 = {
   O: true,
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: CHORDS,
   angles: [
     { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34, c: PINK } },
-    { at: "O", legs: ["B", "D"], t: "O₂", o: { v: 200, reflex: 1, r: 55, c: ORANGE } },
+    { at: "O", legs: ["B", "D"], t: "O₁ = 2x", o: { v: 160, r: 40, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₂", o: { v: 200, reflex: 1, r: 34, c: ORANGE } },
   ],
 };
 
-/* ---- panel 5: theorem again on O₂ — ∠A is marked (unlabelled: this
+/* ---- panel 5: theorem again on O₂ — this is the panel AFTER the
+   learner chose "O₂ = 360° − 2x" in panel 4, so O₁ and O₂ both carry
+   their earned values forward (item 6). ∠A is marked (unlabelled: this
    panel is what DETERMINES its value) but the reflex O₂ that feeds it is
-   already established. ---- */
+   already established and named. ---- */
 const FIG_COMBINE = {
   O: true,
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: CHORDS,
   angles: [
     { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 34, c: PINK } },
-    { at: "O", legs: ["B", "D"], t: "O₂", o: { v: 200, reflex: 1, r: 55, c: ORANGE } },
-    { at: "A", legs: ["D", "B"], t: "", o: { v: 100, c: PURPLE } },
+    { at: "O", legs: ["B", "D"], t: "O₁ = 2x", o: { v: 160, r: 40, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₂ = 360−2x", o: { v: 200, reflex: 1, r: 36, c: ORANGE } },
+    { at: "A", legs: ["D", "B"], t: "", o: { v: 100, c: ORANGE } },
   ],
 };
 
-/* ---- panel 6: the recap figure — ∠A now labelled "180−x" (purple),
-   the completed chain, all four marks visible at once. o.r overrides on
-   O₁ (26) and ∠A (22) are the headless-checked pair that clears the
-   O–A collinearity — see the header's LABEL PLACEMENT note. ---- */
+/* ---- panel 6: the recap figure — ∠A now labelled "∠A = 180−x" (orange,
+   the derived-pair family with O₂), the completed chain, all four marks
+   visible at once, every earned value on the sketch (item 6). o.r
+   overrides are the headless-checked set that clears the O–A
+   collinearity — see the header's LABEL PLACEMENT note. ---- */
 const FIG_FINAL = {
   O: true,
   pts: { A: 160, B: 80, C: 350, D: 240 },
   chords: CHORDS,
   angles: [
     { at: "C", legs: ["B", "D"], t: "x", o: { v: 80, c: GREEN } },
-    { at: "O", legs: ["B", "D"], t: "O₁", o: { v: 160, r: 26, c: PINK } },
-    { at: "O", legs: ["B", "D"], t: "O₂", o: { v: 200, reflex: 1, r: 55, c: ORANGE } },
-    { at: "A", legs: ["D", "B"], t: "180−x", o: { v: 100, r: 22, c: PURPLE } },
+    { at: "O", legs: ["B", "D"], t: "O₁ = 2x", o: { v: 160, r: 36, c: GREEN } },
+    { at: "O", legs: ["B", "D"], t: "O₂ = 360−2x", o: { v: 200, reflex: 1, r: 36, c: ORANGE } },
+    { at: "A", legs: ["D", "B"], t: "∠A = 180−x", o: { v: 100, r: 30, c: ORANGE } },
   ],
 };
 
@@ -255,8 +291,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "The construction: OB and OD have been joined — two new radii, tick-marked equal to every radius of this circle. B and D are the two vertices NOT in the angle pair (A and C) whose sum we're chasing. Why is joining exactly these two the useful move — not OA and OC?",
-        af: "Die konstruksie: OB en OD is verbind — twee nuwe radiusse, gemerk as gelyk aan elke radius van hierdie sirkel. B en D is die twee hoekpunte wat NIE in die hoekpaar (A en C) is waarvan ons die som soek nie. Hoekom is dit nuttig om presies hierdie twee te verbind — nie OA en OC nie?",
+        en: "The construction: OB and OD have been joined — two new radii of this circle. B and D are the two vertices NOT in the angle pair (A and C) whose sum we're chasing. Why is joining exactly these two the useful move — not OA and OC?",
+        af: "Die konstruksie: OB en OD is verbind — twee nuwe radiusse van hierdie sirkel. B en D is die twee hoekpunte wat NIE in die hoekpaar (A en C) is waarvan ons die som soek nie. Hoekom is dit nuttig om presies hierdie twee te verbind — nie OA en OC nie?",
       },
       diagram: FIG_CONSTRUCT_BARE,
       options: [
@@ -286,8 +322,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Label ∠C = x (green, marked) — the only letter this proof will ever need. The angle-at-centre theorem says a central angle is double the circumference angle standing on the SAME arc. O₁ — the non-reflex ∠BOD (marked, pink) — stands on that same arc as x. What does the theorem give you for O₁?",
-        af: "Merk ∠C = x (groen, gemerk) — die enigste letter wat hierdie bewys ooit gaan nodig hê. Die hoek-by-middelpunt-stelling sê 'n middelpuntshoek is dubbel die omtrekhoek wat op DIESELFDE boog staan. O₁ — die nie-inspringende ∠BOD (gemerk, pienk) — staan op dieselfde boog as x. Wat gee die stelling jou vir O₁?",
+        en: "Label ∠C = x (green, marked) — the only letter this proof will ever need. The angle-at-centre theorem says a central angle is double the circumference angle standing on the SAME arc. O₁ — the non-reflex ∠BOD (marked, same green) — stands on that same arc as x. What does the theorem give you for O₁?",
+        af: "Merk ∠C = x (groen, gemerk) — die enigste letter wat hierdie bewys ooit gaan nodig hê. Die hoek-by-middelpunt-stelling sê 'n middelpuntshoek is dubbel die omtrekhoek wat op DIESELFDE boog staan. O₁ — die nie-inspringende ∠BOD (gemerk, dieselfde groen) — staan op dieselfde boog as x. Wat gee die stelling jou vir O₁?",
       },
       diagram: FIG_MARK_X,
       options: [
@@ -313,8 +349,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "OB and OD are just two rays out of O — together they split the WHOLE turn around O into exactly two pieces: O₁ (pink, = 2x, just found), and the rest of the way around — O₂ (orange), the REFLEX ∠BOD, drawn the long way round. Before ∠A even gets a letter of its own, what is O₂ — purely in terms of x?",
-        af: "OB en OD is net twee strale uit O — saam verdeel hulle die HELE draai om O in presies twee stukke: O₁ (pienk, = 2x, pas gekry), en die res van die pad om — O₂ (oranje), die inspringende ∠BOD, die lang pad om geteken. Voordat ∠A eers 'n eie letter kry, wat is O₂ — suiwer in terme van x?",
+        en: "OB and OD are just two rays out of O — together they split the WHOLE turn around O into exactly two pieces: O₁ (green, = 2x, just found), and the rest of the way around — O₂ (orange), the REFLEX ∠BOD, drawn the long way round. Before ∠A even gets a letter of its own, what is O₂ — purely in terms of x?",
+        af: "OB en OD is net twee strale uit O — saam verdeel hulle die HELE draai om O in presies twee stukke: O₁ (groen, = 2x, pas gekry), en die res van die pad om — O₂ (oranje), die inspringende ∠BOD, die lang pad om geteken. Voordat ∠A eers 'n eie letter kry, wat is O₂ — suiwer in terme van x?",
       },
       diagram: FIG_O2,
       options: [

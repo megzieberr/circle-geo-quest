@@ -56,8 +56,8 @@
    the same night), and the round was monochrome throughout. Fixed:
      · FIG_CORRECT now draws O₂ = 240° with the new engine reflex mark
        (o.reflex, item 2), labelled "O₂", in ORANGE (#f76707) — the exact
-       same hex pr5 uses for ITS O₂. O₁ (120°) is PINK (#e64980, pr5's
-       O₁ colour) and the ∠P = 60° mark is GREEN (#0ea271, pr5's x
+       same hex pr5 uses for ITS O₂/∠A derived pair. O₁ (120°) and the
+       ∠P = 60° mark are both GREEN (#0ea271, pr5's x/O₁ doubling-pair
        colour) — same family, same colour, across both rounds, per her
        rule. FIG_CORRECT is reused verbatim by panels 3, 4 (error-spot)
        and 6 (recap), so the fix reaches all three without touching them.
@@ -75,6 +75,28 @@
        again…") — its concrete numbers (60 → 120 → 240 → 120) already
        WERE that chain; only the telling changed, not the maths. See
        panel 3 below.
+
+   REVISED AGAIN 2026-08-12 (FIX-ROUND-3.md item 7, her morning playtest —
+   both "60°" and O₂ had drifted far from their arcs on FIG_CORRECT; item
+   6's overnight two-colour ruling also applies here, pr6 mirroring pr5 by
+   standing rule). Browser-rendered (real getBBox(), not the estimate
+   below) to confirm no collisions:
+     · o.r pulled in from the night-before's collision-avoidance values to
+       the tight "on the arc" treatment pr5's own O₁ uses: "60°" 44→28,
+       O₁ (still the engine default, 46) →30, O₂ 70→32. All three sit
+       5-7 SVG units outside their own drawn arc radius (25), same
+       clearance pr5's on-arc labels use.
+     · O₁'s PINK → GREEN, per item 6/7's two-family ruling: 60°/O₁ share
+       GREEN (the doubling pair), O₂ keeps ORANGE (the derived pair,
+       alongside pr5's ∠A). ∠R never gets its own on-diagram mark in this
+       round (panel 3's prompt states its value in prose only), so there
+       is nothing to recolour there — the "∠R in copy" half of the
+       standing rule has no runtime effect, just a naming consistency.
+     · Re-checked at the tighter radii with real DOM getBBox() (not the
+       length-estimate formula used elsewhere in this repo's headless
+       checks): zero pairwise overlaps among "60°"/O₁/O₂/P/Q/R/S at these
+       three values, together with FIG_CORRECT's other unrelated point
+       labels.
 
    GEOMETRY — new orientation, new letters (P, Q, R, S instead of pr5's
    A, B, C, D), per the plan's "relabelled and rotated" instruction, so the
@@ -105,9 +127,8 @@
        nothing, no arc-pair subtends it", which is true FOR ∠P and ∠R.) */
 
 const AC = "#9c36b5";
-const GREEN = "#0ea271";    // ∠P — same value as pr5's x colour
-const PINK = "#e64980";     // O₁ — same value as pr5's O₁ colour
-const ORANGE = "#f76707";   // O₂ — same value as pr5's O₂ colour
+const GREEN = "#0ea271";    // doubling pair: 60°/∠P and O₁ — same value as pr5's x/O₁ colour
+const ORANGE = "#f76707";   // derived pair: O₂ (and ∠R in copy) — same value as pr5's O₂/∠A colour
 
 /* ---- panel 1 (+ reused on panels 5-ish bare use): bare quad, before
    any construction. ∠P and ∠R marked but UNLABELLED — nothing spoiled. ---- */
@@ -136,14 +157,14 @@ const FIG_TRAP = {
 };
 
 /* ---- panels 3-4, 6: the correct construction — OQ, OS joined (ticked),
-   ∠P given and marked (green), the non-reflex central angle O₁ (pink),
-   and — item 3b, 2026-08-11 night — the reflex central angle O₂ (orange),
-   drawn with the engine's reflex mark and labelled, the star of this
-   round's own 60→120→240→120 chain, previously never drawn at all.
-   Reused for the error-spot panel (the figure that solution is working
-   from) and the closing recap. o.r: 70 on O₂ is headless-checked (see the
-   header's LABEL PLACEMENT note) — the default radius collided with ∠P's
-   own "60°" label; O₁ keeps the engine's own default. */
+   ∠P given and marked (green), the non-reflex central angle O₁ (green,
+   same doubling-pair family as ∠P — item 6/7's two-colour ruling), and
+   the reflex central angle O₂ (orange, the derived pair), drawn with the
+   engine's reflex mark and labelled, the star of this round's own
+   60→120→240→120 chain. Reused for the error-spot panel (the figure that
+   solution is working from) and the closing recap. o.r: 28/30/32 on
+   "60°"/O₁/O₂ (FIX-ROUND-3.md item 7, 2026-08-12) pull all three tight
+   against their own arcs — real getBBox()-checked, no overlaps. */
 const FIG_CORRECT = {
   O: true,
   pts: { P: 40, Q: 150, R: 210, S: 270 },
@@ -153,9 +174,9 @@ const FIG_CORRECT = {
     { a: "O", b: "S", mk: "t1" },
   ],
   angles: [
-    { at: "P", legs: ["S", "Q"], t: "60°", o: { v: 60, c: GREEN } },
-    { at: "O", legs: ["Q", "S"], t: "O₁", o: { v: 120, c: PINK } },
-    { at: "O", legs: ["Q", "S"], t: "O₂", o: { v: 240, reflex: 1, r: 70, c: ORANGE } },
+    { at: "P", legs: ["S", "Q"], t: "60°", o: { v: 60, r: 28, c: GREEN } },
+    { at: "O", legs: ["Q", "S"], t: "O₁", o: { v: 120, r: 30, c: GREEN } },
+    { at: "O", legs: ["Q", "S"], t: "O₂", o: { v: 240, reflex: 1, r: 32, c: ORANGE } },
   ],
 };
 
@@ -228,8 +249,8 @@ export const round = {
     {
       type: "choice",
       prompt: {
-        en: "Back to the correct pair: OQ and OS are drawn, and ∠P = 60° is given (green, marked). Same chain as last round, one number instead of a letter: the theorem once on O₁ (pink) doubles ∠P to 120°. Before ∠R gets a value, O₂ (orange) — the rest of the turn around O, drawn the long way round — is 360° − 120° = 240°, for free. Run the theorem AGAIN, on O₂, to reach ∠R. What is ∠R, and what does that make ∠P + ∠R?",
-        af: "Terug na die regte paar: OQ en OS is getrek, en ∠P = 60° is gegee (groen, gemerk). Dieselfde ketting as die vorige rondte, een getal in plaas van 'n letter: die stelling een keer op O₁ (pienk) verdubbel ∠P na 120°. Voordat ∠R 'n waarde kry, is O₂ (oranje) — die res van die draai om O, die lang pad om geteken — 360° − 120° = 240°, verniet. Laat die stelling weer loop, op O₂, om ∠R te kry. Wat is ∠R, en wat maak dit ∠P + ∠R?",
+        en: "Back to the correct pair: OQ and OS are drawn, and ∠P = 60° is given (green, marked). Same chain as last round, one number instead of a letter: the theorem once on O₁ (same green) doubles ∠P to 120°. Before ∠R gets a value, O₂ (orange) — the rest of the turn around O, drawn the long way round — is 360° − 120° = 240°, for free. Run the theorem AGAIN, on O₂, to reach ∠R. What is ∠R, and what does that make ∠P + ∠R?",
+        af: "Terug na die regte paar: OQ en OS is getrek, en ∠P = 60° is gegee (groen, gemerk). Dieselfde ketting as die vorige rondte, een getal in plaas van 'n letter: die stelling een keer op O₁ (dieselfde groen) verdubbel ∠P na 120°. Voordat ∠R 'n waarde kry, is O₂ (oranje) — die res van die draai om O, die lang pad om geteken — 360° − 120° = 240°, verniet. Laat die stelling weer loop, op O₂, om ∠R te kry. Wat is ∠R, en wat maak dit ∠P + ∠R?",
       },
       diagram: FIG_CORRECT,
       options: [
