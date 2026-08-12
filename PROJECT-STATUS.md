@@ -1,4 +1,39 @@
-# Project status — updated 2026-08-12 (pr8b, the misconception paired round, BUILT; NOTHING pushed — still awaiting her playthrough + ship word)
+# Project status — updated 2026-08-12 — 🚀 SHIPPED AND LIVE
+
+## 🚀 2026-08-12 — SHIPPED, on her word ("yes, you can ship the circle geo quest")
+
+Commit `43a1148` pushed to `origin/main` (`b3d897d..43a1148`). **This push
+carried all 35 local commits** — the whole overnight proof-rounds build,
+FIX-ROUND-2, FIX-ROUND-3 and today's playtest batch went live together.
+Repo is now 0 ahead / 0 behind.
+
+**No migration, no `sw.js` change, no edge-function change** — verified
+before pushing (`git diff origin/main -- supabase sw.js` was empty).
+Public-repo scan clean: no learner names, no keys, no personal email.
+
+**Verified LIVE, not just pushed:**
+- homepage 200; `js/rounds/proof8b-t4-join-pairs.js` 200 (a file that only
+  exists after this push)
+- `index.js` on the live host references `proof8b`; `engine.js` serves
+  `keySVG` + `o.rot`; `investigate.js` serves `showScaffold`; `styles.css`
+  serves the `.dp-scaffold` / `.ky` rules
+- pr8's trap figure on the live host carries chords PT and PB
+- the live site boots to the login screen, reports **11 proof rounds /
+  43 main quest**, and pr8b renders as "Which point do you join?", 11
+  panels, with its rule-slide figure drawing all nine labels off live code
+
+### 📌 Pending on Megan
+- 📱 2 min: open the live site on your phone, **close and reopen it twice**
+  — the service worker needs a double load before a returning device shows
+  new code.
+- 💻 10 min: play the Proofs card end to end — this is the first time the
+  whole group has been live, and an automated walk is not your eye.
+- ⏳ Whenever: pr8 also lost its "T₁ = " prefix, which she only asked for on
+  pr7. One word reverts it.
+
+---
+
+# Earlier today (build log) — updated 2026-08-12 (pr8b, the misconception paired round, BUILT)
 
 ## 🔗 2026-08-12 — pr8b "Which point do you join?" · BUILT, local only
 
@@ -334,9 +369,8 @@ Her words: *"we can remove the T1 label here, just keep the 90-x."*
 angles / 0 mismatches); 83 proof figures swept clean.**
 
 ### 📌 Still hers, unchanged
-1. 💻 Her playthrough of pr4–pr8 **and now pr8b** — dev server
-   `circle-quest`, `localhost:5180/?preview=1`.
-2. Ship only after that, on her explicit yes: plain push, no migration.
+1. ✅ SHIPPED 2026-08-12 — see the top of this file. Her playthrough now
+   happens on the LIVE site.
 
 **Nothing else is waiting on a decision — every open question from the
 2026-08-12 playtest has been answered and built.**
