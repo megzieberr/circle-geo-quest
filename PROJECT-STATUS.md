@@ -26,9 +26,13 @@ sessions (D: pr4 · E: pr5/pr6 · F: pr7/pr8), each foreman-reviewed. Commits
   — a second full verified chain was too big to rush pre-class. Candidate
   for the next batch if she wants it.
 
-### 📌 Now
-1. **Her final playtest** of pr4–pr8 (localhost:5180/?preview=1).
-2. **Ship on her yes**: plain push (~31 local commits), no migration.
+### 📌 Now — HER RULING AT SESSION END (2026-08-12)
+**Nothing ships yet.** Next session, in this order:
+1. 💻 Her full playthrough of pr4–pr8 (start dev server `circle-quest`,
+   open localhost:5180/?preview=1).
+2. The misconception PAIRED exercise — **`MISCONCEPTION-PAIR-HANDOFF.md`**
+   is the brief (three shape options inside; design with her first).
+3. Ship only after both, on her explicit yes: plain push, no migration.
 
 ## 🌙 2026-08-11→12 overnight — the FIX-ROUND-2 foreman run, ALL DONE, local only
 
