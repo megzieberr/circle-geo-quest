@@ -2,75 +2,150 @@
    (PROOF-ROUNDS-PLAN.md, session 5 — the T4 arc.)
    ------------------------------------------------------------------------
    REBUILT 2026-08-11/12 night (FIX-ROUND-2.md item 4 — overnight foreman
-   build session C, same rebuild as proof7-t4-discovery.js): pr7 now builds
-   ONE construction — draw the diameter from the point of tangency T (call
-   its far end D), then join D STRAIGHT TO P, the actual point in the
-   alternate segment the claim is about — and chases two free right angles
-   (tan ⊥ diameter at T, angle in a semicircle at P itself) to a same-
-   segment swap that lands both the tangent-chord angle and ∠TPA on
-   90° − x. This round carries THAT exact construction to the OTHER side
-   of the chord — the tangent-chord angle measured with the OTHER tangent
-   ray, landing on the OTHER arc — where the two 90°s combine differently:
-   ADDING instead of splitting, so both targets land on 90° + x. It then
-   springs the CENTREPIECE trap her cheat notes warn about: after the
-   diameter is correctly down, a classmate joins the WRONG two points —
-   shown ALREADY DRAWN, as an experience, before the panel names why it
-   dies: the join never touches D, so the guaranteed semicircle 90° never
-   appears anywhere useful. THE TRAP is now stated relative to her OWN
-   recipe (join D straight to the point you're asked about) — the earlier
-   version of this file used a DIFFERENT correct construction (D joined to
-   the chord's own endpoint, B) and is exactly the disconnect FIX-ROUND-2.md
-   flagged; that construction is retired here, in both rounds at once.
+   build session C, same rebuild as proof7-t4-discovery.js): pr7 builds ONE
+   construction — draw the diameter from the point of tangency T (call its
+   far end D), then join D STRAIGHT TO P, the actual point in the alternate
+   segment the claim is about — and chases two free right angles (tan ⊥
+   diameter at T, angle in a semicircle at P itself) to a same-segment swap
+   that lands both the tangent-chord angle and ∠TPA on 90° − x. This round
+   carries THAT exact construction to the OTHER side of the chord — the
+   tangent-chord angle measured with the OTHER tangent ray, landing on the
+   OTHER arc — where the two 90°s combine differently: ADDING instead of
+   splitting, so both targets land on 90° + x.
 
-   SIX PANELS, same renderInvestigate() as pr0-pr7 — no new panel type,
-   no typed answers:
-     1 · choice — new picture, the tangent-chord angle measured on the
-         OTHER side this time, P also marked (both unlabelled). "What's
-         the first move — the one construction that survives every
-         version of this proof?" (correct: draw the diameter from T; the
-         join to P is introduced compressed, in panel 3 — this round
-         doesn't re-teach the mechanism pr7 already built in full.)
-     2 · choice — THE TRAP, sprung and already drawn: the diameter is
-         down (correct, 90° marked at T), but a classmate joined B to Q
-         — some other point on the circle — instead of joining D straight
-         to P, her own move. Legal construction (both points already
-         exist), but does it reach the second 90° the proof needs? (No —
-         named, not just asserted.)
-     3 · choice — the correct construction, compressed to one panel (no
-         multi-stage build-up — pr7 already taught the mechanism in
-         full): D joined straight to P (not to B), the claim angle T₁
-         given as 120°, the free 90°s marked at T and at P, T₂ (= x, the
-         piece between diameter and chord) derived, ∠DPB (= x, the same-
-         segment transfer) marked. Combine: ∠TPB = 90° + x = 120° —
-         exactly T₁, the same number the round started with, this time
-         by ADDING instead of splitting.
-     4 · choice — error-spotting (invest04-prove-it.js's DNA, pr2/pr4/pr6
-         panel 4's shape): a learner's solution reaches the right
-         conclusion with ONE line's reason mismatched — the semicircle
-         90° at P credited to "tan ⊥ diameter" instead of "∠s in
-         semi-circle", exactly the mix-up this proof invites (TWO
-         different 90°s appear, from TWO different theorems).
-         `solution.lines[].st` is symbol-only throughout.
-     5 · choice — the legal-constructions thread, continued from
-         pr2/pr4/pr6 with DIFFERENT specific moves (not a clone). Carries
-         the catchphrase, VERBATIM ENGLISH in both language versions —
-         used ONCE in this build for the T4 arc (pr7 has no legal panel).
-     6 · note   — recap: same construction, the other side of the chord,
-         the trap named, the "always equal" result — this time landing on
-         90° + x instead of 90° − x. Last panel of the round.
+   REBUILT AGAIN 2026-08-12 (FIX-ROUND-3.md, Session F, items 10-12 — her
+   morning playtest, pre-class fix window):
+     · item 10 — PURE ALGEBRA. The correct-join chain used to GIVE T₁ as a
+       concrete "120°" and derive T₂ = 120−90 = 30° by subtraction. That is
+       backwards from how pr7 teaches the same construction (there, x is
+       MARKED directly and T₁ is what gets solved for) and it put two bare
+       numbers in the panel prose, which is exactly what her playtest
+       flagged ("why are we working with numerical values?", the same
+       objection FIX-ROUND-3 item 3 raised against pr4's bowtie). Flipped to
+       match pr7's own direction: x = T₂ (the piece between the diameter and
+       the chord) is MARKED on the figure from the start, the same as pr7's
+       own x; T₁ is then DERIVED as 90° + x (adding, not subtracting, because
+       the diameter sits between the tangent ray and the chord this time —
+       see the geometry note below). No prompt, option, hint or note in the
+       chain panels (construction → error-spot → legal → recap) carries a
+       concrete degree value anywhere — only T₁, T₂/x, 90°, and 90°+x. The
+       structural 90°s (tan ⊥ diameter, ∠ in semi ⊙) stay, per the brief's
+       own carve-out — those are fixed facts of the theorems being used, not
+       measured results.
+     · item 11 — SPLIT THE CHAIN. The old "correct construction, compressed
+       to one panel" jumped straight from "D joined to P" to the fully
+       combined 90°+x=T₁ result in one slide. Rebuilt as SIX one-step-per-
+       slide panels, pr4's own bowtie-build rhythm (commit be06e20): ① the
+       construction (D joined to P, undoing the classmate's mistake) → ② the
+       90° at T and where the diameter now sits (a genuine question this
+       time — the arrangement is the MIRROR of pr7's own, and the round
+       can't assume that transfers on its own) → ③ x marked and T₁ derived
+       (90°+x) → ④ the free 90° at P (a NOTE, not a new question — pr7
+       already taught the mechanism in full, so this panel restates it and
+       explicitly ties it back to the trap panel's own rule) → ⑤ the same-
+       segment carry to ∠DPB → ⑥ combine to ∠TPB = 90°+x = T₁. Four choice
+       panels (②③⑤⑥, each with a real question) and two notes (①④, nothing
+       new to ask — construction and restatement respectively), matching
+       the brief's "choice where there's a real question, note where there
+       isn't, never filler" instruction. XP is still panels.length × the
+       station rate, so the round simply pays more now (six panels instead
+       of one, all genuine content, none of it filler).
+     · item 12 — THE TRAP REBUILT on her own misconception pages (canon:
+       `C:\Users\megzi\Desktop\Tan-chord Proof Misconception.pdf`, her rule,
+       verbatim, pink cloud: "You must join the point that you are trying
+       to prove!"). The PREVIOUS trap invented a point Q and had a classmate
+       join "B to Q" — a strawman with no real geometric content (BQ is
+       just an arbitrary chord that touches nothing useful). That is not
+       her trap. Her trap, translated into this round's own letters: the
+       correct join is D → P (the point HOSTING the angle being proven,
+       ∠TPB). The real classroom mistake is joining D → B instead — the
+       chord's OTHER circumference point, a point that is already ON THE
+       PICTURE (nothing invented) and produces a GENUINE right angle of its
+       own (∠TBD = 90°, angle in a semicircle, since TD is still a diameter
+       and B is still on the circle) — it is legal AND it looks like
+       progress, which is exactly what makes it a real trap rather than a
+       strawman. It just never reaches P, so it never reaches ∠TPB. Q is
+       gone from the figure entirely; nothing this round needs it.
+       The PAIRED-exercise shape her pages use (one figure, two targets,
+       correct/mistake joins swapping between them) was considered for a
+       closing panel here (item 12's "if it fits" clause) but SKIPPED — a
+       genuine judgment call, not an oversight: the natural "other target"
+       for this figure would be an angle hosted at B rather than P, and
+       nailing which angle that legitimately is (with its own engine-
+       verified algebra chain) is a second construction's worth of new
+       content, not a single extra question. Given the chain already grew
+       from six panels to eleven this session (item 11), adding a half-
+       verified second theorem risked exactly the kind of rushed, unchecked
+       content this codebase's house rules exist to prevent. The trap's own
+       rule — stated where it's sprung (panel 2) and closed on her verbatim
+       line (panel 11, the recap) — carries the lesson without it.
+
+   ELEVEN PANELS (was six), same renderInvestigate() as pr0-pr7 — no new
+   panel type, no typed answers:
+     1  · choice — new picture, the tangent-chord angle measured on the
+         OTHER side this time, P also marked (both unlabelled). "What's the
+         first move — the one construction that survives every version of
+         this proof?" (correct: draw the diameter from T; its note now
+         forward-references the TRAP rather than promising the D–P join is
+         "next panel's job" — the next panel is the classmate's mistake.)
+     2  · choice — THE TRAP (item 12, rebuilt): the diameter is down
+         (correct, 90° marked at T), but a classmate joined D to B — the
+         chord's OTHER circumference point — instead of D straight to P.
+         That join is legal AND genuinely produces ∠TBD = 90° (marked, angle
+         in a semicircle) — but does it reach ∠TPB, the angle actually being
+         proven? No — named, not just asserted, and her rule stated in the
+         note: "You must join the point that you are trying to prove."
+     3  · note   — step ①: the correct join, undoing the classmate's
+         mistake — D joined STRAIGHT to P, closing triangle TDP.
+     4  · choice — step ②: the 90° at T (tan ⊥ diameter, marked) and where
+         the diameter now sits relative to the tangent and the chord — the
+         mirror of pr7's own arrangement, a genuine question about reading
+         the picture (correct: the diameter sits BETWEEN the tangent ray
+         and the chord this time).
+     5  · choice — step ③: x = T₂ (the piece between the diameter and the
+         chord) marked; what does that hand you for T₁? (T₁ = 90° + x —
+         adjacent pieces ADD, the mirror of pr7's subtraction.)
+     6  · note   — step ④: the free 90° at P (angle in a semicircle, needs
+         the D–P join) — restated, not re-derived (pr7 already earned the
+         mechanism in full), and explicitly tied back to panel 2's trap:
+         THIS is why the correct join mattered.
+     7  · choice — step ⑤: "angles in the same segment" carries T₂ (= x)
+         across to ∠DPB, the piece of the free 90° at P next to D.
+     8  · choice — step ⑥: combine — ∠TPB = ∠TPD + ∠DPB = 90° + x, exactly
+         T₁. QED, algebra only, on the actual P and B from panel 1.
+     9  · choice — error-spotting (invest04-prove-it.js's DNA, pr2/pr4/pr6/
+         pr8's-own-previous-panel-4 shape, unchanged): a learner's solution
+         reaches the right conclusion with ONE line's reason mismatched —
+         the semicircle 90° at P credited to "tan ⊥ diameter" instead of
+         "∠s in semi-circle". Rewritten algebra-only (item 10): the old
+         "T₂ = 120°−90°=30°" line is gone, replaced by the same MARK-x-
+         DERIVE-T₁ order the chain above now uses. `solution.lines[].st` is
+         symbol-only throughout, as before.
+     10 · choice — the legal-constructions thread, continued from pr2/pr4/
+         pr6 (unchanged by this rebuild — it never referenced Q or a
+         concrete degree value in the first place). Carries the
+         catchphrase, VERBATIM ENGLISH in both language versions, same
+         single use as before (pr7 has no legal panel).
+     11 · note   — recap: same construction, the other side of the chord,
+         the trap named — this time landing on 90° + x instead of 90° − x,
+         algebra only throughout. Closes on her verbatim rule ("you must
+         join the point that you are trying to prove"), translated normally
+         into Afrikaans (NOT the assume-pun catchphrase — that one belongs
+         to panel 10 only). Last panel of the round.
 
    NUMBERED-ANGLE CONVENTION (unchanged from pr7's own rebuild): T₁ = the
-   35°→120° tangent-chord angle, T₂ = x, the piece between the diameter
-   and the chord — both at the crowded vertex T. At P, ∠DPB (the
-   transferred piece) and ∠TPB (the theorem's own target — the angle the
-   whole construction is anchored to, not a stand-in reached through D)
-   are both named in full wherever they appear, same judgment call as
-   pr7's own header. ∠STD stays literal throughout — S is the ray name
-   the "tan ⊥ diameter" reason genuinely needs, and panel 4 is the one
-   panel where the whole point is telling the two 90°s apart by WHERE
-   they sit, so collapsing either into a shared alias would erase the
-   exact distinction being tested. THE TRAP PANEL (panel 2) is untouched
-   in shape — it has no T₁/T₂ marked yet at the point it's sprung.
+   tangent-chord angle at T, T₂ = x, the piece between the diameter and the
+   chord — both at the crowded vertex T. At P, ∠DPB (the transferred piece)
+   and ∠TPB (the theorem's own target — the angle the whole construction is
+   anchored to, not a stand-in reached through D) are both named in full
+   wherever they appear, same judgment call as pr7's own header. ∠STD stays
+   literal throughout — S is the ray name the "tan ⊥ diameter" reason
+   genuinely needs, and the error-spot panel is the one panel where the
+   whole point is telling the two 90°s apart by WHERE they sit, so
+   collapsing either into a shared alias would erase the exact distinction
+   being tested. ∠TBD (the trap's own real-but-useless right angle, panel 2
+   only) is named in full too, and deliberately carries NO family colour —
+   see below.
 
    DIFFERENT COLOUR PER ANGLE FAMILY throughout, SAME hexes as pr7's own
    rebuild (her explicit ask, session C — the two rounds must read as one
@@ -78,76 +153,75 @@
      GREEN  #0ea271  — the x-family: T₂, and its transferred twin ∠DPB.
      PINK   #e64980  — the 90°-family: the free right angle at T (tan ⊥
                         diameter) AND the free right angle at P (angle in
-                        a semicircle).
-     PURPLE #9c36b5  — the target family: T₁ (the tangent-chord angle)
-                        and ∠TPB (the angle in the alternate segment) —
-                        same hex as this round's own accent (AC), no
-                        clash, per pr7's own judgment call.
+                        a semicircle) — the two right angles that ARE part
+                        of the real proof chain.
+     PURPLE #9c36b5  — the target family: T₁ (the tangent-chord angle) and
+                        ∠TPB (the angle in the alternate segment) — same
+                        hex as this round's own accent (AC), no clash, per
+                        pr7's own judgment call.
+   ∠TBD (panel 2's trap angle) is deliberately left UNCOLOURED (plain ink):
+   it is real, but it is not part of the proof chain those three families
+   trace — giving it a family colour would visually claim it belongs to the
+   chain it's supposed to be a trap AWAY from.
    Same family = same colour on label AND arc throughout. Every numbered
    angle is labelled on the diagram the moment its value is known.
 
    GEOMETRY — the OTHER side of the same tangent, with a genuine FOURTH
-   point (P, the actual point in the alternate segment) added so this
-   round's construction matches pr7's letter-for-letter, not just in
-   spirit. New letters: B for the chord (unchanged role from before), Q
-   for the trap's decoy point (moved from 340° to 300°, since P now
-   occupies a nearby degree and the two must not collide), P for the
-   alternate-segment point (NEW — this round never had one before the
-   rebuild). T:270 and D:90 are UNCHANGED — T is always the point of
-   tangency and D is always its antipode, the far end of whichever
-   diameter is drawn from it.
-     B:30 (CHANGED from 200° — the old value put the chord's own far end
-     INSIDE the 90° angle between the tangent and the diameter, the exact
-     same split as pr7's case, which lands on 90° − x, not the "90° + x,
-     the two 90°s sit differently" case FIX-ROUND-2.md's own transcription
-     of her page 3 asks for. B:30 puts the chord's direction from T PAST
-     the diameter's own direction instead — the diameter sits BETWEEN the
-     tangent and the chord, so T₁ = 90° + T₂ directly, no subtraction —
-     genuinely the other configuration, verified node-side, not assumed.)
-     P:330 sits on the SAME side of chord TB as this new B (the short arc
-     T→B that does NOT contain D), which is what makes ∠TPB come out
-     EQUAL to T₁ (not its supplement) — engine-verified by sweeping every
-     integer-friendly P in that arc and checking ∠TPB stays constant at
-     120° throughout, exactly T₁. That arc runs T(270)→B(390) — a 120°
-     span — so 330 is its own MIDPOINT, 60° clear of T and 60° clear of
-     B either way: an early draft (P:350, only 40° from B) crowded the
-     ∠DPB / ∠TPB labels and the semicircle right-angle mark into one
-     corner on the browser-pane render check, so 330 replaced it —
-     re-verified node-side after the move, not eyeballed in isolation.
-     Q:300 (CHANGED from 340°, to clear P:330) is a plain, otherwise-
-     unused point on the circle, existing only to make the wrong join a
-     real, legal-looking (but useless) move — same ROLE as before, new
-     degree only to avoid crowding the new point.
+   point (P, the actual point in the alternate segment) matching pr7's
+   construction letter-for-letter. T:270 and D:90 are UNCHANGED — T is
+   always the point of tangency and D is always its antipode, the far end
+   of whichever diameter is drawn from it. B:30 puts the chord's direction
+   from T PAST the diameter's own direction — the diameter sits BETWEEN the
+   tangent and the chord, so T₁ = 90° + T₂ directly, no subtraction —
+   genuinely the other configuration from pr7's, verified node-side, not
+   assumed. P:330 sits on the SAME side of chord TB as B (the short arc
+   T→B that does NOT contain D), which is what makes ∠TPB come out EQUAL to
+   T₁ (not its supplement); its own midpoint of that 120° arc, 60° clear of
+   both T and B, engine-verified after an earlier draft (P:350) crowded the
+   labels near B.
+   Q is GONE (item 12) — the previous trap's invented decoy point served no
+   purpose once the trap became D→B, a join between two points already on
+   the figure.
 
    Every angle mark is an EXACT integer, engine-verified (node,
    verifyDiagram() against the SAME leg definitions written into the
    figures below — not hand-arithmetic alone):
-     direction T→B (from legDir(), matching the engine's own atan2
-       formula) puts B strictly between D's own direction from T and the
-       diameter having already been passed:
      tg− direction at T = 270 − 90 = 180°
      ∠(tg−, D) = 90°     (tan ⊥ diameter, exact, always)
      T₂ = ∠DTB = (90 − 30) / 2 = 30°    (inscribed angle at T, standing on
-       arc D→B not containing T — the classic half-arc identity, exact
-       for any circle, the same fact pr7's own T₂ leans on)
+       arc D→B not containing T — the classic half-arc identity, exact for
+       any circle, the same fact pr7's own T₂ leans on) — this is the x
+       marked directly on the figure, mirroring pr7's own order (mark x,
+       then derive T₁), not the reverse.
      T₁ = ∠(tg−, B) = 90° + T₂ = 90° + 30° = 120°   (D sits BETWEEN the
-       tangent ray and the chord this time, engine-verified: 120.0°, not
-       a rounded estimate — this is the "two 90°s sit differently" case)
-     ∠TPD = 90°   (angle in a semicircle, exact, always — TD is a
-       diameter, P is on the circle — engine-verified: 90.0°)
+       tangent ray and the chord this time, engine-verified: 120.0°, not a
+       rounded estimate — this is the "two 90°s sit differently" case)
+     ∠TPD = 90°   (angle in a semicircle, exact, always — TD is a diameter,
+       P is on the circle — engine-verified: 90.0°)
      T and P both lie on the SAME arc relative to chord DB — engine-
-       verified by direct construction: ∠DPB = 30° = T₂ exactly, for
-       every P swept across the whole valid arc, not just the one chosen
-       ("angles in the same segment")
+       verified by direct construction: ∠DPB = 30° = T₂ exactly, for every
+       P swept across the whole valid arc, not just the one chosen ("angles
+       in the same segment")
      ∠TPB = ∠TPD + ∠DPB = 90° + 30° = 120°   (engine-verified: 120.0°) —
-       EXACTLY T₁, this time by ADDING the transferred piece onto the
-       free 90° instead of subtracting it out of it, because D sits
-       BETWEEN rays PT and PB at this P, not the chord between them.    */
+       EXACTLY T₁, this time by ADDING the transferred piece onto the free
+       90° instead of subtracting it out of it, because D sits BETWEEN rays
+       PT and PB at this P, not the chord between them.
+     ∠TBD = 90°   (panel 2's trap angle — angle in a semicircle again, this
+       time at B: TD is still a diameter, B is still on the circle, so this
+       is just as real and just as automatic as ∠TPD above — engine-
+       verified: 90.0°. It is real; it is simply anchored to the wrong
+       point for THIS target, which is the whole teachable point of the
+       trap.)                                                              */
 
 const AC = "#9c36b5";
 const GREEN = "#0ea271";    // T₂ / x, and its transferred twin ∠DPB — same value as pr7's own GREEN
 const PINK = "#e64980";     // the two free right angles (T, then P) — same value as pr7's own PINK
 const PURPLE = "#9c36b5";   // T₁ and ∠TPB — the two target angles (= AC), same value as pr7's own PURPLE
+
+/* chords shared by every panel from the correct construction onward
+   (panel 3 on): the original claim's T-B/P-T/P-B, plus the diameter TD
+   (down since panel 1), plus D-P (the correct join, panel 3 on). */
+const CHORDS_CORRECT = [["T", "B"], ["P", "T"], ["P", "B"], ["T", "D"], ["D", "P"]];
 
 /* ---- panel 1: bare tan-chord figure, before any construction. The
    tangent-chord angle AND ∠TPB both marked but UNLABELLED — nothing
@@ -163,13 +237,10 @@ const FIG_CLAIM = {
   ],
 };
 
-/* ---- panel 5: the legal-constructions panel — D is LABELLED (it exists,
-   T's exact antipode, so the options can legally talk about it) but no
-   line runs to it yet: the whole question is which new line may be
-   drawn. Mirrors pr2-t1-transfer.js's own FIG_PQ_BARE convention; P is
-   left off this figure entirely — the question here is about the FIRST
-   legal line (the diameter), same as before the rebuild, so P has
-   nothing to do yet. ---- */
+/* ---- panel 10: the legal-constructions panel — D is LABELLED (it
+   exists, T's exact antipode, so the options can legally talk about it)
+   but no line runs to it yet. Untouched by this rebuild — it never
+   referenced Q or a concrete degree value. ---- */
 const FIG_LEGAL = {
   O: true,
   pts: { T: 270, D: 90, B: 30 },
@@ -177,36 +248,118 @@ const FIG_LEGAL = {
   chords: [["T", "B"]],
 };
 
-/* ---- panel 2: THE TRAP, already drawn — TD correctly down (90° marked),
-   but B joined to Q (a plain point on the circle) instead of D joined
-   straight to P. P is labelled (the prompt names it as the correct
-   target) but carries no line of its own — the trap is exactly that B–Q
-   was drawn INSTEAD of D–P, not near it. ---- */
+/* ---- panel 2: THE TRAP (item 12, rebuilt) — TD correctly down (90°
+   marked), but D joined to B (the chord's OTHER circumference point)
+   instead of D joined straight to P. That join genuinely produces
+   ∠TBD = 90° (angle in a semicircle again — marked, deliberately
+   UNCOLOURED, see the header) — real, legal, and still the wrong point.
+   P is labelled (the prompt names it as the correct target) but carries
+   no line of its own, same convention as the old FIG_TRAP. Q is gone. ---- */
 const FIG_TRAP = {
-  O: true,
-  pts: { T: 270, D: 90, B: 30, Q: 300, P: 330 },
-  tang: [{ at: "T", lab: ["S", "U"] }],
-  chords: [["T", "B"], ["T", "D"], ["B", "Q"]],
-  angles: [{ at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } }],
-};
-
-/* ---- panels 3-4, 6: the correct construction — D joined STRAIGHT TO P
-   (not to B), the claim given and marked, the free 90°s marked at T and
-   at P, T₂ and its same-segment twin ∠DPB both marked. Reused for the
-   error-spot panel (the figure that solution is working from) and the
-   closing recap. ---- */
-const FIG_CORRECT = {
   O: true,
   pts: { T: 270, D: 90, B: 30, P: 330 },
   tang: [{ at: "T", lab: ["S", "U"] }],
-  chords: [["T", "B"], ["P", "T"], ["P", "B"], ["T", "D"], ["D", "P"]],
+  chords: [["T", "B"], ["T", "D"], ["D", "B"]],
   angles: [
-    { at: "T", legs: ["tg-", "B"], t: "T₁ = 120°", o: { v: 120, c: PURPLE } },
     { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
-    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 40, c: GREEN } },
+    { at: "B", legs: ["T", "D"], t: "", o: { v: 90, mark: 1 } },
+  ],
+};
+
+/* ---- panel 3: step ① — the correct join, undoing the classmate's
+   mistake. D joined STRAIGHT to P (highlighted PINK, the same colour its
+   own free right angle will carry), closing triangle TDP. ---- */
+const FIG_STEP_JOIN = {
+  O: true,
+  pts: { T: 270, D: 90, B: 30, P: 330 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: [["T", "B"], ["P", "T"], ["P", "B"], ["T", "D"], { a: "D", b: "P", hl: PINK }],
+};
+
+/* ---- panel 4: step ② — the 90° at T marked, and the FULL angle T₁
+   (tangent ray to B) outlined unlabelled, so the picture itself shows
+   whether D's ray sits inside it. ---- */
+const FIG_STEP_T90 = {
+  O: true,
+  pts: { T: 270, D: 90, B: 30, P: 330 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: CHORDS_CORRECT,
+  angles: [
+    { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["tg-", "B"], t: "", o: { v: 120 } },
+  ],
+};
+
+/* ---- panel 5: step ③ — x = T₂ marked (the piece between the diameter
+   and the chord); T₁ stays UNLABELLED here — this panel is what resolves
+   it, so the figure doesn't give the answer away before the question.
+   r:20 (x) / r:46 (T₁, once resolved on panel 6 on) headless-probed and
+   browser-pane-rendered: both labels sit clear of the tangent line, the
+   90°-mark tick and each other (FIX-ROUND-3.md item 11's own aim, ~55
+   units from vertex, no pairwise overlap). ---- */
+const FIG_LABEL_X = {
+  O: true,
+  pts: { T: 270, D: 90, B: 30, P: 330 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: CHORDS_CORRECT,
+  angles: [
+    { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 20, c: GREEN } },
+    { at: "T", legs: ["tg-", "B"], t: "", o: { v: 120 } },
+  ],
+};
+
+/* ---- panel 6: step ④ — T₁ now resolved and labelled ("T₁ = 90+x"); the
+   free 90° at P (angle in a semicircle) appears, marked but unlabelled —
+   this panel only RESTATES why it's there (pr7 already earned the
+   mechanism), so nothing here is being asked yet. ---- */
+const FIG_SEMI = {
+  O: true,
+  pts: { T: 270, D: 90, B: 30, P: 330 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: CHORDS_CORRECT,
+  angles: [
+    { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 20, c: GREEN } },
+    { at: "T", legs: ["tg-", "B"], t: "T₁ = 90+x", o: { v: 120, r: 46, c: PURPLE } },
     { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
-    { at: "P", legs: ["D", "B"], t: "x", o: { v: 30, r: 34, c: GREEN } },
-    { at: "P", legs: ["T", "B"], t: "90+x", o: { v: 120, r: 62, c: PURPLE } },
+  ],
+};
+
+/* ---- panel 7: step ⑤ — ∠DPB now marked too (unlabelled — this IS the
+   panel asking for its value, same convention as pr7's own FIG_SEMI). ---- */
+const FIG_SAME_SEG_ASK = {
+  O: true,
+  pts: { T: 270, D: 90, B: 30, P: 330 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: CHORDS_CORRECT,
+  angles: [
+    { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 20, c: GREEN } },
+    { at: "T", legs: ["tg-", "B"], t: "T₁ = 90+x", o: { v: 120, r: 46, c: PURPLE } },
+    { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "P", legs: ["D", "B"], t: "", o: { v: 30 } },
+  ],
+};
+
+/* ---- panels 8 (combine), 9 (error-spot, same figure) and 11 (recap,
+   same figure): everything resolved — ∠DPB now labelled x too (the
+   same-segment transfer), ∠TPB labelled with the matching result.
+   r:22 (∠DPB) / r:48 (∠TPB) headless-probed and browser-pane-rendered
+   clean alongside the T-side pair above — see the item 11 note on
+   FIG_LABEL_X. ---- */
+const FIG_FINAL = {
+  O: true,
+  pts: { T: 270, D: 90, B: 30, P: 330 },
+  tang: [{ at: "T", lab: ["S", "U"] }],
+  chords: CHORDS_CORRECT,
+  angles: [
+    { at: "T", legs: ["tg-", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "T", legs: ["D", "B"], t: "x", o: { v: 30, r: 20, c: GREEN } },
+    { at: "T", legs: ["tg-", "B"], t: "T₁ = 90+x", o: { v: 120, r: 46, c: PURPLE } },
+    { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
+    { at: "P", legs: ["D", "B"], t: "x", o: { v: 30, r: 22, c: GREEN } },
+    { at: "P", legs: ["T", "B"], t: "90+x", o: { v: 120, r: 48, c: PURPLE } },
   ],
 };
 
@@ -238,93 +391,197 @@ export const round = {
       hints: [
         { en: "Look back at the last round — which single line brought TWO free right angles into the picture at once, both anchored to points already on the picture?",
           af: "Kyk terug na die vorige rondte — watter enkele lyn het TWEE verniet-regte-hoeke gelyktydig in die prentjie gebring, altwee geanker aan punte reeds op die prentjie?" },
-        { en: "The diameter from the point of tangency. Same tool, the other side of the chord: draw TD. Its far end still needs joining straight to P — that's the next panel's job.",
-          af: "Die middellyn vanaf die raakpunt. Dieselfde hulpmiddel, die ander kant van die koord: trek TD. Die verste punt daarvan moet nog reguit aan P verbind word — dis die volgende paneel se werk." },
+        { en: "The diameter from the point of tangency. Same tool, the other side of the chord: draw TD. Its far end still needs joining to the right point — but a classmate is about to get that part wrong, next panel.",
+          af: "Die middellyn vanaf die raakpunt. Dieselfde hulpmiddel, die ander kant van die koord: trek TD. Die verste punt daarvan moet nog aan die regte punt verbind word — maar 'n klasmaat gaan dit, volgende paneel, verkeerd kry." },
       ],
       reason: "construction",
       note: {
-        en: "Same tool as the last round, whichever side of the chord the angle sits on: draw the diameter from T. It still hands you a free right angle at T (tan ⊥ diameter) — and once its far end is joined straight to P, a second free right angle there too, no matter which tangent ray the angle is measured from.",
-        af: "Dieselfde hulpmiddel as die vorige rondte, ongeag aan watter kant van die koord die hoek sit: trek die middellyn vanaf T. Dit gee jou steeds 'n verniet regte hoek by T (raaklyn ⊥ middellyn) — en sodra die verste punt daarvan reguit aan P verbind is, ook 'n tweede verniet regte hoek daar, ongeag van watter raaklynstraal die hoek gemeet word.",
+        en: "Same tool as the last round, whichever side of the chord the angle sits on: draw the diameter from T. It still hands you a free right angle at T (tan ⊥ diameter). Its far end still needs joining to the right point — but first, here's a classmate's attempt that joins it to the WRONG one.",
+        af: "Dieselfde hulpmiddel as die vorige rondte, ongeag aan watter kant van die koord die hoek sit: trek die middellyn vanaf T. Dit gee jou steeds 'n verniet regte hoek by T (raaklyn ⊥ middellyn). Die verste punt daarvan moet nog aan die regte punt verbind word — maar eers, hier's 'n klasmaat se poging wat dit aan die VERKEERDE een verbind.",
       },
     },
 
-    /* ---------- 2 · THE TRAP — sprung, already drawn ---------- */
+    /* ---------- 2 · THE TRAP — D joined to B instead of to P ---------- */
     {
       type: "choice",
       prompt: {
-        en: "A classmate got the first step right: the diameter TD is down, and 90° between the tangent and TD is marked. The correct next move is to join D STRAIGHT to P, the point in the alternate segment — but instead they joined B to Q, another point on the circle, shown here. It IS a legal construction (B and Q both already exist). Does it actually reach the second 90° this proof needs though?",
-        af: "'n Klasmaat het die eerste stap reg gekry: die middellyn TD is af, en 90° tussen die raaklyn en TD is gemerk. Die regte volgende stap is om D REGUIT aan P te verbind, die punt in die oorstaande segment — maar in plaas daarvan het hulle B aan Q verbind, nog 'n punt op die sirkel, hier gewys. Dit IS 'n wettige konstruksie (B en Q bestaan albei reeds). Bereik dit egter werklik die tweede 90° wat hierdie bewys nodig het?",
+        en: "A classmate got the first step right: the diameter TD is down, and the 90° between the tangent and TD is marked. The correct next move is to join D STRAIGHT to P, the point in the alternate segment — but instead they joined D to B, the chord's OTHER circumference point (shown here — and yes, that really does give a genuine right angle too, ∠TBD, angle in a semicircle). Does that join get them any closer to ∠TPB, the angle they're actually trying to prove?",
+        af: "'n Klasmaat het die eerste stap reg gekry: die middellyn TD is af, en die 90° tussen die raaklyn en TD is gemerk. Die regte volgende stap is om D REGUIT aan P te verbind, die punt in die oorstaande segment — maar in plaas daarvan het hulle D aan B verbind, die koord se ANDER omtrekpunt (hier gewys — en ja, dit gee wel werklik ook 'n eg regte hoek, ∠TBD, hoek in 'n halfsirkel). Bring daardie verbinding hulle enige nader aan ∠TPB, die hoek wat hulle eintlik probeer bewys?",
       },
       diagram: FIG_TRAP,
       options: [
-        { text: { en: "No — BQ never touches D, so the diameter's guaranteed semicircle angle never appears anywhere useful", af: "Nee — BQ raak nooit D nie, dus verskyn die middellyn se gewaarborgde halfsirkel-hoek nêrens nuttig nie" }, correct: true },
-        { text: { en: "Yes — angle in a semicircle now applies to triangle TBQ instead", af: "Ja — hoek in 'n halfsirkel geld nou vir driehoek TBQ in plaas daarvan" } },
-        { text: { en: "Yes — BQ is a radius, so it's automatically equal to OT", af: "Ja — BQ is 'n radius, dus outomaties gelyk aan OT" } },
-        { text: { en: "No — because the diameter isn't actually perpendicular to the tangent in this picture", af: "Nee — omdat die middellyn nie werklik loodreg op die raaklyn in hierdie prentjie is nie" } },
+        { text: { en: "No — ∠TBD = 90° is real, but it's the angle at B, not P; nothing links it to ∠TPB unless P itself gets joined to D", af: "Nee — ∠TBD = 90° is eg, maar dit is die hoek by B, nie by P nie; niks koppel dit aan ∠TPB tensy P self aan D verbind word nie" }, correct: true },
+        { text: { en: "Yes — ∠TBD and ∠TPB are angles in the same segment, so they must be equal", af: "Ja — ∠TBD en ∠TPB is hoeke in dieselfde segment, dus moet hulle gelyk wees" } },
+        { text: { en: "No — because ∠TBD isn't actually a genuine 90° in this picture", af: "Nee — omdat ∠TBD nie werklik 'n eg 90° in hierdie prentjie is nie" } },
+        { text: { en: "Yes — B and P are both on the circle, so any angle found at one automatically transfers to the other", af: "Ja — B en P is albei op die sirkel, dus dra enige hoek by een outomaties oor na die ander" } },
       ],
       hints: [
-        { en: "The angle-in-a-semicircle theorem needs a triangle with the DIAMETER'S two endpoints as two of its vertices. Does triangle TBQ have T and D as two of its corners?",
-          af: "Die hoek-in-'n-halfsirkel-stelling het 'n driehoek nodig met die MIDDELLYN se twee eindpunte as twee van sy hoekpunte. Het driehoek TBQ T en D as twee van sy hoeke?" },
-        { en: "No — triangle TBQ never uses D at all. The 90° at T is real (tan ⊥ diameter), but it's the WRONG 90° for finishing this proof; the semicircle's 90° only ever shows up at a point joined to BOTH ends of the diameter — which is exactly what joining D straight to P would have done.",
-          af: "Nee — driehoek TBQ gebruik nooit D nie. Die 90° by T is eg (raaklyn ⊥ middellyn), maar dit is die VERKEERDE 90° om hierdie bewys te voltooi; die halfsirkel se 90° verskyn net ooit by 'n punt wat aan ALBEI eindpunte van die middellyn verbind is — presies wat om D reguit aan P te verbind sou gedoen het." },
+        { en: "Angles in the same segment need to stand on the SAME chord. ∠TBD stands on chord TD; ∠TPB stands on chord TB — are those the same chord?",
+          af: "Hoeke in dieselfde segment moet op DIESELFDE koord staan. ∠TBD staan op koord TD; ∠TPB staan op koord TB — is dit dieselfde koord?" },
+        { en: "Different chords, so that theorem doesn't apply here. ∠TBD = 90° is a completely genuine fact — B is on the circle and TD is a diameter, so angle in a semicircle guarantees it — but it's anchored to B, not P. The proof needs an angle AT P, and the only way to get one is to join P itself to D.",
+          af: "Verskillende koorde, dus geld daardie stelling nie hier nie. ∠TBD = 90° is 'n heeltemal eg feit — B is op die sirkel en TD is 'n middellyn, dus waarborg hoek-in-'n-halfsirkel dit — maar dit is geanker aan B, nie aan P nie. Die bewys benodig 'n hoek BY P, en die enigste manier om een te kry, is om P self aan D te verbind." },
       ],
       reason: "construction",
       note: {
-        en: "Being legal and being USEFUL are two different things. BQ is an honest chord — but it never touches D, so it can never trigger the angle-in-a-semicircle theorem, which needs a triangle built on BOTH ends of the diameter. The 90° already marked at T is real, but it's the wrong one to finish with: this proof needs a SECOND right angle, at the point joined to D — which is P, the actual point the claim is about, not a point picked at random.",
-        af: "Om wettig te wees en om NUTTIG te wees is twee verskillende dinge. BQ is 'n eerlike koord — maar dit raak nooit D nie, dus kan dit nooit die hoek-in-'n-halfsirkel-stelling ontketen nie, wat 'n driehoek benodig wat op ALBEI eindpunte van die middellyn gebou is. Die 90° wat reeds by T gemerk is, is eg, maar dis die verkeerde een om mee klaar te maak: hierdie bewys benodig 'n TWEEDE regte hoek, by die punt wat aan D verbind is — dis P, die werklike punt waaroor die bewering gaan, nie 'n punt wat lukraak gekies is nie.",
+        en: "Being legal and being USEFUL for THIS target are two different things. ∠TBD = 90° is completely genuine — but the angle we're trying to prove, ∠TPB, is hosted at P, not B, and nothing connects that right angle at B to P. The construction rule that saves you every time: \"You must join the point that you are trying to prove!\" The correct move is D joined straight to P.",
+        af: "Om wettig te wees en om NUTTIG te wees vir HIERDIE teiken is twee verskillende dinge. ∠TBD = 90° is heeltemal eg — maar die hoek wat ons probeer bewys, ∠TPB, sit by P, nie by B nie, en niks koppel daardie regte hoek by B aan P nie. Die konstruksiereël wat jou elke keer red: \"Jy moet die punt verbind waaroor jy probeer bewys!\" Die regte skuif is om D reguit aan P te verbind.",
       },
     },
 
-    /* ---------- 3 · the correct construction, compressed ---------- */
+    /* ---------- 3 · step ① — the correct join ---------- */
+    {
+      type: "note",
+      prompt: { en: "Back to the correct join", af: "Terug na die regte verbinding" },
+      diagram: FIG_STEP_JOIN,
+      note: {
+        en: "The classmate's mistake, undone: D joined STRAIGHT to P this time, the actual point in the alternate segment the claim is about — exactly what \"join the point you're trying to prove\" means. Triangle TDP is now closed.",
+        af: "Die klasmaat se fout, ongedaan gemaak: D word hierdie keer REGUIT aan P verbind, die werklike punt in die oorstaande segment waaroor die bewering gaan — presies wat \"verbind die punt waaroor jy probeer bewys\" beteken. Driehoek TDP is nou gesluit.",
+      },
+    },
+
+    /* ---------- 4 · step ② — the 90° at T, and where the diameter sits ---------- */
     {
       type: "choice",
       prompt: {
-        en: "Back to the correct join: D has been joined STRAIGHT to P this time, closing triangle TDP. The tangent-chord angle is T₁ = 120° (given, marked), tan ⊥ diameter gives 90° at T (marked) — since T₁ is BIGGER than 90° this time, the diameter sits BETWEEN the tangent and the chord, so T₂ (between the diameter and the chord) = T₁ − 90° = 30° (marked). P also gets a free 90° (angle in a semicircle, marked), and \"angles in the same segment\" carries T₂ straight across to ∠DPB = 30° (marked). What is ∠TPB, and how does it compare to T₁?",
-        af: "Terug na die regte verbinding: D is hierdie keer REGUIT aan P verbind, wat driehoek TDP sluit. Die raaklyn–koord-hoek is T₁ = 120° (gegee, gemerk), raaklyn ⊥ middellyn gee 90° by T (gemerk) — aangesien T₁ hierdie keer GROTER as 90° is, sit die middellyn TUSSEN die raaklyn en die koord, dus T₂ (tussen die middellyn en die koord) = T₁ − 90° = 30° (gemerk). P kry ook 'n verniet 90° (hoek in 'n halfsirkel, gemerk), en \"hoeke in dieselfde segment\" dra T₂ reguit oor na ∠DPB = 30° (gemerk). Wat is ∠TPB, en hoe vergelyk dit met T₁?",
+        en: "Tan ⊥ diameter still gives 90° between the tangent ray (tg−) and TD, marked. Trace the tangent ray round to B — the full angle is outlined too. This time, does the diameter sit BETWEEN the tangent ray and the chord, or does the chord sit between the tangent ray and the diameter?",
+        af: "Raaklyn ⊥ middellyn gee steeds 90° tussen die raaklynstraal (tg−) en TD, gemerk. Volg die raaklynstraal rondom na B — die volle hoek is ook uitgestip. Sit die middellyn hierdie keer TUSSEN die raaklynstraal en die koord, of sit die koord tussen die raaklynstraal en die middellyn?",
       },
-      diagram: FIG_CORRECT,
+      diagram: FIG_STEP_T90,
       options: [
-        { text: { en: "∠TPB = 90° + 30° = 120° — exactly T₁, the tangent-chord angle you started with", af: "∠TPB = 90° + 30° = 120° — presies T₁, die raaklyn–koord-hoek waarmee jy begin het" }, correct: true },
-        { text: { en: "∠TPB = 30°, the same as T₂", af: "∠TPB = 30°, dieselfde as T₂" } },
-        { text: { en: "∠TPB = 90° − 30° = 60°, the same split as the last round", af: "∠TPB = 90° − 30° = 60°, dieselfde verdeling as die vorige rondte" } },
-        { text: { en: "∠TPB can't be pinned down without measuring it directly", af: "∠TPB kan nie vasgepen word sonder om dit direk te meet nie" } },
+        { text: { en: "The diameter sits BETWEEN the tangent ray and the chord", af: "Die middellyn sit TUSSEN die raaklynstraal en die koord" }, correct: true },
+        { text: { en: "The chord sits between the tangent ray and the diameter, same as last round", af: "Die koord sit tussen die raaklynstraal en die middellyn, soos die vorige rondte" } },
+        { text: { en: "D sits exactly on the tangent ray itself, not inside the angle at all", af: "D sit presies op die raaklynstraal self, glad nie binne die hoek nie" } },
+        { text: { en: "It depends on where P is, not on B at all", af: "Dit hang af van waar P is, glad nie van B nie" } },
       ],
       hints: [
-        { en: "∠TPD (= 90°, the free right angle at P) and ∠DPB (= 30°, just transferred) sit NEXT to each other, both inside ∠TPB — not one carved out of the other this time.",
-          af: "∠TPD (= 90°, die verniet regte hoek by P) en ∠DPB (= 30°, pas oorgedra) sit langs mekaar, albei binne ∠TPB — nie een uit die ander uitgesny hierdie keer nie." },
-        { en: "∠TPB = ∠TPD + ∠DPB = 90° + 30° = 120°. Same as the last round in spirit — the construction hands the tangent-chord angle straight back to itself, at the point in the alternate segment — but this time the two pieces ADD instead of one being subtracted from the other.",
-          af: "∠TPB = ∠TPD + ∠DPB = 90° + 30° = 120°. Dieselfde as die vorige rondte in gees — die konstruksie gee die raaklyn–koord-hoek reguit terug aan homself, by die punt in die oorstaande segment — maar hierdie keer TEL die twee stukke BYMEKAAR in plaas daarvan dat een van die ander afgetrek word." },
+        { en: "Look at the order the three rays leave T, reading from the tangent round to B: tangent, then… which comes next, D or B?",
+          af: "Kyk na die volgorde waarin die drie strale van T af vertrek, van die raaklyn af rondom na B: raaklyn, dan… wat kom volgende, D of B?" },
+        { en: "D's ray sits INSIDE the angle from the tangent to B this time — the diameter is the one in the middle, unlike last round where the chord was in the middle.",
+          af: "D se straal sit hierdie keer BINNE die hoek van die raaklyn na B — die middellyn is dié een in die middel, anders as die vorige rondte waar die koord in die middel was." },
+      ],
+      reason: "tanDiameter",
+      note: {
+        en: "This time the diameter sits between the tangent ray and the chord — the opposite arrangement to last round. That flips how the two pieces combine: instead of subtracting one from the other, they're about to ADD.",
+        af: "Hierdie keer sit die middellyn tussen die raaklynstraal en die koord — die teenoorgestelde rangskikking as die vorige rondte. Dit draai om hoe die twee stukke saamkom: in plaas daarvan om een van die ander af te trek, gaan hulle nou-nou BYMEKAARGETEL word.",
+      },
+    },
+
+    /* ---------- 5 · step ③ — mark x, derive T₁ ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "Mark T₂ = x (marked) — the piece of angle T₁ between the diameter and the chord. The whole angle from the tangent ray to B is made of two ADJACENT pieces: the 90° (tangent to D) and x (D to B). What does that hand you for T₁?",
+        af: "Merk T₂ = x (gemerk) — die stuk van hoek T₁ tussen die middellyn en die koord. Die volle hoek van die raaklynstraal na B bestaan uit twee AANGRENSENDE stukke: die 90° (raaklyn na D) en x (D na B). Wat gee dit jou vir T₁?",
+      },
+      diagram: FIG_LABEL_X,
+      options: [
+        { text: { en: "T₁ = 90° + x", af: "T₁ = 90° + x" }, correct: true },
+        { text: { en: "T₁ = 90° − x", af: "T₁ = 90° − x" } },
+        { text: { en: "T₁ = x", af: "T₁ = x" } },
+        { text: { en: "T₁ = 2x", af: "T₁ = 2x" } },
+      ],
+      hints: [
+        { en: "Adjacent pieces ADD to make the whole they sit inside. Which two pieces sit next to each other here, and what do they add up to?",
+          af: "Aangrensende stukke TEL BYMEKAAR om die geheel te vorm waarbinne hulle sit. Watter twee stukke sit hier langs mekaar, en wat tel hulle op tot?" },
+        { en: "T₁ = 90° + x. (Last round the chord sat inside the 90°, so it was subtraction; this time the diameter sits inside T₁, so it's addition.)",
+          af: "T₁ = 90° + x. (Verlede rondte het die koord binne die 90° gesit, dus was dit aftrekking; hierdie keer sit die middellyn binne T₁, dus is dit optelling.)" },
       ],
       reason: "tanChord",
       note: {
-        en: "∠TPB = ∠TPD + ∠DPB = 90° + 30° = 120° — exactly T₁, the tangent-chord angle this round started with. The picture flipped to the other side of the chord, and this time the two known pieces at P ADD instead of splitting a right angle, but the result is exactly what the last round proved: the tangent-chord angle always equals the angle in the alternate segment, whichever side you measure it from.",
-        af: "∠TPB = ∠TPD + ∠DPB = 90° + 30° = 120° — presies T₁, die raaklyn–koord-hoek waarmee hierdie rondte begin het. Die prentjie het na die ander kant van die koord omgeswaai, en hierdie keer TEL die twee bekende stukke by P BYMEKAAR in plaas daarvan dat 'n regte hoek verdeel word, maar die resultaat is presies wat die vorige rondte bewys het: die raaklyn–koord-hoek is altyd gelyk aan die hoek in die oorstaande segment, ongeag van watter kant jy dit meet.",
+        en: "The whole angle at T splits into two adjacent pieces: the 90° (tangent to D) and x (D to B, just marked). Adjacent pieces add up to the whole, so T₁ = 90° + x — no measuring, just arithmetic on an already-known right angle. Now watch the exact same split happen again, at P.",
+        af: "Die volle hoek by T verdeel in twee aangrensende stukke: die 90° (raaklyn na D) en x (D na B, pas gemerk). Aangrensende stukke tel op tot die geheel, dus T₁ = 90° + x — geen meting nodig nie, net rekenwerk op 'n reeds-bekende regte hoek. Kyk nou hoe presies dieselfde verdeling weer gebeur, by P.",
       },
     },
 
-    /* ---------- 4 · error-spotting: right conclusion, one wrong reason ---------- */
+    /* ---------- 6 · step ④ — the free 90° at P (restated, tied to the trap) ---------- */
+    {
+      type: "note",
+      prompt: { en: "Why this join works", af: "Hoekom hierdie verbinding werk" },
+      diagram: FIG_SEMI,
+      note: {
+        en: "P is already joined to T and B (from the claim), and now to D too — the join the classmate skipped. TD is a diameter and P is on the circle, so ∠TPD = 90° (angle in a semicircle), completely free. This is exactly why the join mattered: D joined to P puts the free right angle at the point we're actually trying to prove, not at B.",
+        af: "P is reeds aan T en B verbind (van die bewering af), en nou ook aan D — die verbinding wat die klasmaat oorgeslaan het. TD is 'n middellyn en P is op die sirkel, dus ∠TPD = 90° (hoek in 'n halfsirkel), heeltemal verniet. Dis presies hoekom die verbinding saak gemaak het: D aan P verbind sit die verniet regte hoek by die punt waaroor ons eintlik probeer bewys, nie by B nie.",
+      },
+    },
+
+    /* ---------- 7 · step ⑤ — the same-segment transfer ---------- */
     {
       type: "choice",
       prompt: {
-        en: "This solution reaches the right conclusion, ∠TPB = 120° — but one line has the WRONG reason written next to it. Which one?",
-        af: "Hierdie oplossing kom by die regte gevolgtrekking uit, ∠TPB = 120° — maar een reël het die VERKEERDE rede langsaan geskryf. Watter een?",
+        en: "T and P both look at chord DB from the SAME side. What does \"angles in the same segment\" hand you for ∠DPB, the piece of the free 90° at P next to D?",
+        af: "T en P kyk albei na koord DB vanaf DIESELFDE kant. Wat gee \"hoeke in dieselfde segment\" jou vir ∠DPB, die stuk van die verniet 90° by P langs D?",
       },
-      diagram: FIG_CORRECT,
+      diagram: FIG_SAME_SEG_ASK,
+      options: [
+        { text: { en: "∠DPB = x — the same x as T₂, both standing on the same arc DB", af: "∠DPB = x — dieselfde x as T₂, albei staan op dieselfde boog DB" }, correct: true },
+        { text: { en: "∠DPB = 90° + x, the same as T₁", af: "∠DPB = 90° + x, dieselfde as T₁" } },
+        { text: { en: "∠DPB can't be pinned down without knowing exactly where P sits", af: "∠DPB kan nie vasgepen word sonder om presies te weet waar P sit nie" } },
+        { text: { en: "∠DPB = 2x, double T₂", af: "∠DPB = 2x, dubbel T₂" } },
+      ],
+      hints: [
+        { en: "T and P are two DIFFERENT points, but they're on the SAME side of chord DB. Is there a theorem about two circumference points on the same side of a chord?",
+          af: "T en P is twee VERSKILLENDE punte, maar hulle is aan DIESELFDE kant van koord DB. Is daar 'n stelling oor twee omtrekpunte aan dieselfde kant van 'n koord?" },
+        { en: "Angles in the same segment, standing on the same chord, are always equal — no matter which two points you pick. T₂ (= ∠DTB) and ∠DPB both stand on chord DB from the same side, so ∠DPB = T₂ = x.",
+          af: "Hoeke in dieselfde segment, wat op dieselfde koord staan, is altyd gelyk — ongeag watter twee punte jy kies. T₂ (= ∠DTB) en ∠DPB staan albei op koord DB vanaf dieselfde kant, dus ∠DPB = T₂ = x." },
+      ],
+      reason: "sameSeg",
+      note: {
+        en: "T₂ = ∠DTB and ∠DPB both stand on chord DB, from the same side — so \"angles in the same segment\" hands you ∠DPB = T₂ = x directly, no measuring. The free 90° at P (∠TPD) has now split into two named pieces, exactly the same way the free 90° at T did.",
+        af: "T₂ = ∠DTB en ∠DPB staan albei op koord DB, vanaf dieselfde kant — dus gee \"hoeke in dieselfde segment\" jou ∠DPB = T₂ = x direk, geen meting nodig nie. Die verniet 90° by P (∠TPD) het nou in twee benoemde stukke verdeel, presies soos die verniet 90° by T ook gedoen het.",
+      },
+    },
+
+    /* ---------- 8 · step ⑥ — combine + conclude ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "∠TPD (= 90°, the free right angle at P) and ∠DPB (= x, just transferred) sit NEXT to each other, both inside ∠TPB. What is ∠TPB, and how does it compare to T₁?",
+        af: "∠TPD (= 90°, die verniet regte hoek by P) en ∠DPB (= x, pas oorgedra) sit langs mekaar, albei binne ∠TPB. Wat is ∠TPB, en hoe vergelyk dit met T₁?",
+      },
+      diagram: FIG_FINAL,
+      options: [
+        { text: { en: "∠TPB = 90° + x, exactly the same as T₁", af: "∠TPB = 90° + x, presies dieselfde as T₁" }, correct: true },
+        { text: { en: "∠TPB = x, the same as ∠DPB", af: "∠TPB = x, dieselfde as ∠DPB" } },
+        { text: { en: "∠TPB = 90° − x, the same split as the last round", af: "∠TPB = 90° − x, dieselfde verdeling as die vorige rondte" } },
+        { text: { en: "∠TPB can't be pinned down without an actual value for x", af: "∠TPB kan nie vasgepen word sonder 'n werklike waarde vir x nie" } },
+      ],
+      hints: [
+        { en: "∠TPD and ∠DPB sit NEXT to each other, both inside ∠TPB — not one carved out of the other this time.",
+          af: "∠TPD en ∠DPB sit langs mekaar, albei binne ∠TPB — nie een uit die ander uitgesny hierdie keer nie." },
+        { en: "∠TPB = ∠TPD + ∠DPB = 90° + x. Same as the last round in spirit — the construction hands the tangent-chord angle straight back to itself, at the point in the alternate segment — but this time the two pieces ADD instead of one being subtracted from the other.",
+          af: "∠TPB = ∠TPD + ∠DPB = 90° + x. Dieselfde as die vorige rondte in gees — die konstruksie gee die raaklyn–koord-hoek reguit terug aan homself, by die punt in die oorstaande segment — maar hierdie keer TEL die twee stukke BYMEKAAR in plaas daarvan dat een van die ander afgetrek word." },
+      ],
+      reason: "tanChord",
+      note: {
+        en: "∠TPB = ∠TPD + ∠DPB = 90° + x — exactly T₁, the tangent-chord angle this round started with. The picture flipped to the other side of the chord, and this time the two known pieces at P ADD instead of splitting a right angle, but the result is exactly what the last round proved: the tangent-chord angle always equals the angle in the alternate segment, whichever side you measure it from.",
+        af: "∠TPB = ∠TPD + ∠DPB = 90° + x — presies T₁, die raaklyn–koord-hoek waarmee hierdie rondte begin het. Die prentjie het na die ander kant van die koord omgeswaai, en hierdie keer TEL die twee bekende stukke by P BYMEKAAR in plaas daarvan dat 'n regte hoek verdeel word, maar die resultaat is presies wat die vorige rondte bewys het: die raaklyn–koord-hoek is altyd gelyk aan die hoek in die oorstaande segment, ongeag van watter kant jy dit meet.",
+      },
+    },
+
+    /* ---------- 9 · error-spotting: right conclusion, one wrong reason ---------- */
+    {
+      type: "choice",
+      prompt: {
+        en: "This solution reaches the right conclusion, ∠TPB = 90° + x, the same as T₁ — but one line has the WRONG reason written next to it. Which one?",
+        af: "Hierdie oplossing kom by die regte gevolgtrekking uit, ∠TPB = 90° + x, dieselfde as T₁ — maar een reël het die VERKEERDE rede langsaan geskryf. Watter een?",
+      },
+      diagram: FIG_FINAL,
       solution: {
         caption: SOL_CAP,
         lines: [
           { st: "∠STD = 90°", rs: { en: "tan ⊥ diameter", af: "raaklyn ⊥ middellyn" } },
-          { st: "T₂ = 120° − 90° = 30°" },
+          { st: "T₂ = x" },
+          { st: "T₁ = 90° + x" },
           { st: "∠TPD = 90°", rs: { en: "tan ⊥ diameter", af: "raaklyn ⊥ middellyn" } },
-          { st: "∠DPB = 30°", rs: { en: "∠s in same segment", af: "∠e in dieselfde segment" } },
-          { st: "∴ ∠TPB = 90° + 30° = 120° = T₁" },
+          { st: "∠DPB = x", rs: { en: "∠s in same segment", af: "∠e in dieselfde segment" } },
+          { st: "∴ ∠TPB = 90° + x = T₁" },
         ],
       },
       options: [
         { text: { en: "∠TPD = 90°   (tan ⊥ diameter)", af: "∠TPD = 90°   (raaklyn ⊥ middellyn)" }, correct: true },
         { text: { en: "∠STD = 90°   (tan ⊥ diameter)", af: "∠STD = 90°   (raaklyn ⊥ middellyn)" } },
-        { text: { en: "T₂ = 120° − 90° = 30°", af: "T₂ = 120° − 90° = 30°" } },
-        { text: { en: "∠DPB = 30°   (∠s in same segment)", af: "∠DPB = 30°   (∠e in dieselfde segment)" } },
+        { text: { en: "T₁ = 90° + x", af: "T₁ = 90° + x" } },
+        { text: { en: "∠DPB = x   (∠s in same segment)", af: "∠DPB = x   (∠e in dieselfde segment)" } },
       ],
       hints: [
         { en: "This proof uses TWO different 90°s, from TWO different theorems. Check each one is credited to the theorem that actually produces it — one of them has borrowed the OTHER one's reason.",
@@ -339,7 +596,7 @@ export const round = {
       },
     },
 
-    /* ---------- 5 · the legal-constructions thread, continued ---------- */
+    /* ---------- 10 · the legal-constructions thread, continued ---------- */
     {
       type: "choice",
       prompt: {
@@ -351,7 +608,7 @@ export const round = {
         { text: { en: "Draw the diameter TD, from the point of tangency", af: "Trek die middellyn TD, vanaf die raakpunt" }, correct: true },
         { text: { en: "Draw a line through B parallel to the tangent", af: "Teken 'n lyn deur B ewewydig aan die raaklyn" } },
         { text: { en: "Construct a second tangent to the circle at B", af: "Konstrueer 'n tweede raaklyn aan die sirkel by B" } },
-        { text: { en: "Assume ∠TPB = 120° first, then use that to finish the proof", af: "Neem eers aan ∠TPB = 120°, gebruik dit dan om die bewys klaar te maak" } },
+        { text: { en: "Assume ∠TPB = 90° + x first, then use that to finish the proof", af: "Neem eers aan ∠TPB = 90° + x, gebruik dit dan om die bewys klaar te maak" } },
       ],
       hints: [
         { en: "A legal move only ever uses points that ALREADY exist — join two of them, or draw a diameter through the centre and a point you already have. Which one of these four does only that?",
@@ -366,14 +623,14 @@ export const round = {
       },
     },
 
-    /* ---------- 6 · recap — the trap named, the result unchanged ---------- */
+    /* ---------- 11 · recap — the trap named, the rule that carries every case ---------- */
     {
       type: "note",
       prompt: { en: "What actually transferred", af: "Wat werklik oorgedra het" },
-      diagram: FIG_CORRECT,
+      diagram: FIG_FINAL,
       note: {
-        en: "The chord flipped to the other side of the tangent, the numbers are new — and the construction still did not care: draw the diameter from the point of tangency, join its far end STRAIGHT to the point you're asked about, and two free right angles chase the tangent-chord angle back to itself. This time they ADD instead of splitting, but the destination is identical. Joining B to some OTHER point on the circle instead of D to P (an honest mistake) is perfectly legal, and perfectly useless, because it never touches the diameter's own far end — no triangle, no guaranteed second 90°, no proof.<br><br>The tangent-chord angle always equals the angle in the alternate segment — on either side of the chord, every time.",
-        af: "Die koord het na die ander kant van die raaklyn geswaai, die getalle is nuut — en die konstruksie het steeds nie omgegee nie: trek die middellyn vanaf die raakpunt, verbind die verste punt daarvan REGUIT aan die punt waaroor jy gevra is, en twee verniet-regte-hoeke jaag die raaklyn–koord-hoek terug na homself. Hierdie keer TEL hulle BYMEKAAR in plaas daarvan om te verdeel, maar die bestemming is identies. Om B aan 'n ANDER punt op die sirkel te verbind in plaas van D aan P ('n eerlike fout) is heeltemal wettig, en heeltemal nutteloos, want dit raak nooit die middellyn se eie verste punt nie — geen driehoek, geen gewaarborgde tweede 90°, geen bewys.<br><br>Die raaklyn–koord-hoek is altyd gelyk aan die hoek in die oorstaande segment — aan enige kant van die koord, elke keer.",
+        en: "The chord flipped to the other side of the tangent, and the construction still did not care: draw the diameter from the point of tangency, join its far end STRAIGHT to the point you're trying to prove, and two free right angles chase the tangent-chord angle back to itself. This time they ADD instead of splitting, but the destination is identical — T₁ = 90° + x, and ∠TPB lands on exactly the same expression.<br><br>Joining D to B instead of D to P (an honest mistake, the real classroom habit) is perfectly legal, and it even hands you a genuine right angle — just at the wrong point. It never reaches P, so it never reaches the angle we were actually trying to prove.<br><br>The rule that carries every version of this proof: <b>you must join the point that you are trying to prove.</b>",
+        af: "Die koord het na die ander kant van die raaklyn geswaai, en die konstruksie het steeds nie omgegee nie: trek die middellyn vanaf die raakpunt, verbind die verste punt daarvan REGUIT aan die punt waaroor jy probeer bewys, en twee verniet-regte-hoeke jaag die raaklyn–koord-hoek terug na homself. Hierdie keer TEL hulle BYMEKAAR in plaas daarvan om te verdeel, maar die bestemming is identies — T₁ = 90° + x, en ∠TPB land op presies dieselfde uitdrukking.<br><br>Om D aan B te verbind in plaas van D aan P ('n eerlike fout, die regte klaskamer-gewoonte) is heeltemal wettig, en gee jou selfs 'n eg regte hoek — net by die verkeerde punt. Dit bereik nooit P nie, dus bereik dit nooit die hoek wat ons eintlik probeer bewys het nie.<br><br>Die reël wat elke weergawe van hierdie bewys dra: <b>jy moet die punt verbind waaroor jy probeer bewys.</b>",
       },
     },
 

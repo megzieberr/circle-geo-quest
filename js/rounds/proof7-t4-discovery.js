@@ -188,7 +188,12 @@ const FIG_SEMI = {
   tang: [{ at: "T", lab: ["S", "U"] }],
   chords: CHORDS_BUILT,
   angles: [
-    { at: "T", legs: ["tg+", "A"], t: "T₁ = 90−x", o: { v: 64, c: PURPLE } },
+    /* FIX-ROUND-3.md item 8: r:34 (was unset, defaulting to ~54.5 —
+       headless-probed and browser-pane-rendered: the default floated the
+       label past its own arc, nearly touching the U tangent label; r:34
+       hugs T's arc, still clear of the tangent line and the x-label
+       above it). */
+    { at: "T", legs: ["tg+", "A"], t: "T₁ = 90−x", o: { v: 64, r: 34, c: PURPLE } },
     { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
     { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
     { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
@@ -205,11 +210,18 @@ const FIG_FINAL = {
   tang: [{ at: "T", lab: ["S", "U"] }],
   chords: CHORDS_BUILT,
   angles: [
-    { at: "T", legs: ["tg+", "A"], t: "T₁ = 90−x", o: { v: 64, c: PURPLE } },
+    /* FIX-ROUND-3.md item 8: r:34, same fix and same reason as FIG_SEMI
+       above (this figure is reused for the recap gallery too, so both
+       spots get it at once). */
+    { at: "T", legs: ["tg+", "A"], t: "T₁ = 90−x", o: { v: 64, r: 34, c: PURPLE } },
     { at: "T", legs: ["tg+", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
     { at: "T", legs: ["D", "A"], t: "x", o: { v: 26, r: 40, c: GREEN } },
     { at: "P", legs: ["T", "D"], t: "", o: { v: 90, mark: 1, c: PINK } },
-    { at: "P", legs: ["D", "A"], t: "x", o: { v: 26, c: GREEN } },
+    /* FIX-ROUND-3.md item 9: r:26 (was unset, defaulting to ~64 — the
+       transferred x at P drifted up toward D, per her playtest screenshot;
+       headless-probed and browser-pane-rendered: r:26 pins it right beside
+       P's own arc mark, clear of the P-A and P-D chords). */
+    { at: "P", legs: ["D", "A"], t: "x", o: { v: 26, r: 26, c: GREEN } },
     { at: "P", legs: ["T", "A"], t: "90−x", o: { v: 64, r: 40, c: PURPLE } },
   ],
 };
