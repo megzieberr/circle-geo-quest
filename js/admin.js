@@ -5,7 +5,7 @@
    admin password server-side. No service-role key in the client.
    ============================================================ */
 import { api, BACKEND } from "./api.js";
-import { ROUNDS, ROUND_BY_ID, STATIONS } from "./rounds/index.js";
+import { ROUNDS, ROUND_BY_ID, STATIONS, PROOFS } from "./rounds/index.js";
 import { ADVENTURES, ADVENTURE_BY_ID } from "./adventures/index.js";
 import { showCrownPreview, showRallyPreview } from "./weekly.js";
 import { avatarEmoji } from "./profile.js";
@@ -39,6 +39,19 @@ const STUCK_LIMIT = 500;     // most recent taps fetched for the detail lists
 const INACTIVE_DAYS = 7;
 const LIVE_MS = 15000;       // how often the open learner panel re-fetches
 
+/* ---------- panels switched OFF (Megan, 2026-08-12) ----------
+   HIDDEN, NOT REMOVED. Every panel below still exists in full, with its
+   render function, its CSS and its database RPC untouched — flip a flag
+   back to `true` and it returns exactly as it was. The matching fetch in
+   load() is skipped too, so a hidden panel also costs nothing to load.
+   ⚠️ "Who to sit next to" is not its own panel — it is the by-learner
+   table INSIDE the "I don't get it" report, so it hides with it. */
+const SHOW = {
+  stuckReport:     false,  // 🙋 "I don't get it"  (+ "Who to sit next to")
+  champion:        false,  // 🏆 Circle Champion
+  stationActivity: false,  // 🔬 Investigation Station activity
+};
+
 /* GRADED rounds = the multiple-choice "play" rounds that log a per-question
    event for each answer (js/game.js calls api.logItems for these). They are
    exactly the rounds carrying a non-empty `questions` array; cutscene/discover
@@ -63,6 +76,11 @@ const GRADED_ROUND_IDS = new Set(
    learner who played one as a possible cheat — punishing exactly the learners
    who did the most work. */
 const SCORED_ROUND_IDS = new Set([...GRADED_ROUND_IDS, ...ADVENTURES.map(a => a.id)]);
+/* The Proofs group (g7). Off the main map behind its own home-screen card, so
+   it is easy to lose track of — the timeline gives it its own line style and
+   its own progress strip. Built from `kind`, like PROOFS itself, so a twelfth
+   proof round needs no change here. */
+const PROOF_ROUND_IDS = new Set(PROOFS.map(p => p.id));
 /* FLAG B tuning — a burst of many graded rounds cleared seconds apart is the
    signature of an automated "pass everything" script (a human can't answer and
    pass a whole round every few seconds). */
@@ -103,18 +121,18 @@ async function load() {
   // anonymous end-of-game feedback (best-effort; needs the Phase-6 RPC)
   feedback = api.adminFeedback ? await api.adminFeedback(adminPw).catch(() => ({ ok: false })) : { ok: false };
   // current Circle Champion (best-effort; needs the Phase-10 RPC)
-  const wk = api.adminWeeklyResults ? await api.adminWeeklyResults(adminPw).catch(() => ({ ok: false })) : { ok: false };
+  const wk = (SHOW.champion && api.adminWeeklyResults) ? await api.adminWeeklyResults(adminPw).catch(() => ({ ok: false })) : { ok: false };
   championNow = wk && wk.ok ? (wk.champion || null) : null;
   // cheat-detection readout (best-effort; needs the Phase-13 RPC)
   integrity = api.adminIntegrity ? await api.adminIntegrity(adminPw).catch(() => ({ ok: false })) : { ok: false };
   // class-wide attempt history for the trajectory arrows (best-effort; Phase-15 RPC)
   timelineAll = api.adminTimeline ? await api.adminTimeline(adminPw, null, 400).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
   // "I don't get it" taps (best-effort; Phase-17 RPC)
-  stuckData = api.adminStuck ? await api.adminStuck(adminPw, STUCK_DAYS, STUCK_LIMIT).catch(() => ({ ok: false })) : { ok: false };
+  stuckData = (SHOW.stuckReport && api.adminStuck) ? await api.adminStuck(adminPw, STUCK_DAYS, STUCK_LIMIT).catch(() => ({ ok: false })) : { ok: false };
   // Investigation Station activity log — its own high-limit fetch (not the
   // shared 400-row timelineAll) so a busy class doesn't crowd station rows
   // out of view; same RPC (Phase-15), just asked for more history.
-  stationTimeline = api.adminTimeline ? await api.adminTimeline(adminPw, null, 2000).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
+  stationTimeline = (SHOW.stationActivity && api.adminTimeline) ? await api.adminTimeline(adminPw, null, 2000).catch(() => ({ ok: false, rows: [] })) : { ok: false, rows: [] };
   renderDashboard();
 }
 
@@ -178,7 +196,7 @@ function renderDashboard() {
   // the refresh timer can repaint it without rebuilding the whole dashboard)
   root.appendChild(el("div", "", '<div id="timeline-host"></div>'));
 
-  renderChampionCard();
+  if (SHOW.champion) renderChampionCard();
 
   if (stuck.length) {
     const sec = el("div", "card stuck-card");
@@ -218,8 +236,10 @@ function renderDashboard() {
 
   // the "I don't get it" report paints into its own host, so expanding a panel
   // repaints only this section and doesn't scroll the dashboard back to the top
-  root.appendChild(el("div", "", '<div id="stuck-host"></div>'));
-  renderStuckReport();
+  if (SHOW.stuckReport) {
+    root.appendChild(el("div", "", '<div id="stuck-host"></div>'));
+    renderStuckReport();
+  }
 
   // table
   const wrap = el("div", "table-wrap");
@@ -275,7 +295,7 @@ function renderDashboard() {
   root.appendChild(wrap);
 
   renderFeedbackReport();
-  renderStationProgress();
+  if (SHOW.stationActivity) renderStationProgress();
   renderIntegrityReport();
 
   root.appendChild(el("p", "muted small center", "Passwords are hidden. If a learner forgets theirs, use “reset pw” to clear it so they pick a new one. Backend: " + BACKEND));
@@ -380,6 +400,35 @@ function timelineRuns(rows) {
   });
   return runs.sort((a, b) => String(a.end).localeCompare(String(b.end)));
 }
+/* ---------- 🔗 Proofs progress, for the open learner ----------
+   How far through the eleven proof rounds this learner is, at a glance.
+   Read from the DASHBOARD SUMMARY (data.rows[].rounds), not from the
+   timeline rows below it: the timeline is capped at the most recent 400
+   events, so on a busy learner an early proof finish could scroll out of
+   the fetch and the strip would under-count. The summary always carries
+   every round. Falls back to the timeline only if the learner somehow
+   isn't in the summary. */
+function proofStrip() {
+  const box = el("div", "proof-strip");
+  const drow = (data && data.rows || []).find(r => r.id === timelineOne.id);
+  const seen = new Set((timelineOne.rows || []).filter(e => PROOF_ROUND_IDS.has(e.roundId)).map(e => e.roundId));
+  const state = p => {
+    const s = drow && drow.rounds ? drow.rounds[p.id] : null;
+    if (s) return s.passed ? "ok" : (s.attempts ? "try" : "none");
+    return seen.has(p.id) ? "ok" : "none";
+  };
+  const done = PROOFS.filter(p => state(p) === "ok").length;
+  const chips = PROOFS.map((p, i) => {
+    const cls = state(p);
+    const word = cls === "ok" ? "done" : (cls === "try" ? "started" : "not yet");
+    return `<span class="rchip ${cls}" title="Proof ${i + 1}. ${escapeHtml(p.title.en)} — ${word}">${i + 1}</span>`;
+  }).join("");
+  box.innerHTML = `<span class="tlabel">🔗 Proofs</span>
+    <span class="proof-count"><b>${done}</b> of ${PROOFS.length} done</span>
+    <span class="rgrid">${chips}</span>`;
+  return box;
+}
+
 function paintTimeline() {
   const host = document.getElementById("timeline-host");
   if (!host) return;
@@ -415,9 +464,12 @@ function paintTimeline() {
   sec.appendChild(el("p", "muted small",
     "Newest at the bottom. Every attempt is shown — including the failed ones — because the shape of the climb is the thing the best score hides."));
 
+  sec.appendChild(proofStrip());
+
   const list = el("div", "timeline-list");
   timelineRuns(timelineOne.rows).forEach(run => {
     const scored = SCORED_ROUND_IDS.has(run.roundId);
+    const isProof = PROOF_ROUND_IDS.has(run.roundId);
     const isAdv = !!ADVENTURE_BY_ID[run.roundId];
     const item = el("div", "trun");
 
@@ -431,6 +483,24 @@ function paintTimeline() {
       item.className = "trun minor";
       item.innerHTML = `<span class="tlabel">🎁 ${run.roundId === "streak" ? "Streak milestone" : "Perfect week"}</span>
         <span class="tchain muted small">+${run.events.reduce((a, e) => a + (e.xp || 0), 0)} XP</span>
+        <span class="ttime muted small">${fmtDateTime(run.end)}</span>`;
+    } else if (isProof) {
+      /* PROOF ROUNDS get a full line of their own, not the grey "explored"
+         one they used to share with cutscenes. They are real work — eleven
+         guided rounds behind the home screen's Proofs card — and they were
+         the only kind of round a teacher could see in the chip row but not
+         here, which is what made this panel look like it had missed them.
+         No percentage chain: a proof round banks score 1 every time
+         (completing IS passing — investigate.js finish()), so a chain would
+         read "100% › 100%" and say nothing. What carries information is
+         that they finished it, and how many times — plays 2 and 3 pay half
+         XP, so a repeat is a learner going back for another read. */
+      const plays = run.events.length;
+      const xp = run.events.reduce((a, e) => a + (e.xp || 0), 0);
+      item.className = "trun cleared";
+      item.innerHTML = `<span class="tlabel">🔗 ${escapeHtml(roundLabel(run.roundId))}</span>
+        <span class="tchain">done${plays > 1 ? ` <span class="muted small">· ${plays} plays</span>` : ""}</span>
+        <span class="ttrend muted small">+${xp} XP</span>
         <span class="ttime muted small">${fmtDateTime(run.end)}</span>`;
     } else if (!scored) {
       item.className = "trun minor";
