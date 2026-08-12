@@ -424,7 +424,7 @@ export const round = {
       reason: "construction",
       note: {
         en: "Being legal and being USEFUL for THIS target are two different things. ∠TBD = 90° is completely genuine — but the angle we're trying to prove, ∠TPB, is hosted at P, not B, and nothing connects that right angle at B to P. The construction rule that saves you every time: \"You must join the point that you are trying to prove!\" The correct move is D joined straight to P.",
-        af: "Om wettig te wees en om NUTTIG te wees vir HIERDIE teiken is twee verskillende dinge. ∠TBD = 90° is heeltemal eg — maar die hoek wat ons probeer bewys, ∠TPB, sit by P, nie by B nie, en niks koppel daardie regte hoek by B aan P nie. Die konstruksiereël wat jou elke keer red: \"Jy moet die punt verbind waaroor jy probeer bewys!\" Die regte skuif is om D reguit aan P te verbind.",
+        af: "Om wettig te wees en om NUTTIG te wees vir HIERDIE teiken is twee verskillende dinge. ∠TBD = 90° is heeltemal eg — maar die hoek wat ons probeer bewys, ∠TPB, sit by P, nie by B nie, en niks koppel daardie regte hoek by B aan P nie. Die konstruksiereël wat jou elke keer red: \"Jy moet die punt verbind wat jy probeer bewys!\" Die regte skuif is om D reguit aan P te verbind.",
       },
     },
 
@@ -435,7 +435,7 @@ export const round = {
       diagram: FIG_STEP_JOIN,
       note: {
         en: "The classmate's mistake, undone: D joined STRAIGHT to P this time, the actual point in the alternate segment the claim is about — exactly what \"join the point you're trying to prove\" means. Triangle TDP is now closed.",
-        af: "Die klasmaat se fout, ongedaan gemaak: D word hierdie keer REGUIT aan P verbind, die werklike punt in die oorstaande segment waaroor die bewering gaan — presies wat \"verbind die punt waaroor jy probeer bewys\" beteken. Driehoek TDP is nou gesluit.",
+        af: "Die klasmaat se fout, ongedaan gemaak: D word hierdie keer REGUIT aan P verbind, die werklike punt in die oorstaande segment waaroor die bewering gaan — presies wat \"verbind die punt wat jy probeer bewys\" beteken. Driehoek TDP is nou gesluit.",
       },
     },
 
@@ -630,7 +630,7 @@ export const round = {
       diagram: FIG_FINAL,
       note: {
         en: "The chord flipped to the other side of the tangent, and the construction still did not care: draw the diameter from the point of tangency, join its far end STRAIGHT to the point you're trying to prove, and two free right angles chase the tangent-chord angle back to itself. This time they ADD instead of splitting, but the destination is identical — T₁ = 90° + x, and ∠TPB lands on exactly the same expression.<br><br>Joining D to B instead of D to P (an honest mistake, the real classroom habit) is perfectly legal, and it even hands you a genuine right angle — just at the wrong point. It never reaches P, so it never reaches the angle we were actually trying to prove.<br><br>The rule that carries every version of this proof: <b>you must join the point that you are trying to prove.</b>",
-        af: "Die koord het na die ander kant van die raaklyn geswaai, en die konstruksie het steeds nie omgegee nie: trek die middellyn vanaf die raakpunt, verbind die verste punt daarvan REGUIT aan die punt waaroor jy probeer bewys, en twee verniet-regte-hoeke jaag die raaklyn–koord-hoek terug na homself. Hierdie keer TEL hulle BYMEKAAR in plaas daarvan om te verdeel, maar die bestemming is identies — T₁ = 90° + x, en ∠TPB land op presies dieselfde uitdrukking.<br><br>Om D aan B te verbind in plaas van D aan P ('n eerlike fout, die regte klaskamer-gewoonte) is heeltemal wettig, en gee jou selfs 'n eg regte hoek — net by die verkeerde punt. Dit bereik nooit P nie, dus bereik dit nooit die hoek wat ons eintlik probeer bewys het nie.<br><br>Die reël wat elke weergawe van hierdie bewys dra: <b>jy moet die punt verbind waaroor jy probeer bewys.</b>",
+        af: "Die koord het na die ander kant van die raaklyn geswaai, en die konstruksie het steeds nie omgegee nie: trek die middellyn vanaf die raakpunt, verbind die verste punt daarvan REGUIT aan die punt wat jy probeer bewys, en twee verniet-regte-hoeke jaag die raaklyn–koord-hoek terug na homself. Hierdie keer TEL hulle BYMEKAAR in plaas daarvan om te verdeel, maar die bestemming is identies — T₁ = 90° + x, en ∠TPB land op presies dieselfde uitdrukking.<br><br>Om D aan B te verbind in plaas van D aan P ('n eerlike fout, die regte klaskamer-gewoonte) is heeltemal wettig, en gee jou selfs 'n eg regte hoek — net by die verkeerde punt. Dit bereik nooit P nie, dus bereik dit nooit die hoek wat ons eintlik probeer bewys het nie.<br><br>Die reël wat elke weergawe van hierdie bewys dra: <b>jy moet die punt verbind wat jy probeer bewys.</b>",
       },
     },
 
