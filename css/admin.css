@@ -137,6 +137,13 @@
    proof rounds live off the main map behind their own card, so this is the
    only place a teacher sees how far through the group ONE learner is. Purple
    is the group's own accent (#9c36b5, js/rounds/proof*.js). */
+/* Compact per-learner proofs strip in the MAIN TABLE's name cell. Chips are
+   flex (not the 14-col .rgrid grid) so the row stays one line of 11 and wraps
+   only if it truly must. */
+.name .proof-mini{display:flex; align-items:center; gap:6px; margin-top:4px; font-size:.78rem; color:#7b2a8f; font-weight:700;}
+.name .proof-mini b{font-family:"Bricolage Grotesque",sans-serif; font-size:.95rem;}
+.proof-mini .pgrid{display:flex; flex-wrap:wrap; gap:3px;}
+.proof-mini .rchip{width:16px; height:16px; font-size:.58rem; border-radius:5px;}
 .proof-strip{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:10px;
   background:#faf3fd; border:2px solid #9c36b5; border-radius:12px; padding:8px 11px;}
 .proof-strip .tlabel{font-weight:800; color:#7b2a8f;}

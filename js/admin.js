@@ -267,7 +267,7 @@ function renderDashboard() {
     const nickPart = r.nickname ? ` <span class="muted">(${escapeHtml(r.nickname)})</span>` : "";
     tr.innerHTML = `
       <td>${r.rank}</td>
-      <td class="name">${avatarEmoji(r.avatarId)} <button class="linkish" type="button" title="Show every attempt, live">${escapeHtml(r.name)}</button>${nickPart}</td>
+      <td class="name">${avatarEmoji(r.avatarId)} <button class="linkish" type="button" title="Show every attempt, live">${escapeHtml(r.name)}</button>${nickPart}${proofMiniHtml(r)}</td>
       <td class="pw">${hasPw(r) ? '<span class="pw-set">✓ set</span>' : '<span class="muted">— not set</span>'}</td>
       <td class="num">${r.weeklyXp}</td>
       <td class="num">${r.allTimeXp}</td>
@@ -408,6 +408,25 @@ function timelineRuns(rows) {
    the fetch and the strip would under-count. The summary always carries
    every round. Falls back to the timeline only if the learner somehow
    isn't in the summary. */
+/* Compact proofs strip for the MAIN TABLE, one per learner row, under the
+   name — so who-did-their-proofs-homework is visible without opening any
+   timeline. Reads the same dashboard summary (rows[].rounds) as proofStrip
+   below; it deliberately has NO timeline fallback, because the table renders
+   straight off the summary and there is no timeline open yet. */
+function proofMiniHtml(r) {
+  const state = p => {
+    const s = r.rounds && r.rounds[p.id];
+    return s ? (s.passed ? "ok" : (s.attempts ? "try" : "none")) : "none";
+  };
+  const done = PROOFS.filter(p => state(p) === "ok").length;
+  const chips = PROOFS.map((p, i) => {
+    const cls = state(p);
+    const word = cls === "ok" ? "done" : (cls === "try" ? "started" : "not yet");
+    return `<span class="rchip ${cls}" title="Proof ${i + 1}. ${escapeHtml(p.title.en)} — ${word}">${i + 1}</span>`;
+  }).join("");
+  return `<div class="proof-mini">🔗 <b>${done}</b>/${PROOFS.length} <span class="pgrid">${chips}</span></div>`;
+}
+
 function proofStrip() {
   const box = el("div", "proof-strip");
   const drow = (data && data.rows || []).find(r => r.id === timelineOne.id);
