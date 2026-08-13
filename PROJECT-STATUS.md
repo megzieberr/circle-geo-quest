@@ -1,3 +1,60 @@
+# Project status — updated 2026-08-13 — 🔗 PROOFS STRIP ON THE MAIN TABLE, SHIPPED
+
+## Where we are
+
+Chat/discussion session that turned into one small shipped feature. Commit
+`38ecde1` (`js/admin.js` + `css/admin.css` only — no migration, no `sw.js`
+change, no shared app CSS).
+
+**1. The "everyone shows 0 of 11" report was DEBUGGED FIRST, and the strip
+was innocent.** Checked at all four layers before touching anything: the
+database (exactly TWO pr0 finishes exist — her test play 2026-08-12 19:00 UTC
+and Botle M at 03:44 UTC on 2026-08-13; every other learner genuinely 0),
+the live `cgg_admin_data` function (builds `rounds` from ALL progress rows,
+no filter), the client logic, and the live-deployed files. **No wiring fault
+— the zeros were true.** She HAS told the class: proofs are homework due
+Monday 2026-08-17, so the strip should fill over the weekend. If it doesn't,
+that's a learner problem, not a code problem.
+
+**2. Proofs strip added to the MAIN learner table** — a compact 🔗 N/11 chip
+row under each name, so who-did-their-homework reads in one scroll with no
+timeline opening. Same source as the timeline strip (the dashboard summary
+`rows[].rounds`, which always carries every round — never the capped
+timeline). Green passed / amber started / grey untouched; proof name in the
+tooltip. **The timeline's own strip STAYS** (she said "move"; kept because it
+costs nothing and helps when a learner IS open — one-line removal if she
+wants it gone).
+
+**Checked before shipping** on a local copy: seeded learner reads 1/11 with
+chip 1 green and chip 4 amber, other nine rows 0/11 grey, tooltips correct,
+0 console errors, 0 new horizontal overflow (measured strips-hidden vs
+shown — identical).
+
+## Decisions
+- **2026-08-13 — proofs progress lives on the main table, per learner, under
+  the name.** Her ask, verbatim intent: see who has done what without opening
+  every attempt. The timeline strip stays as a secondary copy.
+- **2026-08-13 — the proof rounds are homework due Monday 2026-08-17.** Any
+  "nobody has played" reading before then is expected, not a bug.
+
+## 📌 Pending on Megan
+- 🌐 1 min [whenever]: open the live admin dashboard → main table → your row
+  and Botle M's row should both read 1/11 with chip 1 green.
+
+## 🔭 Next up
+1. **Dynamic Geometry (Ch 8)** — planned in `DYNAMIC-GEO-PLAN.md`, build week
+   of 2026-08-17. Three additive engine options (`d.key`, `o.rot`,
+   `panel.scaffold`) landed after that plan was written — read its note first.
+2. **CQ ↔ Blipwork bridge** — full plan written this session at
+   `maths-homework-quest/CQ-BRIDGE-PLAN.md` (roster login for Blipwork,
+   Circle Geo tab, XP→diamonds delta bridge). Waits for a build day, her word.
+   Circle Quest itself needs ZERO changes for it.
+3. **Standing, all hers, all unchanged**: the mini-diagram stacking CSS
+   one-liner, the "Proofs"/"Bewyse" card name, and the one-word revert of
+   pr8's "T₁ = " prefix.
+
+---
+
 # Project status — updated 2026-08-12 (evening) — ADMIN TIDY-UP, SHIPPED AND VERIFIED LIVE
 
 ## Where we are
