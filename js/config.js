@@ -150,7 +150,7 @@ export const GROUPS = [
   // once every round CURRENTLY in the group is passed.
   { id: "g8", icon: "🧲", name: "Dynamic Geometry", hidden: true,
     blurb: { en: "Dynamic Geometry rounds — drag it, glide it, freeze it, and answer with theorems you already know.",
-             af: "Dinamiese Meetkunde-rondtes — drag dit, gly dit, vries dit, en beantwoord met stellings wat jy reeds ken." } },
+             af: "Dinamiese Meetkunde-rondtes — trek dit, laat dit gly, vries dit, en beantwoord met stellings wat jy reeds ken." } },
 ];
 /* The badges that count towards the rank ladder and the "x/5 badges" stat. */
 export const LADDER_GROUPS = GROUPS.filter(g => !g.hidden);

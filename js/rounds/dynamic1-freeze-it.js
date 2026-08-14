@@ -102,7 +102,7 @@ export const round = {
       prompt: { en: "Watch it glide to a stop", af: "Kyk dit gly tot stilstand" },
       instruction: {
         en: "Tap ▶ and watch C glide across the arc — or drag it yourself. When it settles, look carefully: this exact figure is what the next few questions are about.",
-        af: "Tik ▶ en kyk hoe C oor die boog gly — of drag dit self. Wanneer dit tot rus kom, kyk mooi: hierdie presiese figuur is waaroor die volgende paar vrae gaan.",
+        af: "Klik op ▶ en kyk hoe C oor die boog gly — of trek dit self. Wanneer dit tot rus kom, kyk mooi: hierdie presiese figuur is waaroor die volgende paar vrae gaan.",
       },
       interactive: makeMovieModel(),
     },
@@ -186,7 +186,7 @@ export const round = {
       prompt: { en: "Same theorems, a figure you've seen move", af: "Dieselfde stellings, 'n figuur wat jy sien beweeg het" },
       note: {
         en: "Nothing in this round used a new theorem — every answer came from ∠s in the same segment or opp ∠s of a cyclic quad, both things you already knew. What changed is that you watched the figure get to that position, instead of being handed a picture out of nowhere. That is the whole point of dragging and gliding: by the time the booklet asks the question, the figure already makes sense.",
-        af: "Niks in hierdie rondte het 'n nuwe stelling gebruik nie — elke antwoord het gekom van ∠e in dieselfde segment of teenoorst. ∠e van 'n koordevierhoek, altwee dinge wat jy reeds geweet het. Wat verander het, is dat jy die figuur na daardie posisie sien beweeg het, in plaas daarvan om 'n prentjie uit die niet gegee te word. Dit is die hele punt van drag en gly: teen die tyd wat die handboek die vraag vra, maak die figuur reeds sin.",
+        af: "Niks in hierdie rondte het 'n nuwe stelling gebruik nie — elke antwoord het gekom van ∠e in dieselfde segment of teenoorst. ∠e van 'n koordevierhoek, altwee dinge wat jy reeds geweet het. Wat verander het, is dat jy die figuur na daardie posisie sien beweeg het, in plaas daarvan om 'n prentjie uit die niet gegee te word. Dit is die hele punt van trek en gly: teen die tyd wat die handboek die vraag vra, maak die figuur reeds sin.",
       },
     },
 

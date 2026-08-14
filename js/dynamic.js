@@ -29,7 +29,7 @@ const UI = {
   // it would go stale the moment the next arc's rounds land. The card
   // already renders the live "N of N done" counter right underneath.
   cardBlurb: { en: "Drag it, watch it glide, then freeze the figure and answer what you already know.",
-               af: "Drag dit, kyk dit gly, en vries dan die figuur en beantwoord wat jy reeds weet." },
+               af: "Trek dit, kyk dit gly, en vries dan die figuur en beantwoord wat jy reeds weet." },
   mapEyebrow: { en: "See it move", af: "Sien dit beweeg" },
   mapTitle:   { en: "Dynamic Geometry", af: "Dinamiese Meetkunde" },
   mapBlurb:   { en: "Moving points, live readouts, and a frozen snapshot for the booklet-style questions.",

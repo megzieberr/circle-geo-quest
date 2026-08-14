@@ -88,7 +88,7 @@ export const round = {
   title: { en: "Watch it move", af: "Kyk hoe dit beweeg" },
   blurb: {
     en: "Drag C anywhere around the circle — or tap play — and watch what ∠ACB actually does.",
-    af: "Drag C enige plek om die sirkel — of tik speel — en kyk wat ∠ACB werklik doen.",
+    af: "Trek C enige plek om die sirkel — of klik op speel — en kyk wat ∠ACB werklik doen.",
   },
   panels: [
 
@@ -98,7 +98,7 @@ export const round = {
       prompt: { en: "Chord AB is fixed. C is free.", af: "Koord AB is vas. C is vry." },
       instruction: {
         en: "Drag C anywhere around the circle — or tap ▶ below the readout to watch it glide on its own, and use the slider to step through slowly. Keep an eye on ∠ACB.",
-        af: "Drag C enige plek om die sirkel — of tik ▶ onder die lesing om dit vanself te sien gly, en gebruik die skuifbalk om stadig deur te stap. Hou ∠ACB dop.",
+        af: "Trek C enige plek om die sirkel — of klik op ▶ onder die lesing om dit vanself te sien gly, en gebruik die skuifbalk om stadig deur te stap. Hou ∠ACB dop.",
       },
       interactive: makeModel(),
     },
@@ -110,7 +110,7 @@ export const round = {
       type: "choice",
       prompt: {
         en: "Drag C to a few different spots — but keep it on the SAME side of chord AB every time. What does ∠ACB do?",
-        af: "Drag C na 'n paar verskillende plekke — maar hou dit elke keer aan DIESELFDE kant van koord AB. Wat doen ∠ACB?",
+        af: "Trek C na 'n paar verskillende plekke — maar hou dit elke keer aan DIESELFDE kant van koord AB. Wat doen ∠ACB?",
       },
       interactive: makeModel(),
       options: [
@@ -120,13 +120,13 @@ export const round = {
         { text: { en: "It keeps changing, with no pattern to it at all.", af: "Dit bly aanhou verander, met geen patroon nie." } },
       ],
       hints: [
-        { en: "Try three or four spots, all on the same side. Read the number off the diagram each time before you drag again.", af: "Probeer drie of vier plekke, almal aan dieselfde kant. Lees die getal elke keer van die diagram af voordat jy weer drag." },
+        { en: "Try three or four spots, all on the same side. Read the number off the diagram each time before you drag again.", af: "Probeer drie of vier plekke, almal aan dieselfde kant. Lees die getal elke keer van die diagram af voordat jy weer trek." },
         { en: "Wherever C sits on that one side, the same chord AB is always subtending the same angle at it.", af: "Waar C ook al aan daardie een kant sit, span dieselfde koord AB altyd dieselfde hoek daaraan op." },
       ],
       reason: "sameSeg",
       note: {
         en: "Exactly the same, every time C stays on that side — you can drag C anywhere along that whole arc and ∠ACB will not move. That is worth holding onto: an angle that never changes is exactly the kind of thing a proof can be built on.",
-        af: "Presies dieselfde, elke keer as C aan daardie kant bly — jy kan C enige plek langs daardie hele boog drag en ∠ACB sal nie beweeg nie. Dit is die moeite werd om vas te hou: 'n hoek wat nooit verander nie, is presies die soort ding waarop 'n bewys gebou kan word.",
+        af: "Presies dieselfde, elke keer as C aan daardie kant bly — jy kan C enige plek langs daardie hele boog skuif en ∠ACB sal nie beweeg nie. Dit is die moeite werd om vas te hou: 'n hoek wat nooit verander nie, is presies die soort ding waarop 'n bewys gebou kan word.",
       },
     },
 
@@ -135,7 +135,7 @@ export const round = {
       type: "choice",
       prompt: {
         en: "Now drag C slowly across chord AB, onto the OTHER arc. Watch the readout, not the picture — what happens to ∠ACB the instant it crosses?",
-        af: "Drag nou C stadig oor koord AB, na die ANDER boog. Kyk na die lesing, nie na die prentjie nie — wat gebeur met ∠ACB die oomblik dit oorkruis?",
+        af: "Trek nou C stadig oor koord AB, na die ANDER boog. Kyk na die lesing, nie na die prentjie nie — wat gebeur met ∠ACB die oomblik dit oorkruis?",
       },
       interactive: makeModel(),
       options: [
@@ -161,7 +161,7 @@ export const round = {
       prompt: { en: "Movie, then snapshot", af: "Prent, dan foto" },
       note: {
         en: "You have now watched it happen — dragged it, glided it, seen the jump for yourself. The next round freezes C at one exact spot and asks the booklet-style questions you already know how to answer. Same theorems. Now on a figure you have actually seen move.",
-        af: "Jy het dit nou sien gebeur — dit gedrag, dit sien gly, die sprong self gesien. Die volgende rondte vries C by een presiese plek en vra die handboek-styl vrae wat jy reeds weet hoe om te beantwoord. Dieselfde stellings. Nou op 'n figuur wat jy werklik sien beweeg het.",
+        af: "Jy het dit nou sien gebeur — dit getrek, dit sien gly, die sprong self gesien. Die volgende rondte vries C by een presiese plek en vra die handboek-styl vrae wat jy reeds weet hoe om te beantwoord. Dieselfde stellings. Nou op 'n figuur wat jy werklik sien beweeg het.",
       },
     },
 
