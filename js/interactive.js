@@ -41,15 +41,19 @@
        length mark, "parallel" (default) for a chevron. `flash:true` adds
        a pulsing CSS class, for the moment a condition-lock actually locks.
 
-   3 · GLIDE. `model.glide = { handleId, from, to, duration }` renders a
-       Play/Pause button + a scrubbable range slider under the readout
-       panel, driving the named handle's value from `from` to `to` over
-       `duration` ms. Built on setInterval, NOT requestAnimationFrame —
+   3 · GLIDE. `model.glide = { handleId, from, to, duration, onT, startT }`
+       renders a Play/Pause button + a scrubbable range slider under the
+       readout panel, driving the named handle's value from `from` to `to`
+       over `duration` ms. Built on setInterval, NOT requestAnimationFrame —
        the preview pane this app is built and reviewed in never fires
        rAF, and a slow, scrubbable glide is the actual teaching feature
        ("watch it move" beats an instant jump). The slider always works
        even where the timer wouldn't (e.g. a screenshot tool stepping
-       through frames by hand).
+       through frames by hand). `onT(scaledValue)` (additive, opt-in,
+       Dynamic Geometry build session 2) fires every tick alongside the
+       handle drive, so a model with NO handle at all can still ride the
+       same Play/slider UI — see UNROLL below. `startT` (also session 2)
+       seeds the initial scrub position instead of always starting at 0.
 
    4 · READOUT ROW EXTRAS. A row from model.readouts() may now also carry
        `pulse:true` (one-shot highlight — a round sets this true for the
@@ -57,6 +61,24 @@
        crossed to a new constant) and `big:true` (larger hero-reading
        type, for the ONE number a round wants a learner's eyes on). Both
        are additive: a row with neither renders exactly as before.
+
+   5 · UNROLL (additive, opt-in, added Dynamic Geometry build session 2,
+       DYNAMIC-GEO-PLAN.md §2 — "circle ⇄ ruler"). Two small opt-in pieces,
+       neither touching any existing model:
+         · `model.noCircle: true` skips drawing the default static circle
+           outline — for a model whose frame() draws its OWN circle (or, at
+           other scrub positions, its own ruler) every frame instead.
+         · `frame()` may return `paths: [{d, color, width, dash, fill,
+           opacity}]`, raw SVG path data drawn on the dynamic layer BEHIND
+           segments/angles/marks/dots. Built for the unroll: neither a
+           circle-becoming-a-line outline nor a filled θ/360 pie wedge is a
+           straight segment or a declared angle, so a model that needs them
+           computes its own `d` string (sampling points with the imported
+           `pol()`, the same helper engine.js's own renderer uses) and hands
+           it back as a path instead. A model that never sets `paths` is
+           unaffected — the array is empty everywhere else.
+       See js/rounds/dynamic2-the-unroll.js for the model these three pieces
+       were built for.
    ============================================================ */
 import { pol, sweepOf, INK } from "./engine.js";
 import { tx } from "./i18n.js";
@@ -191,7 +213,9 @@ export function mountInteractive(host, model) {
   stage.appendChild(staticG); stage.appendChild(dynG); stage.appendChild(handG);
 
   // ---- draw the static base ----
-  staticG.appendChild(svg("circle", { class: "sirkel", cx, cy, r: R }));
+  // model.noCircle (UNROLL, additive — see header note #5) skips the default
+  // outline for a model whose own frame() draws a circle-or-ruler every frame.
+  if (!model.noCircle) staticG.appendChild(svg("circle", { class: "sirkel", cx, cy, r: R }));
   (fixed.chords || []).forEach(c => {
     const a = ctx.P(c[0]), b = ctx.P(c[1]);
     staticG.appendChild(svg("line", { class: "ln", x1: N(a.x), y1: N(a.y), x2: N(b.x), y2: N(b.y) }));
@@ -268,6 +292,22 @@ export function mountInteractive(host, model) {
     return g;
   }
 
+  /* PATHS (additive — UNROLL, header note #5): raw SVG path data a model
+     hands back through frame().paths, for geometry none of the other
+     primitives can describe (a circle morphing into a straight line, a
+     filled θ/360 pie wedge). Drawn BEHIND segments/angles/marks/dots, same
+     background-layer convention as drawMark's ticks/chevrons sitting under
+     the handles. `fill` set = a filled shape (the pie); unset = a stroked
+     line (the circle/ruler outline, the highlighted sub-arc). */
+  function drawPath(sp) {
+    const attrs = { d: sp.d, fill: sp.fill || "none" };
+    if (sp.fill) attrs["fill-opacity"] = sp.opacity ?? 1;
+    attrs.stroke = sp.color || (sp.fill ? "none" : INK);
+    attrs["stroke-width"] = sp.width ?? (sp.fill ? 0 : 2.4);
+    if (sp.dash) attrs["stroke-dasharray"] = sp.dash;
+    return svg("path", attrs);
+  }
+
   // ---- the render loop ----
   let measures = {};
   function frame() {
@@ -277,6 +317,7 @@ export function mountInteractive(host, model) {
 
     // dynamic primitives
     dynG.replaceChildren();
+    (f.paths || []).forEach(sp => dynG.appendChild(drawPath(sp)));
     (f.segments || []).forEach(sgmt => {
       dynG.appendChild(svg("line", {
         class: "iv-seg " + (sgmt.cls || ""),
@@ -404,11 +445,18 @@ export function mountInteractive(host, model) {
     const setT = (t) => {
       glideT = Math.max(0, Math.min(1, t));
       glideSlider.value = String(Math.round(glideT * 1000));
+      const scaled = g.from + (g.to - g.from) * glideT;
       const h = handles.find(x => x.id === g.handleId);
       if (h) {
-        h.val = g.from + (g.to - g.from) * glideT;
+        h.val = scaled;
         if (h.lock) applyLock(h);
       }
+      // onT (additive, UNROLL — header note #3/#5): fires alongside the
+      // handle drive, so a model with NO handle at all (the unroll has none —
+      // there is nothing to drag, only the morph to scrub) still rides the
+      // same Play/slider UI. Both may fire together; neither depends on the
+      // other being set.
+      if (g.onT) g.onT(scaled);
       frame();
     };
     const stopGlide = () => {

@@ -27,7 +27,7 @@
 </head>
 <body>
 <h1>Dynamic Geometry — verify &amp; preview</h1>
-<p class="lede">Every declared static diagram in dg0/dg1 is checked against its drawn coordinates below (same assertion <code>tools/verify-node.mjs</code> runs from the terminal). Draggable panels are exempt by design — they compute live, so there is nothing declared to disagree with — and are mounted LIVE here instead, so they can actually be dragged, glided and read. Both languages toggle with the buttons under each mount.</p>
+<p class="lede">Every declared static diagram in dg0–dg3 is checked against its drawn coordinates below (same assertion <code>tools/verify-node.mjs</code> runs from the terminal). Draggable panels are exempt by design — they compute live, so there is nothing declared to disagree with — and are mounted LIVE here instead, so they can actually be dragged, glided and read. Both languages toggle with the buttons under each mount.</p>
 <div id="summary">Running…</div>
 <div id="fails"></div>
 
@@ -40,6 +40,16 @@
 </div>
 <div id="lockDemo" class="vcard" style="max-width:380px;"></div>
 
+<h2>Engine mechanism demo — the unroll morph, three scrub positions (dg2, build session 2)</h2>
+<div class="demo-note">
+  Built for DYNAMIC-GEO-PLAN.md §2, the chapter's centrepiece. Each card below is a FRESH mount of dg2's own model
+  (<code>js/rounds/dynamic2-the-unroll.js</code>), frozen at a different scrub position via <code>glide.startT</code> so
+  all three sit side by side for review instead of only ever showing the default t=0 start — drag each one's own
+  slider from there to see it move. Engine support: <code>model.noCircle</code> + <code>frame().paths</code> +
+  <code>model.glide.onT</code>, all additive, in <code>js/interactive.js</code>.
+</div>
+<div id="unrollDemo" class="grid" style="margin-bottom:10px;"></div>
+
 <div id="grid" class="grid"></div>
 
 <script type="module">
@@ -47,6 +57,7 @@ import { verifyDiagram, renderDiagram } from "./js/engine.js";
 import { mountInteractive } from "./js/interactive.js";
 import { DYNAMIC } from "./js/rounds/index.js";
 import { lockDemoModel } from "./js/dynamic-lock-demo.js";
+import { makeUnrollModel } from "./js/rounds/dynamic2-the-unroll.js";
 
 let diagrams = 0, angles = 0, fails = [];
 const failBox = document.getElementById("fails");
@@ -105,10 +116,21 @@ DYNAMIC.forEach(round => {
 // no declared angles to check, same reasoning as any draggable panel)
 mountInteractive(document.getElementById("lockDemo"), lockDemoModel());
 
+// the unroll, at three frozen scrub positions — same "live-mounted, not
+// verified" reasoning: nothing here is a declared angle to disagree with.
+const unrollDemoHost = document.getElementById("unrollDemo");
+[0, 0.5, 1].forEach(startT => {
+  const card = document.createElement("div");
+  card.className = "vcard";
+  card.innerHTML = `<span class="tag">unroll · startT = ${startT}</span>`;
+  unrollDemoHost.appendChild(card);
+  mountInteractive(card, makeUnrollModel({ startT }));
+});
+
 const summary = document.getElementById("summary");
 if (fails.length === 0) {
   summary.className = "pass";
-  summary.innerHTML = `<span class="ok">✓ ALL TO SCALE — ${diagrams} diagrams, ${angles} angles checked, 0 mismatches (dg0 + dg1 only).</span>`;
+  summary.innerHTML = `<span class="ok">✓ ALL TO SCALE — ${diagrams} diagrams, ${angles} angles checked, 0 mismatches (dg0–dg3).</span>`;
 } else {
   summary.className = "fail";
   summary.innerHTML = `<span class="bad">✗ ${fails.length} mismatch(es) across ${diagrams} diagrams (${angles} angles).</span>`;

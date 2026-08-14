@@ -59,6 +59,8 @@ import { round as pr8b } from "./proof8b-t4-join-pairs.js";      // g7 · Proof 
 import { round as pr9 } from "./proof9-mixed-finale.js";         // g7 · Proof rounds — mixed finale (session 6)
 import { round as dg0 } from "./dynamic0-watch-it-move.js";      // g8 · Dynamic Geometry — watch it move (build session 1)
 import { round as dg1 } from "./dynamic1-freeze-it.js";          // g8 · Dynamic Geometry — freeze it (build session 1)
+import { round as dg2 } from "./dynamic2-the-unroll.js";         // g8 · Dynamic Geometry — the unroll (build session 2)
+import { round as dg3 } from "./dynamic3-her-method-drill.js";   // g8 · Dynamic Geometry — her method drill (build session 2)
 import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
 import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
@@ -108,7 +110,9 @@ const ORDER = [
   // on its own mixed finale) and before inv1 (so the Investigation Station,
   // whenever it is next made visible, is never silently gated behind an
   // unrelated group of rounds it has nothing to do with).
-  dg0, dg1,
+  // dg2 + dg3 (build session 2, §2 "the unroll") slot right after dg1 and
+  // before inv1 — same rule, same reason, nothing reordered.
+  dg0, dg1, dg2, dg3,
   inv1, inv2, inv3, inv4, inv5, inv6,                    // g6 · Investigation Station 🚂
 ];
 
@@ -134,7 +138,7 @@ const GROUP = {
   r12: "g4", r14: "g4", r15: "g4", r16: "g4",
   r18: "g5", r19: "g5", r20: "g5", r21: "g5",
   pr0: "g7", pr1: "g7", pr2: "g7", pr3: "g7", pr4: "g7", pr5: "g7", pr6: "g7", pr7: "g7", pr8: "g7", pr8b: "g7", pr9: "g7",
-  dg0: "g8", dg1: "g8",
+  dg0: "g8", dg1: "g8", dg2: "g8", dg3: "g8",
   inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
 };
 
