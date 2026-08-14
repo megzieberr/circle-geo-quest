@@ -1,3 +1,66 @@
+# Project status — updated 2026-08-14 — 🧲 DYNAMIC GEO DAY 1: dg0–dg3 BUILT + FOREMAN-REVIEWED, LOCAL ONLY
+
+## Where we are
+
+Foreman build day (Fable foreman, two Sonnet build sessions she authorized in
+chat — "you can run the session" / "you can run session 2"). **Arcs 1+2 of
+DYNAMIC-GEO-PLAN.md are BUILT and foreman-reviewed: dg0 "Watch it move", dg1
+"Freeze it", dg2 "The unroll" (her centrepiece — length-preserving morph,
+measured 148.42–148.44px against 148.44 expected at five scrub positions), dg3
+"Her method drill".** New group g8 with its own home card (Proofs pattern),
+kind "dynamic" through renderInvestigate(), engine additions all additive:
+condition-lock drag (capstone mechanism, demo only), live derived readouts,
+play/glide + scrubbable slider, noCircle/paths/onT for the unroll.
+**7 local commits ahead of origin, NOTHING pushed, no migrations, no sw.js.**
+All four checkers green at close: 513 diagrams / 985 angles / 0 mismatches.
+Her playtest of the extracted figures already landed 3 fixes (C label radial,
+E's "?" pinned, demo double-Y) — committed. Diagram sheets on her Desktop:
+`dyngeo-session1-diagrams.html` + `dyngeo-session2-diagrams.html`.
+
+## Decisions
+- **2026-08-14 — arcs 1+2 first, own home card, sandbox panels YES** (her
+  AskUserQuestion answers at day start). Group g8 hidden from badge ladder
+  like g7.
+- **2026-08-14 — draggable-point letters sit radially OUTWARD from the
+  centre** (her playtest: "the C should sit on the outside of the circle").
+  Fixed offsets are banned for points that travel; the dg0 dots comment is
+  the pattern.
+- **2026-08-14 — the AF drag verbs in this app's NEW rounds follow her
+  2026-08-12 ruling** (Trek / Skuif / Klik op). ⚠️ The EXISTING rounds still
+  say "Sleep"/"tik" throughout — sweep-or-leave is an OPEN ruling, hers.
+- **2026-08-14 — prompt 3 (arcs 3+4) is drafted but GATED on her playthrough
+  of dg0–dg3** (her wrap-up word: "flag it for the next session that I review
+  before we continue with prompt 3").
+
+## 📌 Pending on Megan
+- 💻 10 min **[blocking]**: play dg0–dg3 (live admin not needed — local:
+  `localhost:5180/?local=1&preview=1`, or wait for a ship). This gates
+  prompt 3.
+- 📱 1 min [whenever]: rule on the dg3 name — "Her method drill" reads oddly
+  to a learner; options: "Juffrou se metode" or "Die drie-stap-metode".
+- 🌐 1 min [whenever]: carried from 08-13 — live admin main table: your row
+  and B.M.'s should both read 1/11 with chip 1 green.
+- 🎬 [whenever]: the Tripo paper-fold WebP (she said she'd make it 08-14;
+  arc 5's session needs the file path when it exists).
+- 💬 [whenever]: ruling — sweep the OLD rounds' "Sleep"/"tik" to
+  Trek/Skuif/Klik op, or leave shipped rounds as they are?
+
+## 🔭 Next up
+1. **Her review of dg0–dg3, then Prompt 3** (arcs 3+4: pick-the-diagram,
+   build-it-with-me, which-line-unlocks-it — dg4/dg5/dg6, no new engine).
+   The full prompt sits in `DYNGEO-SESSION-PROMPTS.md`, marked DO NOT
+   DISPATCH until her review. Next session pastes it into chat.
+2. **Arc 5 (folding)** waits on her Tripo WebP + the fold-reflection engine
+   piece. **Arc 6 (trig bridge)** + the **condition-lock capstone** close the
+   chapter.
+3. **Ship** is its own step on her explicit yes — plain push, no migration —
+   after her playthrough. 7 commits are queued locally.
+4. Standing hers, unchanged: mini-diagram stacking CSS one-liner,
+   "Proofs"/"Bewyse" card name, pr8 "T₁ = " one-word revert, CQ↔Blipwork
+   bridge plan (separate build day).
+
+---
+
 # Project status — updated 2026-08-13 — 🔗 PROOFS STRIP ON THE MAIN TABLE, SHIPPED
 
 ## Where we are
