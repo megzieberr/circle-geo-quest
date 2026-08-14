@@ -56,7 +56,7 @@ export const round = {
   title: { en: "Her method drill", af: "Haar metode-oefening" },
   blurb: {
     en: "Central angle → θ/360 → × 2πr. Her exact method, on a fresh figure, all taps.",
-    af: "Middelpunthoek → θ/360 → × 2πr. Haar presiese metode, op 'n vars figuur, alles tikke.",
+    af: "Middelpunthoek → θ/360 → × 2πr. Haar presiese metode, op 'n vars figuur, net klik en kies.",
   },
   panels: [
 
