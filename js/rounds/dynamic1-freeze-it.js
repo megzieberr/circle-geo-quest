@@ -46,7 +46,11 @@ function makeMovieModel() {
           { x1: C.x, y1: C.y, x2: B.x, y2: B.y, cls: "thin" },
         ],
         angles: [{ vx: C.x, vy: C.y, ux: A.x, uy: A.y, wx: B.x, wy: B.y, color: "#f76707", label: Math.round(m.angle) + "°" }],
-        dots: [{ x: C.x, y: C.y, color: "#252a4a", label: "C", dx: 12, dy: -10 }],
+        // Radially-outward letter, same fix as dg0's model (her playtest,
+        // 2026-08-14) — a fixed offset puts C inside the circle on the
+        // bottom half of the glide path.
+        dots: [{ x: C.x, y: C.y, color: "#252a4a", label: "C",
+                 dx: (C.x - 172) / 104 * 20, dy: (C.y - 150) / 104 * 20 }],
       };
     },
     readouts(m) {
@@ -83,7 +87,9 @@ const FIG_ASK_E = {
   chords: [["A", "B"], ["C", "A"], ["C", "B"], ["E", "A"], ["E", "B"]],
   angles: [
     { at: "C", legs: ["A", "B"], t: "65°", o: { v: 65 } },
-    { at: "E", legs: ["A", "B"], t: "?", o: {} },
+    // r 33 pins the "?" just outside its own arc (default placement let it
+    // drift ~46 units up into the crossed chords — her playtest, 2026-08-14).
+    { at: "E", legs: ["A", "B"], t: "?", o: { r: 33 } },
   ],
 };
 

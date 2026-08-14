@@ -76,8 +76,9 @@ export function lockDemoModel() {
       return {
         segments: [{ x1: X.x, y1: X.y, x2: Y.x, y2: Y.y, cls: "thin", color: col }],
         dots: [
+          // X only — Y is FIXED, so its dot and label are already drawn once
+          // in the static layer; re-labelling it here doubled the "Y".
           { x: X.x, y: X.y, color: "#2b2f4a", label: "X", dx: 12, dy: -10 },
-          { x: Y.x, y: Y.y, color: "#2b2f4a", label: "Y", dx: 12, dy: -10 },
         ],
         marks: m.locked ? [
           { x1: P.x, y1: P.y, x2: Q.x, y2: Q.y, kind: "parallel", n: 2, flash: true, color: "#0ea271" },

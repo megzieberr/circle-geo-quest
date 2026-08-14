@@ -59,7 +59,13 @@ function makeModel() {
           { x1: C.x, y1: C.y, x2: B.x, y2: B.y, cls: "thin" },
         ],
         angles: [{ vx: C.x, vy: C.y, ux: A.x, uy: A.y, wx: B.x, wy: B.y, color: col, label: Math.round(m.angle) + "°" }],
-        dots: [{ x: C.x, y: C.y, color: "#252a4a", label: "C", dx: 12, dy: -10 }],
+        // C's letter sits radially OUTWARD from the centre (her playtest fix,
+        // 2026-08-14): a fixed dx/dy offset swings the label inside the circle
+        // once C reaches the bottom half. C is on the circle, so (C−centre)/R
+        // is a unit direction; 20 units along it always clears the grip halo
+        // (r 16) and always lands outside.
+        dots: [{ x: C.x, y: C.y, color: "#252a4a", label: "C",
+                 dx: (C.x - 172) / 104 * 20, dy: (C.y - 150) / 104 * 20 }],
       };
     },
     // The one live reading this round is about — `big` for hero type,
