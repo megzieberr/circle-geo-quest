@@ -57,6 +57,8 @@ import { round as pr7 } from "./proof7-t4-discovery.js";         // g7 · Proof 
 import { round as pr8 } from "./proof8-t4-transfer.js";          // g7 · Proof rounds — T4 transfer (session 5)
 import { round as pr8b } from "./proof8b-t4-join-pairs.js";      // g7 · Proof rounds — T4 paired which-join drills (MISCONCEPTION-PAIR-HANDOFF.md)
 import { round as pr9 } from "./proof9-mixed-finale.js";         // g7 · Proof rounds — mixed finale (session 6)
+import { round as dg0 } from "./dynamic0-watch-it-move.js";      // g8 · Dynamic Geometry — watch it move (build session 1)
+import { round as dg1 } from "./dynamic1-freeze-it.js";          // g8 · Dynamic Geometry — freeze it (build session 1)
 import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
 import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
@@ -95,6 +97,18 @@ const ORDER = [
   // four theorems sitting in the middle of the group. Same convention the
   // main quest already uses for inserted rounds (r2b, r10b).
   pr0, pr1, pr2, pr3, pr4, pr5, pr6, pr7, pr8, pr8b, pr9,
+  // g8 · Dynamic Geometry (DYNAMIC-GEO-PLAN.md), build session 1: dg0 + dg1
+  // only (§1 "moving points", minus its capstone). SAME POSITIONING RULE as
+  // the proof group above and for the SAME reason: stations.js's stop-1
+  // gate and js/game.js's survey trigger are both pinned to
+  // FINAL_QUEST_ROUND_ID (r21), not to "whatever sits last in this array" —
+  // so a new group can be appended here, after every existing group and
+  // still before inv1, without touching either. Right after pr9 (not
+  // interleaved into the proof group, which must stay contiguous and end
+  // on its own mixed finale) and before inv1 (so the Investigation Station,
+  // whenever it is next made visible, is never silently gated behind an
+  // unrelated group of rounds it has nothing to do with).
+  dg0, dg1,
   inv1, inv2, inv3, inv4, inv5, inv6,                    // g6 · Investigation Station 🚂
 ];
 
@@ -120,6 +134,7 @@ const GROUP = {
   r12: "g4", r14: "g4", r15: "g4", r16: "g4",
   r18: "g5", r19: "g5", r20: "g5", r21: "g5",
   pr0: "g7", pr1: "g7", pr2: "g7", pr3: "g7", pr4: "g7", pr5: "g7", pr6: "g7", pr7: "g7", pr8: "g7", pr8b: "g7", pr9: "g7",
+  dg0: "g8", dg1: "g8",
   inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
 };
 
@@ -152,7 +167,12 @@ export const STATIONS = ROUNDS.filter(r => r.kind === "investigate");
    dashboard still see everything, and MAIN_ROUNDS goes back to exactly
    the 43-round quest. */
 export const PROOFS = ROUNDS.filter(r => r.kind === "proof");
-export const MAIN_ROUNDS = ROUNDS.filter(r => r.kind !== "investigate" && r.kind !== "proof");
+/* Dynamic Geometry rounds (group g8, DYNAMIC-GEO-PLAN.md) — off the main
+   quest map from the moment they exist, same move and same reasoning as
+   PROOFS above: their own home-screen card (js/dynamic.js), open to every
+   learner from the start regardless of main-map progress. */
+export const DYNAMIC = ROUNDS.filter(r => r.kind === "dynamic");
+export const MAIN_ROUNDS = ROUNDS.filter(r => r.kind !== "investigate" && r.kind !== "proof" && r.kind !== "dynamic");
 
 /* Which rounds are unlocked: the first always, every other once the
    round BEFORE it in the play order has been passed. It lives here

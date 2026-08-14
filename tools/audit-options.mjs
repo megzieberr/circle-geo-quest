@@ -48,8 +48,10 @@ const LENGTH_GAP = 1.6;        // correct/longest-other ratio worth flagging
    instead of 7. Graded rounds are excluded; js/game.js already shuffles. "proof"
    (added 2026-08-11, PROOF-ROUNDS-PLAN.md) renders through the SAME
    renderInvestigate() as "investigate" and shuffles its options the same way —
-   it belongs in this set for exactly the reason "investigate" is here. */
-const KINDS = new Set(["discover", "investigate", "proof"]);
+   it belongs in this set for exactly the reason "investigate" is here.
+   "dynamic" (added 2026-08-14, DYNAMIC-GEO-PLAN.md) renders through the
+   same renderInvestigate() too and shuffles the same way. */
+const KINDS = new Set(["discover", "investigate", "proof", "dynamic"]);
 const files = readdirSync(DIR).filter(f => f.endsWith(".js") && f !== "index.js").sort();
 
 const rows = [];

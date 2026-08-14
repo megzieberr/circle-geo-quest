@@ -18,6 +18,45 @@
    length is computed from real coordinates — the picture can't lie.
 
    mountInteractive(host, model) -> { measures, pos, refresh, destroy }
+
+   ------------------------------------------------------------------
+   THREE ADDITIVE ENGINE CAPABILITIES (added 2026-08-14, Dynamic Geometry
+   build session 1, DYNAMIC-GEO-PLAN.md). All three are opt-in — a model
+   that doesn't set them renders exactly as before.
+
+   1 · CONDITION-LOCK DRAG. A handle may carry:
+         lock: { test(measures,pos,ctx) -> bool, solve(pos,ctx,currentVal) -> newVal }
+       Every move, once the handle's tentative position is set, test() is
+       asked whether the relation the round cares about (e.g. "AB ∥ CD")
+       has come close enough to true. If so, solve() gets one chance to
+       correct the tentative value to the EXACT locking value (however it
+       wants — closed form or a local numeric search), and the handle
+       snaps there instead. The round's own frame()/readouts() decide
+       what "locked" looks like (colour, a flashing mark, a hot readout)
+       by reading the same measures — the engine only does the snap.
+
+   2 · MARKS. frame() may now return `marks: [{x1,y1,x2,y2,kind,n,flash,color}]`,
+       drawn on the dynamic layer the same way engine.js draws chord ticks
+       and parallel chevrons on a static diagram — "tick" for an equal-
+       length mark, "parallel" (default) for a chevron. `flash:true` adds
+       a pulsing CSS class, for the moment a condition-lock actually locks.
+
+   3 · GLIDE. `model.glide = { handleId, from, to, duration }` renders a
+       Play/Pause button + a scrubbable range slider under the readout
+       panel, driving the named handle's value from `from` to `to` over
+       `duration` ms. Built on setInterval, NOT requestAnimationFrame —
+       the preview pane this app is built and reviewed in never fires
+       rAF, and a slow, scrubbable glide is the actual teaching feature
+       ("watch it move" beats an instant jump). The slider always works
+       even where the timer wouldn't (e.g. a screenshot tool stepping
+       through frames by hand).
+
+   4 · READOUT ROW EXTRAS. A row from model.readouts() may now also carry
+       `pulse:true` (one-shot highlight — a round sets this true for the
+       single frame something notable just happened, e.g. the reading
+       crossed to a new constant) and `big:true` (larger hero-reading
+       type, for the ONE number a round wants a learner's eyes on). Both
+       are additive: a row with neither renders exactly as before.
    ============================================================ */
 import { pol, sweepOf, INK } from "./engine.js";
 import { tx } from "./i18n.js";
@@ -97,6 +136,17 @@ export function mountInteractive(host, model) {
     return o;
   }
 
+  /* CONDITION-LOCK DRAG (additive, opt-in via handle.lock — see the header
+     note). Called after a handle's tentative value is already set, so
+     test()/solve() see the position the drag actually reached. Silently a
+     no-op for a model with no measure() — a lock has nothing to test. */
+  function applyLock(h) {
+    if (!h.lock || !model.measure) return;
+    const p = pos();
+    const m = model.measure(p, ctx);
+    if (h.lock.test(m, p, ctx)) h.val = h.lock.solve(p, ctx, h.val);
+  }
+
   // ---- DOM scaffold ----
   const wrap = document.createElement("div");
   wrap.className = "iv-wrap";
@@ -109,6 +159,29 @@ export function mountInteractive(host, model) {
   const panel = document.createElement("div");
   panel.className = "iv-readout";
   wrap.appendChild(panel);
+
+  /* GLIDE (additive, opt-in via model.glide — see the header note): a
+     Play/Pause button + a scrubbable slider, both driving the SAME handle
+     value the pointer drag would. Built here, in the DOM scaffold, so the
+     control bar sits under the readout panel for every model that sets it. */
+  let glideBtn = null, glideSlider = null, glideTimer = null, glideT = 0;
+  if (model.glide) {
+    const g = model.glide;
+    const gWrap = document.createElement("div");
+    gWrap.className = "iv-glide";
+    glideBtn = document.createElement("button");
+    glideBtn.type = "button";
+    glideBtn.className = "iv-glide-btn";
+    glideBtn.setAttribute("aria-label", "play");
+    glideBtn.textContent = "▶";
+    glideSlider = document.createElement("input");
+    glideSlider.type = "range";
+    glideSlider.min = "0"; glideSlider.max = "1000"; glideSlider.step = "1"; glideSlider.value = "0";
+    glideSlider.className = "iv-glide-slider";
+    gWrap.appendChild(glideBtn);
+    gWrap.appendChild(glideSlider);
+    wrap.appendChild(gWrap);
+  }
   host.appendChild(wrap);
 
   // static layer (drawn once) + dynamic layer + handles layer
@@ -167,6 +240,34 @@ export function mountInteractive(host, model) {
     return g;
   }
 
+  /* MARKS (additive — see the header note): a chevron ("parallel", default)
+     or a short perpendicular tick ("tick"), stamped on the midpoint of a
+     dynamic segment. Mirrors engine.js's chordMark() for static diagrams,
+     but works on live {x1,y1,x2,y2} coordinates instead of a declared
+     chord. `flash:true` adds the pulsing CSS class (styles.css) — the
+     round decides WHEN to flash by reading its own measures, this only
+     draws it. */
+  function drawMark(mk) {
+    const x1 = mk.x1, y1 = mk.y1, x2 = mk.x2, y2 = mk.y2;
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
+    const ux = dx / L, uy = dy / L, nx = -uy, ny = ux;
+    const n = mk.n || 2, gap = 4.5, start = -(n - 1) / 2 * gap;
+    const col = mk.color || INK;
+    const g = svg("g", { class: "iv-mark" + (mk.flash ? " flash" : "") });
+    for (let i = 0; i < n; i++) {
+      const o = start + i * gap, bx = mx + ux * o, by = my + uy * o;
+      if (mk.kind === "tick") {
+        const h = 5.5;
+        g.appendChild(svg("line", { x1: N(bx - nx * h), y1: N(by - ny * h), x2: N(bx + nx * h), y2: N(by + ny * h), stroke: col, "stroke-width": 2 }));
+      } else {
+        const w = 4.5, h = 4.5;
+        g.appendChild(svg("path", { fill: "none", stroke: col, "stroke-width": 2, d: `M ${N(bx + nx * h)} ${N(by + ny * h)} L ${N(bx + ux * w)} ${N(by + uy * w)} L ${N(bx - nx * h)} ${N(by - ny * h)}` }));
+      }
+    }
+    return g;
+  }
+
   // ---- the render loop ----
   let measures = {};
   function frame() {
@@ -185,6 +286,7 @@ export function mountInteractive(host, model) {
       }));
     });
     (f.angles || []).forEach(a => dynG.appendChild(drawAngle(a)));
+    (f.marks || []).forEach(mk => dynG.appendChild(drawMark(mk)));
     (f.dots || []).forEach(d => {
       dynG.appendChild(svg("circle", { cx: N(d.x), cy: N(d.y), r: d.r || 3, fill: d.color || INK }));
       if (d.label != null) {
@@ -208,7 +310,7 @@ export function mountInteractive(host, model) {
       panel.replaceChildren();
       rows.forEach(r => {
         const row = document.createElement("div");
-        row.className = "iv-row" + (r.hot ? " hot" : "");
+        row.className = "iv-row" + (r.hot ? " hot" : "") + (r.pulse ? " pulse" : "") + (r.big ? " big" : "");
         row.innerHTML = `<span class="iv-k">${tx(r.label)}</span><span class="iv-v" ${r.color ? `style="color:${r.color}"` : ""}>${typeof r.value === "object" ? tx(r.value) : r.value}</span>`;
         panel.appendChild(row);
       });
@@ -258,6 +360,7 @@ export function mountInteractive(host, model) {
         }
       }
       h.val = d;
+      if (h.lock) applyLock(h);
     } else {
       const A = ctx.P(h.a), B = ctx.P(h.b);
       let t = projParam(m, A, B);
@@ -265,6 +368,7 @@ export function mountInteractive(host, model) {
       // optional magnet snap to key positions (e.g. the midpoint)
       if (h.snap) { const r = h.snapR ?? 0.04; for (const s of h.snap) if (Math.abs(t - s) < r) { t = s; break; } }
       h.val = t;
+      if (h.lock) applyLock(h);
     }
     frame();
   }
@@ -292,6 +396,45 @@ export function mountInteractive(host, model) {
   stage.addEventListener("pointerup", end);
   stage.addEventListener("pointercancel", end);
 
+  /* GLIDE wiring — setInterval, not requestAnimationFrame (see header note).
+     The slider and the Play button drive the exact same setT(), so scrubbing
+     by hand and watching it glide are the same mechanism, just two speeds. */
+  if (model.glide) {
+    const g = model.glide;
+    const setT = (t) => {
+      glideT = Math.max(0, Math.min(1, t));
+      glideSlider.value = String(Math.round(glideT * 1000));
+      const h = handles.find(x => x.id === g.handleId);
+      if (h) {
+        h.val = g.from + (g.to - g.from) * glideT;
+        if (h.lock) applyLock(h);
+      }
+      frame();
+    };
+    const stopGlide = () => {
+      if (!glideTimer) return;
+      clearInterval(glideTimer); glideTimer = null;
+      glideBtn.textContent = "▶";
+      glideBtn.classList.remove("playing");
+      glideBtn.setAttribute("aria-label", "play");
+    };
+    const startGlide = () => {
+      if (glideTimer) return;
+      if (glideT >= 1) glideT = 0;
+      glideBtn.textContent = "⏸";
+      glideBtn.classList.add("playing");
+      glideBtn.setAttribute("aria-label", "pause");
+      const dur = g.duration || 5000, stepMs = 60;
+      glideTimer = setInterval(() => {
+        setT(glideT + stepMs / dur);
+        if (glideT >= 1) stopGlide();
+      }, stepMs);
+    };
+    glideBtn.addEventListener("click", () => { glideTimer ? stopGlide() : startGlide(); });
+    glideSlider.addEventListener("input", () => { stopGlide(); setT(Number(glideSlider.value) / 1000); });
+    setT(g.startT ?? 0);
+  }
+
   frame();
 
   return {
@@ -299,6 +442,6 @@ export function mountInteractive(host, model) {
     pos,
     refresh: frame,
     setHandle(id, val) { const h = handles.find(x => x.id === id); if (h) { h.val = val; frame(); } },
-    destroy() { wrap.remove(); },
+    destroy() { if (glideTimer) clearInterval(glideTimer); wrap.remove(); },
   };
 }

@@ -13,6 +13,7 @@ import { getDaily, dailyUnlocked, isDoneToday, syncStreakOnce } from "./daily.js
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { proofsCard, nextProofToPlay } from "./proofs.js";
+import { dynamicCard, nextDynamicToPlay } from "./dynamic.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
 import { maybeShowBoostAnnounce, maybeShowReplayAnnounce } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
@@ -26,6 +27,7 @@ function screenFor(round) {
   if (round.kind === "discover") return "discover";
   if (round.kind === "investigate") return "investigate";
   if (round.kind === "proof") return "proof";
+  if (round.kind === "dynamic") return "dynamic";
   return "play";
 }
 // Investigation stations are deliberately NOT "learning" rounds: they pay XP and
@@ -124,6 +126,12 @@ export function renderHome(app, host) {
   // their main-map progress. Unlike the Investigation Station strip above,
   // there is no visibility flag to check here — there is nothing to hide.
   host.appendChild(proofsCard(app));
+
+  // Dynamic Geometry 🧲 — the same standing-invitation pattern, one card
+  // below Proofs (DYNAMIC-GEO-PLAN.md, build session 1). Same reasoning:
+  // every learner can open dg0 from day one, whatever their main-map
+  // progress, and there is nothing here to gate behind a flag.
+  host.appendChild(dynamicCard(app));
 
   const ladder = renderRankLadder(progress);
   if (ladder) host.appendChild(ladder);            // hidden until the first badge is earned
@@ -569,8 +577,12 @@ export function renderResults(app, host, params) {
     // proves nothing itself, and the telescope belongs to the OTHER kind of
     // exploring. Its own heading (added 2026-08-11, PROOF-ROUNDS-PLAN.md).
     const isProof = round.kind === "proof";
-    const emoji = isCut ? "🎬" : isProof ? "🔗" : "🔭";
-    const heading = isCut ? t("introDone") : isProof ? t("proofComplete") : t("discoverComplete");
+    // Dynamic Geometry rounds (kind "dynamic", DYNAMIC-GEO-PLAN.md) get the
+    // same own-heading treatment as proof rounds, same reasoning: nothing
+    // was "discovered" here, it was watched move and then answered.
+    const isDyn = round.kind === "dynamic";
+    const emoji = isCut ? "🎬" : isProof ? "🔗" : isDyn ? "🧲" : "🔭";
+    const heading = isCut ? t("introDone") : isProof ? t("proofComplete") : isDyn ? t("dynamicComplete") : t("discoverComplete");
     const xpPill = params.xp > 0
       ? `<div class="result-pills"><span class="pill xp">★ +${params.xp} ${t("xpEarned")}</span></div>` : "";
     screen.innerHTML = `
@@ -635,6 +647,11 @@ export function renderResults(app, host, params) {
   // no longer even contains a proof round to point at).
   const isProofRound = round.kind === "proof";
   const nextProof = isProofRound ? nextProofToPlay(app.state.progress || {}) : null;
+  // A dynamic round follows the exact same pattern, its own grouped entry
+  // (js/dynamic.js, DYNAMIC-GEO-PLAN.md) — "next" is the next dynamic round,
+  // "back" returns to the dynamic map, never home directly.
+  const isDynamicRound = round.kind === "dynamic";
+  const nextDynamic = isDynamicRound ? nextDynamicToPlay(app.state.progress || {}) : null;
 
   const actions = screen.querySelector(".result-actions");
   const mkBtn = (label, primary, fn) => { const b = el("button", "btn " + (primary ? "primary" : "ghost"), label); b.addEventListener("click", fn); actions.appendChild(b); };
@@ -662,6 +679,16 @@ export function renderResults(app, host, params) {
       mkBtn(proofMapLabel, false, () => app.go("proofs"));
     } else {
       mkBtn(proofMapLabel, true, () => app.go("proofs"));
+    }
+    mkBtn("🏠 " + tx({ en: "Home", af: "Tuis" }), false, goHome);
+  } else if (isDynamicRound) {
+    const dynamicMapLabel = "🧲 " + tx({ en: "Dynamic map", af: "Dinamiese kaart" });
+    if (nextDynamic && nextDynamic.id !== round.id) {
+      mkBtn("▶ " + tx({ en: "Next round", af: "Volgende rondte" }), true,
+        () => app.go("dynamic", { roundId: nextDynamic.id }));
+      mkBtn(dynamicMapLabel, false, () => app.go("dynamics"));
+    } else {
+      mkBtn(dynamicMapLabel, true, () => app.go("dynamics"));
     }
     mkBtn("🏠 " + tx({ en: "Home", af: "Tuis" }), false, goHome);
   } else if (!saved && !params.discovery) {

@@ -9,6 +9,7 @@ import { renderDiscover } from "./discover.js";
 import { renderInvestigate } from "./investigate.js";
 import { renderStations, stationsVisible } from "./stations.js";
 import { renderProofs } from "./proofs.js";
+import { renderDynamic } from "./dynamic.js";
 import { renderCutscene } from "./cutscene.js";
 import { renderLeaderboard } from "./leaderboard.js";
 import { renderAdventures, renderAdventure } from "./adventure.js";
@@ -135,6 +136,11 @@ const app = {
       // learner can open pr0 from day one, independent of main-map progress.
       case "proofs": renderProofs(this, view); break;
       case "proof": renderInvestigate(this, view, this.params); break;
+      // Dynamic Geometry (kind "dynamic", g8) — same pattern as Proofs just
+      // above, its own always-visible grouped entry off the main map
+      // (DYNAMIC-GEO-PLAN.md, build session 1).
+      case "dynamics": renderDynamic(this, view); break;
+      case "dynamic": renderInvestigate(this, view, this.params); break;
       // Both station routes bounce home while the line is hidden from learners
       // (CONFIG.stationsLive) — the train strip is already gone, and this closes
       // the other way in, so a guessed or shared URL cannot reach an unreleased

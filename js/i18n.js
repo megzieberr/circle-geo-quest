@@ -147,6 +147,11 @@ const UI = {
   // exploring. This is that branch's own heading, added 2026-08-11 rather
   // than inventing a new results-screen system (js/game.js picks it by kind).
   proofComplete:  { en: "Nice reasoning!", af: "Goeie redenasie!" },
+  // Dynamic Geometry rounds (kind "dynamic", DYNAMIC-GEO-PLAN.md) reuse the
+  // same results-screen branch again, same reasoning as proofComplete above:
+  // "Theorem discovered!" is wrong here too — nothing was discovered, it was
+  // watched move and then answered.
+  dynamicComplete:{ en: "Nice moving!", af: "Goed beweeg!" },
   introDone:      { en: "You've met every part!", af: "Jy ken nou elke deel!" },
   discoverUnlocked:{ en: "Nice exploring — the next round is unlocked.", af: "Goed verken — die volgende rondte is oopgesluit." },
   dragHint:       { en: "Drag the dot to explore.", af: "Sleep die kol om te verken." },

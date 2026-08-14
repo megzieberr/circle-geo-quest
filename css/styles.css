@@ -354,6 +354,22 @@ svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display
 .iv-k{color:var(--ink-soft); font-weight:600; font-size:.84rem;}
 .iv-v{font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:1.05rem; font-variant-numeric:tabular-nums;}
 
+/* ---------- Dynamic Geometry engine additions (2026-08-14, session 1) ----------
+   All additive, opt-in — see the header note in js/interactive.js. */
+.iv-row.big{padding:9px 15px;}
+.iv-row.big .iv-v{font-size:1.35rem;}
+.iv-row.pulse{animation:iv-row-flash .6s ease-out;}
+@keyframes iv-row-flash{0%{box-shadow:0 0 0 5px rgba(255,193,7,.55);}100%{box-shadow:0 0 0 0 rgba(255,193,7,0);}}
+.iv-mark.flash{animation:iv-mark-pulse .9s ease-in-out infinite;}
+@keyframes iv-mark-pulse{0%,100%{opacity:1;}50%{opacity:.18;}}
+.iv-glide{display:flex; align-items:center; gap:10px; width:100%; max-width:360px;}
+.iv-glide-btn{flex:0 0 auto; width:38px; height:38px; border-radius:50%; border:2px solid var(--ink);
+  background:var(--accent); color:#fff; font-size:1rem; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--ink);}
+.iv-glide-btn:active{transform:translate(1px,1px); box-shadow:1px 1px 0 var(--ink);}
+.iv-glide-btn.playing{background:#e03131;}
+.iv-glide-slider{flex:1 1 auto; accent-color:var(--accent);}
+
 /* ---------- discovery screen / panels ---------- */
 .discover-host{min-height:60px;}
 .dp .play-foot{position:static; background:none; padding-top:10px;}

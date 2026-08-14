@@ -47,6 +47,12 @@ export const CONFIG = {
   // rules apply: per PANEL, never per attempt, computed from panels.length in
   // js/investigate.js's finish(), never hard-coded as a round total.
   proofXpPerPanel: 10,
+  // Dynamic Geometry rounds (group g8, DYNAMIC-GEO-PLAN.md) pay the same way,
+  // its own sibling key for the same reason proofXpPerPanel is its own key
+  // rather than reusing investigationXpPerPanel: allowed to diverge later
+  // without a rename. Per PANEL, never per attempt, computed from
+  // panels.length in js/investigate.js's finish() — never hard-coded.
+  dynamicXpPerPanel: 10,
   // ---- IS THE INVESTIGATION STATION RELEASED TO LEARNERS? ----
   // false = the line is completely invisible: no train strip on the home screen,
   // and the `stations` / `investigate` routes bounce back home, so a learner who
@@ -135,6 +141,16 @@ export const GROUPS = [
   { id: "g7", icon: "🔗", name: "Proof Pioneer", hidden: true,
     blurb: { en: "Proof rounds — why proofs matter, then construct, prove and spot the trap for each theorem.",
              af: "Bewysrondtes — hoekom bewyse saak maak, en dan konstrueer, bewys en vang die strik vir elke stelling." } },
+  // g8 = the Dynamic Geometry rounds (DYNAMIC-GEO-PLAN.md), built incrementally
+  // starting with dg0 + dg1 (build session 1). `hidden` for the same reason as
+  // g6/g7 above: LADDER_GROUPS filters it out of the ladder and the "x/5
+  // badges" stat, so a learner who has finished the 43 main rounds keeps
+  // reading 5/5 and rank 🏆 Circle Grand Master, not a demotion every time this
+  // session's group grows another round. Still earned and still celebrates
+  // once every round CURRENTLY in the group is passed.
+  { id: "g8", icon: "🧲", name: "Dynamic Geometry", hidden: true,
+    blurb: { en: "Dynamic Geometry rounds — drag it, glide it, freeze it, and answer with theorems you already know.",
+             af: "Dinamiese Meetkunde-rondtes — drag dit, gly dit, vries dit, en beantwoord met stellings wat jy reeds ken." } },
 ];
 /* The badges that count towards the rank ladder and the "x/5 badges" stat. */
 export const LADDER_GROUPS = GROUPS.filter(g => !g.hidden);
