@@ -2510,16 +2510,8 @@ in 13s with no reload; deploy confirmed serving the new code).
   themselves are all covered by other questions in the bank.
 
 ## Pending on Megan
-- 💻 15 min **[blocking]**: after the next session runs FIX-ROUND-2.md, replay
-  pr4, pr5, pr7, pr8 in preview → then "ship it" or more fixes. Class starts
-  proofs tomorrow (2026-08-12).
-- 💻 1 min **[blocking]**: say yes/no to the one-line mini-diagram CSS fix
-  (fix-round-1 section) — yes makes small figures stack full-width on phones.
-- 💻 10 sec **[whenever]**: keep or rename the "Proofs"/"Bewyse" home-card title.
-- 🌐 1 min **[whenever]**: open megzieberr.github.io/circle-geo-quest in a fresh tab —
-  the train strip should be GONE from the home screen. (GitHub was mid-outage at push
-  time, so the deploy queued; if the train is still there, the queue just hasn't
-  cleared — check again later, nothing to fix.)
+- Nothing. (2026-08-24 sweep, her word: home-card title CONFIRMED — KEEP "Proofs"/"Bewyse" exactly as it stands. Settled, do not re-ask.)
+(2026-08-24 sweep, her word: all three KILLED. FIX-ROUND-2 items 1-4 and 6 are committed and she playtested on 14 Aug; the class did proofs 12 days ago; the train-strip deploy cleared once GitHub's outage ended; the mini-diagram CSS call is too cold to answer and should be re-asked fresh if it still matters.)
 
 (2026-08-06: the "double-tap a station's Continue on live" check is moot — the station
 is hidden now. 2026-08-02: phase20.sql was applied to live via MCP and verified
