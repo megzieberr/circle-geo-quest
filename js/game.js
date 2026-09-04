@@ -13,7 +13,7 @@ import { getDaily, dailyUnlocked, isDoneToday, syncStreakOnce } from "./daily.js
 import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { proofsCard, nextProofToPlay } from "./proofs.js";
-import { dynamicCard, nextDynamicToPlay } from "./dynamic.js";
+import { dynamicCard, dynamicVisible, nextDynamicToPlay } from "./dynamic.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
 import { maybeShowBoostAnnounce, maybeShowReplayAnnounce } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
@@ -128,10 +128,10 @@ export function renderHome(app, host) {
   host.appendChild(proofsCard(app));
 
   // Dynamic Geometry 🧲 — the same standing-invitation pattern, one card
-  // below Proofs (DYNAMIC-GEO-PLAN.md, build session 1). Same reasoning:
-  // every learner can open dg0 from day one, whatever their main-map
-  // progress, and there is nothing here to gate behind a flag.
-  host.appendChild(dynamicCard(app));
+  // below Proofs (DYNAMIC-GEO-PLAN.md, build session 1) — but gated on
+  // dynamicVisible() while the group ships dark, unreviewed (her call,
+  // 2026-09-04; see CONFIG.dynamicLive). `?dynamic=1` previews it.
+  if (dynamicVisible()) host.appendChild(dynamicCard(app));
 
   const ladder = renderRankLadder(progress);
   if (ladder) host.appendChild(ladder);            // hidden until the first badge is earned

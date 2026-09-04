@@ -8,14 +8,16 @@
    "dynamic" routed through renderInvestigate() (js/investigate.js) the
    same way "proof" is.
 
-   SAME TWO RULES AS THE PROOFS LINE, her precedent carried over rather
-   than re-litigated:
-     · dynamicCard(app) is ALWAYS shown, no live flag, no gate — same
-       reasoning as proofsCard: nothing here needs hiding from a learner.
+   VISIBILITY (changed 2026-09-04, her call): unlike the proofs line this
+   group launches DARK — dynamicVisible() below gates the home card and
+   both routes on CONFIG.dynamicLive, the exact stationsLive pattern,
+   because the dg rounds are built but not yet reviewed by her. Once she
+   flips the flag the original proofs rule applies unchanged:
      · dg0 is unlocked for EVERYONE from the start. Every later round
        unlocks once the one before it IN THIS GROUP is passed — a chain
        scoped to DYNAMIC alone, not rounds/index.js's unlockedIds() (which
        still walks the full ORDER position and would gate dg0 on pr9). */
+import { CONFIG } from "./config.js";
 import { DYNAMIC } from "./rounds/index.js";
 import { tx } from "./i18n.js";
 import { el, clear } from "./ui.js";
@@ -64,8 +66,18 @@ export function nextDynamicToPlay(progress) {
   return row ? row.round : null;
 }
 
+/* ---------------- is the group released yet? ----------------
+   Mirrors stationsVisible() in js/stations.js: CONFIG.dynamicLive hides the
+   whole group (no home card, routes bounce), `?dynamic=1` overrides it so an
+   unreleased build can still be walked and reviewed. */
+export function dynamicVisible() {
+  if (CONFIG.dynamicLive) return true;
+  try { return new URLSearchParams(location.search).get("dynamic") === "1"; }
+  catch { return false; }
+}
+
 /* ---------------- the home-screen card ----------------
-   ALWAYS rendered, same as proofsCard — there is nothing to gate. */
+   Rendered only while dynamicVisible() — game.js guards the appendChild. */
 export function dynamicCard(app) {
   const rows = dynamicStatus(app);
   const done = rows.filter(r => r.passed).length;

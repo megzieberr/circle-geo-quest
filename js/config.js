@@ -53,6 +53,17 @@ export const CONFIG = {
   // without a rename. Per PANEL, never per attempt, computed from
   // panels.length in js/investigate.js's finish() — never hard-coded.
   dynamicXpPerPanel: 10,
+  // ---- IS DYNAMIC GEOMETRY RELEASED TO LEARNERS? ----
+  // Same one-flag hiding as stationsLive below: false = no 🧲 card on the home
+  // screen, and the `dynamics` / `dynamic` routes bounce back home, so a
+  // guessed or shared URL cannot reach it either.
+  //
+  // Added 2026-09-04 — her call: the dg rounds are built but not yet reviewed,
+  // so they ship dark ("safe to push but not make visible to the kids yet").
+  // Flip to true once she has played through them and says release.
+  //
+  // `?dynamic=1` overrides the flag either way, for previewing.
+  dynamicLive: false,
   // ---- IS THE INVESTIGATION STATION RELEASED TO LEARNERS? ----
   // false = the line is completely invisible: no train strip on the home screen,
   // and the `stations` / `investigate` routes bounce back home, so a learner who
