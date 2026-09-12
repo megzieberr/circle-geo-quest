@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#fffdf8">
+<title>Daily Drill · Circle Geometry</title>
+<meta name="description" content="Five circle-geometry riders a day — the angle and the reason. Everything is saved on this phone only.">
+<meta name="robots" content="noindex">
+
+<!-- Add-to-Home-Screen on a phone: plain URL + these two icons. Deliberately
+     NO manifest and NO service worker — the main app's manifest and start_url
+     must stay exactly as they are, and this page caches nothing. -->
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Daily Drill">
+
+<!-- The app stylesheet, unchanged. The web-font <link> from index.html is
+     deliberately left out: this page makes no network request at all, so it
+     renders in the CSS's own fallback stack (system-ui / Segoe UI). -->
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  /* the only page-local styles: the home card's streak strip and footer */
+  .view.sd-view{max-width:460px; padding-top:26px;}
+  .sd-home .sd-title{font-size:1.6rem; margin:2px 0 2px;}
+  .sd-home .sd-lede{margin-bottom:10px;}
+  .sd-home .sd-best{margin:0 0 6px;}
+  .sd-week{display:flex; justify-content:center; gap:6px; margin:6px 0 4px;}
+  .sd-dot{width:26px; height:26px; border-radius:9px; display:grid; place-items:center;
+    font-weight:800; font-size:.78rem; color:var(--ink-soft);
+    background:#fff; border:1.5px solid rgba(37,42,74,.18);}
+  .sd-dot.done{background:#e8f8f1; border-color:#0ea271; color:#0a6b4c;}
+  .sd-dot.today{border-width:2.5px; border-color:var(--ink);}
+  .sd-foot{margin-top:14px; display:flex; justify-content:center;}
+  .sd-mute{min-width:52px;}
+  @media (max-width:380px){
+    .view.sd-view{padding-left:12px; padding-right:12px;}
+    .sd-home{padding:16px 14px;}
+  }
+</style>
+</head>
+<body>
+  <div id="app"><main class="view sd-view" id="host"><p class="muted center" style="padding:40px">Loading…</p></main></div>
+  <script type="module">
+    import { mountSoloDrill } from "./js/solo-drill.js";
+    mountSoloDrill(document.getElementById("host"));
+  </script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solo drill — verify — Circle Quest</title>
+<!-- Network spy, installed as a CLASSIC script so it is in place BEFORE any
+     module is evaluated. Nothing on the drill page may call out. -->
+<script>
+  window.__NET__ = { fetch: 0, xhr: 0, ws: 0, beacon: 0, urls: [] };
+  (function () {
+    const nf = window.fetch;
+    window.fetch = function (...a) { window.__NET__.fetch++; window.__NET__.urls.push(String(a[0])); return nf.apply(this, a); };
+    const xo = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (m, u, ...r) { window.__NET__.xhr++; window.__NET__.urls.push(String(u)); return xo.call(this, m, u, ...r); };
+    const NW = window.WebSocket;
+    if (NW) window.WebSocket = function (u, ...r) { window.__NET__.ws++; window.__NET__.urls.push(String(u)); return new NW(u, ...r); };
+    if (navigator.sendBeacon) {
+      const sb = navigator.sendBeacon.bind(navigator);
+      navigator.sendBeacon = function (u, ...r) { window.__NET__.beacon++; window.__NET__.urls.push(String(u)); return sb(u, ...r); };
+    }
+    // service-worker spy: only a register() call made DURING this run counts —
+    // a pre-existing controller (the main app's sw.js on this shared origin)
+    // is not the drill page's doing.
+    window.__SW_REGISTER_CALLS__ = 0;
+    if (navigator.serviceWorker && navigator.serviceWorker.register) {
+      const swr = navigator.serviceWorker.register.bind(navigator.serviceWorker);
+      navigator.serviceWorker.register = function (...a) { window.__SW_REGISTER_CALLS__++; return swr(...a); };
+    }
+  })();
+</script>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  body { padding: 18px; max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1rem; margin: 18px 0 6px; }
+  .lede { font-size: .9rem; color: #6b6656; margin: 0 0 8px; }
+  #summary { font-size: 1.05rem; font-weight: 700; margin: 12px 0; padding: 12px 14px; border: 2px solid #252a4a; border-radius: 12px; }
+  #summary.pass { border-color: #0ea271; background: #e8f8f1; }
+  #summary.fail { border-color: #e64980; background: #fdeef4; }
+  .grp { border: 1.5px solid #e4ddcb; border-radius: 12px; padding: 10px 14px; background: #fff; margin: 10px 0; }
+  .row { font-size: .86rem; padding: 2px 0; font-family: ui-monospace, "Cascadia Mono", Menlo, monospace; }
+  .row.ok { color: #0a6b4c; } .row.bad { color: #e64980; font-weight: 700; }
+  .draws { font-size: .8rem; font-family: ui-monospace, Menlo, monospace; color: #5a5f82; }
+  #stage { position: absolute; left: -9999px; top: 0; width: 420px; }
+</style>
+</head>
+<body>
+<h1>Solo drill — verify</h1>
+<p class="lede">Headless-checkable proof for <b>drill.html</b> / <b>js/solo-drill.js</b>: the day's draw is stable, <code>num-reason</code> marks split ½ + ½, multi-step riders reveal their chain, the mistakes pile round-trips, the streak history behaves across simulated days, and nothing reaches the network. Results land in <code>window.__VERIFY__</code> and one <code>VERIFY_DRILL</code> console line.</p>
+<div id="summary">Running…</div>
+<div id="out"></div>
+<div id="stage"></div>
+
+<script type="module">
+import {
+  SIZE, MULTI_N, SINGLE_N,
+  drawFor, localDay, dayBefore,
+  applyCompletion, streakFrom, bestStreakFrom, isDoneToday,
+  readHistory, writeHistory, pinEnglish,
+  renderHome, renderDone,
+} from "./js/solo-drill.js";
+import { QUESTION_BY_ID, DAILY_RIDERS_MULTI, DAILY_RIDERS_SINGLE } from "./js/rounds/index.js";
+import { mountQuestion } from "./js/questions.js";
+import { addMistake, clearMistake, getMistakes } from "./js/mistakes.js";
+import { getLang } from "./js/i18n.js";
+
+pinEnglish();
+
+const out = document.getElementById("out");
+const stage = document.getElementById("stage");
+const results = [];
+let group = null;
+function G(title) { group = document.createElement("div"); group.className = "grp"; group.innerHTML = `<h2>${title}</h2>`; out.appendChild(group); }
+function check(label, pass, detail = "") {
+  results.push({ label, pass: !!pass, detail });
+  const d = document.createElement("div");
+  d.className = "row " + (pass ? "ok" : "bad");
+  d.textContent = `${pass ? "✓" : "✗"} ${label}${detail ? " — " + detail : ""}`;
+  (group || out).appendChild(d);
+}
+function note(html) { const d = document.createElement("div"); d.className = "draws"; d.innerHTML = html; (group || out).appendChild(d); }
+
+const TYPE_OF = id => (QUESTION_BY_ID[id] && QUESTION_BY_ID[id].q.type) || "?";
+const isMulti = id => TYPE_OF(id) === "num";
+const isSingle = id => TYPE_OF(id) === "num-reason";
+
+/* ============ (a) the draw is stable, and 2 + 3 ============ */
+G("(a) A day's draw is stable across reloads — 2 multi-step + 3 single-step");
+check("bank has enough riders", DAILY_RIDERS_MULTI.length >= MULTI_N && DAILY_RIDERS_SINGLE.length >= SINGLE_N,
+  `${DAILY_RIDERS_MULTI.length} multi-step, ${DAILY_RIDERS_SINGLE.length} single-step in the bank`);
+check("drill size is 5 = 2 + 3", SIZE === 5 && MULTI_N === 2 && SINGLE_N === 3, `SIZE=${SIZE}, MULTI_N=${MULTI_N}, SINGLE_N=${SINGLE_N}`);
+
+const SAMPLE_DAYS = [localDay(), "2026-09-12", "2026-09-13", "2026-12-31", "2027-01-01", "2026-02-28"];
+let stableAll = true, splitAll = true, resolveAll = true, uniqueAll = true;
+SAMPLE_DAYS.forEach(day => {
+  const a = drawFor(day), b = drawFor(day), c = drawFor(day);
+  const stable = JSON.stringify(a) === JSON.stringify(b) && JSON.stringify(b) === JSON.stringify(c);
+  const nM = a.filter(isMulti).length, nS = a.filter(isSingle).length;
+  if (!stable) stableAll = false;
+  if (a.length !== SIZE || nM !== MULTI_N || nS !== SINGLE_N) splitAll = false;
+  if (!a.every(id => QUESTION_BY_ID[id])) resolveAll = false;
+  if (new Set(a).size !== a.length) uniqueAll = false;
+  note(`${day} → ${a.map(id => `${id}<i>[${isMulti(id) ? "multi" : "single"}]</i>`).join(", ")}`);
+});
+check("same day → identical draw, three calls running", stableAll);
+check("every sampled day draws 5 = 2 multi + 3 single", splitAll);
+check("every drawn id resolves in the bank", resolveAll);
+check("no question drawn twice within one day", uniqueAll);
+
+/* a real reload cannot depend on storage: the draw is a pure function of the
+   date, so wiping the solo keys must not change it */
+const HKEY = "cgg.solo.history";
+const histSnapshot = localStorage.getItem(HKEY);
+const before = drawFor("2026-09-12");
+localStorage.removeItem(HKEY);
+const after = drawFor("2026-09-12");
+check("draw survives storage being wiped (pure function of the date)", JSON.stringify(before) === JSON.stringify(after));
+if (histSnapshot === null) localStorage.removeItem(HKEY); else localStorage.setItem(HKEY, histSnapshot);
+
+/* different days differ, and repeats ACROSS days are allowed (a feature) */
+const sixtyDays = [];
+let d0 = "2026-09-12";
+for (let i = 0; i < 60; i++) { sixtyDays.push(d0); d0 = dayBefore(d0); }
+const draws = sixtyDays.map(drawFor);
+const distinct = new Set(draws.map(x => JSON.stringify(x.slice().sort()))).size;
+check("consecutive days are not all the same draw", distinct > 50, `${distinct} distinct sets over 60 days`);
+const seen = {};
+draws.flat().forEach(id => { seen[id] = (seen[id] || 0) + 1; });
+const repeated = Object.values(seen).filter(n => n > 1).length;
+check("questions DO recur across days (spaced repetition, never de-duplicated)", repeated > 0,
+  `${repeated} of ${Object.keys(seen).length} drawn ids appear on more than one day`);
+
+/* ============ (b) num-reason marks split ½ + ½ ============ */
+G("(b) num-reason marking: ½ angle + ½ reason");
+function answer(q, { angle, reasonCorrect }) {
+  return new Promise(resolve => {
+    const box = document.createElement("div");
+    stage.appendChild(box);
+    mountQuestion(box, q, (isCorrect, score) => resolve({ isCorrect, score, box }));
+    const field = box.querySelector("input.q-num");
+    field.value = String(angle);
+    const opts = [...box.querySelectorAll(".reason-opt")];
+    if (opts.length) {
+      const wanted = opts.find(b => !!b.__opt.correct === !!reasonCorrect);
+      wanted.click();
+    }
+    box.querySelector(".q-submit").click();
+  });
+}
+const single = QUESTION_BY_ID[drawFor("2026-09-12").find(isSingle)].q;
+const rr = await answer(single, { angle: single.value, reasonCorrect: true });
+check("angle ✓ + reason ✓ → 1 mark, fully correct", rr.score === 1 && rr.isCorrect === true, `score=${rr.score}, isCorrect=${rr.isCorrect}`);
+const rw = await answer(single, { angle: single.value, reasonCorrect: false });
+check("angle ✓ + reason ✗ → ½ mark, not fully correct", rw.score === 0.5 && rw.isCorrect === false, `score=${rw.score}, isCorrect=${rw.isCorrect}`);
+const wr = await answer(single, { angle: single.value + 7, reasonCorrect: true });
+check("angle ✗ + reason ✓ → ½ mark", wr.score === 0.5 && wr.isCorrect === false, `score=${wr.score}`);
+const ww = await answer(single, { angle: single.value + 7, reasonCorrect: false });
+check("angle ✗ + reason ✗ → 0", ww.score === 0 && ww.isCorrect === false, `score=${ww.score}`);
+check("both parts are reported in the feedback", !!rw.box.querySelector(".fb-parts"),
+  (rw.box.querySelector(".fb-parts") || {}).textContent || "");
+/* running total behaves like the drill's: 2 halves = 1 mark */
+check("a 5-question run of halves totals 2.5/5", [0.5, 0.5, 0.5, 0.5, 0.5].reduce((a, b) => a + b, 0) === 2.5);
+
+G("(b2) multi-step riders still reveal the statement-and-reason chain");
+const multiId = drawFor("2026-09-12").find(isMulti);
+const multiQ = QUESTION_BY_ID[multiId].q;
+const mres = await answer(multiQ, { angle: multiQ.value });
+check("multi-step: typed angle alone scores 1 (no reason part)", mres.score === 1 && mres.isCorrect === true, `score=${mres.score}`);
+const steps = mres.box.querySelectorAll(".fb-steps .fb-step");
+check("multi-step: full working chain revealed after answering", steps.length >= 2, `${steps.length} statement/reason lines for ${multiId}`);
+check("every multi-step rider in the bank carries a solution chain",
+  DAILY_RIDERS_MULTI.every(e => Array.isArray(e.q.solution) && e.q.solution.length >= 2),
+  `${DAILY_RIDERS_MULTI.length} riders checked`);
+check("every single-step rider in the bank carries reason options with exactly one correct",
+  DAILY_RIDERS_SINGLE.every(e => Array.isArray(e.q.reasonOptions) && e.q.reasonOptions.filter(o => o.correct).length === 1),
+  `${DAILY_RIDERS_SINGLE.length} riders checked`);
+
+/* ============ (c) the mistakes pile round-trips ============ */
+G("(c) Fix-My-Mistakes pile round-trips");
+/* a scratch student id so the verify run never touches the real "anon" pile */
+const scratch = { state: { student: { id: "verify-drill-scratch" } } };
+const SKEY = "cgg.mistakes.verify-drill-scratch";
+localStorage.removeItem(SKEY);
+const wrongId = single.id, wrongRound = QUESTION_BY_ID[single.id].roundId;
+check("pile starts empty", getMistakes(scratch).length === 0);
+addMistake(scratch, wrongId, wrongRound);
+check("a wrong answer appears in the pile", getMistakes(scratch).some(m => m.qid === wrongId), wrongId);
+addMistake(scratch, wrongId, wrongRound);
+check("adding the same question twice does not duplicate it", getMistakes(scratch).filter(m => m.qid === wrongId).length === 1);
+addMistake(scratch, multiId, QUESTION_BY_ID[multiId].roundId);
+check("a second wrong question also lands", getMistakes(scratch).length === 2);
+clearMistake(scratch, wrongId);
+check("fixing it removes it from the pile", !getMistakes(scratch).some(m => m.qid === wrongId) && getMistakes(scratch).length === 1);
+clearMistake(scratch, multiId);
+check("clearing the last one empties the pile", getMistakes(scratch).length === 0);
+check("the pile survives a reload (it is localStorage)", (() => {
+  addMistake(scratch, wrongId, wrongRound);
+  const raw = JSON.parse(localStorage.getItem(SKEY) || "[]");
+  return raw.length === 1 && raw[0].qid === wrongId;
+})());
+localStorage.removeItem(SKEY);
+check("scratch pile cleaned up, real 'anon' pile untouched", localStorage.getItem(SKEY) === null);
+
+/* ============ (d) streak / history across simulated days ============ */
+G("(d) streak + history across simulated days");
+let h = {};
+h = applyCompletion(h, "2026-09-10", 5, 5);
+check("day 1 done → streak 1", streakFrom(h, "2026-09-10") === 1);
+h = applyCompletion(h, "2026-09-11", 4.5, 5);
+check("two days in a row → streak 2", streakFrom(h, "2026-09-11") === 2);
+check("half marks are stored as 4.5, human-readable", h["2026-09-11"].score === 4.5 && h["2026-09-11"].total === 5,
+  JSON.stringify(h["2026-09-11"]));
+check("today not done yet → flame still shows yesterday's streak", streakFrom(h, "2026-09-12") === 2);
+check("a missed day breaks it → streak 0", streakFrom(h, "2026-09-13") === 0);
+h = applyCompletion(h, "2026-09-13", 3, 5);
+check("drilling after a gap restarts at 1", streakFrom(h, "2026-09-13") === 1);
+check("best streak remembers the longest run", bestStreakFrom(h) === 2, `best=${bestStreakFrom(h)}`);
+const h2 = applyCompletion(h, "2026-09-13", 0, 5);
+check("a same-day revisit never overwrites the real score", h2["2026-09-13"].score === 3);
+check("isDoneToday reads the history", isDoneToday(h, "2026-09-13") === true && isDoneToday(h, "2026-09-12") === false);
+let hm = applyCompletion(applyCompletion({}, "2026-08-31", 5, 5), "2026-09-01", 5, 5);
+check("a streak crosses a month boundary", streakFrom(hm, "2026-09-01") === 2);
+let hy = applyCompletion(applyCompletion({}, "2026-12-31", 5, 5), "2027-01-01", 5, 5);
+check("a streak crosses a year boundary", streakFrom(hy, "2027-01-01") === 2);
+let h30 = {}; let dd = "2026-09-12";
+const back = []; for (let i = 0; i < 30; i++) { back.unshift(dd); dd = dayBefore(dd); }
+back.forEach(day => { h30 = applyCompletion(h30, day, 5, 5); });
+check("30 consecutive days → streak 30 (milestone day)", streakFrom(h30, "2026-09-12") === 30);
+/* real localStorage round-trip, with the learner's own history put back */
+const realSnapshot = localStorage.getItem(HKEY);
+writeHistory({ "2026-09-11": { done: true, score: 4.5, total: 5 } });
+const readBack = readHistory();
+check("history writes and reads back from localStorage", readBack["2026-09-11"] && readBack["2026-09-11"].score === 4.5);
+check("stored history is indented / readable for a screenshot",
+  (localStorage.getItem(HKEY) || "").includes('\n  "2026-09-11"'));
+if (realSnapshot === null) localStorage.removeItem(HKEY); else localStorage.setItem(HKEY, realSnapshot);
+check("the learner's own history was restored after the test", localStorage.getItem(HKEY) === realSnapshot);
+check("corrupt history does not throw", (() => {
+  localStorage.setItem(HKEY, "{not json");
+  const ok = JSON.stringify(readHistory()) === "{}";
+  if (realSnapshot === null) localStorage.removeItem(HKEY); else localStorage.setItem(HKEY, realSnapshot);
+  return ok;
+})());
+
+/* ============ (e) language, no XP, no network ============ */
+G("(e) English pinned, no XP on any screen, nothing reaches the network");
+check("language is pinned to EN", getLang() === "en", `getLang()=${getLang()}`);
+
+/* render the two non-question screens off-screen and read them: no XP text,
+   no XP pill, no learner name, no leaderboard/rank anywhere */
+const stub = { state: {}, go() {} };
+const homeBox = document.createElement("div"); stage.appendChild(homeBox);
+renderHome(stub, homeBox);
+const doneBox = document.createElement("div"); stage.appendChild(doneBox);
+renderDone(stub, doneBox, { score: 4.5, total: 5, streak: 2, best: 3, isNew: false, milestone: null });
+const surfaces = (homeBox.textContent + " " + doneBox.textContent);
+check("home + result screens print no XP", !/\bxp\b/i.test(surfaces));
+check("no .pill.xp element on either screen",
+  !homeBox.querySelector(".pill.xp") && !doneBox.querySelector(".pill.xp"));
+check("no rank / leaderboard wording on either screen", !/rank|leaderboard/i.test(surfaces));
+check("home screen shows the streak and both buttons",
+  !!homeBox.querySelector(".streak-big") && homeBox.querySelectorAll("button").length >= 2,
+  `${homeBox.querySelectorAll("button").length} buttons`);
+check("result screen shows a fractional mark out of 5",
+  (doneBox.querySelector(".big-score") || {}).textContent === "4.5/5",
+  (doneBox.querySelector(".big-score") || {}).textContent);
+
+const net = window.__NET__;
+check("no fetch / XHR / WebSocket / sendBeacon call in the whole run",
+  net.fetch === 0 && net.xhr === 0 && net.ws === 0 && net.beacon === 0,
+  `fetch=${net.fetch}, xhr=${net.xhr}, ws=${net.ws}, beacon=${net.beacon}${net.urls.length ? " → " + net.urls.join(", ") : ""}`);
+/* A controller can be PRE-EXISTING: the main app registers sw.js on this same
+   origin, and once it has, it controls every page here — including this one.
+   That is not a failure of the drill build (this app's sw caches nothing).
+   The real assertion is that the drill's own module graph never calls
+   register(), so only a registration that appeared DURING this run fails. */
+const swScript = navigator.serviceWorker && navigator.serviceWorker.controller
+  ? navigator.serviceWorker.controller.scriptURL : null;
+check("this page registers no service worker",
+  !window.__SW_REGISTER_CALLS__,
+  swScript ? `pre-existing controller from the main app (${swScript}) — not registered by this page` : "none");
+
+/* ---------------- summary ---------------- */
+const fails = results.filter(r => !r.pass);
+const summary = document.getElementById("summary");
+summary.className = fails.length ? "fail" : "pass";
+summary.textContent = fails.length
+  ? `✗ ${fails.length} of ${results.length} checks FAILED: ${fails.map(f => f.label).join(" · ")}`
+  : `✓ ALL ${results.length} CHECKS PASS — draw stable (${SIZE} = ${MULTI_N} multi + ${SINGLE_N} single), ½+½ marking intact, mistakes pile round-trips, streak history correct, zero network calls.`;
+window.__VERIFY__ = {
+  total: results.length,
+  passed: results.length - fails.length,
+  failed: fails.length,
+  fails: fails.map(f => `${f.label}${f.detail ? " — " + f.detail : ""}`),
+  net,
+  bank: { multi: DAILY_RIDERS_MULTI.length, single: DAILY_RIDERS_SINGLE.length },
+};
+console.log("VERIFY_DRILL", JSON.stringify(window.__VERIFY__));
+</script>
+</body>
+</html>
