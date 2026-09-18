@@ -11,7 +11,25 @@
 <meta property="og:type" content="website">
 
 <!-- PWA: lets phones install Circle Quest to the home screen -->
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json" id="cq-manifest">
+<script>
+/* Matric link (?class=gr12): hand the phone the Gr12 install file, whose
+   start_url carries the class. An iPhone home-screen app gets its own empty
+   storage, so the cgg.cohort memory in js/auth.js never reaches it: the icon
+   itself has to open the Gr12 address. Same precedence as currentCohort()
+   in js/auth.js (link wins, else the remembered class, else gr11), and Gr11
+   keeps manifest.json untouched. Runs at parse time, long before any phone
+   asks for the manifest. */
+(function () {
+  try {
+    var c = String(new URLSearchParams(location.search).get("class") || "").trim().toLowerCase();
+    if (c !== "gr12" && c !== "gr11") {
+      try { c = localStorage.getItem("cgg.cohort"); } catch (e) { c = null; }
+    }
+    if (c === "gr12") document.getElementById("cq-manifest").setAttribute("href", "manifest-gr12.json");
+  } catch (e) { /* leave manifest.json in place */ }
+})();
+</script>
 <link rel="icon" type="image/png" href="icon-192.png">
 
 <!-- iPhone / iPad (Safari) home-screen support -->
