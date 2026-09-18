@@ -7,6 +7,55 @@ import { el, clear, toast } from "./ui.js";
 import { installEntryButton } from "./install.js";
 import { showProfileSetup } from "./profile.js";
 
+/* ============================================================
+   WHICH CLASS IS THIS? (phase21 — the Gr11/Gr12 roster split)
+   ------------------------------------------------------------
+   Gr11 keeps the plain link. The matrics get
+   …/circle-geo-quest/?class=gr12, and that choice is REMEMBERED in
+   localStorage — same trick as api.js's cgg.forceLocal — because the
+   installed PWA opens the plain start URL, so without remembering it a
+   matric who installs the app would land on the Gr11 picker.
+
+   This decides ONE thing only: which names the picker offers. Once a
+   learner is logged in, every board is filtered by their own cohort on
+   the server (cgg_leaderboard / cgg_weekly_results read it off their
+   row), so a wrong or missing ?class= can never show them another
+   class's leaderboard, Monday popup or champion.
+
+   Anything unrecognised means gr11 — the class that was here first, and
+   the one a broken link should fall back to.
+   ============================================================ */
+const COHORT_KEY = "cgg.cohort";
+
+export function cohortFromSearch(search) {
+  try {
+    const raw = new URLSearchParams(search || "").get("class");
+    const v = String(raw || "").trim().toLowerCase();
+    return v === "gr12" ? "gr12" : (v === "gr11" ? "gr11" : null);
+  } catch { return null; }
+}
+
+/* The link wins and is remembered; otherwise the remembered one; else gr11. */
+export function currentCohort() {
+  const fromLink = cohortFromSearch(typeof location === "undefined" ? "" : location.search);
+  if (fromLink) {
+    try { localStorage.setItem(COHORT_KEY, fromLink); } catch { /* private mode */ }
+    return fromLink;
+  }
+  try {
+    const saved = localStorage.getItem(COHORT_KEY);
+    if (saved === "gr12" || saved === "gr11") return saved;
+  } catch { /* private mode */ }
+  return "gr11";
+}
+
+/* The line above the title on the login card. */
+export function cohortEyebrow(cohort) {
+  return cohort === "gr12"
+    ? { en: "Grade 12 · Circle Geometry", af: "Graad 12 · Sirkelmeetkunde" }
+    : { en: "Grade 11 · Circle Geometry", af: "Graad 11 · Sirkelmeetkunde" };
+}
+
 /* Whole minutes remaining until an ISO lockout expiry, floored at 1 so the
    message never reads "wait 0 min". Falls back to a sensible default if the
    timestamp is missing or unparseable (matches the server's 15-min window). */
@@ -18,11 +67,12 @@ function minutesUntil(iso) {
 
 export async function renderLogin(app, host) {
   clear(host);
+  const cohort = currentCohort();
   const wrap = el("div", "login");
   wrap.innerHTML = `
     <div class="login-hero">
       <div class="login-ring"></div>
-      <span class="eyebrow">${tx({ en: "Grade 11 · Circle Geometry", af: "Graad 11 · Sirkelmeetkunde" })}</span>
+      <span class="eyebrow">${tx(cohortEyebrow(cohort))}</span>
       <h1>${t("appName")}</h1>
     </div>`;
   const card = el("div", "card login-card");
@@ -32,7 +82,8 @@ export async function renderLogin(app, host) {
   host.appendChild(wrap);
 
   let students = [];
-  try { students = await api.listStudents(); }
+  // the picker shows THIS class's names only (phase21 cgg_list_students)
+  try { students = await api.listStudents(cohort); }
   catch { card.innerHTML = `<p class="err">${t("offline")}</p>`; return; }
 
   function pickName() {

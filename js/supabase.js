@@ -24,8 +24,11 @@ async function rpc(fn, args) {
 }
 
 export const SupabaseBackend = {
-  async listStudents() {
-    const rows = await rpc("cgg_list_students", {});
+  // The name picker, for ONE class (phase21). The ?class= link decides
+  // which — see currentCohort() in js/auth.js. Every board after login is
+  // filtered by the learner's own cohort on the server, not by this.
+  async listStudents(cohort) {
+    const rows = await rpc("cgg_list_students", { p_cohort: cohort || "gr11" });
     return rows.map(s => ({ id: s.id, display_name: s.display_name, has_password: s.has_password }));
   },
   login(name, password) { return rpc("cgg_login", { p_name: name, p_password: password }); },
@@ -94,12 +97,18 @@ export const SupabaseBackend = {
   adminStuck(pw, days, limit) {
     return rpc("cgg_admin_stuck", { p_admin_password: pw, p_days: days || 30, p_limit: limit || 500 });
   },
-  adminResetWeekly(pw) { return rpc("cgg_admin_reset_weekly", { p_admin_password: pw }); },
-  adminAddStudent(pw, name) { return rpc("cgg_admin_add_student", { p_admin_password: pw, p_name: name }); },
+  // phase21: the weekly reset, the champion and a new learner all act on ONE
+  // class — the one toggled in the dashboard. Gr11 keeps the original
+  // app_config keys, so an omitted cohort behaves exactly as it did before.
+  adminResetWeekly(pw, cohort) { return rpc("cgg_admin_reset_weekly", { p_admin_password: pw, p_cohort: cohort || "gr11" }); },
+  adminAddStudent(pw, name, cohort) { return rpc("cgg_admin_add_student", { p_admin_password: pw, p_name: name, p_cohort: cohort || "gr11" }); },
   adminRemoveStudent(pw, id) { return rpc("cgg_admin_remove_student", { p_admin_password: pw, p_id: id }); },
   adminResetPassword(pw, id) { return rpc("cgg_admin_reset_password", { p_admin_password: pw, p_id: id }); },
-  adminWeeklyResults(pw) { return rpc("cgg_admin_weekly_results", { p_admin_password: pw }); },
-  adminSetChampion(pw, name) { return rpc("cgg_admin_set_champion", { p_admin_password: pw, p_name: name }); },
+  adminWeeklyResults(pw, cohort) { return rpc("cgg_admin_weekly_results", { p_admin_password: pw, p_cohort: cohort || "gr11" }); },
+  adminSetChampion(pw, name, cohort) { return rpc("cgg_admin_set_champion", { p_admin_password: pw, p_name: name, p_cohort: cohort || "gr11" }); },
+  // move one learner between classes (the "→ Gr12" / "→ Gr11" row button).
+  // Progress, XP and password stay with them; only their board changes.
+  adminSetCohort(pw, id, cohort) { return rpc("cgg_admin_set_cohort", { p_admin_password: pw, p_student_id: id, p_cohort: cohort }); },
   // nickname moderation (phase12.sql) — nulls (never edits) a learner's
   // nickname; the server logs the old value to the events table first.
   adminResetNickname(pw, id) { return rpc("cgg_admin_reset_nickname", { p_admin_password: pw, p_student_id: id }); },

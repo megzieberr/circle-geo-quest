@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roster split — verify — Circle Quest</title>
+<!-- Network spy, installed as a CLASSIC script so it is in place BEFORE any
+     module is evaluated. This page must never reach the live database: it
+     fetches its own source files to read them, and nothing else. -->
+<script>
+  window.__NET__ = { fetch: 0, xhr: 0, ws: 0, beacon: 0, urls: [] };
+  (function () {
+    const nf = window.fetch;
+    window.fetch = function (...a) { window.__NET__.fetch++; window.__NET__.urls.push(String(a[0])); return nf.apply(this, a); };
+    const xo = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (m, u, ...r) { window.__NET__.xhr++; window.__NET__.urls.push(String(u)); return xo.call(this, m, u, ...r); };
+    const NW = window.WebSocket;
+    if (NW) window.WebSocket = function (u, ...r) { window.__NET__.ws++; window.__NET__.urls.push(String(u)); return new NW(u, ...r); };
+    if (navigator.sendBeacon) {
+      const sb = navigator.sendBeacon.bind(navigator);
+      navigator.sendBeacon = function (u, ...r) { window.__NET__.beacon++; window.__NET__.urls.push(String(u)); return sb(u, ...r); };
+    }
+  })();
+</script>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  body { padding: 18px; max-width: 1000px; margin: 0 auto; }
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1rem; margin: 18px 0 6px; }
+  .lede { font-size: .9rem; color: #6b6656; margin: 0 0 8px; }
+  #summary { font-size: 1.05rem; font-weight: 700; margin: 12px 0; padding: 12px 14px; border: 2px solid #252a4a; border-radius: 12px; }
+  #summary.pass { border-color: #0ea271; background: #e8f8f1; }
+  #summary.fail { border-color: #e64980; background: #fdeef4; }
+  .grp { border: 1.5px solid #e4ddcb; border-radius: 12px; padding: 10px 14px; background: #fff; margin: 10px 0; }
+  .row { font-size: .86rem; padding: 2px 0; font-family: ui-monospace, "Cascadia Mono", Menlo, monospace; }
+  .row.ok { color: #0a6b4c; } .row.bad { color: #e64980; font-weight: 700; }
+  .draws { font-size: .8rem; font-family: ui-monospace, Menlo, monospace; color: #5a5f82; }
+</style>
+</head>
+<body>
+<h1>Roster split (Gr11 / Gr12) — verify</h1>
+<p class="lede">Headless-checkable proof for <b>phase21</b>: the picker, both leaderboards, the Monday popup, the champion and the weekly reset are per class; the <code>?class=gr12</code> link is read and remembered; both offline stubs in <code>js/api.js</code> carry the new parameters; and the admin dashboard is wired to the class toggle. Results land in <code>window.__VERIFY__</code> and one <code>VERIFY_ROSTER</code> console line. Nothing here touches the live database — it runs entirely on the offline demo backend, and it puts your own local storage back exactly as it found it. The terminal twin is <code>node tools/verify-roster-node.mjs</code>.</p>
+<div id="summary">Running…</div>
+<div id="out"></div>
+
+<script type="module">
+import { LocalBackend, PreviewBackend } from "./js/api.js";
+import { cohortFromSearch, currentCohort, cohortEyebrow } from "./js/auth.js";
+
+const out = document.getElementById("out");
+const results = [];
+let group = null;
+function G(title) { group = document.createElement("div"); group.className = "grp"; group.innerHTML = `<h2>${title}</h2>`; out.appendChild(group); }
+function check(label, pass, detail = "") {
+  results.push({ label, pass: !!pass, detail });
+  const d = document.createElement("div");
+  d.className = "row " + (pass ? "ok" : "bad");
+  d.textContent = `${pass ? "✓" : "✗"} ${label}${detail ? " — " + detail : ""}`;
+  (group || out).appendChild(d);
+}
+function note(html) { const d = document.createElement("div"); d.className = "draws"; d.innerHTML = html; (group || out).appendChild(d); }
+
+/* ---- borrow the local store, hand it back exactly as found ---- */
+const KEYS = ["cgg.students", "cgg.progress", "cgg.events", "cgg.meta", "cgg.itemevents", "cgg.feedback", "cgg.cohort"];
+const snapshot = {};
+KEYS.forEach(k => { snapshot[k] = localStorage.getItem(k); });
+KEYS.forEach(k => localStorage.removeItem(k));
+function restore() {
+  KEYS.forEach(k => { if (snapshot[k] === null) localStorage.removeItem(k); else localStorage.setItem(k, snapshot[k]); });
+}
+
+const names = list => list.map(s => s.display_name || s.name).sort();
+const has = (list, n) => names(list).includes(n);
+const startOfWeek = (ts = Date.now()) => {
+  const d = new Date(ts); const day = (d.getDay() + 6) % 7;
+  d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - day); return d.getTime();
+};
+const readLS = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) ?? f; } catch { return f; } };
+const writeLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const PW = "admin", L11 = "Demo Learner", L12 = "Demo Matric";
+
+try {
+
+/* ============ (a) the link, and remembering it ============ */
+G("(a) The ?class=gr12 link is read, and remembered for the installed app");
+check("?class=gr12 reads as gr12", cohortFromSearch("?class=gr12") === "gr12");
+check("?class=GR12 (shouted) still reads as gr12", cohortFromSearch("?class=GR12") === "gr12");
+check("?class=gr11 reads as gr11", cohortFromSearch("?class=gr11") === "gr11");
+check("a plain link decides nothing on its own", cohortFromSearch("") === null && cohortFromSearch("?local=1") === null);
+check("an unknown class decides nothing (falls through to remembered/gr11)", cohortFromSearch("?class=matric") === null);
+check("with nothing remembered, the app is Gr11", currentCohort() === "gr11");
+localStorage.setItem("cgg.cohort", "gr12");
+check("a remembered gr12 survives a plain start URL (the installed PWA case)", currentCohort() === "gr12");
+localStorage.setItem("cgg.cohort", "nonsense");
+check("a corrupted remembered value falls back to gr11, never to the other class", currentCohort() === "gr11");
+localStorage.removeItem("cgg.cohort");
+check("the login eyebrow names the class, in both languages",
+  cohortEyebrow("gr12").en === "Grade 12 · Circle Geometry" && cohortEyebrow("gr12").af === "Graad 12 · Sirkelmeetkunde" &&
+  cohortEyebrow("gr11").en === "Grade 11 · Circle Geometry" && cohortEyebrow("gr11").af === "Graad 11 · Sirkelmeetkunde",
+  `${cohortEyebrow("gr12").af} / ${cohortEyebrow("gr11").af}`);
+
+/* ============ (b) the picker ============ */
+G("(b) The name picker shows one class only");
+const g11 = await LocalBackend.listStudents("gr11");
+const g12 = await LocalBackend.listStudents("gr12");
+note(`gr11 → ${names(g11).join(", ")}`);
+note(`gr12 → ${names(g12).join(", ")}`);
+check("both demo classes have learners", g11.length > 0 && g12.length > 0, `gr11=${g11.length}, gr12=${g12.length}`);
+check("the two pickers share no name", !names(g11).some(n => names(g12).includes(n)));
+check("no cohort at all means gr11",
+  JSON.stringify(names(await LocalBackend.listStudents())) === JSON.stringify(names(g11)));
+
+/* ============ (c) the boards ============ */
+G("(c) Leaderboards and the Monday popup are the learner's OWN class");
+await LocalBackend.firstLogin(L11, "pw11");
+await LocalBackend.firstLogin(L12, "pw12");
+const idOf = n => Object.values(readLS("cgg.students", {})).find(s => s.display_name === n).id;
+const lastWeekTs = startOfWeek() - 3 * 864e5;
+const ev = readLS("cgg.events", []);
+ev.push({ studentId: idOf(L11), roundId: "r1", xp: 40, score: 1, ts: Date.now() });
+ev.push({ studentId: idOf(L11), roundId: "daily", xp: 25, score: 1, ts: lastWeekTs });
+ev.push({ studentId: idOf(L12), roundId: "r1", xp: 60, score: 1, ts: Date.now() });
+ev.push({ studentId: idOf(L12), roundId: "daily", xp: 30, score: 1, ts: lastWeekTs });
+writeLS("cgg.events", ev);
+
+const lb11 = await LocalBackend.leaderboard(L11, "pw11");
+const lb12 = await LocalBackend.leaderboard(L12, "pw12");
+check("a Gr11 learner sees no Gr12 name on either tab", !has(lb11.weekly, L12) && !has(lb11.allTime, L12));
+check("a Gr12 learner sees no Gr11 name on either tab", !has(lb12.weekly, L11) && !has(lb12.allTime, L11));
+check("each learner still finds themselves, ranked from 1 inside their class",
+  lb11.myWeekly && lb11.myWeekly.me && lb12.myWeekly && lb12.myWeekly.me &&
+  lb11.weekly[0].rank === 1 && lb12.weekly[0].rank === 1);
+const wr11 = await LocalBackend.weeklyResults(L11, "pw11");
+const wr12 = await LocalBackend.weeklyResults(L12, "pw12");
+note(`Monday popup, gr11 board → ${names(wr11.board).join(", ") || "—"}`);
+note(`Monday popup, gr12 board → ${names(wr12.board).join(", ") || "—"}`);
+check("last week's board excludes the other class, both ways", !has(wr11.board, L12) && !has(wr12.board, L11));
+check("Star of the Week is picked inside the class",
+  (!wr11.star || wr11.star.name !== L12) && (!wr12.star || wr12.star.name !== L11));
+
+/* ============ (d) champion + weekly reset ============ */
+G("(d) The champion and the weekly reset act on one class");
+check("a Gr12 learner can be crowned Gr12 champion", (await LocalBackend.adminSetChampion(PW, L12, "gr12")).ok === true);
+const bad = await LocalBackend.adminSetChampion(PW, L12, "gr11");
+check("the same learner is REFUSED as Gr11 champion", bad.ok === false && bad.error === "wrong_cohort");
+check("the crown shows on the Gr12 popup only",
+  (await LocalBackend.weeklyResults(L12, "pw12")).champion === L12 &&
+  (await LocalBackend.weeklyResults(L11, "pw11")).champion !== L12);
+const before = await LocalBackend.adminData(PW);
+const weeklyOf = (d, n) => d.rows.find(r => r.name === n).weeklyXp;
+const gr11Before = weeklyOf(before, L11);
+await LocalBackend.adminResetWeekly(PW, "gr12");
+const after = await LocalBackend.adminData(PW);
+check("resetting Gr12 zeroes Gr12", weeklyOf(after, L12) === 0);
+check("resetting Gr12 leaves Gr11 exactly as it was", weeklyOf(after, L11) === gr11Before, `${gr11Before} XP, unchanged`);
+
+/* ============ (e) what the dashboard receives ============ */
+G("(e) The admin fetches carry the class");
+check("every learner row carries a cohort", after.rows.every(r => r.cohort === "gr11" || r.cohort === "gr12"));
+check("rank is counted inside the class (both classes have a #1)",
+  after.rows.some(r => r.cohort === "gr11" && r.rank === 1) && after.rows.some(r => r.cohort === "gr12" && r.rank === 1));
+check("the weekly-winners screenshot is one class",
+  !has((await LocalBackend.adminWeeklyResults(PW, "gr11")).board, L12) &&
+  !has((await LocalBackend.adminWeeklyResults(PW, "gr12")).board, L11));
+check("'Worth a look' and the timeline carry a cohort",
+  (await LocalBackend.adminIntegrity(PW)).students.every(s => s.cohort) &&
+  (await LocalBackend.adminTimeline(PW, null, 400)).rows.every(r => r.cohort));
+await LocalBackend.adminAddStudent(PW, "Test Matric", "gr12");
+check("a new learner lands in the class chosen for her",
+  has(await LocalBackend.listStudents("gr12"), "Test Matric") &&
+  !has(await LocalBackend.listStudents("gr11"), "Test Matric"));
+const mv = await LocalBackend.adminSetCohort(PW, idOf(L12), "gr11");
+check("the move button moves a learner, scores and all",
+  mv.ok && mv.moved && has(await LocalBackend.listStudents("gr11"), L12) &&
+  (await LocalBackend.adminData(PW)).rows.find(r => r.name === L12).allTimeXp === 90);
+check("a champion who leaves the class stops leading its popup",
+  (await LocalBackend.adminWeeklyResults(PW, "gr12")).champion !== L12);
+
+/* ============ (f) the preview sandbox ============ */
+G("(f) The teacher's preview sandbox still shows no real learner");
+const pv = await PreviewBackend.listStudents("gr12");
+check("preview offers exactly one made-up account, whatever the link says",
+  pv.length === 1 && pv[0].display_name === "Teacher Preview");
+check("preview cannot move a real learner (the write is a no-op)",
+  (await PreviewBackend.adminSetCohort(PW, "preview", "gr11")).moved === false);
+
+/* ============ (g) both stubs, and the dashboard wiring ============ */
+/* Source-level, on purpose. The easily-missed PreviewBackend is exercised for
+   real above; this catches the OTHER half of the four-edits rule — a method
+   that was updated in one backend and not the others — and the admin wiring,
+   which cannot be clicked through here without an admin password and a live
+   database. The click-through is the live step in ROSTER-SPLIT-PLAN.md. */
+G("(g) All four edit sites carry the class (source check)");
+const [apiSrc, sbSrc, adminSrc] = await Promise.all(
+  ["js/api.js", "js/supabase.js", "js/admin.js"].map(u => fetch(u).then(r => r.text()))
+);
+[
+  ["cgg_list_students", "p_cohort"],
+  ["cgg_admin_weekly_results", "p_cohort"],
+  ["cgg_admin_set_champion", "p_cohort"],
+  ["cgg_admin_reset_weekly", "p_cohort"],
+  ["cgg_admin_add_student", "p_cohort"],
+].forEach(([fn, arg]) => {
+  const line = sbSrc.split("\n").find(l => l.includes(`"${fn}"`));
+  check(`supabase.js: ${fn} is sent ${arg}`, !!line && line.includes(arg));
+});
+check("supabase.js: cgg_admin_set_cohort is wired up", sbSrc.includes("cgg_admin_set_cohort"));
+check("api.js: the LocalBackend stub takes the cohort", /async listStudents\(cohort\)/.test(apiSrc));
+check("api.js: the PreviewBackend stub takes it too (the easily-missed one)", /async listStudents\(_cohort\)/.test(apiSrc));
+check("api.js: both stubs answer adminSetCohort",
+  (apiSrc.match(/adminSetCohort\(/g) || []).length >= 2);
+check("admin.js: the class toggle is remembered", adminSrc.includes("cgg.adminCohort"));
+check("admin.js: the main table, needs-a-hand and the reports filter by class",
+  (adminSrc.match(/\binClass\b/g) || []).length >= 6, `${(adminSrc.match(/\binClass\b/g) || []).length} filter sites`);
+check("admin.js: champion, weekly reset, winners and add-learner all pass the class",
+  /adminSetChampion\(adminPw, clean \|\| null, cohort\)/.test(adminSrc) &&
+  /adminResetWeekly\(adminPw, cohort\)/.test(adminSrc) &&
+  /adminWeeklyResults\(adminPw, cohort\)/.test(adminSrc) &&
+  /adminAddStudent\(adminPw, name\.trim\(\), target\)/.test(adminSrc));
+check("admin.js: every learner row offers the move button", adminSrc.includes("moveLearner(r, otherCohort())"));
+check("admin.js: the class is named in the confirm texts",
+  /COHORT_LABEL\[cohort\]\} Circle Champion/.test(adminSrc) && /everyone in \$\{COHORT_LABEL\[cohort\]\}/.test(adminSrc));
+
+/* ============ (h) nothing reached the live database ============ */
+G("(h) Nothing on this page touched the live database");
+const net = window.__NET__;
+const offsite = net.urls.filter(u => /supabase\.co|https?:\/\//i.test(u) && !/fonts\.(googleapis|gstatic)/.test(u));
+check("no request went to Supabase (or anywhere else off this origin)", offsite.length === 0, offsite.join(", "));
+check("no XHR, WebSocket or beacon at all", net.xhr === 0 && net.ws === 0 && net.beacon === 0);
+note(`same-origin fetches (the three source files this page reads): ${net.fetch}`);
+
+} finally {
+  restore();
+}
+
+/* ---------------- summary ---------------- */
+const fails = results.filter(r => !r.pass);
+const summary = document.getElementById("summary");
+summary.className = fails.length ? "fail" : "pass";
+summary.textContent = fails.length
+  ? `✗ ${fails.length} of ${results.length} checks FAILED: ${fails.map(f => f.label).join(" · ")}`
+  : `✓ ALL ${results.length} CHECKS PASS — one picker per class, one board per class, one champion per class, one weekly reset per class; the ?class=gr12 link is remembered; your own local storage was put back untouched.`;
+window.__VERIFY__ = {
+  total: results.length,
+  passed: results.length - fails.length,
+  failed: fails.length,
+  fails: fails.map(f => `${f.label}${f.detail ? " — " + f.detail : ""}`),
+  net: window.__NET__,
+};
+console.log("VERIFY_ROSTER", JSON.stringify(window.__VERIFY__));
+</script>
+</body>
+</html>

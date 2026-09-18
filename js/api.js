@@ -93,6 +93,18 @@ const DEMO_ROSTER = [
   "Demo Learner", "Aanton M", "Bongani K", "Chloé V", "Dineo P",
   "Ethan R", "Fatima S", "Gugu N", "Hannah B", "Imran A",
 ];
+/* phase21 — a second demo class, so `?local=1` can PROVE the Gr11/Gr12 split
+   offline: the picker, both leaderboard tabs and the Monday popup must each
+   show one class only. Deliberately different names, so a leak is obvious. */
+const DEMO_ROSTER_GR12 = ["Demo Matric", "Nandi T", "Sipho L"];
+
+/* ---------- cohorts (phase21) ---------- */
+/* Anything unrecognised means gr11 — the class that was here first.
+   Mirrors public._cgg_cohort in supabase/phase21.sql. */
+const cohortOf = v => (String(v || "").trim().toLowerCase() === "gr12" ? "gr12" : "gr11");
+/* Gr11 keeps the ORIGINAL storage key; gr12 gets ':gr12' on the end.
+   Mirrors public._cgg_cfg_key (app_config) in supabase/phase21.sql. */
+const cfgKey = (base, cohort) => (cohortOf(cohort) === "gr12" ? `${base}:gr12` : base);
 
 /* ============================================================
    LOCAL BACKEND
@@ -115,9 +127,27 @@ const LocalBackend = {
       students = {};
       DEMO_ROSTER.forEach((name, i) => {
         const id = "s" + (i + 1);
-        students[id] = { id, display_name: name, password: null, created_at: Date.now(), last_active_at: null };
+        students[id] = { id, display_name: name, cohort: "gr11", password: null, created_at: Date.now(), last_active_at: null };
+      });
+      DEMO_ROSTER_GR12.forEach((name, i) => {
+        const id = "s" + (DEMO_ROSTER.length + i + 1);
+        students[id] = { id, display_name: name, cohort: "gr12", password: null, created_at: Date.now(), last_active_at: null };
       });
       write(LS.students, students);
+    } else {
+      /* A store seeded before phase21 has no cohorts and no Gr12 class, so
+         `?local=1` would silently have nothing to prove. Backfill gr11 on
+         everyone who predates the column, and add the missing Gr12 demo
+         learners. Existing learners, progress and XP are never touched. */
+      let changed = false;
+      Object.values(students).forEach(s => { if (!s.cohort) { s.cohort = "gr11"; changed = true; } });
+      const have = new Set(Object.values(students).map(s => s.display_name));
+      DEMO_ROSTER_GR12.filter(n => !have.has(n)).forEach(name => {
+        const id = "s" + (Math.max(0, ...Object.keys(students).map(k => +k.slice(1) || 0)) + 1);
+        students[id] = { id, display_name: name, cohort: "gr12", password: null, created_at: Date.now(), last_active_at: null };
+        changed = true;
+      });
+      if (changed) write(LS.students, students);
     }
     if (!read(LS.meta, null)) write(LS.meta, { adminPassword: "admin", weeklyAnchor: 0 });
     if (!read(LS.progress, null)) write(LS.progress, {});
@@ -141,10 +171,14 @@ const LocalBackend = {
     if (students[id]) { students[id].last_active_at = Date.now(); write(LS.students, students); }
   },
 
-  async listStudents() {
+  /* The picker, for ONE class (phase21). Mirrors cgg_list_students(p_cohort):
+     the ?class= link decides which names are offered, and nothing else. */
+  async listStudents(cohort) {
     this._seed();
+    const want = cohortOf(cohort);
     const students = read(LS.students, {});
     return Object.values(students)
+      .filter(s => cohortOf(s.cohort) === want)
       .map(s => ({ id: s.id, display_name: s.display_name, has_password: s.password != null }))
       .sort((a, b) => a.display_name.localeCompare(b.display_name));
   },
@@ -470,7 +504,7 @@ const LocalBackend = {
           at: p.last_played_at ? new Date(p.last_played_at).toISOString() : null,
         }))
         .sort((a, b) => (a.at || "").localeCompare(b.at || ""));
-      return { name: s.display_name, lockedUntil: null, rounds };
+      return { name: s.display_name, cohort: cohortOf(s.cohort), lockedUntil: null, rounds };
     }).sort((a, b) => a.name.localeCompare(b.name));
     return { ok: true, students: list };
   },
@@ -496,6 +530,7 @@ const LocalBackend = {
       .map(e => ({
         studentId: e.studentId,
         name: (students[e.studentId] || {}).display_name || "—",
+        cohort: cohortOf((students[e.studentId] || {}).cohort),
         roundId: e.roundId,
         score: e.score != null ? e.score : null,
         xp: e.xp,
@@ -516,20 +551,24 @@ const LocalBackend = {
     return { ok: true, days: 30, total: 0, panels: [], marks: [], rows: [], serverNow: new Date().toISOString() };
   },
 
+  /* Mirrors cgg_leaderboard (phase21): the board is the CALLER'S OWN class,
+     read off their own record — never off the link they arrived by. */
   async leaderboard(name, password) {
     const s = this._verify(name, password);
     if (!s) return { ok: false, error: "auth" };
+    const coh = cohortOf(s.cohort);
     const students = read(LS.students, {});
     const events = read(LS.events, []);
-    const meta = read(LS.meta, { weeklyAnchor: 0 });
-    const weekStart = Math.max(startOfWeek(), meta.weeklyAnchor || 0);
+    const meta = read(LS.meta, {});
+    const weekStart = Math.max(startOfWeek(), meta[cfgKey("weeklyAnchor", coh)] || 0);
+    const mine = Object.values(students).filter(st => cohortOf(st.cohort) === coh);
 
     const weeklyMap = {}, allMap = {};
     events.forEach(e => {
       allMap[e.studentId] = (allMap[e.studentId] || 0) + e.xp;
       if (e.ts >= weekStart) weeklyMap[e.studentId] = (weeklyMap[e.studentId] || 0) + e.xp;
     });
-    const build = (map) => Object.values(students)
+    const build = (map) => mine
       .map(st => ({ id: st.id, name: st.display_name, nickname: st.nickname || null, avatarId: st.avatar_id || null, xp: map[st.id] || 0 }))
       .sort((a, b) => b.xp - a.xp)
       .map((row, i) => ({ ...row, rank: i + 1, me: row.id === s.id }));
@@ -540,6 +579,7 @@ const LocalBackend = {
       weekly, allTime,
       myWeekly: weekly.find(r => r.me),
       myAllTime: allTime.find(r => r.me),
+      cohort: coh,
     };
   },
 
@@ -550,8 +590,13 @@ const LocalBackend = {
   async weeklyResults(name, password) {
     const s = this._verify(name, password);
     if (!s) return { ok: false, error: "auth" };
+    const coh = cohortOf(s.cohort);
     const events = read(LS.events, []);
-    const students = read(LS.students, {});
+    // phase21: the five awards, the board and the champion are this learner's
+    // OWN class only — the other class is filtered out before anything is
+    // computed, exactly as the `weekly` CTE does in cgg_weekly_results.
+    const students = {};
+    Object.entries(read(LS.students, {})).forEach(([id, st]) => { if (cohortOf(st.cohort) === coh) students[id] = st; });
     const w = computeWeeklyAwards(students, events);
 
     const meAgg = w.agg[s.id];
@@ -564,12 +609,13 @@ const LocalBackend = {
     // always stores the REAL display_name (the teacher picks a real learner),
     // so look that student up and prefer their own nickname for the reveal —
     // falling back to the same real name if they haven't set one.
-    const champName = read(LS.meta, {}).championName || null;
+    const champName = read(LS.meta, {})[cfgKey("championName", coh)] || null;
     const champStudent = champName ? Object.values(students).find(st => st.display_name === champName) : null;
     const champNick = (champStudent && champStudent.nickname && champStudent.nickname.trim()) || null;
 
     return {
       ok: true,
+      cohort: coh,
       weekStart: w.lwStart,
       board: w.board,
       star: w.star,
@@ -591,23 +637,37 @@ const LocalBackend = {
     const meta = read(LS.meta, {});
     return { ok: meta.adminPassword === adminPassword };
   },
+  /* Mirrors cgg_admin_data (phase21): BOTH classes in one fetch, with
+     `cohort` per row — the dashboard's Gr11/Gr12 toggle does the filtering.
+     Two details match the server: weeklyXp uses THAT learner's class anchor
+     (resetting one class's week must not zero the other's), and rank is
+     counted within the class, so a filtered table reads 1, 2, 3. */
   async adminData(adminPassword) {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
     const students = read(LS.students, {});
     const progress = read(LS.progress, {});
     const events = read(LS.events, []);
-    const weekStart = Math.max(startOfWeek(), meta.weeklyAnchor || 0);
+    const anchor = coh => Math.max(startOfWeek(), meta[cfgKey("weeklyAnchor", coh)] || 0);
+    const weekStartOf = { gr11: anchor("gr11"), gr12: anchor("gr12") };
     const weeklyMap = {}, allMap = {};
     events.forEach(e => {
+      const st = students[e.studentId];
+      if (!st) return;
       allMap[e.studentId] = (allMap[e.studentId] || 0) + e.xp;
-      if (e.ts >= weekStart) weeklyMap[e.studentId] = (weeklyMap[e.studentId] || 0) + e.xp;
+      if (e.ts >= weekStartOf[cohortOf(st.cohort)]) weeklyMap[e.studentId] = (weeklyMap[e.studentId] || 0) + e.xp;
     });
-    const allRank = Object.values(students).map(s => ({ id: s.id, xp: allMap[s.id] || 0 }))
-      .sort((a, b) => b.xp - a.xp).reduce((m, r, i) => (m[r.id] = i + 1, m), {});
+    const allRank = {};
+    ["gr11", "gr12"].forEach(coh => {
+      Object.values(students).filter(s => cohortOf(s.cohort) === coh)
+        .map(s => ({ id: s.id, xp: allMap[s.id] || 0 }))
+        .sort((a, b) => b.xp - a.xp)
+        .forEach((r, i) => { allRank[r.id] = i + 1; });
+    });
     const rows = Object.values(students).map(s => ({
       id: s.id,
       name: s.display_name,
+      cohort: cohortOf(s.cohort),
       nickname: s.nickname || null,
       avatarId: s.avatar_id || null,
       hasPassword: s.password != null,        // privacy: never expose the actual password
@@ -625,11 +685,16 @@ const LocalBackend = {
      'champion' is left as the real name on purpose (no nickname lookup) —
      the admin dashboard always shows real names, per the hard rule in
      docs/engagement-plan.md §3. */
-  async adminWeeklyResults(adminPassword) {
+  async adminWeeklyResults(adminPassword, cohort) {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
-    const w = computeWeeklyAwards(read(LS.students, {}), read(LS.events, []));
-    return { ok: true, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire, perfectWeek: w.perfectWeek, perfectWeekRoster: w.perfectWeekRoster, champion: read(LS.meta, {}).championName || null };
+    // phase21: one class at a time — this preview IS the screenshot she posts
+    // to a class group, so a mixed board would be the wrong screenshot.
+    const coh = cohortOf(cohort);
+    const mine = {};
+    Object.entries(read(LS.students, {})).forEach(([id, st]) => { if (cohortOf(st.cohort) === coh) mine[id] = st; });
+    const w = computeWeeklyAwards(mine, read(LS.events, []));
+    return { ok: true, cohort: coh, weekStart: w.lwStart, board: w.board, star: w.star, mostImproved: w.mostImproved, onFire: w.onFire, perfectWeek: w.perfectWeek, perfectWeekRoster: w.perfectWeekRoster, champion: meta[cfgKey("championName", coh)] || null };
   },
   /* Nickname moderation: DELETE (null) a learner's nickname — never edit it —
      so they fall back to their real display_name until they pick a new one.
@@ -649,29 +714,58 @@ const LocalBackend = {
   /* Set (or clear) the teacher's-choice Circle Champion. Pass a learner's
      display name to award it; pass null/"" to clear it. Mirrors the
      cgg_admin_set_champion RPC. */
-  async adminSetChampion(adminPassword, name) {
+  async adminSetChampion(adminPassword, name, cohort) {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const coh = cohortOf(cohort);
     const clean = (name || "").trim();
-    meta.championName = clean || null;
+    // phase21: the pick must be a learner IN that class (same check the
+    // server makes), so a Gr11 name can never crown the Gr12 popup.
+    if (clean) {
+      const inClass = Object.values(read(LS.students, {}))
+        .some(st => st.display_name === clean && cohortOf(st.cohort) === coh);
+      if (!inClass) return { ok: false, error: "wrong_cohort", cohort: coh };
+    }
+    meta[cfgKey("championName", coh)] = clean || null;
     write(LS.meta, meta);
-    return { ok: true, champion: meta.championName };
+    return { ok: true, champion: clean || null, cohort: coh };
   },
-  async adminResetWeekly(adminPassword) {
+  async adminResetWeekly(adminPassword, cohort) {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
-    meta.weeklyAnchor = Date.now();
+    const coh = cohortOf(cohort);
+    meta[cfgKey("weeklyAnchor", coh)] = Date.now();   // this class's anchor only
     write(LS.meta, meta);
-    return { ok: true };
+    return { ok: true, cohort: coh };
   },
-  async adminAddStudent(adminPassword, name) {
+  async adminAddStudent(adminPassword, name, cohort) {
     const meta = read(LS.meta, {});
     if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
     const students = read(LS.students, {});
-    const id = "s" + (Math.max(0, ...Object.keys(students).map(k => +k.slice(1))) + 1);
-    students[id] = { id, display_name: name, password: null, created_at: Date.now(), last_active_at: null };
+    const id = "s" + (Math.max(0, ...Object.keys(students).map(k => +k.slice(1) || 0)) + 1);
+    students[id] = { id, display_name: name, cohort: cohortOf(cohort), password: null, created_at: Date.now(), last_active_at: null };
     write(LS.students, students);
-    return { ok: true };
+    return { ok: true, cohort: cohortOf(cohort) };
+  },
+  /* Move one learner between classes (the "→ Gr12" / "→ Gr11" row button).
+     Mirrors cgg_admin_set_cohort (phase21): progress, XP, password and
+     nickname all stay with them; only the board they appear on changes. If
+     they were the champion of the class they are LEAVING, that pick is
+     cleared — a champion who is not in the class cannot lead its popup. */
+  async adminSetCohort(adminPassword, id, cohort) {
+    const meta = read(LS.meta, {});
+    if (meta.adminPassword !== adminPassword) return { ok: false, error: "auth" };
+    const coh = cohortOf(cohort);
+    const students = read(LS.students, {});
+    const s = students[id];
+    if (!s) return { ok: false, error: "no_such_student" };
+    const from = cohortOf(s.cohort);
+    if (from === coh) return { ok: true, moved: false, cohort: coh };
+    const champKey = cfgKey("championName", from);
+    if (meta[champKey] === s.display_name) { meta[champKey] = null; write(LS.meta, meta); }
+    s.cohort = coh;
+    write(LS.students, students);
+    return { ok: true, moved: true, from, cohort: coh };
   },
   async adminRemoveStudent(adminPassword, id) {
     const meta = read(LS.meta, {});
@@ -704,7 +798,11 @@ function isPreview() {
 }
 const PREVIEW_STUDENT = { id: "preview", name: "Teacher Preview" };
 const PreviewBackend = {
-  async listStudents() { return [{ id: "preview", display_name: PREVIEW_STUDENT.name, has_password: true }]; },
+  /* Takes the cohort like the other two backends (phase21) and ignores it on
+     purpose: the preview roster is one made-up teacher account that belongs
+     to no class, so ?class=gr12&preview=1 must still show exactly this one
+     name and never a real learner's. */
+  async listStudents(_cohort) { return [{ id: "preview", display_name: PREVIEW_STUDENT.name, has_password: true }]; },
   async login() { return { ok: true }; },
   async firstLogin() { return { ok: true }; },
   async getState() {
@@ -732,16 +830,20 @@ const PreviewBackend = {
   async adminIntegrity() { return { ok: true, students: [] }; },
   async adminTimeline() { return { ok: true, rows: [] }; },
   async adminStuck() { return { ok: true, days: 30, total: 0, panels: [], marks: [], rows: [] }; },
+  // phase21: a write, so it is a no-op here like every other preview write —
+  // nothing in the preview sandbox may move a real learner between classes.
+  async adminSetCohort(_pw, _id, cohort) { return { ok: true, moved: false, cohort: cohortOf(cohort) }; },
   async submitFeedback() { return { ok: true }; },
   async getMyFeedback() { return { ok: true, rating: null, comment: "" }; },
   async savePush() { return { ok: true }; },
   async removePush() { return { ok: true }; },
   // read views: empty / benign so nothing from the real class shows or is altered
-  async leaderboard() { return { ok: true, weekly: [], allTime: [], myWeekly: null, myAllTime: null }; },
+  async leaderboard() { return { ok: true, weekly: [], allTime: [], myWeekly: null, myAllTime: null, cohort: null }; },
   async weeklyResults() {
     return {
       ok: true, board: [], star: null, mostImproved: null, onFire: null,
       perfectWeek: [], perfectWeekRoster: [], champion: null, championNickname: null,
+      cohort: null,
       me: { xp: 0, rank: null }, prevRank: null, bestPrevXp: 0,
     };
   },
@@ -767,3 +869,10 @@ const useLocal = !hasSupabase || forceLocal();
 export const PREVIEW = isPreview();
 export const api = PREVIEW ? PreviewBackend : (useLocal ? LocalBackend : SupabaseBackend);
 export const BACKEND = PREVIEW ? "preview" : (useLocal ? "local" : "supabase");
+
+/* The two built-in backends by name, for the verify pages and
+   tools/verify-roster-node.mjs: a check must be able to exercise the offline
+   and preview stubs WITHOUT flipping cgg.forceLocal on this origin, which
+   would leave the real app offline for whoever opens it next. The app itself
+   never imports these — it uses `api` above. */
+export { LocalBackend, PreviewBackend };

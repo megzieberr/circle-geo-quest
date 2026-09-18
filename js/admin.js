@@ -39,6 +39,40 @@ const STUCK_LIMIT = 500;     // most recent taps fetched for the detail lists
 const INACTIVE_DAYS = 7;
 const LIVE_MS = 15000;       // how often the open learner panel re-fetches
 
+/* ============================================================
+   WHICH CLASS AM I LOOKING AT?  (phase21 — the roster split)
+   ------------------------------------------------------------
+   The dashboard fetches BOTH classes in one go (every admin RPC now
+   returns `cohort` per row) and filters here in the browser — that is
+   the plan's deliberate trade: one small SQL change, all the slicing
+   in one place. The ONE exception is the weekly-winners preview, which
+   is re-fetched per class, because that popup is the screenshot she
+   posts to a class group and a mixed board would be the wrong picture.
+
+   The toggle is remembered, so a refresh (or the auto-reload after an
+   action) keeps her on the class she was working with.
+   ============================================================ */
+const COHORTS = ["gr11", "gr12"];
+const COHORT_LABEL = { gr11: "Grade 11", gr12: "Grade 12" };
+const COHORT_SHORT = { gr11: "Gr11", gr12: "Gr12" };
+const COHORT_STORE = "cgg.adminCohort";
+const asCohort = v => (String(v || "").trim().toLowerCase() === "gr12" ? "gr12" : "gr11");
+let cohort = (() => { try { return asCohort(localStorage.getItem(COHORT_STORE)); } catch { return "gr11"; } })();
+/* A row (learner, timeline entry, integrity entry, stuck tap) belongs to the
+   class currently toggled. Rows from before phase21 have no cohort at all —
+   those read as gr11, which is where they were. */
+const inClass = r => asCohort(r && r.cohort) === cohort;
+const otherCohort = () => (cohort === "gr12" ? "gr11" : "gr12");
+function setCohort(next) {
+  cohort = asCohort(next);
+  try { localStorage.setItem(COHORT_STORE, cohort); } catch { /* private mode */ }
+  stopLive(); timelineOne = null;   // the open learner panel may be the other class's
+  // The champion is per class and comes from its own fetch, so when that card
+  // is showing the toggle needs a real reload, not just a repaint.
+  if (SHOW.champion) { load(); return; }
+  renderDashboard();
+}
+
 /* ---------- panels switched OFF (Megan, 2026-08-12) ----------
    HIDDEN, NOT REMOVED. Every panel below still exists in full, with its
    render function, its CSS and its database RPC untouched — flip a flag
@@ -121,7 +155,7 @@ async function load() {
   // anonymous end-of-game feedback (best-effort; needs the Phase-6 RPC)
   feedback = api.adminFeedback ? await api.adminFeedback(adminPw).catch(() => ({ ok: false })) : { ok: false };
   // current Circle Champion (best-effort; needs the Phase-10 RPC)
-  const wk = (SHOW.champion && api.adminWeeklyResults) ? await api.adminWeeklyResults(adminPw).catch(() => ({ ok: false })) : { ok: false };
+  const wk = (SHOW.champion && api.adminWeeklyResults) ? await api.adminWeeklyResults(adminPw, cohort).catch(() => ({ ok: false })) : { ok: false };
   championNow = wk && wk.ok ? (wk.champion || null) : null;
   // cheat-detection readout (best-effort; needs the Phase-13 RPC)
   integrity = api.adminIntegrity ? await api.adminIntegrity(adminPw).catch(() => ({ ok: false })) : { ok: false };
@@ -139,7 +173,9 @@ async function load() {
 /* ---------- dashboard ---------- */
 function renderDashboard() {
   root.innerHTML = "";
-  const rows = data.rows;
+  const allRows = data.rows;
+  const rows = allRows.filter(inClass);            // phase21: this class only
+  const countIn = c => allRows.filter(r => asCohort(r.cohort) === c).length;
   const inactiveDays = data.inactiveDays || INACTIVE_DAYS;
   const totalPlayed = rows.filter(r => r.allTimeXp > 0).length;
   const inactive = rows.filter(r => daysSince(r.lastActive) >= inactiveDays).length;
@@ -173,6 +209,23 @@ function renderDashboard() {
   [preview, previewBoost, winners, rally, add, csv, resetWk, refresh, out].forEach(b => tools.appendChild(b));
   head.appendChild(tools);
   root.appendChild(head);
+
+  /* ---- class toggle (phase21) ----
+     Everything below it — the table, "Needs a hand", the weekly winners
+     screenshot, "Worth a look", the timeline, the champion, the weekly reset
+     and the CSV — is about the class selected here, and says so. */
+  const classBar = el("div", "admin-classbar");
+  classBar.innerHTML = `<span class="eyebrow">Class</span>`;
+  COHORTS.forEach(c => {
+    const b = el("button", "btn small " + (c === cohort ? "primary" : "ghost"),
+      `${COHORT_LABEL[c]} <span class="muted">· ${countIn(c)}</span>`);
+    b.title = `Show ${COHORT_LABEL[c]} only`;
+    if (c !== cohort) b.addEventListener("click", () => setCohort(c));
+    classBar.appendChild(b);
+  });
+  classBar.appendChild(el("span", "muted small",
+    `Showing <b>${COHORT_LABEL[cohort]}</b>. The other class is untouched — separate boards, separate champion, separate weekly reset.`));
+  root.appendChild(classBar);
 
   // "Needs a hand": learners whose CURRENT round has 2+ failed attempts. The
   // frontier is the first unpassed round (everything before it is passed), so
@@ -284,6 +337,14 @@ function renderDashboard() {
       rn.title = "Clear this learner's nickname (moderation) — they fall back to their real name until they pick a new one";
       rn.addEventListener("click", () => resetNickname(r));
       acts.appendChild(rn);
+    }
+    // phase21: move this learner to the other class. Their progress, XP,
+    // badges and password go with them — only their board changes.
+    if (api.adminSetCohort) {
+      const mv = el("button", "mini-btn", `→ ${COHORT_SHORT[otherCohort()]}`);
+      mv.title = `Move ${r.name} to ${COHORT_LABEL[otherCohort()]} — scores and password travel with them`;
+      mv.addEventListener("click", () => moveLearner(r, otherCohort()));
+      acts.appendChild(mv);
     }
     const rm = el("button", "mini-btn danger", "✕"); rm.title = "Remove learner";
     rm.addEventListener("click", () => removeLearner(r));
@@ -555,16 +616,17 @@ function paintTimeline() {
    catch-up day can never take it. Shown as the hero chip in the Monday popup. */
 function renderChampionCard() {
   const sec = el("div", "card champion-card");
-  sec.innerHTML = `<h2>🏆 Circle Champion</h2>
+  sec.innerHTML = `<h2>🏆 Circle Champion — ${COHORT_LABEL[cohort]}</h2>
     <p class="muted small">A hand-picked honour for the learner playing the way the game is meant to be played —
     every day, steady, all the way through. It leads Monday's Results Day popup and isn't tied to weekly XP,
-    so nobody can cram their way past it. Set it here; it stays until you change it.</p>`;
+    so nobody can cram their way past it. Set it here; it stays until you change it.
+    Each class has its own champion, and only ${COHORT_LABEL[cohort]} sees this one.</p>`;
   const row = el("div", "champion-row");
   const current = el("p", "champion-current",
-    championNow ? `Current champion: <b>${escapeHtml(championNow)}</b>` : `<span class="muted">No champion set yet.</span>`);
+    championNow ? `Current ${COHORT_LABEL[cohort]} champion: <b>${escapeHtml(championNow)}</b>` : `<span class="muted">No champion set yet for ${COHORT_LABEL[cohort]}.</span>`);
   const select = el("select", "champion-select");
   select.innerHTML = `<option value="">— choose a learner —</option>` +
-    data.rows.map(r => `<option value="${escapeHtml(r.name)}"${r.name === championNow ? " selected" : ""}>${escapeHtml(r.name)}</option>`).join("");
+    data.rows.filter(inClass).map(r => `<option value="${escapeHtml(r.name)}"${r.name === championNow ? " selected" : ""}>${escapeHtml(r.name)}</option>`).join("");
   const save = el("button", "btn primary small", "Award champion");
   save.addEventListener("click", () => setChampion(select.value));
   const clear = el("button", "btn ghost small", "Clear");
@@ -578,10 +640,13 @@ async function setChampion(name) {
   if (!api.adminSetChampion)
     return alert("Circle Champion needs the Phase-10 database update — run supabase/phase10.sql in the Supabase SQL editor.");
   const clean = (name || "").trim();
-  if (clean && !confirm(`Award Circle Champion to ${clean}?`)) return;
-  if (!clean && championNow && !confirm(`Clear the Circle Champion (${championNow})?`)) return;
-  const r = await api.adminSetChampion(adminPw, clean || null).catch(() => ({ ok: false }));
-  if (!r.ok) return alert("Could not set the champion. If this is the live class, make sure supabase/phase10.sql has been run.");
+  // the class is named in the confirm text on purpose: this award is per class
+  if (clean && !confirm(`Award the ${COHORT_LABEL[cohort]} Circle Champion to ${clean}?`)) return;
+  if (!clean && championNow && !confirm(`Clear the ${COHORT_LABEL[cohort]} Circle Champion (${championNow})?`)) return;
+  const r = await api.adminSetChampion(adminPw, clean || null, cohort).catch(() => ({ ok: false }));
+  if (r && r.error === "wrong_cohort")
+    return alert(`${clean} is not in ${COHORT_LABEL[cohort]}, so they can't be its champion. Switch the class toggle, or move the learner first.`);
+  if (!r.ok) return alert("Could not set the champion. If this is the live class, make sure supabase/phase21.sql has been run.");
   championNow = r.champion || (clean || null);
   renderDashboard();
 }
@@ -596,7 +661,7 @@ const FB_FACES = [
 ];
 function renderFeedbackReport() {
   const section = el("div", "admin-report admin-feedback");
-  section.appendChild(el("h2", "report-title", "💬 How learners feel about the game (anonymous)"));
+  section.appendChild(el("h2", "report-title", "💬 How learners feel about the game (anonymous — all classes)"));
 
   if (!feedback || !feedback.ok) {
     section.appendChild(el("p", "muted small", "Anonymous feedback isn't available yet — this needs the Phase-6 database update (run supabase/phase6.sql)."));
@@ -615,7 +680,7 @@ function renderFeedbackReport() {
   const avg = feedback.average != null ? Math.round(feedback.average * 10) / 10 : null;
   const avgFace = avg ? FB_FACES[Math.min(4, Math.max(0, Math.round(avg) - 1))].emoji : "—";
   section.appendChild(el("p", "muted small",
-    `${total} of ${learners} learner${learners === 1 ? "" : "s"} answered · average ${avg != null ? avg + " " + avgFace : "—"}. Honest and anonymous — you can't see who said what.`));
+    `${total} of ${learners} learner${learners === 1 ? "" : "s"} answered · average ${avg != null ? avg + " " + avgFace : "—"}. Honest and anonymous — you can't see who said what. This panel is the only one the class toggle does not split: a response carries no learner, so it carries no class either.`));
 
   // face spread (a bar per face, width = share of responses)
   const max = Math.max(1, ...FB_FACES.map(f => counts[f.v] || counts[String(f.v)] || 0));
@@ -711,7 +776,11 @@ function renderStuckReport() {
   }
 
   const panels = stuckData.panels || [];
-  const rows = stuckData.rows || [];
+  // phase21: the by-learner list below is this class's taps only. The
+  // per-panel counts above it stay class-wide ON PURPOSE — they are a
+  // question-quality signal, not a learner one, and splitting already-small
+  // counts in two would make a badly worded panel harder to spot, not easier.
+  const rows = (stuckData.rows || []).filter(inClass);
   const days = stuckData.days || STUCK_DAYS;
 
   if (!panels.length) {
@@ -731,7 +800,7 @@ function renderStuckReport() {
   const wrap = el("div", "table-wrap");
   const table = el("table", "admin-table report-table idg-table");
   table.innerHTML = `<thead><tr>
-      <th>Panel</th><th>Learners</th><th>Taps</th><th>To rung 3</th>
+      <th>Panel <span class="muted small">(all classes)</span></th><th>Learners</th><th>Taps</th><th>To rung 3</th>
       <th>Nothing typed</th><th>Marking on the same panel</th>
     </tr></thead>`;
   const tbody = el("tbody");
@@ -784,7 +853,7 @@ function renderStuckReport() {
   });
   const learners = Object.values(byLearner).sort((a, b) => b.taps - a.taps || b.rung3 - a.rung3);
   if (learners.length) {
-    section.appendChild(el("h3", "fb-comments-title", "Who to sit next to"));
+    section.appendChild(el("h3", "fb-comments-title", `Who to sit next to — ${COHORT_LABEL[cohort]}`));
     const lwrap = el("div", "table-wrap");
     const ltable = el("table", "admin-table report-table");
     ltable.innerHTML = `<thead><tr><th>Name</th><th>Taps</th><th>Panels</th><th>To rung 3</th><th>Nothing typed</th><th>Last asked</th></tr></thead>`;
@@ -822,7 +891,7 @@ function marksHtml(panelId) {
 /* What each learner had typed when they tapped. This is the misconception. */
 function stuckDetail(panelId) {
   const box = el("div", "idg-detail");
-  const mine = (stuckData.rows || []).filter(r => r.panelId === panelId);
+  const mine = (stuckData.rows || []).filter(inClass).filter(r => r.panelId === panelId);
   if (!mine.length) {
     box.appendChild(el("p", "muted small", "No text captured for this panel in the rows fetched."));
     return box;
@@ -853,7 +922,7 @@ function stuckDetail(panelId) {
    (learner, station) is the first play, anything after is a replay. */
 function renderStationProgress() {
   const section = el("div", "admin-report");
-  section.appendChild(el("h2", "report-title", "🔬 Investigation Station activity"));
+  section.appendChild(el("h2", "report-title", `🔬 Investigation Station activity — ${COHORT_LABEL[cohort]}`));
 
   if (!stationTimeline || !stationTimeline.ok) {
     section.appendChild(el("p", "muted small", "This needs the Phase-15 database update (run supabase/phase15.sql) — the same data source as the trajectory arrows in “Needs a hand” above."));
@@ -861,9 +930,9 @@ function renderStationProgress() {
     return;
   }
   const stationIds = new Set(STATIONS.map(s => s.id));
-  const rows = (stationTimeline.rows || []).filter(r => stationIds.has(r.roundId));
+  const rows = (stationTimeline.rows || []).filter(inClass).filter(r => stationIds.has(r.roundId));
   if (!rows.length) {
-    section.appendChild(el("p", "muted small", "Nobody has played the Investigation Station yet."));
+    section.appendChild(el("p", "muted small", `Nobody in ${COHORT_LABEL[cohort]} has played the Investigation Station yet.`));
     root.appendChild(section);
     return;
   }
@@ -923,7 +992,7 @@ const fmtSpan = ms => {
 };
 function renderIntegrityReport() {
   const section = el("div", "admin-report admin-integrity");
-  section.appendChild(el("h2", "report-title", "⚠️ Worth a look"));
+  section.appendChild(el("h2", "report-title", `⚠️ Worth a look — ${COHORT_LABEL[cohort]}`));
 
   if (!integrity || !integrity.ok) {
     section.appendChild(el("p", "muted small", "This heads-up needs the Phase-13 database update (run supabase/phase13.sql). It's optional — nothing else on the dashboard depends on it."));
@@ -934,7 +1003,8 @@ function renderIntegrityReport() {
   section.appendChild(el("p", "muted small",
     "A calm heads-up, not an accusation. These are just patterns worth eyeballing — a learner might have a totally innocent reason. The game keeps its questions on the phone (so it works offline), so this is how we spot a round that was “passed” without actually being played."));
 
-  const students = integrity.students || [];
+  // phase21: one class at a time, like everything else under the toggle.
+  const students = (integrity.students || []).filter(inClass);
 
   // FLAG A — a GRADED multiple-choice round marked passed, but with zero
   // logged questions. A real graded pass logs one event per question; zero
@@ -979,7 +1049,7 @@ function renderIntegrityReport() {
     .map(s => ({ name: s.name, until: s.lockedUntil }));
 
   if (!flagA.length && !flagB.length) {
-    section.appendChild(el("p", "muted small ok-line", "Nothing unusual — every passed round has the play history you'd expect. 👍"));
+    section.appendChild(el("p", "muted small ok-line", `Nothing unusual in ${COHORT_LABEL[cohort]} — every passed round has the play history you'd expect. 👍`));
   }
 
   if (flagA.length) {
@@ -1022,18 +1092,20 @@ function renderIntegrityReport() {
 
 /* ---------- weekly announcement previews (screenshot for the class group) ---------- */
 async function showWeeklyWinners() {
+  // phase21: fetched PER CLASS — this popup is the screenshot for one class
+  // group, so it must never mix the two rosters.
   const r = api.adminWeeklyResults
-    ? await api.adminWeeklyResults(adminPw).catch(() => ({ ok: false }))
+    ? await api.adminWeeklyResults(adminPw, cohort).catch(() => ({ ok: false }))
     : { ok: false };
-  if (!r.ok) return alert("Weekly winners need the Phase-8 database update — run supabase/phase8.sql in the Supabase SQL editor.");
-  if (!r.star) return alert("No XP was earned last week, so there are no winners to announce yet.");
+  if (!r.ok) return alert("Weekly winners need the Phase-21 database update — run supabase/phase21.sql in the Supabase SQL editor.");
+  if (!r.star) return alert(`No XP was earned in ${COHORT_LABEL[cohort]} last week, so there are no winners to announce yet.`);
   showCrownPreview(r);
 }
 function showRallyBoard() {
-  const board = data.rows.filter(r => r.weeklyXp > 0)
+  const board = data.rows.filter(inClass).filter(r => r.weeklyXp > 0)
     .sort((a, b) => b.weeklyXp - a.weeklyXp)
     .map((r, i) => ({ name: r.name, nickname: r.nickname, avatarId: r.avatarId, xp: r.weeklyXp, rank: i + 1 }));
-  if (!board.length) return alert("Nobody has earned XP yet this week — the rally board is still empty.");
+  if (!board.length) return alert(`Nobody in ${COHORT_LABEL[cohort]} has earned XP yet this week — the rally board is still empty.`);
   showRallyPreview(board);
 }
 
@@ -1041,8 +1113,24 @@ function showRallyBoard() {
 async function addLearner() {
   const name = prompt("New learner's display name (first name, or first name + surname initial):");
   if (!name || !name.trim()) return;
-  const r = await api.adminAddStudent(adminPw, name.trim()).catch(() => ({ ok: false }));
-  if (!r.ok) alert("Could not add learner."); else load();
+  // phase21: which class. Defaults to the one on screen — OK adds them there,
+  // Cancel puts them in the other class, and the confirm says which is which
+  // so there is no guessing.
+  const here = cohort, there = otherCohort();
+  const toHere = confirm(`Add ${name.trim()} to ${COHORT_LABEL[here]}?\n\nOK = ${COHORT_LABEL[here]}\nCancel = ${COHORT_LABEL[there]}`);
+  const target = toHere ? here : there;
+  const r = await api.adminAddStudent(adminPw, name.trim(), target).catch(() => ({ ok: false }));
+  if (!r.ok) return alert("Could not add learner.");
+  if (target !== cohort) setCohort(target); else load();
+}
+/* Move a learner to the other class (phase21). Scores, badges, password and
+   nickname all travel with them; only the board they appear on changes. */
+async function moveLearner(row, target) {
+  if (!api.adminSetCohort)
+    return alert("Moving a learner between classes needs the Phase-21 database update — run supabase/phase21.sql in the Supabase SQL editor.");
+  if (!confirm(`Move ${row.name} from ${COHORT_LABEL[asCohort(row.cohort)]} to ${COHORT_LABEL[target]}?\n\nTheir XP, badges and password go with them. They'll appear on the ${COHORT_LABEL[target]} leaderboard and Monday popup from now on.`)) return;
+  const r = await api.adminSetCohort(adminPw, row.id, target).catch(() => ({ ok: false }));
+  if (!r.ok) alert("Could not move the learner."); else load();
 }
 async function removeLearner(row) {
   if (!confirm(`Remove ${row.name}? This deletes their scores too.`)) return;
@@ -1066,24 +1154,25 @@ async function resetNickname(row) {
   if (!r.ok) alert("Could not reset nickname."); else load();
 }
 async function resetWeekly() {
-  if (!confirm("Reset the weekly leaderboard to zero for everyone?")) return;
-  const r = await api.adminResetWeekly(adminPw).catch(() => ({ ok: false }));
+  // phase21: one class's weekly board only, and the confirm names it.
+  if (!confirm(`Reset the weekly leaderboard to zero for everyone in ${COHORT_LABEL[cohort]}?\n\n${COHORT_LABEL[otherCohort()]} is not affected.`)) return;
+  const r = await api.adminResetWeekly(adminPw, cohort).catch(() => ({ ok: false }));
   if (!r.ok) alert("Could not reset weekly board."); else load();
 }
 
 function exportCSV() {
-  const header = ["Rank", "Name", "PasswordSet", "WeeklyXP", "AllTimeXP", "LastActive", "RoundsPassed", "BestPerRound"];
+  const header = ["Rank", "Name", "Class", "PasswordSet", "WeeklyXP", "AllTimeXP", "LastActive", "RoundsPassed", "BestPerRound"];
   const lines = [header.join(",")];
-  data.rows.forEach(r => {
+  data.rows.filter(inClass).forEach(r => {
     const passed = ROUNDS.filter(rd => r.rounds && r.rounds[rd.id] && r.rounds[rd.id].passed).length;
     const best = ROUNDS.map(rd => { const p = r.rounds && r.rounds[rd.id]; return `${rd.n}:${p ? Math.round((p.best_score || 0) * 100) : 0}`; }).join(" ");
-    const cells = [r.rank, r.name, hasPw(r) ? "yes" : "no", r.weeklyXp, r.allTimeXp, fmtDate(r.lastActive), `${passed}/${ROUNDS.length}`, best];
+    const cells = [r.rank, r.name, COHORT_LABEL[asCohort(r.cohort)], hasPw(r) ? "yes" : "no", r.weeklyXp, r.allTimeXp, fmtDate(r.lastActive), `${passed}/${ROUNDS.length}`, best];
     lines.push(cells.map(csvCell).join(","));
   });
   const blob = new Blob([lines.join("\n")], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `circle-quest-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `circle-quest-${cohort}-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
