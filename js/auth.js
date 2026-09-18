@@ -56,6 +56,37 @@ export function cohortEyebrow(cohort) {
     : { en: "Grade 11 · Circle Geometry", af: "Graad 11 · Sirkelmeetkunde" };
 }
 
+/* The way out of the wrong list (2026-09-18). An iPhone home-screen app gets
+   its own empty storage and opens the plain start URL, so a matric who installs
+   the app lands on the Gr11 picker with no address bar to fix it. The small
+   line under the name list swaps the class: it rewrites ?class= in the address
+   (so currentCohort() reads AND remembers it, in this app's own storage) and
+   keeps the install file in step. It still decides the picker only; boards
+   stay locked to the learner's own class on the server. */
+export function switchCohort(to) {
+  const want = to === "gr12" ? "gr12" : "gr11";
+  try { localStorage.setItem(COHORT_KEY, want); } catch { /* private mode */ }
+  try {
+    const u = new URL(location.href);
+    u.searchParams.set("class", want);
+    history.replaceState(null, "", u);
+  } catch { /* the remembered value above still carries it */ }
+  try {
+    const m = document.getElementById("cq-manifest");
+    if (m) m.setAttribute("href", want === "gr12" ? "manifest-gr12.json" : "manifest.json");
+  } catch { /* the install file is a nicety */ }
+  return want;
+}
+
+/* The words on that line: they name the OTHER class. Kept here as an inline
+   {en, af} pair (like cohortEyebrow) rather than in i18n.js, so a phone that
+   still holds an older cached i18n.js can never show a raw key on it. */
+export function cohortSwitchLabel(other) {
+  return other === "gr12"
+    ? { en: "Grade 12 learner? Tap here", af: "Graad 12-leerder? Klik hier" }
+    : { en: "Grade 11 learner? Tap here", af: "Graad 11-leerder? Klik hier" };
+}
+
 /* Whole minutes remaining until an ISO lockout expiry, floored at 1 so the
    message never reads "wait 0 min". Falls back to a sensible default if the
    timestamp is missing or unparseable (matches the server's 15-min window). */
@@ -97,6 +128,13 @@ export async function renderLogin(app, host) {
     card.appendChild(search);
     const list = el("div", "name-list");
     card.appendChild(list);
+
+    // wrong list? one tap swaps the class (see switchCohort above)
+    const other = cohort === "gr12" ? "gr11" : "gr12";
+    const swap = el("button", "link-btn cohort-switch", tx(cohortSwitchLabel(other)));
+    swap.type = "button";
+    swap.addEventListener("click", () => { switchCohort(other); renderLogin(app, host); });
+    card.appendChild(swap);
 
     function draw(filter) {
       clear(list);

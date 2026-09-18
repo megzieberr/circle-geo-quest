@@ -45,7 +45,7 @@
 
 <script type="module">
 import { LocalBackend, PreviewBackend } from "./js/api.js";
-import { cohortFromSearch, currentCohort, cohortEyebrow } from "./js/auth.js";
+import { cohortFromSearch, currentCohort, cohortEyebrow, switchCohort } from "./js/auth.js";
 
 const out = document.getElementById("out");
 const results = [];
@@ -98,6 +98,18 @@ check("the login eyebrow names the class, in both languages",
   cohortEyebrow("gr12").en === "Grade 12 · Circle Geometry" && cohortEyebrow("gr12").af === "Graad 12 · Sirkelmeetkunde" &&
   cohortEyebrow("gr11").en === "Grade 11 · Circle Geometry" && cohortEyebrow("gr11").af === "Graad 11 · Sirkelmeetkunde",
   `${cohortEyebrow("gr12").af} / ${cohortEyebrow("gr11").af}`);
+
+/* the in-app way out (2026-09-18): an iPhone install opens the plain URL with empty storage */
+const urlBefore = location.href;
+switchCohort("gr12");
+check("the switch line moves a plain-URL app to Gr12 and writes it into the address",
+  currentCohort() === "gr12" && cohortFromSearch(location.search) === "gr12" && localStorage.getItem("cgg.cohort") === "gr12");
+switchCohort("gr11");
+check("and back to Gr11, even though the address said gr12 a moment ago",
+  currentCohort() === "gr11" && cohortFromSearch(location.search) === "gr11");
+check("a nonsense target can only ever mean Gr11", switchCohort("matric") === "gr11");
+history.replaceState(null, "", urlBefore);
+localStorage.removeItem("cgg.cohort");
 
 /* ============ (b) the picker ============ */
 G("(b) The name picker shows one class only");
