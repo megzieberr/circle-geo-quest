@@ -10,6 +10,7 @@ import { renderInvestigate } from "./investigate.js";
 import { renderStations, stationsVisible } from "./stations.js";
 import { renderProofs } from "./proofs.js";
 import { renderDynamic, dynamicVisible } from "./dynamic.js";
+import { renderEweMap, renderEweRound, eweVisible } from "./ewe.js";
 import { renderCutscene } from "./cutscene.js";
 import { renderLeaderboard } from "./leaderboard.js";
 import { renderAdventures, renderAdventure } from "./adventure.js";
@@ -80,6 +81,11 @@ const app = {
           this.state.myWeekly = lb.myWeekly || null;
           this.state.allTime = lb.allTime || [];    // all-time board → first rally shows all-time XP (weekly.js)
           this.state.myAllTime = lb.myAllTime || null;
+          // The learner's OWN class, as the server reads it off their row
+          // (cgg_leaderboard, phase21) — never the ?class= link. Only the
+          // Gr12 Eweredigheid card reads it (js/ewe.js eweVisible); if this
+          // call fails it stays unset, and that card simply stays hidden.
+          this.state.cohort = lb.cohort || null;
         }
       } catch { /* ignore */ }
       return true;
@@ -146,6 +152,16 @@ const app = {
       case "dynamic":
         if (!dynamicVisible()) { renderHome(this, view); renderCustomizeLink(this, view); break; }
         renderInvestigate(this, view, this.params); break;
+      // Eweredigheid (kind "ewe", g9) — Gr12 only. Bounced home unless the
+      // learner's own class is gr12 AND (CONFIG.eweLive or ?ewe=1); see
+      // js/ewe.js eweVisible. Its own player: renderEweRound, not
+      // renderInvestigate (the reason is in js/ewe.js's header).
+      case "ewes":
+        if (!eweVisible(this)) { renderHome(this, view); renderCustomizeLink(this, view); break; }
+        renderEweMap(this, view); break;
+      case "ewe":
+        if (!eweVisible(this)) { renderHome(this, view); renderCustomizeLink(this, view); break; }
+        renderEweRound(this, view, this.params); break;
       // Both station routes bounce home while the line is hidden from learners
       // (CONFIG.stationsLive) — the train strip is already gone, and this closes
       // the other way in, so a guessed or shared URL cannot reach an unreleased

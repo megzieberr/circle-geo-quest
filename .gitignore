@@ -16,3 +16,7 @@ PROJECT-HISTORY.md
 
 # session status — local working notes, never public (like the diary above)
 PROJECT-STATUS.md
+
+# phone-width screenshots from tools/ewe-phone-check.py, for the foreman to look at.
+# Local proof only, never repo content.
+tools/_out/

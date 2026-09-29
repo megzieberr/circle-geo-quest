@@ -53,6 +53,25 @@ export const CONFIG = {
   // without a rename. Per PANEL, never per attempt, computed from
   // panels.length in js/investigate.js's finish() — never hard-coded.
   dynamicXpPerPanel: 10,
+  // Eweredigheid mini rounds (group g9, Gr12 only, EWEREDIGHEID-PLAN.md) pay
+  // per QUESTION, banked once at the end of the round (js/ewe.js finish()),
+  // computed from the round's question count, never hard-coded as a total.
+  // Same rate as the other lines for now; her open ruling is whether a mini
+  // round should pay less. Its own key so it can change without a rename.
+  eweXpPerQuestion: 10,
+  // ---- ARE THE EWEREDIGHEID ROUNDS RELEASED? ----
+  // Same one-flag hiding as dynamicLive: false = no 📏 card on the home
+  // screen, and the `ewes` / `ewe` routes bounce back home.
+  //
+  // Added 2026-09-29, shipped FALSE: round 1 is built, not yet played
+  // through by her. Flip to true once she says release.
+  //
+  // ⚠️ This flag is only HALF the gate. The card and routes also need the
+  // logged-in learner's OWN class to be gr12 (read off the server, see
+  // js/ewe.js eweVisible) — a Gr11 learner never sees it, true or false.
+  //
+  // `?ewe=1` overrides the flag (never the class check), for previewing.
+  eweLive: false,
   // ---- IS DYNAMIC GEOMETRY RELEASED TO LEARNERS? ----
   // Same one-flag hiding as stationsLive below: false = no 🧲 card on the home
   // screen, and the `dynamics` / `dynamic` routes bounce back home, so a
@@ -162,6 +181,12 @@ export const GROUPS = [
   { id: "g8", icon: "🧲", name: "Dynamic Geometry", hidden: true,
     blurb: { en: "Dynamic Geometry rounds — drag it, glide it, freeze it, and answer with theorems you already know.",
              af: "Dinamiese Meetkunde-rondtes — trek dit, laat dit gly, vries dit, en beantwoord met stellings wat jy reeds ken." } },
+  // g9 = the Eweredigheid mini rounds (Gr12 only, EWEREDIGHEID-PLAN.md).
+  // `hidden` for the same reason as g6/g7/g8: off the rank ladder and the
+  // "x/5 badges" stat. Afrikaans only (her ruling), so the blurb is one plain
+  // Afrikaans string, not an {en, af} pair.
+  { id: "g9", icon: "📏", name: "Eweredigheid", hidden: true,
+    blurb: "Eweredigheid: watter sye hoort saam, en hoe skryf jy dit neer." },
 ];
 /* The badges that count towards the rank ladder and the "x/5 badges" stat. */
 export const LADDER_GROUPS = GROUPS.filter(g => !g.hidden);

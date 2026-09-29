@@ -61,6 +61,7 @@ import { round as dg0 } from "./dynamic0-watch-it-move.js";      // g8 · Dynami
 import { round as dg1 } from "./dynamic1-freeze-it.js";          // g8 · Dynamic Geometry — freeze it (build session 1)
 import { round as dg2 } from "./dynamic2-the-unroll.js";         // g8 · Dynamic Geometry — the unroll (build session 2)
 import { round as dg3 } from "./dynamic3-her-method-drill.js";   // g8 · Dynamic Geometry — her method drill (build session 2)
+import { round as ew1 } from "./ewe1-watter-sye.js";           // g9 · Eweredigheid (Gr12 only) — build session 1
 import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
 import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
@@ -114,6 +115,12 @@ const ORDER = [
   // before inv1 — same rule, same reason, nothing reordered.
   dg0, dg1, dg2, dg3,
   inv1, inv2, inv3, inv4, inv5, inv6,                    // g6 · Investigation Station 🚂
+  // g9 · Eweredigheid (EWEREDIGHEID-PLAN.md, Gr12 only), build session 1: ew1.
+  // APPENDED at the very END, after inv6, on purpose: every existing round
+  // keeps its position and its displayed number `n`, and the unlock chain
+  // (unlockedIds) for every existing round is untouched. The group runs its
+  // own chain in js/ewe.js, never this one. ew2…ew6 follow ew1 here.
+  ew1,
 ];
 
 /* The last round of the 43-round MAIN quest, pinned on purpose (Megan's
@@ -140,6 +147,7 @@ const GROUP = {
   pr0: "g7", pr1: "g7", pr2: "g7", pr3: "g7", pr4: "g7", pr5: "g7", pr6: "g7", pr7: "g7", pr8: "g7", pr8b: "g7", pr9: "g7",
   dg0: "g8", dg1: "g8", dg2: "g8", dg3: "g8",
   inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
+  ew1: "g9",
 };
 
 export const ROUNDS = ORDER.map((r, i) => {
@@ -176,7 +184,11 @@ export const PROOFS = ROUNDS.filter(r => r.kind === "proof");
    PROOFS above: their own home-screen card (js/dynamic.js), open to every
    learner from the start regardless of main-map progress. */
 export const DYNAMIC = ROUNDS.filter(r => r.kind === "dynamic");
-export const MAIN_ROUNDS = ROUNDS.filter(r => r.kind !== "investigate" && r.kind !== "proof" && r.kind !== "dynamic");
+/* Eweredigheid rounds (group g9, Gr12 only, EWEREDIGHEID-PLAN.md): off the
+   main quest map, same move as DYNAMIC above, behind their own home card
+   (js/ewe.js), which only a Gr12 learner ever sees. */
+export const EWE = ROUNDS.filter(r => r.kind === "ewe");
+export const MAIN_ROUNDS = ROUNDS.filter(r => r.kind !== "investigate" && r.kind !== "proof" && r.kind !== "dynamic" && r.kind !== "ewe");
 
 /* Which rounds are unlocked: the first always, every other once the
    round BEFORE it in the play order has been passed. It lives here

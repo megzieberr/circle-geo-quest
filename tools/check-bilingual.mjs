@@ -45,7 +45,18 @@ function walk(node, path, seen = new Set()) {
   }
 }
 
+/* EXEMPT: kind "ewe" (the Gr12 Eweredigheid rounds, js/ewe.js). They are
+   AFRIKAANS ONLY by her ruling (2026-09-29): the Gr12 class is taught in
+   Afrikaans and the rounds must show Afrikaans whatever the toggle says.
+   Their copy is plain Afrikaans strings, not {en, af} pairs, so there is
+   no English half to check, and inventing one to satisfy this tool would
+   put English in front of learners who were never meant to see it. Listed
+   by name below so the exemption is never silent. */
+const EXEMPT_KINDS = new Set(["ewe"]);
+const exempted = ROUNDS.filter(r => EXEMPT_KINDS.has(r.kind)).map(r => r.id);
+
 for (const r of ROUNDS) {
+  if (EXEMPT_KINDS.has(r.kind)) continue;
   walk({ title: r.title, blurb: r.blurb }, `${r.id}`);
   (r.panels || []).forEach((p, i) => {
     // a prompt may be a FUNCTION of the run's scratch — call it with a
@@ -59,6 +70,7 @@ for (const r of ROUNDS) {
   });
 }
 
+if (exempted.length) console.log(`ℹ️  exempt, Afrikaans only by her ruling: ${exempted.join(", ")}\n`);
 if (identical.length) {
   console.log(`ℹ️  ${identical.length} string(s) where af === en — read these, some are legitimately the same:`);
   identical.forEach(x => console.log(`   ${x.path}\n     ${x.text}`));

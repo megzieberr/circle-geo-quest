@@ -995,3 +995,73 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .q-options.predict .opt.is-picked{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);}
 .dp-feedback.predict{background:#eef2fb; border-color:#4263eb; color:#26408f;}
 .dp-after{margin:10px 0 2px; font-size:.93rem; line-height:1.5; color:var(--ink-soft);}
+
+/* ============================================================
+   EWEREDIGHEID (Gr12 mini rounds, js/ewe.js + js/ewe-kit.js)
+   Additive, new class names only: nothing outside these rounds
+   carries any of the classes below.
+   ============================================================ */
+.adventure-banner.ewe-banner{border-left-color:var(--s3);}
+
+/* THE ONE FRACTION (ewe-kit.js fracHtml). A 3-row grid: numerator, bar,
+   denominator. The bar row is stretched across the column, and the column
+   is as wide as the wider of numerator and denominator, so the bar always
+   spans both (rule 4). nowrap: a fraction never breaks (rule 3). */
+.ewf{display:inline-grid; grid-template-columns:auto; grid-template-rows:auto auto auto; justify-items:center;
+  vertical-align:middle; white-space:nowrap; line-height:1.15; margin:0 .12em;}
+.ewf-n,.ewf-d{display:inline-flex; align-items:center; gap:.12em; padding:0 .22em;}
+.ewf-n{padding-bottom:.08em;}
+.ewf-d{padding-top:.08em;}
+.ewf-bar{justify-self:stretch; height:2px; min-width:1em; background:currentColor; border-radius:1px;}
+.ewf-dot{padding:0 .08em;}
+.ewf-sq{font-size:.62em; line-height:0; vertical-align:.9em; margin-left:.04em;}
+/* an equation: each side is one unit, the "=" rides with the right side,
+   so the only place a too-wide line can break is just before the "=" */
+.ewq{display:inline-flex; flex-wrap:wrap; align-items:center; justify-content:center; row-gap:8px; max-width:100%;}
+.ewq-u{display:inline-flex; align-items:center; white-space:nowrap;}
+.ewq-eq{padding:0 .35em; font-weight:700;}
+/* the written line: equation + reason; the reason moves down whole */
+.ewl{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 12px; font-size:1.2rem; font-weight:700;}
+.ewl-rs{font-size:.95rem; font-weight:600; color:var(--ink-soft); text-align:center;}
+
+/* the fill-the-boxes pad (ewe-kit.js mountFillPad) */
+.ewpad{margin:4px 0 10px;}
+.ewpad-disp{display:flex; justify-content:center; align-items:center; min-height:104px; padding:12px 8px; margin-bottom:10px;
+  background:#fff; border:2px solid var(--ink); border-radius:14px; font-size:1.2rem; font-weight:700;}
+.ewpad-fx{color:var(--ink-soft); padding:0 .1em;}
+.ewslot{display:inline-flex; align-items:center; justify-content:center; min-width:3.1em; height:36px; padding:0 6px;
+  border:2px dashed rgba(37,42,74,.35); border-radius:9px; background:rgba(66,99,235,.04); font-size:1.05rem;}
+.ewslot.is-filled{border-style:solid; border-color:var(--accent); background:color-mix(in srgb,var(--accent) 14%,#fff); color:var(--ink);}
+/* the box the next click lands in: the one thing this input must never leave ambiguous */
+.ewslot.is-next{border-style:solid; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent);
+  animation:eweGlow 1.1s ease-in-out infinite alternate;}
+@keyframes eweGlow{from{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent)} to{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 40%,transparent)}}
+.ewpad-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:9px;}
+.ewchip{cursor:pointer; font:700 1.1rem "Instrument Sans",sans-serif; color:var(--ink); background:#fff; border:2px solid var(--ink);
+  border-radius:12px; padding:12px 0; text-align:center; user-select:none; white-space:nowrap; transition:transform .1s ease;}
+.ewchip:hover:not(:disabled){box-shadow:3px 3px 0 var(--accent);}
+.ewchip:active:not(:disabled){transform:scale(.96);}
+.ewchip:disabled{opacity:.45; cursor:default;}
+.ewkey-del{background:#fdf6f8;}
+.ewkey-sub{background:var(--accent); color:#fff;}
+.ewpad-gap{pointer-events:none;}
+.ewpad.is-locked .ewpad-disp{border-color:#0ea271; background:#f3fbf7;}
+
+/* the round screen */
+.ewe-q{display:flex; flex-direction:column;}
+.ewe-intro{margin-bottom:4px;}
+.ewe-step{margin-top:6px;}
+.ewe-prompt{font-size:1rem;}
+.ewe-fb .ewq,.ewe-fb .ewf{vertical-align:middle;}
+.ewe-tick{font-weight:800; margin-right:4px;}
+.ewe-template{display:flex; justify-content:center; margin-top:8px; font-weight:700; font-size:.95rem;}
+.ewe-showme{display:block; margin:4px 0 8px; text-decoration:underline;}
+.ewe-opts .opt{font-size:.98rem;}
+/* the "Só skryf jy dit" card: the exam line, written out */
+.ewe-write{margin:12px 0 6px; padding:14px 12px; background:#fff; border:2px solid var(--ink); border-radius:14px;
+  box-shadow:var(--shadow-sm); text-align:center;}
+.ewe-write-tag{font-weight:800; font-size:.8rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px;}
+.ewe-write-body{padding:6px 0;}
+.ewe-write-text{font-weight:600; margin:2px 0 6px;}
+.ewe-write-tip{font-size:.88rem; color:var(--ink-soft); margin-top:8px;}
+.ewe-takeaway{text-align:center; margin-top:14px;}

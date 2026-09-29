@@ -14,6 +14,7 @@ import { maybeShowWeekly } from "./weekly.js";
 import { pushState, enablePush, disablePush } from "./push.js";
 import { proofsCard, nextProofToPlay } from "./proofs.js";
 import { dynamicCard, dynamicVisible, nextDynamicToPlay } from "./dynamic.js";
+import { eweCard, eweVisible } from "./ewe.js";
 import { installEntryButton, maybeShowInstallPopup } from "./install.js";
 import { maybeShowBoostAnnounce, maybeShowReplayAnnounce } from "./announce.js";
 import { feedbackCard, maybeShowSurveyPopup } from "./survey.js";
@@ -132,6 +133,11 @@ export function renderHome(app, host) {
   // dynamicVisible() while the group ships dark, unreviewed (her call,
   // 2026-09-04; see CONFIG.dynamicLive). `?dynamic=1` previews it.
   if (dynamicVisible()) host.appendChild(dynamicCard(app));
+
+  // Eweredigheid 📏 — Gr12 only (EWEREDIGHEID-PLAN.md): shown only when the
+  // learner's own class is gr12 AND (CONFIG.eweLive or ?ewe=1). A Gr11
+  // learner never gets it, flag or no flag. See js/ewe.js eweVisible.
+  if (eweVisible(app)) host.appendChild(eweCard(app));
 
   const ladder = renderRankLadder(progress);
   if (ladder) host.appendChild(ladder);            // hidden until the first badge is earned
