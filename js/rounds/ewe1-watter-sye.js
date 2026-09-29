@@ -140,8 +140,8 @@ export const round = {
       id: "ew1q3",
       intro: "In Δ KLM is NP ∥ KM. Pasop: die lyn is ∥ aan 'n ander sy.",
       sketch: T3.sketch,
-      steps: [buildStep(T3, `Watter hoek sny die ∥ lyn af? Begin by daardie hoek. ${CLICK}`), reasonStep(T3)],
-      write: { reason: reasonOf(T3), tip: "Begin altyd by die hoek wat die ∥ lyn afsny." },
+      steps: [buildStep(T3, `Die ∥ lyn sny 'n klein Δ af. Begin by die hoekpunt van daardie klein Δ. ${CLICK}`), reasonStep(T3)],
+      write: { reason: reasonOf(T3), tip: "Begin altyd by die hoekpunt van die klein Δ." },
     },
     {
       id: "ew1q4",
@@ -171,8 +171,8 @@ export const round = {
       id: "ew1q6",
       intro: "Die Δ staan onderstebo. In Δ XYZ is WV ∥ YZ.",
       sketch: T6.sketch,
-      steps: [buildStep(T6, `Bou die verhouding. Begin by die hoek wat die lyn afsny. ${CLICK}`), reasonStep(T6)],
-      write: { reason: reasonOf(T6), tip: "Onderstebo maak nie saak nie: begin by die hoek wat afgesny is." },
+      steps: [buildStep(T6, `Bou die verhouding. Begin by die hoekpunt van die klein Δ. ${CLICK}`), reasonStep(T6)],
+      write: { reason: reasonOf(T6), tip: "Onderstebo maak nie saak nie: begin by die hoekpunt van die klein Δ." },
     },
   ],
 };

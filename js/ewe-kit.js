@@ -105,7 +105,7 @@ export function writtenLineHtml(fill, reason) {
    onSubmit(fill)   fill = the chips in box order
 
    returns { fill, clear, setFill, lock } */
-export function mountFillPad(host, { frame, chips, onSubmit }) {
+export function mountFillPad(host, { frame, chips, onSubmit, onEdit }) {
   if (new Set(chips).size !== chips.length) throw new Error("mountFillPad: two chips read the same");
   const nSlots = frame.reduce((k, u) => k + cellsOf(u).filter(c => c === SLOT).length, 0);
   let toks = [];
@@ -150,7 +150,7 @@ export function mountFillPad(host, { frame, chips, onSubmit }) {
   shuffled.forEach(c => {
     const b = el("button", "ewchip", esc(c));
     b.type = "button";
-    b.addEventListener("click", () => { if (locked || toks.length >= nSlots) return; toks.push(c); paint(); });
+    b.addEventListener("click", () => { if (locked || toks.length >= nSlots) return; toks.push(c); paint(); onEdit && onEdit(); });
     grid.appendChild(b);
   });
   /* the ⌫ / Kontroleer row always starts a fresh row, so a thumb reaching
@@ -160,7 +160,7 @@ export function mountFillPad(host, { frame, chips, onSubmit }) {
   const del = el("button", "ewchip ewkey-del", "⌫");
   del.type = "button";
   del.setAttribute("aria-label", "Vee die laaste stuk uit");
-  del.addEventListener("click", () => { if (locked) return; toks.pop(); paint(); });
+  del.addEventListener("click", () => { if (locked) return; toks.pop(); paint(); onEdit && onEdit(); });
   grid.appendChild(del);
   const sub = el("button", "ewchip ewkey-sub", "Kontroleer ✓");
   sub.type = "button";

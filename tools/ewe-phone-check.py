@@ -196,6 +196,14 @@ def click_btn(page, selector, text=None):
 def has(page, sel):
     return page.evaluate("(s) => !!document.querySelector(s)", sel)
 
+# Foreman review 2026-09-29: `:not([hidden])` only reads the attribute. A CSS
+# display rule beat it and the first build shipped a link that was always on
+# screen while this test said it was hidden. seen() asks what a learner sees.
+def seen(page, sel):
+    return page.evaluate("""(s) => [...document.querySelectorAll(s)].some(e => {
+        const c = getComputedStyle(e), r = e.getBoundingClientRect();
+        return c.display !== 'none' && c.visibility !== 'hidden' && r.width > 0 && r.height > 0; })""", sel)
+
 try:
     for _ in range(50):
         try: socket.create_connection(("127.0.0.1", PORT), timeout=0.2).close(); break
@@ -338,14 +346,20 @@ try:
             extra.append((name, ok))
             if not ok: fail(f"{name}: hint was {txt!r}")
             measure(page, f"Q1 {name}")
+        early = seen(page, ".ewe-step:last-child .ewe-showme")
+        extra.append(("'show me' NOT on screen before any wrong try", not early))
+        if early: fail("'show me' is on screen before any wrong try")
         try_fill(["AD", "DB", "DE", "BC"], "∥ lyne self", "∥-line fill -> ∥ hint")
+        early = seen(page, ".ewe-step:last-child .ewe-showme")
+        extra.append(("'show me' NOT on screen after 1 wrong try", not early))
+        if early: fail("'show me' is on screen after only 1 wrong try")
         try_fill(["AD", "AD", "AE", "AE"], "Elke blokkie", "repeated chips -> repeat hint")
         try_fill(["AD", "EC", "AE", "DB"], "dieselfde manier", "mixed-up pattern -> pattern hint")
-        shown = has(page, ".ewe-step:last-child .ewe-showme:not([hidden])")
+        shown = seen(page, ".ewe-step:last-child .ewe-showme")
         extra.append(("'show me' offered after 3 wrong tries", shown))
         if not shown: fail("'show me' not offered after 3 wrong tries")
         click_btn(page, ".ewe-step:last-child .ewe-showme")
-        locked = has(page, ".ewpad.is-locked") and has(page, ".ewe-fb.revealed")
+        locked = has(page, ".ewpad.is-locked") and has(page, ".ewe-fb.revealed") and not seen(page, ".ewe-showme")
         extra.append(("'show me' fills the answer and moves on", locked))
         if not locked: fail("'show me' did not fill and lock")
         measure(page, "Q1 after 'show me'")

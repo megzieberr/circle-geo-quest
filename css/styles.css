@@ -1056,6 +1056,17 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .ewe-tick{font-weight:800; margin-right:4px;}
 .ewe-template{display:flex; justify-content:center; margin-top:8px; font-weight:700; font-size:.95rem;}
 .ewe-showme{display:block; margin:4px 0 8px; text-decoration:underline;}
+/* Foreman review 2026-09-29. (1) `display:block` above beat the `hidden`
+   attribute, so "Wys my" showed from the first second and stayed after a
+   right answer. (2) The way on must sit AFTER the "So skryf jy dit" card,
+   never float over the screen: a sticky button let a learner leave the
+   question without ever seeing the written line (same cure as .dp .play-foot).
+   (3) A finished pad folds its chips away, so the next step is not pushed
+   off the phone. (4) Room for the sticky top bar when a step scrolls in. */
+.ewe-q [hidden]{display:none !important;}
+.ewe-steps .play-foot{position:static; background:none; padding-top:10px;}
+.ewpad.is-locked .ewpad-grid{display:none;}
+.ewe-step,.ewe-write{scroll-margin-top:84px;}
 .ewe-opts .opt{font-size:.98rem;}
 /* the "Só skryf jy dit" card: the exam line, written out */
 .ewe-write{margin:12px 0 6px; padding:14px 12px; background:#fff; border:2px solid var(--ink); border-radius:14px;

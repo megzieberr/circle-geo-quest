@@ -223,6 +223,7 @@ export function renderEweRound(app, host, params) {
         const step = q.steps[si++];
         const stepBox = el("div", "ewe-step");
         steps.appendChild(stepBox);
+        if (si > 1) bringIn(stepBox);
         const done = (res) => {
           run.gated++;
           if (res.firstTry) run.firstTry++;
@@ -234,7 +235,9 @@ export function renderEweRound(app, host, params) {
         return;
       }
       /* every step done: the card, then the way on */
-      steps.appendChild(writeCard(q, lastFill));
+      const card = writeCard(q, lastFill);
+      steps.appendChild(card);
+      bringIn(card);
       const foot = el("div", "play-foot");
       const isLast = run.qi === qs.length - 1;
       const go = el("button", "btn primary big ewe-next", isLast ? UI.last : UI.nextQ);
@@ -283,6 +286,17 @@ export function renderEweRound(app, host, params) {
   showQuestion();
 }
 
+/* Foreman review 2026-09-29: a new step, and the card, used to appear BELOW
+   the phone screen with nothing to say so. Each one is now brought onto the
+   screen. A timeout, not requestAnimationFrame: the block must be laid out
+   first, and rAF does not run in every test browser. */
+function bringIn(node) {
+  setTimeout(() => {
+    try { node.scrollIntoView({ behavior: "smooth", block: "center" }); }
+    catch { node.scrollIntoView(); }
+  }, 80);
+}
+
 /* ---------------- a build step (the pad) ---------------- */
 function mountBuild(host, step, onDone) {
   host.appendChild(el("p", "q-prompt ewe-prompt", esc(step.prompt)));
@@ -297,6 +311,10 @@ function mountBuild(host, step, onDone) {
   const frame = [{ n: [SLOT], d: [SLOT] }, "=", { n: [SLOT], d: [SLOT] }];
   const pad = mountFillPad(padHost, {
     frame, chips: step.chips,
+    /* foreman review 2026-09-29: "Nog nie" is about the fill that was
+       checked. Once they change a box it no longer describes what is on
+       the screen, so it goes. The hint stays: it is still the help. */
+    onEdit() { if (!over) fb.hidden = true; },
     onSubmit(fill) {
       if (over) return;
       const r = markRatio(fill, step.spec);
