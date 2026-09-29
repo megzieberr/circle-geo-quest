@@ -72,7 +72,11 @@ export function renderFixMistakes(app, host) {
     bar.querySelector("i").style.width = Math.round((state.i / state.total) * 100) + "%";
     next.hidden = true; note.textContent = ""; note.className = "xp-pop";
     clear(qhost);
-    qhost.appendChild(el("p", "fix-from", `${t("fixFromRound")} ${entry.roundN} · ${tx(entry.title)}`));
+    // banks outside the quest (the Daily riders) register roundN: null, so
+    // they show their title alone instead of "From round null"
+    qhost.appendChild(el("p", "fix-from", entry.roundN == null
+      ? tx(entry.title)
+      : `${t("fixFromRound")} ${entry.roundN} · ${tx(entry.title)}`));
     const qbox = el("div");
     qhost.appendChild(qbox);
     mountQuestion(qbox, entry.q, (isCorrect) => {
