@@ -42,6 +42,10 @@ import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
 import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, simLineHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
 
+/* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
+   "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts) */
+const glue = t => esc(t).replace(/(\S) ∥ (\S)/g, "$1\u00A0∥\u00A0$2").replace(/Δ (\S)/g, "Δ\u00A0$1");
+
 /* Afrikaans only, whatever the toggle says (her ruling). Plain strings,
    no tx(): there is no other language to fall back to. */
 const UI = {
@@ -209,7 +213,7 @@ export function renderEweRound(app, host, params) {
     clear(qHost);
     const box = el("div", "ewe-q");
     box.dataset.q = q.id;
-    box.appendChild(el("p", "q-prompt ewe-intro", esc(q.intro)));
+    box.appendChild(el("p", "q-prompt ewe-intro", glue(q.intro)));
     const fig = el("div", "q-diagram");
     fig.innerHTML = sketchSvg(q.sketch);
     box.appendChild(fig);
@@ -299,7 +303,7 @@ function bringIn(node) {
 
 /* ---------------- a build step (the pad) ---------------- */
 function mountBuild(host, step, onDone) {
-  host.appendChild(el("p", "q-prompt ewe-prompt", esc(step.prompt)));
+  host.appendChild(el("p", "q-prompt ewe-prompt", glue(step.prompt)));
   const padHost = el("div", "ewe-padhost");
   host.appendChild(padHost);
   const hint = el("div", "dp-hint ewe-hint"); hint.hidden = true;
@@ -367,7 +371,7 @@ function hintHtml(step, why) {
 
 /* ---------------- a pick step (reason, or yes / no) ---------------- */
 function mountPick(host, step, onDone) {
-  host.appendChild(el("p", "q-prompt ewe-prompt", esc(step.prompt)));
+  host.appendChild(el("p", "q-prompt ewe-prompt", glue(step.prompt)));
   /* ew2 Q4, opt-in: a half-built ratio a/b = c/☐ above the options, the
      empty box glowing; it becomes the finished ratio once it is right */
   const half = step.half ? step.half.map(esc) : null;
