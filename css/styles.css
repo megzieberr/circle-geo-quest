@@ -1076,3 +1076,14 @@ body.has-preview-banner .view{padding-bottom:84px;}
 .ewe-write-text{font-weight:600; margin:2px 0 6px;}
 .ewe-write-tip{font-size:.88rem; color:var(--ink-soft); margin-top:8px;}
 .ewe-takeaway{text-align:center; margin-top:14px;}
+/* ew2: a chip already sitting in the first box. Filled, but grey, so it
+   reads as GIVEN, not as the learner's own tap. */
+.ewslot.is-fixed{border-color:var(--ink-soft); background:#eef0f6; color:var(--ink);}
+/* ew2: the similar-triangles line above the ratio on the card; the names
+   are one unit and never break */
+.ewl-sim{margin-bottom:10px;}
+.ewl-tx{white-space:nowrap;}
+/* ew2 Q4: the half-built ratio above the options, and options that carry
+   a stacked fraction */
+.ewe-show{margin:6px 0 10px; min-height:0;}
+.ewe-opt .ewf{font-size:1.1rem; font-weight:700;}

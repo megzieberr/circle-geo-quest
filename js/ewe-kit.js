@@ -94,6 +94,14 @@ export function writtenLineHtml(fill, reason) {
        + (reason ? `<span class="ewl-rs">(${esc(reason)})</span>` : "") + `</div>`;
 }
 
+/* ew2: the line ABOVE the ratio on the exam page, the two similar
+   triangles with their reason: "Δ FJK ||| Δ FGH  (∠∠∠)". Plain text, no
+   fraction; the names are one unit and never break. */
+export function simLineHtml(text, reason) {
+  return `<div class="ewl ewl-sim"><span class="ewl-tx">${esc(text)}</span>`
+       + (reason ? `<span class="ewl-rs">(${esc(reason)})</span>` : "") + `</div>`;
+}
+
 /* ---------------- 2 · the fill-the-boxes pad ----------------
    frame   the skeleton, left to right. An entry is:
              "="                         the equals sign (a break point)
@@ -103,12 +111,18 @@ export function writtenLineHtml(fill, reason) {
    chips   the chip texts. Shuffled here, once per mount. Two chips may
            never read the same (it throws: that is an authoring bug).
    onSubmit(fill)   fill = the chips in box order
+   fixed   OPT-IN (ew2): chips already sitting in the first boxes, e.g.
+           ["JK"]. They cannot be deleted, the glow starts on the first
+           EMPTY box, and they are part of the fill handed to onSubmit.
+           Left out, the pad behaves exactly as before.
 
    returns { fill, clear, setFill, lock } */
-export function mountFillPad(host, { frame, chips, onSubmit, onEdit }) {
+export function mountFillPad(host, { frame, chips, onSubmit, onEdit, fixed }) {
   if (new Set(chips).size !== chips.length) throw new Error("mountFillPad: two chips read the same");
   const nSlots = frame.reduce((k, u) => k + cellsOf(u).filter(c => c === SLOT).length, 0);
-  let toks = [];
+  const given = Array.isArray(fixed) ? fixed.slice() : [];
+  if (given.length >= nSlots || given.some(g => !chips.includes(g))) throw new Error("mountFillPad: a fixed chip must be a chip, with at least one box left empty");
+  let toks = given.slice();
   let locked = false;
 
   const wrap = el("div", "ewpad");
@@ -121,7 +135,7 @@ export function mountFillPad(host, { frame, chips, onSubmit, onEdit }) {
       if (c !== SLOT) return `<span class="ewpad-fx">${esc(c)}</span>`;
       const k = i++;
       const filled = k < toks.length;
-      const cls = "ewslot" + (filled ? " is-filled" : (k === toks.length && !locked ? " is-next" : ""));
+      const cls = "ewslot" + (filled ? " is-filled" + (k < given.length ? " is-fixed" : "") : (k === toks.length && !locked ? " is-next" : ""));
       return `<span class="${cls}" data-slot="${k}">${filled ? esc(toks[k]) : ""}</span>`;
     };
     const units = [];
@@ -142,7 +156,7 @@ export function mountFillPad(host, { frame, chips, onSubmit, onEdit }) {
     });
     disp.innerHTML = `<span class="ewq">${html}</span>`;
     sub.disabled = locked || toks.length < nSlots;
-    del.disabled = locked || toks.length === 0;
+    del.disabled = locked || toks.length <= given.length;
   }
 
   const grid = el("div", "ewpad-grid");
@@ -160,7 +174,7 @@ export function mountFillPad(host, { frame, chips, onSubmit, onEdit }) {
   const del = el("button", "ewchip ewkey-del", "⌫");
   del.type = "button";
   del.setAttribute("aria-label", "Vee die laaste stuk uit");
-  del.addEventListener("click", () => { if (locked) return; toks.pop(); paint(); onEdit && onEdit(); });
+  del.addEventListener("click", () => { if (locked || toks.length <= given.length) return; toks.pop(); paint(); onEdit && onEdit(); });
   grid.appendChild(del);
   const sub = el("button", "ewchip ewkey-sub", "Kontroleer ✓");
   sub.type = "button";
@@ -173,7 +187,7 @@ export function mountFillPad(host, { frame, chips, onSubmit, onEdit }) {
 
   return {
     get fill() { return toks.slice(); },
-    clear() { toks = []; paint(); },
+    clear() { toks = given.slice(); paint(); },
     setFill(f) { toks = f.slice(0, nSlots); paint(); },
     lock() { locked = true; grid.querySelectorAll("button").forEach(b => { b.disabled = true; }); wrap.classList.add("is-locked"); paint(); },
     node: wrap,

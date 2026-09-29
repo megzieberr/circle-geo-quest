@@ -40,7 +40,7 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, simLineHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
 
 /* Afrikaans only, whatever the toggle says (her ruling). Plain strings,
    no tx(): there is no other language to fall back to. */
@@ -311,6 +311,7 @@ function mountBuild(host, step, onDone) {
   const frame = [{ n: [SLOT], d: [SLOT] }, "=", { n: [SLOT], d: [SLOT] }];
   const pad = mountFillPad(padHost, {
     frame, chips: step.chips,
+    fixed: step.fixed,          // ew2: a chip already in the first box (opt-in)
     /* foreman review 2026-09-29: "Nog nie" is about the fill that was
        checked. Once they change a box it no longer describes what is on
        the screen, so it goes. The hint stays: it is still the help. */
@@ -355,6 +356,10 @@ function hintHtml(step, why) {
   if (why === "par") return esc(h.par);
   if (why === "repeat") return esc(h.repeat);
   if (why === "whole") return esc(h.whole);
+  /* ew2 (the similarity marker): a bottom piece, or a right pattern
+     without the ∥ lines the step asked for */
+  if (why === "bottom") return esc(h.bottom);
+  if (why === "nopar") return esc(h.nopar);
   /* the pattern hint: a sentence and a stacked-fraction template in words */
   const [top, bot] = h.pattern.template.map(esc);
   return `${esc(h.pattern.text)}<div class="ewe-template">${eqHtml(fracHtml(top, bot), fracHtml(top, bot))}</div>`;
@@ -363,6 +368,12 @@ function hintHtml(step, why) {
 /* ---------------- a pick step (reason, or yes / no) ---------------- */
 function mountPick(host, step, onDone) {
   host.appendChild(el("p", "q-prompt ewe-prompt", esc(step.prompt)));
+  /* ew2 Q4, opt-in: a half-built ratio a/b = c/☐ above the options, the
+     empty box glowing; it becomes the finished ratio once it is right */
+  const half = step.half ? step.half.map(esc) : null;
+  const show = half ? el("div", "ewpad-disp ewe-show",
+    eqHtml(fracHtml(half[0], half[1]), fracHtml(half[2], '<span class="ewslot is-next"></span>'))) : null;
+  if (show) host.appendChild(show);
   const yesno = step.layout === "yesno";
   const opts = el("div", "q-options ewe-opts" + (yesno ? " yesno" : ""));
   const hint = el("div", "dp-hint ewe-hint"); hint.hidden = true;
@@ -372,7 +383,11 @@ function mountPick(host, step, onDone) {
   const list = yesno ? step.options.slice() : shuffle(step.options);
   let wrong = 0, over = false;
   list.forEach(o => {
-    const b = el("button", "opt ewe-opt", esc(o.text));
+    /* an option with a `fill` is drawn as the stacked fraction it makes
+       (fill[2] over fill[3]); its plain words stay on as the button's label
+       for a screen reader */
+    const b = el("button", "opt ewe-opt", o.fill ? fracHtml(esc(o.fill[2]), esc(o.fill[3])) : esc(o.text));
+    if (o.fill) b.setAttribute("aria-label", o.text);
     b.type = "button";
     b.addEventListener("click", () => {
       if (over) return;
@@ -380,6 +395,7 @@ function mountPick(host, step, onDone) {
         over = true;
         b.classList.add("is-correct");
         opts.querySelectorAll("button").forEach(x => { x.disabled = true; });
+        if (show && o.fill) show.innerHTML = ratioHtml(o.fill);
         hint.hidden = true;
         fb.hidden = false;
         fb.className = "dp-feedback good ewe-fb";
@@ -409,7 +425,11 @@ function writeCard(q, fill) {
   card.appendChild(el("div", "ewe-write-tag", "✍️ " + UI.writeTag));
   const body = el("div", "ewe-write-body");
   if (q.write.text) body.appendChild(el("p", "ewe-write-text", esc(q.write.text)));
-  else body.innerHTML = writtenLineHtml(fill, q.write.reason);
+  /* ew2, opt-in: TWO lines as on the exam page, the similar triangles
+     first, then the ratio. A step with no build (ew2 Q4) brings its own
+     fill. ew1 has neither, so its card is unchanged. */
+  else body.innerHTML = (q.write.sim ? simLineHtml(q.write.sim, q.write.simReason) : "")
+                      + writtenLineHtml(fill || q.write.fill, q.write.reason);
   card.appendChild(body);
   if (q.write.tip) card.appendChild(el("p", "ewe-write-tip", esc(q.write.tip)));
   return card;
@@ -434,7 +454,7 @@ function renderEnd(app, host, round, r) {
       <div class="ewe-write ewe-takeaway">
         <div class="ewe-write-tag">${UI.remember}</div>
         <p class="ewe-write-text">${esc(tk.text)}</p>
-        <div class="ewe-write-body">${writtenLineHtml(tk.fill, tk.reason)}</div>
+        <div class="ewe-write-body">${tk.sim ? simLineHtml(tk.sim, tk.simReason) : ""}${writtenLineHtml(tk.fill, tk.reason)}</div>
       </div>
       <div class="result-actions"></div>
     </div>`;

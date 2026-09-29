@@ -22,6 +22,13 @@ What it does (all against a LOCAL copy, never the live class):
     Gr11 with it no; teacher preview with it yes);
   * saves 375 px PNGs to tools/_out/ewe/ (git-ignored) for the foreman.
     This script never opens them.
+  * ew2 ("Nou met die ∥ lyne"): after ew1 is passed, the end screen's way
+    on must lead to ew2 and the map must unlock it (it is locked before).
+    Then the same walk, every step of every ew2 question: the given chip in
+    the first box (it stays, it cannot be deleted, the glow starts on the
+    first EMPTY box), a bottom-piece answer with its hint, the right
+    answer, the half-built question's stacked-fraction options, every
+    two-line card, the end screen. Its PNGs start with "ew2-".
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -190,7 +197,7 @@ def click_chip(page, text):
     if not ok: fail(f"chip {text!r} not clickable")
 
 def click_btn(page, selector, text=None):
-    ok = page.evaluate("""([s, t]) => { const b = [...document.querySelectorAll(s)].find(x => (t == null || x.textContent.trim() === t) && !x.disabled && !x.hidden); if (!b) return false; b.click(); return true; }""", [selector, text])
+    ok = page.evaluate("""([s, t]) => { const b = [...document.querySelectorAll(s)].find(x => (t == null || x.textContent.trim() === t || x.getAttribute('aria-label') === t) && !x.disabled && !x.hidden); if (!b) return false; b.click(); return true; }""", [selector, text])
     if not ok: fail(f"button {selector} {text!r} not clickable")
 
 def has(page, sel):
@@ -267,6 +274,8 @@ try:
         measure(page, "home with card", ".ewe-banner")
         page.evaluate("window.__APP__.go('ewes')")
         measure(page, "Eweredigheid map", ".view")
+        ew2_locked_before = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 2 && c[1].classList.contains('locked') && !c[1].querySelector('.btn'); }""")
+        if not ew2_locked_before: fail("ew2 should be locked before ew1 is passed")
         click_btn(page, ".round-card .btn")
         page.wait_for_selector(".ewe-play")
 
@@ -327,8 +336,105 @@ try:
         saved = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
             const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew1');
             return { progress: p.ew1 || null, xpEvents: ev.map(e => e.xp) }; }""")
+        next_is_ew2 = page.evaluate("""() => [...document.querySelectorAll('.ewe-end .btn')].some(b => b.textContent.includes('Volgende rondte'))""")
+        if not next_is_ew2: fail("ew1's end screen has no way on to the next round")
         page.evaluate("window.__APP__.go('ewes')")
         map_done = has(page, ".round-card.done")
+        ew2_unlocked = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 2 && !c[1].classList.contains('locked') && !!c[1].querySelector('.btn'); }""")
+        if not ew2_unlocked: fail("ew2 not unlocked after ew1 was passed")
+
+        # ---------------- the ew2 walk ----------------
+        page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[1].querySelector('.btn').click(); }")
+        page.wait_for_selector(".ewe-play")
+        ew2_title = page.inner_text(".play-title")
+        if "Nou met die ∥ lyne" not in ew2_title: fail(f"the second card did not open ew2: {ew2_title!r}")
+        data2 = page.evaluate("""async () => { const m = await import('./js/rounds/ewe2-met-die-lyne.js');
+            return m.round.eweQuestions.map(q => ({ id: q.id, steps: q.steps.map(s => ({ type: s.type, chips: s.chips || [], answer: s.answer, fixed: s.fixed || [],
+              bottoms: (s.chips || []).filter(c => m.TRIANGLES[q.id].seg[c].pos === 'b'),
+              options: s.options && s.options.map(o => ({ text: o.text, correct: !!o.correct, bottom: !!(o.fill && m.TRIANGLES[q.id].seg[o.fill[3]].pos === 'b') })) })) })); }""")
+        ew2_checks = []
+        def check(name, ok):
+            ew2_checks.append((name, ok))
+            if not ok: fail(name)
+        def pad_state():
+            return page.evaluate("""() => { const s = [...document.querySelectorAll('.ewe-step:last-child .ewslot')];
+                const nx = document.querySelector('.ewe-step:last-child .ewslot.is-next');
+                const d = document.querySelector('.ewe-step:last-child .ewkey-del');
+                return { texts: s.map(x => x.textContent), fixed: s.filter(x => x.classList.contains('is-fixed')).map(x => x.textContent),
+                         next: nx ? +nx.dataset.slot : null, delDisabled: d ? d.disabled : null }; }""")
+        def clear_pad():
+            page.evaluate("() => { const d = document.querySelector('.ewe-step:last-child .ewkey-del'); while (!d.disabled) d.click(); }")
+        for qi, q in enumerate(data2):
+            n = qi + 1
+            P = f"ew2 Q{n}"
+            lab = page.evaluate(LABELS_JS)
+            label_rows.append((q["id"], lab))
+            if lab is None: fail(f"{P}: no sketch")
+            else:
+                for c in lab["collisions"]: fail(f"{P} sketch: {c}")
+                if lab["arrows"] != 2: fail(f"{P} sketch: {lab['arrows']} ∥ arrows, want 2")
+            for si, st in enumerate(q["steps"]):
+                tag = f"{P} step {si + 1} ({st['type']})"
+                if st["type"] == "build":
+                    fx, a = st["fixed"], st["answer"]
+                    rest = a[len(fx):]
+                    ps = pad_state()
+                    check(f"{tag}: glow on the first EMPTY box (box {len(fx) + 1})", ps["next"] == len(fx))
+                    if fx:
+                        check(f"{tag}: {fx[0]} sits in the first box, given", ps["fixed"] == fx and ps["texts"][0] == fx[0])
+                        check(f"{tag}: ⌫ is off while only the given chip is there", ps["delDisabled"] is True)
+                    measure(page, f"{tag}: boxes empty")
+                    shot(page, f"ew2-q{n}-a-boxes-empty.png")
+                    wrong = rest[:-1] + [st["bottoms"][0]]           # the round's trap: a bottom piece
+                    for c in wrong: click_chip(page, c)
+                    measure(page, f"{tag}: boxes full (wrong)")
+                    click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                    measure(page, f"{tag}: wrong answer + hint")
+                    hint = page.inner_text(".ewe-step:last-child .ewe-hint") if seen(page, ".ewe-step:last-child .ewe-hint") else ""
+                    check(f"{tag}: a bottom piece gets the whole-side hint", "onderste stuk" in hint)
+                    shot(page, f"ew2-q{n}-b-wrong-hint.png")
+                    clear_pad()
+                    ps = pad_state()
+                    if fx: check(f"{tag}: ⌫ cannot remove the given {fx[0]}", ps["fixed"] == fx and ps["texts"][0] == fx[0] and ps["next"] == len(fx))
+                    measure(page, f"{tag}: boxes empty again")
+                    for c in rest: click_chip(page, c)
+                    measure(page, f"{tag}: boxes full (right)")
+                    shot(page, f"ew2-q{n}-c-boxes-full.png")
+                    click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                    measure(page, f"{tag}: marked right")
+                    check(f"{tag}: right answer accepted", has(page, f".ewe-steps > .ewe-step:nth-child({si + 1}) .ewpad.is-locked"))
+                else:
+                    measure(page, f"{tag}: options")
+                    shot(page, f"ew2-q{n}-d-options.png")
+                    wrong_o = next((o for o in st["options"] if o["bottom"]), None) or next(o for o in st["options"] if not o["correct"])
+                    right = next(o["text"] for o in st["options"] if o["correct"])
+                    click_btn(page, ".ewe-step:last-child .ewe-opt", wrong_o["text"])
+                    measure(page, f"{tag}: wrong pick + hint")
+                    check(f"{tag}: a wrong pick shows its hint", seen(page, ".ewe-step:last-child .ewe-hint"))
+                    if wrong_o["bottom"]:
+                        check(f"{tag}: the bottom piece gets the whole-side hint", "onderste stuk" in page.inner_text(".ewe-step:last-child .ewe-hint"))
+                        shot(page, f"ew2-q{n}-e-wrong-pick.png")
+                    click_btn(page, ".ewe-step:last-child .ewe-opt", right)
+                    measure(page, f"{tag}: right pick")
+                    if q["id"] == "ew2q4":
+                        check(f"{tag}: the half-built ratio is finished after the right pick",
+                              page.evaluate("(k) => { const s = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-show`); return !!s && !s.querySelector('.ewslot') && s.querySelectorAll('.ewf').length === 2; }", si + 1))
+            card = page.evaluate("""() => { const c = document.querySelector('.ewe-write'); if (!c) return null;
+                const sim = c.querySelector('.ewl-sim'); return { sim: sim ? sim.textContent : '', all: c.textContent, lines: c.querySelectorAll('.ewl').length }; }""")
+            check(f"{P}: 'Só skryf jy dit' card with TWO lines (Δ ||| Δ (∠∠∠), then the ratio (uit |||))",
+                  bool(card) and card["lines"] == 2 and "|||" in card["sim"] and "(∠∠∠)" in card["sim"] and "(uit |||)" in card["all"])
+            measure(page, f"{P}: Só skryf jy dit card")
+            page.evaluate("document.querySelector('.ewe-write').scrollIntoView()")
+            shot(page, f"ew2-q{n}-f-card.png")
+            click_btn(page, ".ewe-next")
+            page.wait_for_timeout(250)
+        page.wait_for_selector(".ewe-end", timeout=8000)
+        measure(page, "ew2 end of round")
+        check("ew2 end screen: the takeaway carries both lines", page.evaluate("() => document.querySelectorAll('.ewe-end .ewe-takeaway .ewl').length === 2"))
+        shot(page, "ew2-end-of-round.png")
+        saved2 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
+            const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew2');
+            return { progress: p.ew2 || null, xpEvents: ev.map(e => e.xp) }; }""")
         ctx.close()
 
         # ---------------- the other hint kinds, "show me", and the toggle ----------------
@@ -377,6 +483,48 @@ try:
         if not same: fail(f"language toggle lost the place or the language: {before} -> {after}, {intro!r}")
         measure(page, "Q2 after the language toggle")
         ctx.close()
+
+        # ---------------- ew2: the other hint kinds and "show me" ----------------
+        ctx, page = new_page(browser)
+        login(page, "Demo Matric", "gr12", ewe="1")
+        page.evaluate("window.__APP__.go('ewe', { roundId: 'ew2' })")
+        page.wait_for_selector(".ewe-play")
+        def try_fill2(rest, want_text, name):
+            page.evaluate("() => { const d = document.querySelector('.ewe-step:last-child .ewkey-del'); while (!d.disabled) d.click(); }")
+            for c in rest: click_chip(page, c)
+            click_btn(page, ".ewe-step:last-child .ewkey-sub")
+            txt = page.inner_text(".ewe-step:last-child .ewe-hint")
+            ok = want_text in txt
+            extra.append((f"ew2 {name}", ok))
+            if not ok: fail(f"ew2 {name}: hint was {txt!r}")
+            measure(page, f"ew2 {name}")
+        early = seen(page, ".ewe-step:last-child .ewe-showme")
+        extra.append(("ew2: 'show me' NOT on screen before any wrong try", not early))
+        if early: fail("ew2: 'show me' is on screen before any wrong try")
+        try_fill2(["FK", "GH", "KH"], "onderste stuk", "Q1 JK/FK = GH/KH -> bottom-piece hint")
+        try_fill2(["FJ", "FJ", "FG"], "Elke blokkie", "Q1 repeated chips -> repeat hint")
+        try_fill2(["FK", "FH", "GH"], "dieselfde manier", "Q1 mixed-up pattern -> pattern hint")
+        shown = seen(page, ".ewe-step:last-child .ewe-showme")
+        extra.append(("ew2: 'show me' offered after 3 wrong tries", shown))
+        if not shown: fail("ew2: 'show me' not offered after 3 wrong tries")
+        click_btn(page, ".ewe-step:last-child .ewe-showme")
+        filled = page.evaluate("() => [...document.querySelectorAll('.ewe-steps > .ewe-step:first-child .ewslot')].map(x => x.textContent)")
+        locked = has(page, ".ewpad.is-locked") and has(page, ".ewe-fb.revealed") and not seen(page, ".ewe-showme") and filled[:1] == ["JK"]
+        extra.append((f"ew2: 'show me' fills {filled} (JK kept first) and moves on", locked))
+        if not locked: fail("ew2: 'show me' did not fill and lock")
+        measure(page, "ew2 Q1 after 'show me'")
+        click_btn(page, ".ewe-step:last-child .ewe-opt", "lyn ∥ een sy v. Δ, JK ∥ GH")
+        h = page.inner_text(".ewe-step:last-child .ewe-hint")
+        extra.append(("ew2: last round's reason gets its own hint", "laas rondte" in h))
+        if "laas rondte" not in h: fail(f"ew2: reason hint was {h!r}")
+        click_btn(page, ".ewe-step:last-child .ewe-opt", "uit |||")
+        click_btn(page, ".ewe-next"); page.wait_for_timeout(200)
+        for c in ["RT", "UV", "RV"]: click_chip(page, c)
+        click_btn(page, ".ewe-step:last-child .ewkey-sub")
+        click_btn(page, ".ewe-step:last-child .ewe-opt", "uit |||")
+        click_btn(page, ".ewe-next"); page.wait_for_timeout(200)
+        try_fill2(["NP", "NL", "NQ", "NM"], "wil die ∥ lyne", "Q3 NP/NL = NQ/NM (true, no ∥ line) -> ∥-lines hint")
+        ctx.close()
         browser.close()
 finally:
     server.terminate()
@@ -402,11 +550,19 @@ print("\nSKETCH LABELS")
 for qid, lab in label_rows:
     if lab: print(f"  {qid}: {lab['labels']} labels, {lab['lines']} lines, {lab['arrows']} ∥ arrows, {len(lab['collisions'])} collisions")
 
+print("\new2 CHECKS")
+for name, ok in ew2_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
+print(f"  {'ok  ' if ew2_locked_before else 'FAIL'} ew2 locked on the map before ew1 is passed")
+print(f"  {'ok  ' if next_is_ew2 else 'FAIL'} ew1's end screen offers the next round")
+print(f"  {'ok  ' if ew2_unlocked else 'FAIL'} ew2 unlocked once ew1 is passed")
+
 print("\nOTHER BEHAVIOURS")
 for name, ok in extra: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 
 print(f"\nSAVING (local backend): ew1 progress {json.dumps(saved['progress'])}, XP events {saved['xpEvents']}, map shows ✓: {map_done}")
 if not (saved["progress"] and saved["progress"].get("passed")): fail("ew1 not saved as passed")
+print(f"SAVING (local backend): ew2 progress {json.dumps(saved2['progress'])}, XP events {saved2['xpEvents']}")
+if not (saved2["progress"] and saved2["progress"].get("passed")): fail("ew2 not saved as passed")
 print(f"\nNETWORK: {len(blocked)} request(s) to other hosts blocked" + (": " + ", ".join(sorted({urlparse(u).hostname for u in blocked})) if blocked else ""))
 print(f"CONSOLE ERRORS: {len(console_errors)}")
 for e in console_errors[:10]: print("  ", e[:200])

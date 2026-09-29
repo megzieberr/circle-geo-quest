@@ -45,7 +45,10 @@ export const dist = (P, Q) => Math.hypot(P.x - Q.x, P.y - Q.y);
      "a"  the piece at the corner      (AD, AE)
      "b"  the piece away from it       (DB, EC)
      "w"  the whole side               (AB, AC)
-   The ∥ pair (DE, BC) gets `par: true` and no line. */
+   The ∥ pair (DE, BC) gets `par: true` and no line. For ew2's similarity
+   mode each ∥ line also says which triangle it closes: `parPos` "a" for DE
+   (the small Δ at the corner), "w" for BC (the whole Δ). ew1 never reads
+   `parPos`. */
 export function cutTriangle({ corner, ends, cuts, xy, t, t2 }) {
   const [B, C] = ends, [D, E] = cuts, A = corner;
   const parallel = t2 == null || t2 === t;
@@ -59,8 +62,8 @@ export function cutTriangle({ corner, ends, cuts, xy, t, t2 }) {
     [A + E]: { line: 2, pos: "a", from: A, to: E },
     [E + C]: { line: 2, pos: "b", from: E, to: C },
     [A + C]: { line: 2, pos: "w", from: A, to: C },
-    [D + E]: { par: true, from: D, to: E },
-    [B + C]: { par: true, from: B, to: C },
+    [D + E]: { par: true, parPos: "a", from: D, to: E },
+    [B + C]: { par: true, parPos: "w", from: B, to: C },
   };
   return {
     corner: A, ends, cuts, t, parallel, pts, seg,
@@ -108,11 +111,15 @@ export function segLength(tri, name) {
                 fill like AD/AD = AE/AE says nothing at all.
      "whole"    a right pattern, but the step asked for the WHOLE sides
                 and none is used (needWhole, ew1 Q4)
-     "pattern"  anything else */
+     "pattern"  anything else
+
+   spec.mode "similar" (ew2, opt-in) takes a different path, see
+   markSimilar below. Without it, nothing here changes. */
 export function markRatio(fill, spec) {
   if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
   const s = fill.map(n => spec.seg[n]);
   if (s.some(x => !x)) return { ok: false, why: "unknown" };
+  if (spec.mode === "similar") return markSimilar(fill, s, spec);
   if (s.some(x => x.par)) return { ok: false, why: "par" };
   if (new Set(fill).size < 4) return { ok: false, why: "repeat" };
   const [a, b, c, d] = s;
@@ -123,4 +130,41 @@ export function markRatio(fill, spec) {
   if (!sameSide && !across) return { ok: false, why: "pattern" };
   if (spec.needWhole && !s.some(x => x.pos === "w")) return { ok: false, why: "whole" };
   return { ok: true, why: "ok", form: sameSide ? "same" : "across" };
+}
+
+/* ---------------- the similarity marker (ew2, spec.mode "similar") ----------------
+   When a ∥ line is IN the ratio, the ratio comes from the two similar
+   triangles: the small Δ at the corner (AD, AE, DE) and the whole Δ
+   (AB, AC, BC). Each chip becomes a TRIANGLE (T: "a" small, "w" whole) and
+   a KIND of side (K: 1 the corner-B side, 2 the corner-C side, "p" the ∥
+   line). The correspondence is AD ↔ AB, AE ↔ AC, DE ↔ BC: same K.
+
+   RIGHT when the four chips form a true 2 by 2 pattern:
+     same-triangle  DE/AE = BC/AC   each fraction stays in ONE triangle, the
+                                    two triangles differ, and the kinds match
+                                    top with top, bottom with bottom
+     across         DE/BC = AE/AC   each fraction pairs the SAME kind of side
+                                    from the two triangles, and the two tops
+                                    are in the same triangle
+   Either order around the "=", flipped or not, fall out of those two rules.
+
+   WRONG, with a reason for the hint:
+     "bottom"   a bottom piece (DB, EC) was used. With a ∥ line in the ratio
+                you use the whole side, never the bottom piece.
+     "repeat"   a chip used twice
+     "pattern"  anything else
+     "nopar"    a right pattern with no ∥ line (AD/AB = AE/AC), when the step
+                asked for the ∥ lines (spec.needPar)
+   Like markRatio, it reads only the SHAPE of the fill, never a length. */
+function markSimilar(fill, s, spec) {
+  if (s.some(x => x.pos === "b")) return { ok: false, why: "bottom" };
+  if (new Set(fill).size < 4) return { ok: false, why: "repeat" };
+  const [a, b, c, d] = s.map(x => (x.par ? { T: x.parPos, K: "p" } : { T: x.pos, K: x.line }));
+  const sameTri = a.T === b.T && c.T === d.T && a.T !== c.T
+               && a.K === c.K && b.K === d.K && a.K !== b.K;
+  const across = a.K === b.K && c.K === d.K && a.K !== c.K
+              && a.T === c.T && b.T === d.T && a.T !== b.T;
+  if (!sameTri && !across) return { ok: false, why: "pattern" };
+  if (spec.needPar && ![a, b, c, d].some(x => x.K === "p")) return { ok: false, why: "nopar" };
+  return { ok: true, why: "ok", form: sameTri ? "same" : "across" };
 }

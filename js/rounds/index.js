@@ -62,6 +62,7 @@ import { round as dg1 } from "./dynamic1-freeze-it.js";          // g8 · Dynami
 import { round as dg2 } from "./dynamic2-the-unroll.js";         // g8 · Dynamic Geometry — the unroll (build session 2)
 import { round as dg3 } from "./dynamic3-her-method-drill.js";   // g8 · Dynamic Geometry — her method drill (build session 2)
 import { round as ew1 } from "./ewe1-watter-sye.js";           // g9 · Eweredigheid (Gr12 only) — build session 1
+import { round as ew2 } from "./ewe2-met-die-lyne.js";         // g9 · Eweredigheid (Gr12 only), the ∥ lines join the ratio
 import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
 import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
@@ -120,7 +121,9 @@ const ORDER = [
   // keeps its position and its displayed number `n`, and the unlock chain
   // (unlockedIds) for every existing round is untouched. The group runs its
   // own chain in js/ewe.js, never this one. ew2…ew6 follow ew1 here.
-  ew1,
+  // ew2 (the ∥ lines join the ratio) sits directly after ew1: still at the
+  // very end, so no existing round moves.
+  ew1, ew2,
 ];
 
 /* The last round of the 43-round MAIN quest, pinned on purpose (Megan's
@@ -147,7 +150,7 @@ const GROUP = {
   pr0: "g7", pr1: "g7", pr2: "g7", pr3: "g7", pr4: "g7", pr5: "g7", pr6: "g7", pr7: "g7", pr8: "g7", pr8b: "g7", pr9: "g7",
   dg0: "g8", dg1: "g8", dg2: "g8", dg3: "g8",
   inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
-  ew1: "g9",
+  ew1: "g9", ew2: "g9",
 };
 
 export const ROUNDS = ORDER.map((r, i) => {
