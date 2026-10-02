@@ -87,23 +87,37 @@ export const CONFIG = {
   // false = the line is completely invisible: no train strip on the home screen,
   // and the `stations` / `investigate` routes bounce back home, so a learner who
   // guesses a URL still cannot reach it.
+  // true  = the line is visible to the classes listed in `stationsFor` below,
+  // and to nobody else.
   //
-  // HIDDEN AGAIN 2026-08-06 — her call. This year's class has finished with the
-  // line and the ANTHROPIC_API_KEY behind the typed-panel marker has expired, so
-  // there is no reason to keep showing it. NOT retired and NOT deleted: the six
-  // stations, every panel, the panel_memos rows in Supabase and the learners'
-  // completed progress are all left exactly as they are. Next year's Grade 11s
-  // get the line back by setting this to true again — and by putting a valid
-  // ANTHROPIC_API_KEY back in the Supabase secrets, because the check-answer
-  // edge function is what marks the nine typed panels. (Nothing else in the app
-  // calls that function, so an expired key costs nothing while this is false.)
+  // REOPENED 2026-10-02 for the Gr12 group only — her call. The unlock is
+  // unchanged: stop 1 still opens only once a learner has passed round 21 (the
+  // end of the 43-round main line, FINAL_QUEST_ROUND_ID in js/rounds/index.js),
+  // so until then a Gr12 learner sees the strip greyed out ("opens when the
+  // main line is done"). Next year's Grade 11s get the line by adding "gr11"
+  // to `stationsFor`, nothing else. The check-answer edge function still needs
+  // a valid ANTHROPIC_API_KEY in the Supabase secrets: it is what marks the
+  // nine typed panels, and without one those panels give hints only.
+  //
+  // HIDDEN 2026-08-06 — her call. That year's class had finished with the
+  // line and the ANTHROPIC_API_KEY behind the typed-panel marker had expired,
+  // so there was no reason to keep showing it. NOT retired and NOT deleted:
+  // the six stations, every panel, the panel_memos rows in Supabase and the
+  // learners' completed progress were all left exactly as they were.
   //
   // It was RELEASED 2026-07-30 — her call at the end of the Chunk D session,
   // after she play-tested the whole line herself: "make it visible for the
   // learners" — and ran live for a week.
   //
-  // `?stations=1` overrides the flag either way, for previewing.
-  stationsLive: false,
+  // ⚠️ This flag is only HALF the gate, like eweLive. The strip and routes
+  // also need the logged-in learner's OWN class to be in `stationsFor` (read
+  // off the server, see js/stations.js stationsVisible) — a class that is not
+  // listed never sees it, true or false.
+  //
+  // `?stations=1` overrides the flag (never the class check), for previewing.
+  stationsLive: true,
+  // The classes that see the Investigation Station while stationsLive is true.
+  stationsFor: ["gr12"],
   // struggling-learner support ("Boost mode")
   rescueAfterFails: 2,     // after this many failed attempts, replays get open hints + second chances
   comebackBonus: 40,       // extra XP for finally passing a round on the 3rd+ attempt

@@ -24,6 +24,7 @@
    ============================================================ */
 import { STATIONS, unlockedIds, FINAL_QUEST_ROUND_ID } from "./rounds/index.js";
 import { CONFIG, GROUPS } from "./config.js";
+import { PREVIEW } from "./api.js";
 import { tx } from "./i18n.js";
 import { el, clear } from "./ui.js";
 
@@ -78,14 +79,27 @@ function trainArt() {
    entry, and app.js bounces the `stations` and `investigate` routes back home so
    a guessed URL cannot reach it either.
 
-   `?stations=1` overrides the flag, so the line can still be walked and reviewed
-   while the class cannot see it. Deliberately its own switch and not folded into
+   Reopened 2026-10-02 for ONE class: the flag is only half the gate. The
+   logged-in learner's OWN class must also be in CONFIG.stationsFor. That is read
+   off the server's answer (cgg_leaderboard returns the caller's cohort from
+   their own row; js/app.js keeps it as state.cohort), never off the ?class=
+   link. Same shape as eweVisible in js/ewe.js. If the cohort is unknown (the
+   leaderboard call failed) the line simply stays hidden.
+
+   `?stations=1` overrides the FLAG, never the class check, so the line can still
+   be walked and reviewed while it is switched off, but a class that is not
+   listed never sees it. Deliberately its own switch and not folded into
    `?preview=1`: teacher preview is for showing the app to somebody, and this is
-   for working on an unreleased part of it. */
-export function stationsVisible() {
-  if (CONFIG.stationsLive) return true;
+   for working on an unreleased part of it. The teacher preview belongs to no
+   class, so it sees the line whenever the flag or `?stations=1` allows. */
+function stationsUrlFlag() {
   try { return new URLSearchParams(location.search).get("stations") === "1"; }
   catch { return false; }
+}
+export function stationsVisible(app) {
+  if (!(CONFIG.stationsLive || stationsUrlFlag())) return false;
+  if (PREVIEW) return true;                       // the teacher, not a learner
+  return !!(app && app.state && CONFIG.stationsFor.includes(app.state.cohort));
 }
 
 /* Per-stop state. `passed` comes from progress; unlocking follows the same
@@ -116,7 +130,7 @@ export function stationStatus(app) {
    Returns null while the line is hidden — the caller in js/game.js guards for
    it, because appendChild(null) throws. */
 export function trainStrip(app) {
-  if (!stationsVisible()) return null;
+  if (!stationsVisible(app)) return null;
   const rows = stationStatus(app);
   const visited = rows.filter(r => r.passed).length;
   const open = rows.some(r => r.unlocked);

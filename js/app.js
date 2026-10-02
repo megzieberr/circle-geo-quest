@@ -167,10 +167,10 @@ const app = {
       // the other way in, so a guessed or shared URL cannot reach an unreleased
       // station either. `?stations=1` opens them again for review.
       case "stations":
-        if (!stationsVisible()) { renderHome(this, view); renderCustomizeLink(this, view); break; }
+        if (!stationsVisible(this)) { renderHome(this, view); renderCustomizeLink(this, view); break; }
         renderStations(this, view); break;
       case "investigate":
-        if (!stationsVisible()) { renderHome(this, view); renderCustomizeLink(this, view); break; }
+        if (!stationsVisible(this)) { renderHome(this, view); renderCustomizeLink(this, view); break; }
         renderInvestigate(this, view, this.params); break;
       case "cutscene": renderCutscene(this, view, this.params); break;
       case "results": renderResults(this, view, this.params); break;
