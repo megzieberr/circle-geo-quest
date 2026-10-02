@@ -60,8 +60,9 @@ const PROD_FRAME = [[SLOT, "·", SLOT], "=", [SLOT, "·", SLOT]];
 /* the pattern hints' templates, in words (the plan's wording) */
 const TPL_PROD = { kind: "prod", left: ["kwadraat-sy", "kwadraat-sy"], right: ["die een produk-sy", "die ander produk-sy"] };
 const TPL_SQ = { kind: "frac", left: ["kwadraat-sy", "produk-sy"], right: ["ander produk-sy", "kwadraat-sy"] };
-const TPL_NOSQ = { kind: "frac", left: ["sy uit die een produk", "sy uit die ander produk"], right: ["ander sy uit daardie produk", "ander sy uit die eerste produk"] };
-const CROSS_TEXT = "Kruisvermenigvuldig jou breuke: bo links keer onder regs moet een produk van die lyn gee, en onder links keer bo regs die ander een.";
+const TPL_NOSQ = { kind: "frac", left: ["produk 1", "produk 2"], right: ["produk 2", "produk 1"] };
+const NOSQ_TEXT = "Die twee sye van EEN produk staan kruismaal: een bo links, een onder regs. Die ander produk se sye vul die ander twee blokkies.";
+const CROSS_TEXT = "Kruismaal jou breuke: bo links keer onder regs moet een produk van die lyn gee, en onder links keer bo regs die ander een.";
 
 /* one question. `line` names the two products by their ROLES in the figure
    (AD the height, BD and DC the pieces of the hypotenuse, AB and AC the
@@ -76,22 +77,22 @@ function question(id, S, { line, decoy, intro }) {
   const decoyHint = nb(`{chip} staan nie in die lyn nie. Gebruik net die letters van ${given}.`);
   const crossStep = {
     type: "build",
-    prompt: nb(sq ? "Nou skryf jy dit as twee breuke. Elke kant van die = kry een breuk:"
-                  : "Hier is geen kwadraat nie, dus skryf jy dit dadelik as twee breuke. Elke kant van die = kry een breuk:"),
+    prompt: nb(sq ? "Nou skryf jy dit as twee breuke: een links van die =, een regs."
+                  : "Hier is geen kwadraat nie, dus skryf jy dit dadelik as twee breuke: een links van die =, een regs."),
     chips,
     spec: { mode: "cross", pairs, chips },
     answer: [L1, R1, R2, L2],
     hints: sq ? {
       once: nb(`${sq} staan twee keer in die lyn. Dit staan twee keer in jou breuke ook: een keer bo, een keer onder.`),
-      same: nb(`${sq} oor ${sq} sê niks nie. Die twee ${sq}'s staan kruis-kruis: een bo links, een onder regs.`),
+      same: nb(`${sq} oor ${sq} sê niks nie. Die twee ${sq}'s staan kruismaal: een bo links, een onder regs.`),
       decoy: decoyHint,
       pattern: { text: CROSS_TEXT, template: TPL_SQ },
     } : {
       repeat: "Elke blokkie kry 'n ander sy. Jy het een sy meer as een keer gebruik.",
       decoy: decoyHint,
-      pattern: { text: CROSS_TEXT, template: TPL_NOSQ },
+      pattern: { text: NOSQ_TEXT, template: TPL_NOSQ },
     },
-    okLine: nb(`Kruisvermenigvuldig om seker te maak: ${L1} · ${L2} = ${R1} · ${R2}. Dit is die lyn.`),
+    okLine: nb(`Kruismaal om seker te maak: ${L1} · ${L2} = ${R1} · ${R2}. Dit is die lyn.`),
   };
   const steps = [crossStep];
   if (sq) steps.unshift({
@@ -102,12 +103,12 @@ function question(id, S, { line, decoy, intro }) {
     spec: { mode: "prod", pairs, chips },
     answer: [sq, sq, R1, R2],
     hints: {
-      twice: nb(`'n Kwadraat is 'n sy twee keer: ${sq}² is ${sq} · ${sq}.`),
+      twice: nb(`'n Kwadraat is dieselfde sy twee keer: ${sq}² is ${sq} · ${sq}.`),
       mixed: "Links staan die kwadraat, regs die produk. Hou die twee kante apart.",
       decoy: decoyHint,
       pattern: { text: "Skryf die lyn net oor, met die kwadraat uitgeskryf:", template: TPL_PROD },
     },
-    okLine: nb(`${sq} · ${sq} = ${R1} · ${R2}. Nou is dit 'n gewone produk links en regs.`),
+    okLine: "Nou is dit 'n gewone produk links en regs.",
   });
   return {
     id, intro: nb(intro), sketch: S.sketch,
@@ -116,8 +117,8 @@ function question(id, S, { line, decoy, intro }) {
     steps,
     write: {
       cross: { pairs, fill: crossStep.answer },
-      tip: sq ? "Die kwadraat se letters staan kruis-kruis. Lees later die twee Δe uit die breuke af."
-              : "Die letters van een produk staan kruis-kruis. Lees later die twee Δe uit die breuke af.",
+      tip: sq ? "Die kwadraat se letters staan kruismaal: een bo links, een onder regs. Lees later die twee Δe uit die breuke af."
+              : "Die twee sye van een produk staan kruismaal: een bo links, een onder regs. Lees later die twee Δe uit die breuke af.",
     },
   };
 }
@@ -158,13 +159,13 @@ export const round = {
   blurb: { en: nb("AD² = BD · DC lyk vreemd. Skryf dit as twee breuke, en dit is 'n gewone verhouding."),
            af: nb("AD² = BD · DC lyk vreemd. Skryf dit as twee breuke, en dit is 'n gewone verhouding.") },
   takeaway: {
-    text: "'n Kwadraat is 'n sy twee keer. Skryf die produk as twee breuke: die twee letters van EEN produk staan kruis-kruis, een bo links en een onder regs.",
+    text: "'n Kwadraat is dieselfde sy twee keer. Skryf die produk as twee breuke: die twee sye van EEN produk staan kruismaal, een bo links en een onder regs.",
     /* Q1's card: AD² = BD · DC, AD · AD = BD · DC, AD/BD = DC/AD */
     get cross() { return round.eweQuestions[0].write.cross; },
   },
   eweQuestions: [
     question("ew6q1", S1, { line: [["AD", "AD"], ["BD", "DC"]], decoy: "AC",
-      intro: "In die eksamen staan daar: Bewys dat AD² = BD · DC. Dit lyk vreemd, maar dit is net 'n verhouding wat kruisvermenigvuldig is. Skryf dit terug as twee breuke, dan sien jy watter sye jy nodig het. 'n Kwadraat is 'n sy twee keer." }),
+      intro: "Bewys dat AD² = BD · DC. So staan dit in die eksamen. Dit lyk vreemd, maar dit is net 'n verhouding wat gekruismaal is. Skryf dit terug as twee breuke, dan sien jy watter sye jy nodig het. 'n Kwadraat is dieselfde sy twee keer." }),
     question("ew6q2", S2, { line: [["AB", "AB"], ["BD", "BC"]], decoy: "AD",
       intro: "Bewys dat PQ² = QS · QR. Hierdie keer is die kwadraat nie die hoogte nie, maar die sy PQ." }),
     question("ew6q3", S3, { line: [["AB", "AC"], ["AD", "BC"]], decoy: "BD",

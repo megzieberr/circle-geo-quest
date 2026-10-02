@@ -144,6 +144,8 @@ blocked = []
 console_errors = []
 fraction_rows = []      # one row per measured screen state
 label_rows = []
+ew6_angles = []     # ew6: the right angle at each sketch, measured on screen
+ew6_tpls = []       # ew6: the cross steps' pattern templates, measured
 
 def fail(msg):
     failures.append(msg); print("  FAIL", msg)
@@ -1343,6 +1345,20 @@ try:
             fsel = f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb"
             return page.evaluate("""(s) => { const f = document.querySelector(s); if (!f) return { text: '', fracs: 0, ok: '' };
                 const o = f.querySelector('.ewe-okline'); return { text: f.textContent.replace(/\\u00A0/g, ' '), fracs: f.querySelectorAll('.ewf').length, ok: o ? o.textContent.replace(/\\u00A0/g, ' ') : '' }; }""", fsel)
+        ANGLE_JS = r"""(tri) => {
+          const svg = document.querySelector('svg.ewe-sketch');
+          const dots = [...svg.querySelectorAll('circle')], labs = [...svg.querySelectorAll('text.pl')];
+          const at = {}; dots.forEach((c, i) => { const r = c.getBoundingClientRect(); at[labs[i].textContent] = [(r.left + r.right) / 2, (r.top + r.bottom) / 2]; });
+          const [v, b, c] = tri.map(k => at[k]);
+          const u = [b[0] - v[0], b[1] - v[1]], w = [c[0] - v[0], c[1] - v[1]];
+          const ang = Math.acos((u[0] * w[0] + u[1] * w[1]) / (Math.hypot(...u) * Math.hypot(...w))) * 180 / Math.PI;
+          const sr = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+          return { ang: Math.round(ang * 100) / 100, sx: Math.round(sr.width / vb.width * 1000) / 1000, sy: Math.round(sr.height / vb.height * 1000) / 1000 }; }"""
+        TPL6_JS = r"""() => { const t = document.querySelector('.ewe-step:last-child .ewe-hint .ewe-template'); if (!t) return null;
+          const lines = e => { const r = document.createRange(); r.selectNodeContents(e); return new Set([...r.getClientRects()].filter(q => q.width > 0).map(q => Math.round(q.top))).size; };
+          const parts = [...t.querySelectorAll('.ewf-n, .ewf-d')];
+          const units = new Set([...t.querySelectorAll('.ewq-u')].map(u => Math.round(u.getBoundingClientRect().top))).size;
+          return { units, wrapped: parts.filter(e => lines(e) > 1).map(e => e.textContent), right: Math.round(t.querySelector('.ewq').getBoundingClientRect().right), vw: document.documentElement.clientWidth }; }"""
         ew6_cards = []
         for qi, q in enumerate(data6):
             n = qi + 1
@@ -1360,6 +1376,9 @@ try:
             bx = out6["boxes"]
             check6(f"{P} sketch: the boxes sit at {q['tri'][0]} and at the foot, square and at 90° ({'; '.join(f'{b['at']} cos {b['cos']} sides {b['sides']}' for b in bx)})",
                    len(bx) == 2 and bx[0]["at"] == q["tri"][0] and bx[1]["at"] not in ("?",) + tuple(q["tri"]) and all(b["cos"] <= 0.02 and abs(b["sides"][0] - b["sides"][1]) <= 0.3 for b in bx))
+            an = page.evaluate(ANGLE_JS, q["tri"])
+            ew6_angles.append((P, q["tri"][0], an))
+            check6(f"{P} sketch: the right angle at {q['tri'][0]} measured on screen {an['ang']}° (svg scale x {an['sx']}, y {an['sy']})", abs(an["ang"] - 90) <= 1 and abs(an["sx"] - an["sy"]) <= 0.002)
             sq0 = squares(page, f"{P}: the intro")
             check6(f"{P}: the intro carries the line {q['given']!r}" + (f", its ² drawn raised ({sq0['sups']} raised, {sq0['plain']} plain ²)" if q["sq"] else ""),
                    q["given"].replace("²", "2") in page.inner_text(".ewe-intro").replace(" ", " ").replace("²", "2") and sq0["plain"] == 0 and (sq0["sups"] >= 1 if q["sq"] else True))
@@ -1385,7 +1404,7 @@ try:
                     wrongs = [([X, R1, R2, R1], st["hints"]["once"], "the square once"),
                               ([X, X, R1, R2], st["hints"]["same"], f"{X} over {X}"),
                               ([X, R1, D, X], st["hints"]["decoy"].replace("{chip}", D), f"the decoy {D}"),
-                              ([X, R1, X, R2], st["hints"]["pattern"], "not kruis-kruis (pattern)")]
+                              ([X, R1, X, R2], st["hints"]["pattern"], "not kruismaal (pattern)")]
                 else:
                     wrongs = [([L1, L1, R1, R2], st["hints"]["repeat"], "one chip twice"),
                               ([L1, R1, D, L2], st["hints"]["decoy"].replace("{chip}", D), f"the decoy {D}"),
@@ -1400,6 +1419,10 @@ try:
                     hint = page.inner_text(".ewe-step:last-child .ewe-hint").replace(" ", " ") if seen(page, ".ewe-step:last-child .ewe-hint") else ""
                     tpl = page.evaluate("() => { const t = document.querySelector('.ewe-step:last-child .ewe-hint .ewe-template'); return t ? { fracs: t.querySelectorAll('.ewf').length, dots: t.querySelectorAll('.ewf-dot').length, text: t.textContent.replace(/\\s+/g, ' ').trim() } : null; }")
                     is_pat = "pattern" in name
+                    if is_pat and st["mode"] == "cross":
+                        t6 = page.evaluate(TPL6_JS)
+                        ew6_tpls.append((tag, t6))
+                        check6(f"{tag}: the pattern template fits 375 px on one row, no cell wraps ({t6})", bool(t6) and t6["units"] == 1 and not t6["wrapped"] and t6["right"] <= t6["vw"])
                     tpl_ok = (tpl is None) if not is_pat else (bool(tpl) and (tpl["fracs"] == 0 and tpl["dots"] == 2 if st["mode"] == "prod" else tpl["fracs"] == 2))
                     check6(f"{tag}: {' · '.join(fill[:2]) + ' = ' + ' · '.join(fill[2:]) if st['mode'] == 'prod' else fill[0] + '/' + fill[1] + ' = ' + fill[2] + '/' + fill[3]} ({name}) gets its hint"
                            + (f" with its template in words ({tpl and tpl['text']})" if is_pat else ""), want.replace("²", "2") in hint.replace("²", "2") and tpl_ok)
@@ -1441,7 +1464,7 @@ try:
         measure(page, "ew6 end of round")
         sqe = squares(page, "ew6 end of round")
         check6(f"ew6 end screen: the takeaway and Q1's three-line card (AD² = BD · DC, AD · AD = BD · DC, AD/BD = DC/AD), its 2 raised ({sqe['sups']} raised, {sqe['plain']} plain ²)",
-               page.evaluate("() => { const t = document.querySelector('.ewe-end .ewe-takeaway'); const l = t && t.querySelector('.ewl-cross'); return !!l && l.querySelectorAll('.ewl-cross-ln').length === 3 && l.querySelectorAll('.ewf').length === 2 && /kruis-kruis/.test(t.textContent) && !/Goed gedaan/.test(t.textContent); }")
+               page.evaluate("() => { const t = document.querySelector('.ewe-end .ewe-takeaway'); const l = t && t.querySelector('.ewl-cross'); return !!l && l.querySelectorAll('.ewl-cross-ln').length === 3 && l.querySelectorAll('.ewf').length === 2 && /kruismaal/.test(t.textContent) && !/Goed gedaan/.test(t.textContent); }")
                and sqe["plain"] == 0 and sqe["sups"] >= 1)
         shot(page, "ew6-end-of-round.png")
         saved6 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
@@ -1632,7 +1655,7 @@ try:
         click_btn(page, ".ewe-step:last-child .ewe-showme")
         filled = page.evaluate("() => [...document.querySelectorAll('.ewe-steps > .ewe-step:first-child .ewslot')].map(x => x.textContent)")
         okl = page.evaluate("() => { const o = document.querySelector('.ewe-steps > .ewe-step:first-child .ewe-fb.revealed .ewe-okline'); return o ? o.textContent.replace(/\\u00A0/g, ' ') : ''; }")
-        locked = has(page, ".ewe-steps > .ewe-step:first-child .ewpad.is-locked") and not seen(page, ".ewe-steps > .ewe-step:first-child .ewe-showme") and filled == ["AD", "AD", "BD", "DC"] and okl.startswith("AD · AD = BD · DC.")
+        locked = has(page, ".ewe-steps > .ewe-step:first-child .ewpad.is-locked") and not seen(page, ".ewe-steps > .ewe-step:first-child .ewe-showme") and filled == ["AD", "AD", "BD", "DC"] and okl == "Nou is dit 'n gewone produk links en regs."
         extra.append((f"ew6: 'show me' fills {filled}, says its takeaway ('{okl[:40]}…') and moves on to step 2", locked and has(page, ".ewe-steps > .ewe-step:nth-child(2) .ewpad")))
         if not locked: fail("ew6: 'show me' did not fill and lock with its takeaway")
         fz = finished(page, 1)
@@ -1675,6 +1698,7 @@ try:
         fold3_rows = []     # one per build step: where, the finished step's height
         fold3_pics = []     # the foreman's ew4 Q1 pictures: where the folded intro sits
         ew5_vis = []        # ew5, per pick step at 375 x 667: how much sketch shares the screen with the options
+        bar_rows = []       # ew6, 375 x 667: the sticky top bar's top edge in the viewport
         ew6_vis = []        # ew6, per build step at 375 x 667: how much sketch shares the screen with the frame and the WHOLE chip bank
         BANKVIS_JS = r"""(k) => {
           const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
@@ -1688,7 +1712,7 @@ try:
           /* best: the scroll that shows the most sketch while the frame's top is
              under the bar and the bank's bottom (Kontroleer) is above the bottom edge */
           const shift = Math.max(-y, grid.bottom + 8 - vh);
-          return { y: Math.round(y), head: Math.round(head), vh, sh: Math.round(s.height), now: Math.round(seen(s.top, s.bottom, 0)),
+          return { y: Math.round(y), head: Math.round(head), vh, sh: Math.round(s.height), now: Math.round(seen(s.top, s.bottom, 0)), barTop: bar ? Math.round(bar.getBoundingClientRect().top * 10) / 10 : null,
                    frameOn: disp.top >= head - 0.5 && disp.bottom <= vh + 0.5, bankOn: grid.top >= head - 0.5 && grid.bottom <= vh + 0.5,
                    bankBelow: Math.max(0, Math.round(grid.bottom - vh)), best: Math.round(seen(s.top, s.bottom, shift)),
                    bestFrameOn: disp.top - shift >= head - 0.5, need: Math.round(grid.bottom - disp.top) }; }"""
@@ -1799,6 +1823,7 @@ try:
                         if R["id"] == "ew6":
                             v6 = page.evaluate(BANKVIS_JS, k)
                             ew6_vis.append({"where": f"ew6 Q{n} s{k}", "auto": auto, **v6})
+                            if k == 2: bar_rows.append((f"ew6 Q{n} s2", {"y": v6["y"], "barTop": v6["barTop"]}))
                             vshot(page, f"fold-ew6-q{n}-s{k}-bank.png")
                             if v6["best"] != v6["now"]:
                                 # the foreman's picture of the best spot: frame and whole bank on, most sketch
@@ -1891,6 +1916,11 @@ try:
                 else:
                     intro_rows.append((P, i0["h"], None, None, i0["lh"]))
                 checkf(f"fold {P}: the 'Só skryf jy dit' card follows", has(page, ".ewe-write"))
+                if R["id"] == "ew6" and n == 1:
+                    y_keep = page.evaluate("window.scrollY")
+                    page.evaluate("document.querySelector('.ewe-write').scrollIntoView({ block: 'center', behavior: 'instant' })")
+                    bar_rows.append(("ew6 Q1 card", page.evaluate("() => ({ y: Math.round(window.scrollY), barTop: Math.round(document.querySelector('.topbar').getBoundingClientRect().top * 10) / 10 })")))
+                    page.evaluate("(y) => window.scrollTo({ top: y, behavior: 'instant' })", y_keep)
                 pq = pop_log[pop_from:]
                 bad_pop = [f"{w}: {', '.join(p['open']) or 'page scroll-locked'}" for w, p in pq if p["open"] or p["locked"]]
                 checkf(f"fold {P}: no pop-up or sheet open at any of its {len(pq)} measurements" + (f" ({'; '.join(bad_pop)})" if bad_pop else ""), not bad_pop)
@@ -2025,6 +2055,12 @@ for r in ew5_vis:
     best = f"{r['best']:3} px" + ("" if r["bestOptsOn"] else " (the options alone overflow the screen)") + ("" if r["bestPromptOn"] else ", the prompt above the bar")
     print(f"  {r['where']:11} {r['kind']:6} {r['sh']:4} px  {now:34}  {best}")
 
+print("\n  ew6 sketches: the right angle measured on screen (dot centres, getBoundingClientRect)")
+for P, v, an in ew6_angles: print(f"  {P}: angle at {v} = {an['ang']}°, svg scale x {an['sx']} y {an['sy']}")
+print("  ew6 pattern templates (square-free and square cross steps)")
+for tag, t6 in ew6_tpls: print(f"  {tag}: {t6}")
+print("  ew6 sticky top bar at 375 x 667 (its top edge in the viewport; 0 = at the top)")
+for w, b in bar_rows: print(f"  {w}: scrollY {b['y']}, bar top {b['barTop']}")
 print("\n  ew6 BUILD STEPS at 375 x 667: px of the sketch on screen with the frame and the WHOLE chip bank (Kontroleer too)")
 print(f"  {'step':11} {'scroll':22} {'sketch':>6}  {'as the player leaves it':42}  most sketch with frame + bank on screen")
 for r in ew6_vis:
