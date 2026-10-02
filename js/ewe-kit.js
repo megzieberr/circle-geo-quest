@@ -37,7 +37,8 @@
    3 · THE SKETCH   sketchSvg()
        A to-scale triangle sketch with ∥ arrows (ew3, opt-in: tinted
        triangles and a dotted ⊥h with its right-angle box; ew4, opt-in: the
-       arc of a shared angle and her star beside it), drawn with the same
+       arc of a shared angle and her star beside it; ew6, opt-in: right-angle
+       boxes at named corners, labels kept outside a named Δ), drawn with the same
        svg.diag classes as the circle engine (js/engine.js) so it looks
        like the rest of the app. Labels are PLACED, not typed: each one
        goes where it is farthest from every line, arrow and other label.
@@ -64,7 +65,15 @@ export function prodHtml(factors) {
   return factors.map(String).join('<span class="ewf-dot">·</span>');
 }
 /* rule 6: AD² with a real raised 2 */
-export function sqHtml(x) { return `${x}<sup class="ewf-sq">2</sup>`; }
+/* the letter and its 2 travel in ONE span: inside a flex row (an equation's
+   unit is inline-flex) a bare <sup> would become its own flex item and be
+   centred on the line, not raised (measured by tools/ewe-phone-check.py) */
+export function sqHtml(x) { return `<span class="ewf-sqw">${x}<sup class="ewf-sq">2</sup></span>`; }
+/* ew6, opt-in by content: a "²" in a plain sentence (an intro, a hint, a
+   tip) becomes the SAME raised 2 as sqHtml draws, so a square reads one way
+   on the whole screen. Escaped HTML in, HTML out. Text without a "²" (every
+   string of ew1 to ew5) comes back unchanged. */
+export function sqText(html) { return String(html).replace(/²/g, '<sup class="ewf-sq">2</sup>'); }
 
 /* THE one fraction. num/den are trusted HTML (already escaped by the
    caller, or built by this file). */
@@ -151,6 +160,29 @@ export function sineLineHtml(sine, reason) {
   ]);
   return `<div class="ewl ewl-sine">${chain}`
        + (reason ? `<span class="ewl-rs">(${esc(reason)})</span>` : "") + `</div>`;
+}
+/* ew6: the rewrite of a product line, as she writes it under the exam's
+   "Bewys dat …", three lines under each other, left-aligned:
+     AD² = BD · DC
+     AD · AD = BD · DC
+     AD     DC
+     --  =  --
+     BD     AD
+   The given line with sqHtml (rule 6, a real raised 2) and prodHtml, the
+   square written out, then the two stacked fractions through fracHtml and
+   eqHtml: the fill the learner built, not a fixed one. A line with no
+   square has two lines (the given product line, the fractions). No reason:
+   a rewrite has none. Each line is one eqHtml, so a line too wide for the
+   phone breaks only before its "=".
+   cross = { pairs: [["AD", "AD"], ["BD", "DC"]], fill: ["AD", "BD", "DC", "AD"] } */
+export function crossLineHtml(cross) {
+  const [[l1, l2], [r1, r2]] = cross.pairs.map(p => p.map(esc));
+  const sq = l1 === l2;
+  const given = eqHtml(sq ? sqHtml(l1) : prodHtml([l1, l2]), prodHtml([r1, r2]));
+  const lines = [given];
+  if (sq) lines.push(eqHtml(prodHtml([l1, l2]), prodHtml([r1, r2])));
+  lines.push(ratioHtml(cross.fill));
+  return `<div class="ewl ewl-cross">${lines.map(l => `<div class="ewl-cross-ln">${l}</div>`).join("")}</div>`;
 }
 /* a word in one of the two triangle tints (trusted HTML in, already escaped) */
 function tintHtml(html, k) { return `<span class="ewtint ewtint-${k}">${html}</span>`; }
@@ -314,9 +346,16 @@ export function shuffle(xs) {
              clear of every label even while the star is hidden, so nothing
              moves when it appears.
      labBox  true: each point label keeps its BOX clear of its own dot on
-             every slant (boxRadius below), not just its centre 14 away */
+             every slant (boxRadius below), not just its centre 14 away
+   ew6, OPT-IN (left out, nothing changes):
+     right   [{ at: "A", arms: ["B", "C"] }, …]   a right-angle box at `at`,
+             a small square inside the angle, its two sides laid along the
+             two arms (computed from the arms, never drawn by eye). Its
+             corners join the obstacles the labels keep away from
+     outside ["A", "B", "C"]   no point label may sit inside this Δ (the
+             tint rule of ew3, for a figure without tints) */
 const W = 320, H = 232, MARGIN = 24, LAB_R = 14;
-const ARC_R = 17, STAR_D = 15, STAR_R = 5.5;
+const ARC_R = 17, STAR_D = 15, STAR_R = 5.5, RA_B = 9;
 const N = v => Math.round(v * 10) / 10;
 
 /* ew4, opt-in (spec.labBox): how far a label sits from its own point,
@@ -419,6 +458,21 @@ export function sketchSvg(spec) {
     }
   }
 
+  /* ew6: a right-angle box at each named corner, inside the angle, its two
+     sides along the two arms. Its corners, the middles of its sides and its
+     centre join the discs the labels keep away from. */
+  (spec.right || []).forEach(({ at, arms }) => {
+    const V = P[at];
+    const unit = k => { const dx = P[k].x - V.x, dy = P[k].y - V.y, L = Math.hypot(dx, dy) || 1; return { x: dx / L, y: dy / L }; };
+    const u = unit(arms[0]), w = unit(arms[1]), b = RA_B;
+    const p1 = { x: V.x + u.x * b, y: V.y + u.y * b }, p3 = { x: V.x + w.x * b, y: V.y + w.y * b };
+    const p2 = { x: p1.x + w.x * b, y: p1.y + w.y * b };
+    out += `<path class="mk ewe-rt" d="M ${N(p1.x)} ${N(p1.y)} L ${N(p2.x)} ${N(p2.y)} L ${N(p3.x)} ${N(p3.y)}"/>`;
+    [p1, p2, p3, { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }, { x: (p2.x + p3.x) / 2, y: (p2.y + p3.y) / 2 }]
+      .forEach(q => discs.push({ x: q.x, y: q.y, r: 1.5 }));
+    discs.push({ x: (V.x + p2.x) / 2, y: (V.y + p2.y) / 2, r: b / 2 });
+  });
+
   /* labels: for each point try 36 directions and keep the one whose label
      centre is farthest from every line, chevron, placed label and edge */
   const cx = xs.length ? names.reduce((a, k) => a + P[k].x, 0) / names.length : W / 2;
@@ -428,6 +482,8 @@ export function sketchSvg(spec) {
      Only sketches with tints carry the rule, so ew1 and ew2 keep the layouts
      she approved. */
   const tintPolys = (spec.tints || []).map(t => tintPts(t).map(k => P[k]));
+  /* ew6, opt-in: the same rule for a Δ without a tint (spec.outside) */
+  if (spec.outside) tintPolys.push(spec.outside.map(k => P[k]));
   const inTri = (x, y, [a, b, c]) => {
     const s1 = (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
     const s2 = (c.x - b.x) * (y - b.y) - (c.y - b.y) * (x - b.x);

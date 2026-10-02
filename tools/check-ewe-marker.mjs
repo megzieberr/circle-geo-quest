@@ -42,6 +42,13 @@
    or a product over a product) as a number against the shoelace area
    ratio: exactly one may be true, and it must be the marked one.
 
+   ew6 (the product line becomes two fractions) at the very end: every
+   given line proved TRUE in its own figure first, every figure generic
+   (only the six identities of a right Δ with its height), then every fill
+   of every build step (☐ · ☐ = ☐ · ☐ and ☐/☐ = ☐/☐) through the product
+   and cross markers against products of lengths measured from the
+   coordinates.
+
    Run: node tools/check-ewe-marker.mjs        (exit 1 on any disagreement) */
 import { markRatio, segLength, dist } from "../js/ewe-core.js";
 import { round, TRIANGLES } from "../js/rounds/ewe1-watter-sye.js";
@@ -49,6 +56,7 @@ import { round as round2, TRIANGLES as TRIANGLES2 } from "../js/rounds/ewe2-met-
 import { round as round3, SKETCHES as SKETCHES3 } from "../js/rounds/ewe3-deel-n-sy.js";
 import { round as round4, SKETCHES as SKETCHES4 } from "../js/rounds/ewe4-deel-n-hoek.js";
 import { round as round5, SKETCHES as SKETCHES5 } from "../js/rounds/ewe5-watter-een.js";
+import { round as round6, SKETCHES as SKETCHES6 } from "../js/rounds/ewe6-vreemde-formaat.js";
 
 const REL = 1e-9;             // "equal" for lengths that are equal by construction
 const GAP = 1e-3;             // anything closer than this that is NOT forced is an accident
@@ -686,5 +694,159 @@ for (const r of rows5) {
   for (const e of r.evals) console.log(`          ${e.correct ? "marked" : "      "} ${e.ok ? "TRUE " : "false"}  option / area ratio = ${e.ratio.toFixed(6)}   ${e.text}`);
 }
 
+
+/* ======================= ew6 =======================
+   The ew6 ORACLE, written from the round's rule, not from the markers. It
+   reads only the COORDINATES the figure is drawn from and the given line
+   the learner READS (q.given, the line in the intro):
+     the figure  the angle at the right-angle vertex is 90° and the height
+                 is ⊥ the hypotenuse, both MEASURED (relative 1e-9); the
+                 foot lies strictly inside the hypotenuse
+     the line    TRUE in its own figure: the product of its left pair equals
+                 the product of its right pair (relative 1e-9), measured,
+                 before anything else
+     generic     no two of the six named lengths (AB, AC, AD, BD, DC, BC)
+                 equal; no two of their 21 pairwise products (squares too)
+                 equal, EXCEPT the six identities a right Δ with its height
+                 on the hypotenuse always has (AD² = BD·DC, AB² = BD·BC,
+                 AC² = DC·BC, AB·AC = AD·BC, AB·AD = BD·AC, AC·AD = DC·AB)
+     the chips   the line's letters, one spelling each, plus ONE decoy: a
+                 side of the figure that is not in the line
+     every fill  of every build step (4 boxes, 4 or 5 chips: 256 or 625):
+                 right = no decoy chip
+                       AND the two sides of the line are not the same pair
+                           (x · y = y · x, or a/b = b/a: says nothing)
+                       AND step 1 ("prod", x1 · x2 = y1 · y2): the measured
+                           products are equal
+                           step 2 ("cross", a/b = c/d): a · d = b · c,
+                           measured
+                 against the marker (markRatio routes "prod" / "cross" to
+                 markProd / markCross, which never read a length), 0
+                 disagreements. Every reason the marker gives has its own
+                 hint (or is "pattern"). The shown answer is right, and the
+                 card's pairs are the line. */
+const IDENT6 = [[["AD", "AD"], ["BD", "DC"]], [["AB", "AB"], ["BD", "BC"]], [["AC", "AC"], ["DC", "BC"]],
+                [["AB", "AC"], ["AD", "BC"]], [["AB", "AD"], ["BD", "AC"]], [["AC", "AD"], ["DC", "AB"]]];
+const pk = p => p.slice().sort().join("·");
+const identKey = (p, q) => [pk(p), pk(q)].sort().join("=");
+const IDENT6_KEYS = new Set(IDENT6.map(([p, q]) => identKey(p, q)));
+const ROLES6 = ["AB", "AC", "AD", "BD", "DC", "BC"];
+const HINTS6 = { prod: ["twice", "mixed", "decoy"], cross: ["once", "same", "repeat", "decoy"] };
+const rows6 = [];
+const fig6 = [];
+for (const q of round6.eweQuestions) {
+  const S = SKETCHES6[q.id];
+  const P = S.pts;
+  const len = c => { const g = S.seg[c]; return g ? dist(P[g.from], P[g.to]) : NaN; };
+  const roleLen = Object.fromEntries(ROLES6.map(r => [r, len(S.names[r])]));
+
+  /* 0 · the figure: the right angle and the height, measured */
+  const A = S.right, [B, C] = S.ends, D = S.foot;
+  const u = vec(P[A], P[B]), w = vec(P[A], P[C]);
+  const cosA = (u.x * w.x + u.y * w.y) / (Math.hypot(u.x, u.y) * Math.hypot(w.x, w.y));
+  const h = vec(P[A], P[D]), bc = vec(P[B], P[C]);
+  const cosH = (h.x * bc.x + h.y * bc.y) / (Math.hypot(h.x, h.y) * Math.hypot(bc.x, bc.y));
+  const onBC = lineDist(P[B], P[C], P[D]) < 1e-9 && onSegment(P[B], P[C], P[D]) && S.t > 0 && S.t < 1;
+  if (!(Math.abs(cosA) < 1e-9) || !(Math.abs(cosH) < 1e-9) || !onBC) { problems++; console.error(`✗ ${q.id}: the angle at ${A} is not 90° (cos ${cosA}) or ${A}${D} is not ⊥ ${B}${C} (cos ${cosH}) or ${D} is not on ${B}${C}`); }
+  const sk = q.sketch;
+  const boxes = (sk.right || []).map(r => `${r.at}:${r.arms.join("")}`);
+  const boxOk = (sk.right || []).length === 2 && sk.right.some(r => r.at === A && r.arms.includes(B) && r.arms.includes(C))
+             && sk.right.some(r => r.at === D && r.arms.includes(A) && (r.arms.includes(B) || r.arms.includes(C)));
+  if (!boxOk || sk.tints || sk.angle || sk.height || (sk.par || []).length || !sk.outside) { problems++; console.error(`✗ ${q.id}: the sketch must be bare: two right-angle boxes (at ${A} and ${D}), no tints, arcs, ⊥h or ∥ arrows, labels kept outside (got boxes ${boxes})`); }
+
+  /* 1 · the given line, TRUE in its own figure */
+  const pairs = q.given.pairs;
+  const prod = p => p.reduce((m, c) => m * len(c), 1);
+  const lhs = prod(pairs[0]), rhs = prod(pairs[1]);
+  const lineRel = Math.abs(lhs - rhs) / Math.max(lhs, rhs);
+  const lineTrue = lineRel < REL;
+  if (!lineTrue) { problems++; console.error(`✗ ${q.id}: the given line ${q.given.text} is NOT true in its figure (${lhs.toFixed(4)} vs ${rhs.toFixed(4)})`); }
+  const sq = pairs[0][0] === pairs[0][1] ? pairs[0][0] : null;
+  const shown = (sq ? `${sq}² = ${pairs[1][0]} · ${pairs[1][1]}` : `${pairs[0].join(" · ")} = ${pairs[1].join(" · ")}`);
+  const plainText = s => s.replace(/ /g, " ");
+  if (plainText(q.given.text) !== shown || !plainText(q.intro).includes(shown)) { problems++; console.error(`✗ ${q.id}: the line "${shown}" is not the given text "${plainText(q.given.text)}" or not in the intro`); }
+
+  /* 2 · generic */
+  let minLenGap = Infinity, minProdGap = Infinity, idents = 0;
+  for (let i = 0; i < ROLES6.length; i++) for (let j = i + 1; j < ROLES6.length; j++) {
+    const a = roleLen[ROLES6[i]], b = roleLen[ROLES6[j]], gap = Math.abs(a - b) / Math.max(a, b);
+    minLenGap = Math.min(minLenGap, gap);
+    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${S.names[ROLES6[i]]} and ${S.names[ROLES6[j]]} are (almost) equal`); }
+  }
+  const prods6 = [];
+  for (let i = 0; i < ROLES6.length; i++) for (let j = i; j < ROLES6.length; j++) prods6.push([[ROLES6[i], ROLES6[j]], roleLen[ROLES6[i]] * roleLen[ROLES6[j]]]);
+  for (let i = 0; i < prods6.length; i++) for (let j = i + 1; j < prods6.length; j++) {
+    const gap = Math.abs(prods6[i][1] - prods6[j][1]) / Math.max(prods6[i][1], prods6[j][1]);
+    const ident = IDENT6_KEYS.has(identKey(prods6[i][0], prods6[j][0]));
+    if (ident) { if (gap < REL) idents++; else { problems++; console.error(`✗ ${q.id}: the identity ${prods6[i][0].join("·")} = ${prods6[j][0].join("·")} does not hold (${gap})`); } continue; }
+    minProdGap = Math.min(minProdGap, gap);
+    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${prods6[i][0].join("·")} and ${prods6[j][0].join("·")} are accidentally (almost) equal, move the foot`); }
+  }
+
+  /* 3 · the chips: the line's letters, one spelling each, plus ONE decoy */
+  const lineLetters = [...new Set(pairs.flat())];
+  const want = [...lineLetters, q.given.decoy];
+  const steps = q.steps;
+  const modes = steps.map(s => s.spec && s.spec.mode).join(",");
+  if (modes !== (sq ? "prod,cross" : "cross")) { problems++; console.error(`✗ ${q.id}: steps ${modes}, want ${sq ? "prod,cross" : "cross"}`); }
+  for (const st of steps) {
+    const c = st.chips;
+    if (c.join() !== want.join() || new Set(c).size !== c.length || c.some(x => !S.seg[x]) || lineLetters.includes(q.given.decoy)
+        || JSON.stringify(st.spec.pairs) !== JSON.stringify(pairs) || JSON.stringify(st.spec.chips) !== JSON.stringify(c)) {
+      problems++; console.error(`✗ ${q.id}: chips ${c} / spec pairs ${JSON.stringify(st.spec.pairs)}: want the line's letters ${lineLetters} + one decoy side, each a side of the figure`);
+    }
+  }
+  if (JSON.stringify(q.write.cross.pairs) !== JSON.stringify(pairs) || q.write.cross.fill.join() !== steps[steps.length - 1].answer.join()) { problems++; console.error(`✗ ${q.id}: the card is not the line, or its fill is not the last step's answer`); }
+  fig6.push({ q: q.id, line: shown, lineRel, lineTrue, cosA, cosH, t: S.t, minLenGap, minProdGap, idents, decoy: q.given.decoy, boxes });
+
+  /* 4 · every fill of every build step */
+  steps.forEach((step, si) => {
+    const c = step.chips, mode = step.spec.mode;
+    let tried = 0, accepted = 0, rejected = 0, disagree = 0;
+    const why = {};
+    for (const x1 of c) for (const x2 of c) for (const x3 of c) for (const x4 of c) {
+      tried++;
+      const fill = [x1, x2, x3, x4];
+      const [p, r] = mode === "prod" ? [[x1, x2], [x3, x4]] : [[x1, x4], [x2, x3]];
+      const noDecoy = fill.every(x => lineLetters.includes(x));
+      const saysNothing = pk(p) === pk(r);
+      let right = false;
+      if (noDecoy && !saysNothing) {
+        const a = prod(p), b = prod(r), rel = Math.abs(a - b) / Math.max(a, b);
+        right = rel < REL;
+        if (!right && rel < GAP) { problems++; console.error(`✗ ${q.id}: ${fill} is ACCIDENTALLY almost true, move the foot`); }
+      }
+      const verdict = markRatio(fill, step.spec);
+      why[verdict.why] = (why[verdict.why] || 0) + 1;
+      if (verdict.ok) accepted++; else rejected++;
+      if (verdict.ok !== right) {
+        disagree++;
+        if (disagree <= 5) console.error(`✗ ${q.id} step ${si + 1} (${mode}): ${fill}  marker ${verdict.ok} (${verdict.why}), oracle ${right}`);
+      }
+      if (!verdict.ok && verdict.why !== "pattern" && !(step.hints && step.hints[verdict.why])) { problems++; console.error(`✗ ${q.id} step ${si + 1}: the marker says "${verdict.why}" and the step has no hint for it`); }
+      if (verdict.why === "decoy" && verdict.chip !== q.given.decoy) { problems++; console.error(`✗ ${q.id} step ${si + 1}: the decoy named is ${verdict.chip}, want ${q.given.decoy}`); }
+    }
+    if (!markRatio(step.answer, step.spec).ok) { problems++; console.error(`✗ ${q.id} step ${si + 1}: its own shown answer is marked wrong`); }
+    const extra = Object.keys(step.hints || {}).filter(k => k !== "pattern" && !why[k]);
+    if (extra.length) { problems++; console.error(`✗ ${q.id} step ${si + 1}: hints ${extra} never fire`); }
+    problems += disagree;
+    rows6.push({ q: q.id, step: si + 1, mode, chips: c.length, tried, accepted, rejected, disagree, why });
+  });
+}
+
+console.log("\new6 (the product line: prod mode ☐ · ☐ = ☐ · ☐, cross mode ☐/☐ = ☐/☐; lengths from the coordinates)");
+console.log("question  given line          true (rel)   right angle cos   ⊥ cos      t      smallest length gap  smallest non-identity product gap  identities  decoy");
+for (const f of fig6) {
+  console.log(`${f.q.padEnd(9)} ${f.line.padEnd(19)} ${(f.lineTrue ? "yes" : "NO").padEnd(4)} ${f.lineRel.toExponential(1).padStart(7)}  ${f.cosA.toExponential(1).padStart(15)}  ${f.cosH.toExponential(1).padStart(8)}  ${f.t.toFixed(2)}  ${(100 * f.minLenGap).toFixed(2).padStart(18)}%  ${(100 * f.minProdGap).toFixed(2).padStart(31)}%  ${String(f.idents).padStart(10)}  ${f.decoy}`);
+}
+console.log("question  step  mode   chips  fills tried  accepted  rejected  disagreements");
+let T6 = 0, A6 = 0, R6 = 0, D6 = 0;
+for (const r of rows6) {
+  T6 += r.tried; A6 += r.accepted; R6 += r.rejected; D6 += r.disagree;
+  console.log(`${r.q.padEnd(9)} ${String(r.step).padStart(4)}  ${r.mode.padEnd(5)}  ${String(r.chips).padStart(5)}  ${String(r.tried).padStart(11)}  ${String(r.accepted).padStart(8)}  ${String(r.rejected).padStart(8)}  ${String(r.disagree).padStart(13)}`);
+  console.log(`          rejected because: ${Object.entries(r.why).filter(([k]) => k !== "ok").map(([k, v]) => `${k} ${v}`).join(", ")}`);
+}
+console.log(`TOTAL                   ${String(T6).padStart(11)}  ${String(A6).padStart(8)}  ${String(R6).padStart(8)}  ${String(D6).padStart(13)}`);
+
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3 and ew4), and every ew5 question has exactly one true leftover, the marked one.");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew6), every ew5 question has exactly one true leftover, the marked one, and every ew6 line is true in its own generic figure.");

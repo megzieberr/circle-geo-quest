@@ -1127,6 +1127,15 @@ svg.diag .ewe-star{fill:#1c7ed6; stroke:#1864ab; stroke-width:.8; stroke-linejoi
    is measured on the folded page. A finished pick step's other options are
    [hidden], which .ewe-q already turns into display:none. */
 .ewe-intro[role=button]{cursor:pointer; border-radius:6px; -webkit-tap-highlight-color:transparent;}
+/* ew6 "Vreemde formaat": the right-angle boxes of the exam figure (ink, not
+   the red of the ⊥h code); the card's two or three lines under each other,
+   left-aligned as on the exam page, the block centred in the card; a build
+   step's takeaway line under its finished line. */
+svg.diag .mk.ewe-rt{stroke-width:1.6;}
+.ewl.ewl-cross{flex-direction:column; align-items:flex-start; width:max-content; max-width:100%; margin:0 auto; gap:10px;}
+.ewl-cross-ln{max-width:100%;}
+.ewl-cross .ewq{justify-content:flex-start;}
+.ewe-okline{margin-top:6px; font-weight:600;}
 .ewe-intro[role=button]:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .ewe-intro.is-folded{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .ewe-chev{display:inline-block; width:1.15em; color:var(--ink-soft);}

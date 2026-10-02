@@ -15,6 +15,11 @@
      · sharedAngle()  ew4: two triangles that share ONE ANGLE, a cut
                       line that is never ∥ (see below).
      · markSine()     ew4: the four-box product marker (see below).
+     · rightAltitude() ew6: a right-angled Δ with the height from the
+                      right angle onto the hypotenuse, the right angle
+                      COMPUTED (see below).
+     · markProd()     ew6: ☐ · ☐ = ☐ · ☐, a square written out (see below).
+     · markCross()    ew6: the product line as two fractions (see below).
      · markRatio()    the ratio marker. It decides "is this fill of
                       ☐/☐ = ☐/☐ right?" from the SHAPE of the fill
                       only: which cut side each chip lies on, and where
@@ -122,11 +127,14 @@ export function segLength(tri, name) {
    spec.mode "similar" (ew2, opt-in) takes a different path, see
    markSimilar below. spec.mode "area" (ew3, opt-in) is a TWO-box fill and
    goes to markArea at the very top; spec.mode "sine" (ew4, opt-in) is a
-   four-box PRODUCT fill and goes to markSine. Without a mode, nothing here
-   changes. */
+   four-box PRODUCT fill and goes to markSine; spec.mode "prod" and "cross"
+   (ew6, opt-in) are the rewrite of a product line and go to markProd and
+   markCross. Without a mode, nothing here changes. */
 export function markRatio(fill, spec) {
   if (spec && spec.mode === "area") return markArea(fill, spec);
   if (spec && spec.mode === "sine") return markSine(fill, spec);
+  if (spec && spec.mode === "prod") return markProd(fill, spec);
+  if (spec && spec.mode === "cross") return markCross(fill, spec);
   if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
   const s = fill.map(n => spec.seg[n]);
   if (s.some(x => !x)) return { ok: false, why: "unknown" };
@@ -415,5 +423,152 @@ export function markSine(fill, spec) {
   if (w[0] !== w[1] || w[2] !== w[3]) return { ok: false, why: "mixed" };
   if (w[0] === 1 && w[2] === 2) return { ok: true, why: "ok" };
   if (w[0] === 2 && w[2] === 1) return { ok: false, why: "order" };
+  return { ok: false, why: "pattern" };
+}
+
+/* ======================= ew6: a strange format =======================
+   The exam says "Bewys dat AD² = BD · DC". That line is a ratio that was
+   cross-multiplied. Her habit (Metode-nota): write the square as a side
+   times itself, AD · AD = BD · DC, then as two fractions AD/BD = DC/AD,
+   and only then read the triangles off the fractions (that is ew7's job).
+   The second form has no square: KL · KM = KN · LM becomes KL/KN = LM/KM. */
+
+/* ---------------- one right-angled Δ with its height ----------------
+   right   the vertex of the right angle ("A")
+   ends    the two ends of the hypotenuse, in order ["B", "C"]
+   foot    the foot of the height on the hypotenuse ("D")
+   xy      screen coordinates (y down) of the two ENDS only, any scale
+   t       where the foot sits: D = B + t(C − B). Never (near) 0.5, so the
+           two pieces of the hypotenuse always differ
+   side    +1 or −1: which side of BC the right angle goes. The normal of
+           B → C is (−uy, ux); in screen coordinates (y down) and BC running
+           left to right, −1 puts A ABOVE the hypotenuse, +1 below
+   spell   optional: side spellings, e.g. ["UV"], where the default would
+           say otherwise. Default: the right-angle vertex first for the
+           three sides from it (AB, AC, AD), the hypotenuse pieces in the
+           order of `ends` (BD, DC) and BC itself
+
+   A = D + side · h · n with h = sqrt(BD · DC): exactly the height that
+   makes the angle at A a right angle (the height on the hypotenuse is the
+   mean proportional of its two pieces), so the right angle is COMPUTED,
+   never placed by eye. tools/check-ewe-marker.mjs measures it anyway.
+
+   seg     the six sides by their spelling: { from, to, role }
+   names   the generic roles → this figure's spelling (AD → "FH", …)
+   sketch  the three sides and the height, a right-angle box at A and one
+           at D (`right`, computed from the two arms in js/ewe-kit.js), no
+           tints, no arcs, no stars; `outside` keeps every label outside
+           the Δ; labBox as in ew4 */
+export function rightAltitude({ right, ends, foot, xy, t, side, spell = [] }) {
+  const A = right, [B, C] = ends, D = foot;
+  if (!(t > 0.08 && t < 0.92)) throw new Error("rightAltitude: the foot must be well inside the hypotenuse");
+  if (Math.abs(t - 0.5) < 0.05) throw new Error("rightAltitude: t must not be (near) 0.5, the two pieces must differ");
+  if (side !== 1 && side !== -1) throw new Error("rightAltitude: side is +1 or -1");
+  const pB = xy[B], pC = xy[C];
+  const pD = lerp(pB, pC, t);
+  const L = dist(pB, pC), ux = (pC.x - pB.x) / L, uy = (pC.y - pB.y) / L;
+  const h = Math.sqrt(dist(pB, pD) * dist(pD, pC));
+  const pA = { x: pD.x + side * h * -uy, y: pD.y + side * h * ux };
+  const pts = { [A]: pA, [B]: pB, [C]: pC, [D]: pD };
+  const nm = (P, Q) => (spell.includes(Q + P) ? Q + P : P + Q);
+  const names = { AB: nm(A, B), AC: nm(A, C), AD: nm(A, D), BD: nm(B, D), DC: nm(D, C), BC: nm(B, C) };
+  const ends2 = { AB: [A, B], AC: [A, C], AD: [A, D], BD: [B, D], DC: [D, C], BC: [B, C] };
+  const seg = {};
+  for (const [role, [p, q]] of Object.entries(ends2)) seg[names[role]] = { from: p, to: q, role };
+  /* the box at D goes on the side of the LONGER piece (more room) */
+  const longer = t > 0.5 ? B : C;
+  return {
+    right: A, ends, foot: D, t, side, pts, seg, names, h,
+    sketch: {
+      pts,
+      lines: [[A, B], [A, C], [B, C], [A, D]],
+      par: [],
+      right: [{ at: A, arms: [B, C] }, { at: D, arms: [A, longer] }],
+      outside: [A, B, C],
+      labBox: true,
+    },
+  };
+}
+
+/* the two products of a line, as given: pairs = [[L1, L2], [R1, R2]]. A
+   square is the pair [AD, AD]. */
+const pairKey = p => p.slice().sort().join("·");
+const sqOf = pairs => { const s = pairs.find(p => p[0] === p[1]); return s ? s[0] : null; };
+
+/* ---------------- the product marker (ew6, spec.mode "prod") ----------------
+   fill  the four chip names in box order: [x1, x2, y1, y2], read as
+         x1 · x2 = y1 · y2
+   spec  { mode: "prod", pairs: [[L1, L2], [R1, R2]], chips }   (pairs = the
+         two products of the given line; the square AD² is the pair
+         [AD, AD]; chips = the chip bank, the line's letters plus a decoy)
+
+   RIGHT when the two boxes on one side of the "=" hold one product of the
+   line and the two on the other side the other product: either side
+   first, either order inside a product. AD · AD = BD · DC,
+   DC · BD = AD · AD, … all fall out of that without being listed.
+
+   WRONG, with a reason the screen turns into a hint; `chip` names the
+   decoy so the hint can say which one:
+     "empty"    a box is still empty
+     "unknown"  a chip that is not in the bank (caller bug)
+     "decoy"    a chip that is not in the given line
+     "twice"    a square question, and the squared side is used fewer than
+                two times
+     "mixed"    exactly the line's four letters, but the two products are
+                mixed across the "="
+     "repeat"   no square in the line, and one chip used twice
+     "pattern"  anything else
+   It reads only which letters stand where, never a length.
+   tools/check-ewe-marker.mjs proves it against lengths measured from the
+   figure. */
+export function markProd(fill, spec) {
+  if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
+  if (fill.some(x => !spec.chips.includes(x))) return { ok: false, why: "unknown" };
+  const line = spec.pairs.flat();
+  const decoy = fill.find(x => !line.includes(x));
+  if (decoy) return { ok: false, why: "decoy", chip: decoy };
+  const L = pairKey(fill.slice(0, 2)), R = pairKey(fill.slice(2));
+  const [P1, P2] = spec.pairs.map(pairKey);
+  if ((L === P1 && R === P2) || (L === P2 && R === P1)) return { ok: true, why: "ok" };
+  const sq = sqOf(spec.pairs);
+  if (sq && fill.filter(x => x === sq).length < 2) return { ok: false, why: "twice" };
+  if (fill.slice().sort().join() === line.slice().sort().join()) return { ok: false, why: "mixed" };
+  if (!sq && new Set(fill).size < 4) return { ok: false, why: "repeat" };
+  return { ok: false, why: "pattern" };
+}
+
+/* ---------------- the cross marker (ew6, spec.mode "cross") ----------------
+   fill  the four chip names in box order: [a, b, c, d], read as a/b = c/d
+   spec  { mode: "cross", pairs, chips }   (as markProd)
+
+   RIGHT when a and d are one product of the line and b and c the other:
+   cross-multiplied, a/b = c/d says a · d = b · c, which is the line. The
+   squared side therefore stands kruis-kruis (top left and bottom right).
+   AD/BD = DC/AD, AD/DC = BD/AD, BD/AD = AD/DC, DC/AD = AD/BD, all right;
+   the shape only, never a length.
+
+   WRONG, with a reason for the hint:
+     "empty" / "unknown" / "decoy"   as markProd
+     "once"     a square question, and the squared side is used fewer than
+                two times
+     "same"     a square question, and both copies of the squared side sit
+                in ONE fraction (AD/AD = BD/DC): that fraction says nothing
+     "repeat"   no square in the line, and one chip used twice
+     "pattern"  anything else */
+export function markCross(fill, spec) {
+  if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
+  if (fill.some(x => !spec.chips.includes(x))) return { ok: false, why: "unknown" };
+  const line = spec.pairs.flat();
+  const decoy = fill.find(x => !line.includes(x));
+  if (decoy) return { ok: false, why: "decoy", chip: decoy };
+  const [a, b, c, d] = fill;
+  const AD = pairKey([a, d]), BC = pairKey([b, c]);
+  const [P1, P2] = spec.pairs.map(pairKey);
+  if ((AD === P1 && BC === P2) || (AD === P2 && BC === P1)) return { ok: true, why: "ok" };
+  const sq = sqOf(spec.pairs);
+  if (sq) {
+    if (fill.filter(x => x === sq).length < 2) return { ok: false, why: "once" };
+    if ((a === sq && b === sq) || (c === sq && d === sq)) return { ok: false, why: "same" };
+  } else if (new Set(fill).size < 4) return { ok: false, why: "repeat" };
   return { ok: false, why: "pattern" };
 }
