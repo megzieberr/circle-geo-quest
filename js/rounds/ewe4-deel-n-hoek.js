@@ -234,7 +234,7 @@ export const round = {
         ],
         okLine: "Nee. Δ ABC en Δ ACD deel 'n HOOGTE, nie 'n hoek nie.",
       }],
-      write: { text: nb("Twee Δe wat 'n HOOGTE deel, het nie een hoek in gemeen nie. Daarvoor gebruik jy die vorige rondte se gereedskap: ½ · basis · ⊥h."),
+      write: { text: nb("Hierdie twee Δe deel 'n HOOGTE, nie 'n hoek nie. Daarvoor gebruik jy die vorige rondte se gereedskap: ½ · basis · ⊥h."),
                tip: "Vra eers: deel die Δe 'n hoogte of 'n hoek? Dan weet jy watter formule." },
     },
   ],
