@@ -65,6 +65,7 @@ import { round as ew1 } from "./ewe1-watter-sye.js";           // g9 · Eweredig
 import { round as ew2 } from "./ewe2-met-die-lyne.js";         // g9 · Eweredigheid (Gr12 only), the ∥ lines join the ratio
 import { round as ew3 } from "./ewe3-deel-n-sy.js";            // g9 · Eweredigheid (Gr12 only), the area ratio from a shared height
 import { round as ew4 } from "./ewe4-deel-n-hoek.js";          // g9 · Eweredigheid (Gr12 only), the area ratio from a shared angle
+import { round as ew5 } from "./ewe5-watter-een.js";           // g9 · Eweredigheid (Gr12 only), which tool: a shared height or a shared angle
 import { round as inv1 } from "./invest01-measure.js";           // g6 · Investigation Station
 import { round as inv2 } from "./invest02-conjecture.js";        // g6 · Investigation Station
 import { round as inv3 } from "./invest03-break-it.js";          // g6 · Investigation Station
@@ -127,7 +128,8 @@ const ORDER = [
   // very end, so no existing round moves.
   // ew3 (the area ratio from a shared height) sits directly after ew2, same rule.
   // ew4 (the area ratio from a shared angle) sits directly after ew3, same rule.
-  ew1, ew2, ew3, ew4,
+  // ew5 (which tool: a shared height or a shared angle) sits directly after ew4, same rule.
+  ew1, ew2, ew3, ew4, ew5,
 ];
 
 /* The last round of the 43-round MAIN quest, pinned on purpose (Megan's
@@ -154,7 +156,7 @@ const GROUP = {
   pr0: "g7", pr1: "g7", pr2: "g7", pr3: "g7", pr4: "g7", pr5: "g7", pr6: "g7", pr7: "g7", pr8: "g7", pr8b: "g7", pr9: "g7",
   dg0: "g8", dg1: "g8", dg2: "g8", dg3: "g8",
   inv1: "g6", inv2: "g6", inv3: "g6", inv4: "g6", inv5: "g6", inv6: "g6",
-  ew1: "g9", ew2: "g9", ew3: "g9", ew4: "g9",
+  ew1: "g9", ew2: "g9", ew3: "g9", ew4: "g9", ew5: "g9",
 };
 
 export const ROUNDS = ORDER.map((r, i) => {

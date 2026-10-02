@@ -40,7 +40,7 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, frameHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
 
 /* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
    "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts).
@@ -494,8 +494,13 @@ function mountPick(host, step, onDone) {
   /* ew2 Q4, opt-in: a half-built ratio a/b = c/☐ above the options, the
      empty box glowing; it becomes the finished ratio once it is right */
   const half = step.half ? step.half.map(esc) : null;
+  /* ew5, opt-in: a lead line, the fixed tinted fraction "Opp Δ … over
+     Opp Δ …", then "=" and ONE glowing empty box; the box becomes the
+     chosen option's fraction once it is right (the mirror of `half`) */
+  const lead = !half && step.lead ? step.lead : null;
   const show = half ? el("div", "ewpad-disp ewe-show",
-    eqHtml(fracHtml(half[0], half[1]), fracHtml(half[2], '<span class="ewslot is-next"></span>'))) : null;
+    eqHtml(fracHtml(half[0], half[1]), fracHtml(half[2], '<span class="ewslot is-next"></span>')))
+    : lead ? el("div", "ewpad-disp ewe-show ewe-lead", eqHtml(cellFracHtml(lead), '<span class="ewslot is-next"></span>')) : null;
   if (show) host.appendChild(show);
   const yesno = step.layout === "yesno";
   const opts = el("div", "q-options ewe-opts" + (yesno ? " yesno" : ""));
@@ -509,8 +514,18 @@ function mountPick(host, step, onDone) {
     /* an option with a `fill` is drawn as the stacked fraction it makes
        (fill[2] over fill[3]); its plain words stay on as the button's label
        for a screen reader */
-    const b = el("button", "opt ewe-opt", o.fill ? fracHtml(esc(o.fill[2]), esc(o.fill[3])) : esc(o.text));
-    if (o.fill) b.setAttribute("aria-label", o.text);
+    /* ew5, opt-in: an option with a `frac` is ONE stacked fraction drawn
+       from frame cells (cellFracHtml: hats and the ½ get their room), its
+       plain words the aria-label like a `fill` option; an option with a
+       `sub` shows its name, and under it a smaller second line (the
+       formula). Both carry data-opt = their text, for the phone check. */
+    const html = o.fill ? fracHtml(esc(o.fill[2]), esc(o.fill[3]))
+      : o.frac ? cellFracHtml(o.frac)
+      : o.sub ? `<span class="ewe-opt-name">${esc(o.text)}</span><span class="ewe-opt-sub">${esc(o.sub)}</span>`
+      : esc(o.text);
+    const b = el("button", "opt ewe-opt" + (o.frac ? " has-frac" : o.sub ? " has-sub" : ""), html);
+    if (o.fill || o.frac) b.setAttribute("aria-label", o.text);
+    if (o.frac || o.sub) b.dataset.opt = o.text;
     b.type = "button";
     b.addEventListener("click", () => {
       if (over) return;
@@ -524,6 +539,7 @@ function mountPick(host, step, onDone) {
            hidden before the right answer: a wrong tap stays red as before. */
         opts.querySelectorAll("button").forEach(x => { x.disabled = true; if (x !== b) x.hidden = true; });
         if (show && o.fill) show.innerHTML = ratioHtml(o.fill);
+        if (show && lead && o.frac) show.innerHTML = eqHtml(cellFracHtml(lead), cellFracHtml(o.frac));
         hint.hidden = true;
         fb.hidden = false;
         fb.className = "dp-feedback good ewe-fb";

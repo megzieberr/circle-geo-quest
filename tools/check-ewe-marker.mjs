@@ -35,12 +35,19 @@
    on (which angle is shared, measured; the cut line not ∥; every chip
    drawn).
 
+   ew5 (which tool, then the first line) has no fills: every step is a
+   pick. Its oracle, at the very end, decides the KIND of each sketch from
+   the coordinates (a shared height or a shared angle, exactly one), and
+   evaluates EVERY first-line option as a number against the shoelace area
+   ratio: exactly one may be true, and it must be the marked one.
+
    Run: node tools/check-ewe-marker.mjs        (exit 1 on any disagreement) */
 import { markRatio, segLength, dist } from "../js/ewe-core.js";
 import { round, TRIANGLES } from "../js/rounds/ewe1-watter-sye.js";
 import { round as round2, TRIANGLES as TRIANGLES2 } from "../js/rounds/ewe2-met-die-lyne.js";
 import { round as round3, SKETCHES as SKETCHES3 } from "../js/rounds/ewe3-deel-n-sy.js";
 import { round as round4, SKETCHES as SKETCHES4 } from "../js/rounds/ewe4-deel-n-hoek.js";
+import { round as round5, SKETCHES as SKETCHES5 } from "../js/rounds/ewe5-watter-een.js";
 
 const REL = 1e-9;             // "equal" for lengths that are equal by construction
 const GAP = 1e-3;             // anything closer than this that is NOT forced is an accident
@@ -521,5 +528,150 @@ for (const r of rows4) {
 }
 console.log(`TOTAL           ${"".padStart(5)}  ${String(T4).padStart(11)}  ${String(A4).padStart(8)}  ${String(R4).padStart(8)}  ${String(D4).padStart(13)}`);
 
+/* ======================= ew5 =======================
+   The ew5 ORACLE, written from the round's rule, not from the data file's
+   `correct` flags. It reads only the COORDINATES the sketch is drawn from,
+   the two triangle names the learner SEES in step 2's lead line ("Opp Δ
+   MNP" over "Opp Δ MPQ") and the cells each option DRAWS:
+     kind      HEIGHT when the two named triangles share a height (a side of
+               each on one line, the opposite corners equally far from it,
+               shareHeight above), ANGLE when they share one angle
+               (sharedAngleAt above). Exactly one of the two, or the sketch
+               is ambiguous and fails (the whole-over-part case shares both).
+     generic   no two of the sketch's segments (every pair of its named
+               points) share a length, no two pairwise products of them
+               (squares too) are equal; HEIGHT: the two apex angles have
+               different sines (else the sin-form would be true as well);
+               ANGLE: the two "wrong" ⊥ heights (from the corner to each
+               third side's line) differ (else the ⊥h-form would be true).
+     an option a stacked fraction of cells. The factors it claims are shared
+               (½, ⊥h, a sine) must be the SAME on top and bottom; they are
+               struck, and what is left is read as lengths, product over
+               product. Its value is compared with
+               area(first named Δ) / area(second named Δ)   (relative 1e-9).
+     right =  EXACTLY ONE option matches, and it is the one marked correct.
+   Step 1: the option marked correct is "Deel 'n sy" for the HEIGHT kind,
+   "Deel 'n hoek" for the ANGLE kind, and nothing else is marked. The
+   sketch carries the ⊥h for the HEIGHT kind and the arc (no star yet) for
+   the ANGLE kind, whose step 1 brings the star (sketchAfter). The card
+   names the lead line's triangles and writes the true ratio. */
+/* the apex two named triangles share a height from: a side of each on one
+   line, and the SAME corner opposite both */
+function heightApex(pts, n1, n2) {
+  const sides = n => [[n[0], n[1], n[2]], [n[1], n[2], n[0]], [n[2], n[0], n[1]]];
+  for (const [a, b, o1] of sides(n1)) for (const [c, d, o2] of sides(n2)) {
+    const P = pts[a], Q = pts[b];
+    if (o1 === o2 && lineDist(P, Q, pts[c]) < 1e-6 && lineDist(P, Q, pts[d]) < 1e-6 && lineDist(P, Q, pts[o1]) > 1e-6) return o1;
+  }
+  return null;
+}
+const rows5 = [];
+for (const q of round5.eweQuestions) {
+  const S = SKETCHES5[q.id];
+  const P = S.pts;
+  const [s1, s2] = q.steps;
+  const named = s2 && s2.lead ? [s2.lead.n, s2.lead.d].map(c => word(c[0]).replace(/^Opp Δ /, "")) : null;
+  if (!named || q.steps.length !== 2 || s1.type !== "pick" || s2.type !== "pick") { problems++; console.error(`✗ ${q.id}: not two picks with a lead line`); continue; }
+  const area = named.map(n => shoelace([...n].map(k => P[k])));
+  const isSeg = c => typeof c === "string" && [...c].length === 2 && [...c].every(k => P[k]);
+  const len = c => dist(P[[...c][0]], P[[...c][1]]);
+
+  /* 0 · the kind, measured */
+  const angleAt = sharedAngleAt(P, named[0], named[1]);
+  const height = shareHeight(P, named[0], named[1]);
+  const kind = angleAt && !height ? "ANGLE" : height && !angleAt ? "HEIGHT" : null;
+  if (!kind) { problems++; console.error(`✗ ${q.id}: Δ ${named[0]} and Δ ${named[1]}: shared height ${height}, shared angle ${angleAt}, want exactly one`); continue; }
+
+  /* 1 · generic: every segment between two named points */
+  const names = Object.keys(P);
+  const segs = [];
+  for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) segs.push(names[i] + names[j]);
+  const L = Object.fromEntries(segs.map(c => [c, len(c)]));
+  let minLenGap = Infinity, minProdGap = Infinity;
+  for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
+    const a = L[segs[i]], b = L[segs[j]], gap = Math.abs(a - b) / Math.max(a, b);
+    minLenGap = Math.min(minLenGap, gap);
+    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${segs[i]} and ${segs[j]} are accidentally equal (${a.toFixed(3)})`); }
+  }
+  const prods = [];
+  for (let i = 0; i < segs.length; i++) for (let j = i; j < segs.length; j++) prods.push([`${segs[i]}·${segs[j]}`, L[segs[i]] * L[segs[j]]]);
+  for (let i = 0; i < prods.length; i++) for (let j = i + 1; j < prods.length; j++) {
+    const gap = Math.abs(prods[i][1] - prods[j][1]) / Math.max(prods[i][1], prods[j][1]);
+    minProdGap = Math.min(minProdGap, gap);
+    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${prods[i][0]} and ${prods[j][0]} are accidentally equal`); }
+  }
+  let kindGap = NaN;
+  if (kind === "HEIGHT") {
+    const A = heightApex(P, named[0], named[1]);
+    if (!A) { problems++; console.error(`✗ ${q.id}: no common apex for the shared height`); continue; }
+    const sinAt = n => { const [u, v] = [...n].filter(k => k !== A).map(k => vec(P[A], P[k])); return Math.abs(cross(u, v)) / (Math.hypot(u.x, u.y) * Math.hypot(v.x, v.y)); };
+    const [x1, x2] = named.map(sinAt);
+    kindGap = Math.abs(x1 - x2) / Math.max(x1, x2);
+    if (kindGap < GAP) { problems++; console.error(`✗ ${q.id}: the apex angles have (almost) the same sine (${x1}, ${x2}), so the sin-form would be true too`); }
+    const h = S.sketch.height;
+    if (!h || h.from !== A || S.sketch.angle || (S.sketch.par || []).length) { problems++; console.error(`✗ ${q.id}: a HEIGHT sketch must carry the ⊥h from ${A}, no arc, no ∥ arrows`); }
+    if (s1.sketchAfter) { problems++; console.error(`✗ ${q.id}: a HEIGHT sketch has no star`); }
+  } else {
+    const V = angleAt;
+    const thirdOf = n => [...n].filter(k => k !== V);
+    const [h1, h2] = named.map(n => { const [a, b] = thirdOf(n); return lineDist(P[a], P[b], P[V]); });
+    kindGap = Math.abs(h1 - h2) / Math.max(h1, h2);
+    if (kindGap < GAP) { problems++; console.error(`✗ ${q.id}: the ⊥ heights from ${V} to the two third sides are (almost) equal, so the ⊥h-form would be true too`); }
+    const ang = S.sketch.angle;
+    if (!ang || ang.at !== V || ang.star || (S.sketch.par || []).length || S.sketch.height) { problems++; console.error(`✗ ${q.id}: an ANGLE sketch must carry the arc at ${V} (no star yet), no ⊥h, no ∥ arrows`); }
+    const after = s1.sketchAfter;
+    if (!after || !after.angle || !after.angle.star || JSON.stringify({ ...after, angle: { ...after.angle, star: false } }) !== JSON.stringify(S.sketch)) {
+      problems++; console.error(`✗ ${q.id}: step 1's sketchAfter is not the same sketch with the star on`);
+    }
+    /* the cut line not ∥ the third side of the whole Δ */
+    const [u, w] = named.map(n => { const [a, b] = thirdOf(n); return unitV(P[a], P[b]); });
+    const parAngle = Math.asin(Math.min(1, Math.abs(cross(u, w)))) * 180 / Math.PI;
+    if (parAngle < 8) { problems++; console.error(`✗ ${q.id}: the two third sides are (nearly) ∥ (${parAngle.toFixed(1)}°)`); }
+  }
+
+  /* 2 · step 1: the marked tool is the measured kind */
+  const want1 = kind === "HEIGHT" ? "Deel 'n sy" : "Deel 'n hoek";
+  const marked1 = s1.options.filter(o => o.correct).map(o => o.text);
+  if (marked1.length !== 1 || marked1[0] !== want1 || s1.layout !== "yesno" || s1.options.length !== 2) { problems++; console.error(`✗ ${q.id}: step 1 marks ${marked1}, the sketch is the ${kind} kind (want "${want1}", two options, natural order)`); }
+
+  /* 3 · step 2: evaluate every option from its cells */
+  const want = area[0] / area[1];
+  const struckKey = cells => cells.filter(c => !isSeg(c) && word(c) !== "·").map(word).sort().join("|");
+  const evals = s2.options.map(o => {
+    const f = o.frac;
+    if (!f) return { text: o.text, ok: false, ratio: NaN, correct: !!o.correct };
+    const same = struckKey(f.n) === struckKey(f.d);
+    const pr = cells => cells.filter(isSeg).reduce((m, c) => m * len(c), 1);
+    const nSeg = f.n.filter(isSeg).length, dSeg = f.d.filter(isSeg).length;
+    const ratio = (pr(f.n) / pr(f.d)) / want;
+    const rel = Math.abs(ratio - 1);
+    if (rel >= REL && rel < GAP) { problems++; console.error(`✗ ${q.id}: option "${o.text}" is ACCIDENTALLY almost the area ratio, move a point`); }
+    return { text: o.text, ok: same && nSeg > 0 && nSeg === dSeg && rel < REL, ratio, correct: !!o.correct };
+  });
+  const matches = evals.filter(e => e.ok);
+  const marked2 = evals.filter(e => e.correct);
+  const oneRight = matches.length === 1 && marked2.length === 1 && matches[0] === marked2[0];
+  if (!oneRight) { problems++; console.error(`✗ ${q.id}: ${matches.length} option(s) match the area ratio (${matches.map(e => e.text).join("; ")}), marked: ${marked2.map(e => e.text).join("; ")}`); }
+  if (s2.options.length !== 4) { problems++; console.error(`✗ ${q.id}: step 2 has ${s2.options.length} options, want 4`); }
+
+  /* 4 · the card: the lead line's triangles, and its last fraction is the true ratio */
+  const w = q.write;
+  const cardTris = (w.area || w.sine || {}).tris;
+  const cardKind = w.area ? "HEIGHT" : w.sine ? "ANGLE" : null;
+  const cardVal = w.area ? len(w.area.bases[0]) / len(w.area.bases[1]) : w.sine ? (len(w.sine.top[0]) * len(w.sine.top[1])) / (len(w.sine.bot[0]) * len(w.sine.bot[1])) : NaN;
+  const wantReason = kind === "HEIGHT" ? "gemeenskaplike hoogte ⊥ en lyn" : "gemene hoekpunt";
+  if (cardKind !== kind || !cardTris || cardTris.join() !== named.join() || !(Math.abs(cardVal / want - 1) < REL) || w.reason !== wantReason) {
+    problems++; console.error(`✗ ${q.id}: the card (${cardKind}, ${cardTris}, ${w.reason}) does not write the true ${kind} line for ${named}`);
+  }
+  rows5.push({ q: q.id, kind, named, minLenGap, minProdGap, kindGap, step1: marked1.join(), evals, oneRight });
+}
+
+console.log("\new5 (no fills: the tool, then the first line, against the shoelace area ratio)");
+console.log("question  kind    named            step 1 marked  smallest length gap  smallest product gap  kind gap  options true  exactly one, the marked one");
+for (const r of rows5) {
+  console.log(`${r.q.padEnd(9)} ${r.kind.padEnd(7)} ${r.named.join(" / ").padEnd(16)} ${r.step1.padEnd(14)} ${(100 * r.minLenGap).toFixed(2).padStart(18)}% ${(100 * r.minProdGap).toFixed(2).padStart(19)}% ${(100 * r.kindGap).toFixed(1).padStart(7)}%  ${String(r.evals.filter(e => e.ok).length).padStart(12)}  ${r.oneRight ? "yes" : "NO"}`);
+  for (const e of r.evals) console.log(`          ${e.correct ? "marked" : "      "} ${e.ok ? "TRUE " : "false"}  option / area ratio = ${e.ratio.toFixed(6)}   ${e.text}`);
+}
+
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3 and ew4).");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3 and ew4), and every ew5 question has exactly one true first line, the marked one.");

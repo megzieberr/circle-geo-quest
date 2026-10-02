@@ -185,6 +185,15 @@ function frameUnits(frame, cell) {
                                                             : fracHtml(u.n.map(cell).join(""), u.d.map(cell).join(""))));
 }
 
+/* ew5, opt-in: ONE stacked fraction drawn from frame cells (text, ½, a
+   hatted { t, hat } or a tinted { t, tint }), no boxes: a pick option that
+   IS a first line, and the lead line above the options. The same cell
+   renderer and the same drawer as every frame, so a hat and the ½ get the
+   same room as in the pad. */
+export function cellFracHtml(f) {
+  return fracHtml(f.n.map(fxCell).join(""), f.d.map(fxCell).join(""));
+}
+
 /* ew3, opt-in: a frame with its boxes filled in, as a finished line (no
    boxes): the ✓ feedback and "Wys my" of a step that brings its own frame */
 export function frameHtml(frame, fill) {

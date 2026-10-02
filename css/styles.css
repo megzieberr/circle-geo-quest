@@ -1141,3 +1141,12 @@ svg.diag .ewe-star{fill:#1c7ed6; stroke:#1864ab; stroke-width:.8; stroke-linejoi
 .ewe-step.is-done .ewpad-disp{min-height:0; padding:8px; margin-bottom:0;}
 .ewe-step.is-done .ewe-show{margin:2px 0 6px;}
 .ewe-step.is-done .ewe-fb{margin:4px 0 2px; padding-top:6px; padding-bottom:6px;}
+/* ew5 "Watter een is dit?" (opt-in classes, written only by its options).
+   Step 1: each tool's name, and its formula on a smaller second line that
+   never breaks. Step 2: an option that IS a first line, one stacked
+   fraction in ink (frame text cells are grey in the pad, where they mark
+   what is given), centred; the lead line above the options likewise. */
+.ewe-opts.yesno .opt.has-sub{padding:12px 8px; display:flex; flex-direction:column; align-items:center; gap:4px;}
+.ewe-opt-sub{font-size:.8rem; font-weight:600; white-space:nowrap; opacity:.85;}
+.ewe-opt.has-frac{text-align:center; padding:8px 12px;}
+.ewe-opt.has-frac .ewpad-fx,.ewe-lead .ewpad-fx:not(.ewtint){color:inherit;}

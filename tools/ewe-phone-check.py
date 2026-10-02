@@ -73,6 +73,19 @@ What it does (all against a LOCAL copy, never the live class):
     own ✕, and every fold measurement checks that no pop-up is open, the
     page is not scroll-locked, and a finger on the sketch's bottom edge or
     on a box touches it, not a sheet. Viewport PNGs start with "fold3-".
+  * ew5 ("Watter een is dit?"): locked on the map until ew4 is passed; then
+    ew4's end screen leads on to it and the map unlocks it. No pad: two
+    picks per question. Step 1, the two tools side by side in their
+    natural order, each name with its formula on a smaller line (one line,
+    inside its button, not clipped), the wrong tool with its hint, the
+    right one (her star on the ANGLE kind only, no label moving), Fold 2.
+    Step 2, the lead line (the tinted "Opp Δ" fraction, "=", one glowing
+    box), the four first-line options each ONE stacked fraction (measured
+    like every fraction, hats measured), every wrong option with its hint,
+    the right one filling the lead line. Every card (the ew3 or ew4 chain
+    and its reason), the end screen. In the 375 x 667 fold walk it REPORTS,
+    per pick step, how much of the sketch is on screen with all options on
+    screen (as the auto-scroll leaves it, and at best). PNGs start "ew5-".
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -350,7 +363,7 @@ def click_chip(page, text):
     if not ok: fail(f"chip {text!r} not clickable")
 
 def click_btn(page, selector, text=None):
-    ok = page.evaluate("""([s, t]) => { const b = [...document.querySelectorAll(s)].find(x => (t == null || x.textContent.trim() === t || x.getAttribute('aria-label') === t) && !x.disabled && !x.hidden); if (!b) return false; b.click(); return true; }""", [selector, text])
+    ok = page.evaluate("""([s, t]) => { const b = [...document.querySelectorAll(s)].find(x => (t == null || x.textContent.trim() === t || x.getAttribute('aria-label') === t || x.dataset.opt === t) && !x.disabled && !x.hidden); if (!b) return false; b.click(); return true; }""", [selector, text])
     if not ok: fail(f"button {selector} {text!r} not clickable")
 
 def has(page, sel):
@@ -801,6 +814,8 @@ try:
         page.wait_for_selector(".round-card")
         check4("the map unlocks ew4 once ew3 is passed (ew3 shows ✓)", page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')];
             return c.length >= 4 && c[2].classList.contains('done') && !c[3].classList.contains('locked') && !!c[3].querySelector('.btn'); }"""))
+        ew5_locked_before = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 5 && c[4].classList.contains('locked') && !c[4].querySelector('.btn'); }""")
+        if not ew5_locked_before: fail("ew5 should be locked before ew4 is passed")
 
         # ---------------- the ew4 walk ----------------
         page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[3].querySelector('.btn').click(); }")
@@ -966,6 +981,171 @@ try:
         saved4 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
             const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew4');
             return { progress: p.ew4 || null, xpEvents: ev.map(e => e.xp) }; }""")
+        # ---------------- ew4 -> ew5: the way on, and the map ----------------
+        ew5_checks = []
+        def check5(name, ok):
+            ew5_checks.append((name, ok))
+            if not ok: fail(name)
+        check5("ew4's end screen offers the next round", page.evaluate("""() => [...document.querySelectorAll('.ewe-end .btn')].some(b => b.textContent.includes('Volgende rondte'))"""))
+        click_btn(page, ".ewe-end .btn", "▶ Volgende rondte")
+        page.wait_for_selector(".ewe-play")
+        check5("the way on from ew4 opens ew5", "Watter een is dit?" in page.inner_text(".play-title"))
+        page.evaluate("window.__APP__.go('ewes')")
+        page.wait_for_selector(".round-card")
+        check5("the map unlocks ew5 once ew4 is passed (ew4 shows ✓)", page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')];
+            return c.length >= 5 && c[3].classList.contains('done') && !c[4].classList.contains('locked') && !!c[4].querySelector('.btn'); }"""))
+
+        # ---------------- the ew5 walk: two picks per question, no pad ----------------
+        page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[4].querySelector('.btn').click(); }")
+        page.wait_for_selector(".ewe-play")
+        data5 = page.evaluate("""async () => { const m = await import('./js/rounds/ewe5-watter-een.js');
+            return m.round.eweQuestions.map(q => { const S = m.SKETCHES[q.id];
+              return { id: q.id, kind: S.sketch.height ? 'HEIGHT' : 'ANGLE', sin: S.sin || '', reason: (q.write && q.write.reason) || '', tip: (q.write && q.write.tip) || '',
+                steps: q.steps.map(s => ({ type: s.type, star: !!s.sketchAfter, lead: !!s.lead,
+                  options: s.options.map(o => ({ text: o.text, sub: o.sub || '', frac: !!o.frac, correct: !!o.correct, hint: o.hint || '' })), okLine: s.okLine || '' })) }; }); }""")
+        # step 1: the two tools side by side, each name and its formula line whole
+        PAIR_JS = r"""() => {
+          const st = document.querySelector('.ewe-step:last-child');
+          const bs = [...st.querySelectorAll('.ewe-opt')];
+          const vw = document.documentElement.clientWidth;
+          const inner = b => { const r = b.getBoundingClientRect(), c = getComputedStyle(b);
+            return { l: r.left + parseFloat(c.borderLeftWidth), r: r.right - parseFloat(c.borderRightWidth), t: r.top + parseFloat(c.borderTopWidth), b: r.bottom - parseFloat(c.borderBottomWidth) }; };
+          return bs.map(b => { const i = inner(b), r = b.getBoundingClientRect();
+            const parts = [...b.querySelectorAll('.ewe-opt-name, .ewe-opt-sub')].map(e => { const q = e.getBoundingClientRect(), cs = getComputedStyle(e);
+              let lh = parseFloat(cs.lineHeight); if (!(lh > 0)) lh = 1.3 * parseFloat(cs.fontSize);
+              const rg = document.createRange(); rg.selectNodeContents(e);
+              return { cls: e.className, text: e.textContent, inside: q.left >= i.l - 0.5 && q.right <= i.r + 0.5 && q.top >= i.t - 0.5 && q.bottom <= i.b + 0.5,
+                       clipped: e.scrollWidth > e.clientWidth + 1, lines: new Set([...rg.getClientRects()].map(x => Math.round(x.top))).size,
+                       font: parseFloat(cs.fontSize) }; });
+            return { text: b.dataset.opt || '', top: Math.round(r.top), left: r.left, right: r.right, onScreen: r.left >= -0.5 && r.right <= vw + 0.5, parts }; }); }"""
+        # step 2: the lead line and the four first-line options
+        LEAD_JS = r"""(k) => {
+          const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
+          const lead = st.querySelector('.ewe-lead');
+          if (!lead) return null;
+          const fr = [...lead.querySelectorAll('.ewf')];
+          return { fracs: fr.length, slots: lead.querySelectorAll('.ewslot').length, glow: lead.querySelectorAll('.ewslot.is-next').length,
+                   words: [...lead.querySelectorAll('.ewtint')].map(x => x.className.match(/ewtint-\d/)[0].slice(7) + ':' + x.textContent.replace(/^Opp\s*Δ\s*/, '')),
+                   second: fr[1] ? fr[1].textContent.replace(/\s+/g, '') : '' }; }"""
+        FRACOPTS_JS = r"""(k) => {
+          const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
+          const vw = document.documentElement.clientWidth;
+          return [...st.querySelectorAll('.ewe-opt')].map(b => { const r = b.getBoundingClientRect(), c = getComputedStyle(b);
+            const i = { l: r.left + parseFloat(c.borderLeftWidth), r: r.right - parseFloat(c.borderRightWidth), t: r.top + parseFloat(c.borderTopWidth), b: r.bottom - parseFloat(c.borderBottomWidth) };
+            const f = [...b.querySelectorAll('.ewf')];
+            const q = f[0] ? f[0].getBoundingClientRect() : null;
+            return { label: b.getAttribute('aria-label') || '', fracs: f.length, text: f[0] ? f[0].textContent.replace(/\s+/g, '') : '',
+                     inside: !!q && q.left >= i.l - 0.5 && q.right <= i.r + 0.5 && q.top >= i.t - 0.5 && q.bottom <= i.b + 0.5,
+                     onScreen: r.left >= -0.5 && r.right <= vw + 0.5, h: Math.round(r.height), w: Math.round(r.width), fw: q ? Math.round(q.width) : 0 }; }); }"""
+        for qi, q in enumerate(data5):
+            n = qi + 1
+            P = f"ew5 Q{n}"
+            angle = q["kind"] == "ANGLE"
+            lab = page.evaluate(LABELS_JS)
+            label_rows.append((q["id"], lab))
+            if lab is None:
+                fail(f"{P}: no sketch")
+                continue
+            tmap = page.evaluate(TINTMAP_JS)
+            for c in lab["collisions"]: fail(f"{P} sketch: {c}")
+            check5(f"{P} sketch: two tinted triangles {tmap}, no ∥ arrows", lab["tints"] == 2 and "?" not in "".join(tmap) and lab["arrows"] == 0)
+            if angle:
+                check5(f"{P} sketch (ANGLE kind): the arc at the shared angle, no star yet, no ⊥h", lab["arcs"] == 1 and lab["stars"] == 0 and lab["heights"] == 0)
+            else:
+                check5(f"{P} sketch (HEIGHT kind): the dotted ⊥h, its right-angle box and its label, no arc, no star", lab["heights"] == 1 and lab["dotted"] and lab["boxes"] == 1 and lab["hlabel"] == 1 and lab["arcs"] == 0 and lab["stars"] == 0)
+            for si, st in enumerate(q["steps"]):
+                k = si + 1
+                tag = f"{P} step {k}"
+                right = next(o for o in st["options"] if o["correct"])
+                wrongs = [o for o in st["options"] if not o["correct"]]
+                if si == 0:
+                    pr = page.evaluate(PAIR_JS)
+                    check5(f"{tag}: two tools side by side in their natural order ({' | '.join(o['text'] for o in pr)})",
+                           [o["text"] for o in pr] == ["Deel 'n sy", "Deel 'n hoek"] and pr[0]["top"] == pr[1]["top"] and pr[0]["right"] <= pr[1]["left"] and all(o["onScreen"] for o in pr))
+                    parts_ok = all(len(o["parts"]) == 2 and all(p["inside"] and not p["clipped"] and p["lines"] == 1 for p in o["parts"]) and o["parts"][1]["font"] < o["parts"][0]["font"] for o in pr)
+                    check5(f"{tag}: each tool shows its name and, smaller, its formula ({'; '.join(o['parts'][1]['text'] for o in pr if len(o['parts']) == 2)}), each on ONE line, inside its button, nothing clipped", parts_ok)
+                    if not parts_ok: print("   tools:", pr)
+                else:
+                    ld = page.evaluate(LEAD_JS, k)
+                    check5(f"{tag}: the lead line, one fraction 'Opp Δ' over 'Opp Δ', '=' and ONE glowing box", bool(ld) and ld["fracs"] == 1 and ld["slots"] == 1 and ld["glow"] == 1)
+                    check5(f"{tag}: the lead's 'Opp Δ' words {ld and ld['words']} carry the sketch's tints {tmap}", bool(ld) and tints_match(tmap, ld["words"]))
+                    fo = page.evaluate(FRACOPTS_JS, k)
+                    fo_ok = len(fo) == 4 and all(o["fracs"] == 1 and o["inside"] and o["onScreen"] and o["label"] for o in fo)
+                    check5(f"{tag}: four options, each ONE stacked fraction inside its button with its words as aria-label (widths {', '.join(str(o['fw']) for o in fo)}px)", fo_ok)
+                    if not fo_ok: print("   options:", fo)
+                    check5(f"{tag}: the options are the data's four, in some order", sorted(o["label"] for o in fo) == sorted(o["text"] for o in st["options"]))
+                measure(page, f"{tag}: options")
+                h = hats(page, f"{tag}: options")
+                if si == 1:
+                    # a hat in a numerator counts as "option", one in a denominator as "under a fraction bar"
+                    nh = h["where"].get("option", 0) + h["where"].get("under a fraction bar", 0)
+                    check5(f"{tag}: every angle hat on the options measured ({nh}: {h['where'].get('option', 0)} in numerators, {h['where'].get('under a fraction bar', 0)} under a bar, smallest gap {h['minGap']}px)",
+                           nh >= (6 if angle else 2))
+                shot(page, f"ew5-q{n}-s{k}-a-options.png")
+                for wi, o in enumerate(wrongs):
+                    click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
+                    measure(page, f"{tag}: wrong pick {wi + 1}")
+                    hats(page, f"{tag}: wrong pick {wi + 1} + hint")
+                    hint = page.inner_text(".ewe-step:last-child .ewe-hint") if seen(page, ".ewe-step:last-child .ewe-hint") else ""
+                    check5(f"{tag}: the wrong pick '{o['text']}' shows its own hint", bool(o["hint"]) and o["hint"] in hint)
+                    shot(page, f"ew5-q{n}-s{k}-b{wi + 1}-wrong.png")
+                if si == 0:
+                    check5(f"{tag}: no star after the wrong pick", page.evaluate(LABELS_JS)["stars"] == 0)
+                click_btn(page, ".ewe-step:last-child .ewe-opt", right["text"])
+                measure(page, f"{tag}: right pick")
+                hats(page, f"{tag}: right pick")
+                fsel = f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb"
+                fb = page.inner_text(fsel) if seen(page, fsel) else ""
+                check5(f"{tag}: '{right['text'][:40]}' is right and ends on its takeaway", bool(st["okLine"]) and st["okLine"] in fb)
+                kept = page.evaluate("""(k) => [...document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-opt`)].filter(e => getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0)
+                    .map(e => (e.dataset.opt || e.getAttribute('aria-label') || '') + (e.classList.contains('is-correct') ? '+' : ''))""", k)
+                check5(f"{tag}: Fold 2, only the chosen option stays, green", kept == [right["text"] + "+"])
+                if si == 0:
+                    lab1 = page.evaluate(LABELS_JS)
+                    if angle:
+                        label_rows.append((q["id"] + " +star", lab1))
+                        for c in lab1["collisions"]: fail(f"{P} sketch with the star: {c}")
+                        check5(f"{tag}: her star appears at the shared angle, the arc stays, no label moves", lab1["stars"] == 1 and lab1["arcs"] == 1 and lab1["at"] == lab["at"])
+                        shot(page, f"ew5-q{n}-s{k}-c-star.png")
+                    else:
+                        check5(f"{tag}: HEIGHT kind, no star after the right pick, the sketch unchanged", lab1["stars"] == 0 and lab1["at"] == lab["at"])
+                else:
+                    ld = page.evaluate(LEAD_JS, k)
+                    want = next((o["text"] for o in page.evaluate(FRACOPTS_JS, k) if o["label"] == right["text"]), None)
+                    chosen = page.evaluate("""([k, t]) => { const b = [...document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-opt`)].find(e => e.getAttribute('aria-label') === t); return b ? b.querySelector('.ewf').textContent.replace(/\\s+/g, '') : ''; }""", [k, right["text"]])
+                    check5(f"{tag}: the lead line is filled: two fractions, no box, the second the chosen first line", bool(ld) and ld["fracs"] == 2 and ld["slots"] == 0 and ld["second"] == chosen and bool(chosen))
+                    shot(page, f"ew5-q{n}-s{k}-c-lead-filled.png")
+            if angle: check5(f"{P}: the star stays to the end of the question", page.evaluate(LABELS_JS)["stars"] == 1)
+            if angle:
+                card = page.evaluate(CARD4_JS)
+                ok = (bool(card) and card["sine"] and card["fracs"] == 3 and card["strikes"] == 4 and card["strikesInsideMiddle"]
+                      and card["struckText"] == f"½ {q['sin']} ½ {q['sin']}" and card["dotsInside"] and card["prodInside"]
+                      and card["unitsWrapped"] == 0 and card["reason"] == f"({q['reason']})" and card["reasonLines"] == 1 and tints_match(tmap, card["tints"]))
+                check5(f"{P}: card = the sine chain, ½ and {q['sin']} struck inside the middle one, {card and card.get('prodTop')} over {card and card.get('prodBot')} inside the last, chain on {card and card.get('rows')} row(s), reason '{q['reason']}' whole{' (moved down)' if card and card.get('reasonBelow') else ''}", ok)
+            else:
+                card = page.evaluate(CARD3_JS)
+                ok = (bool(card) and card["area"] and card["fracs"] == 3 and card["strikes"] == 4 and card["strikesInsideMiddle"]
+                      and card["struckText"] == "½ ⊥h ½ ⊥h" and card["unitsWrapped"] == 0
+                      and card["reason"] == f"({q['reason']})" and card["reasonLines"] == 1 and len(card["tints"]) == 2)
+                check5(f"{P}: card = the area chain, ½ and ⊥h struck inside the middle one, chain on {card and card.get('rows')} row(s), reason '{q['reason']}' whole{' (moved down)' if card and card.get('reasonBelow') else ''}", ok)
+            if not ok: print("   card:", card)
+            tip = page.inner_text(".ewe-write .ewe-write-tip") if seen(page, ".ewe-write .ewe-write-tip") else ""
+            check5(f"{P}: the card's tip '{q['tip']}'", q["tip"] == tip.strip())
+            measure(page, f"{P}: Só skryf jy dit card")
+            hats(page, f"{P}: Só skryf jy dit card")
+            page.evaluate("document.querySelector('.ewe-write').scrollIntoView()")
+            shot(page, f"ew5-q{n}-d-card.png")
+            click_btn(page, ".ewe-next")
+            page.wait_for_timeout(250)
+        page.wait_for_selector(".ewe-end", timeout=8000)
+        measure(page, "ew5 end of round")
+        hats(page, "ew5 end of round")
+        check5("ew5 end screen: the takeaway names both tools and carries Q1's three-fraction area chain",
+               page.evaluate("() => { const t = document.querySelector('.ewe-end .ewe-takeaway'); const l = t && t.querySelector('.ewl-area'); return !!l && l.querySelectorAll('.ewf').length === 3 && l.querySelectorAll('.ewf-x').length === 4 && /HOOGTE of 'n HOEK/.test(t.textContent) && /produkte bly oor/.test(t.textContent); }"))
+        shot(page, "ew5-end-of-round.png")
+        saved5 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
+            const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew5');
+            return { progress: p.ew5 || null, xpEvents: ev.map(e => e.xp) }; }""")
         ctx.close()
 
         # ---------------- the other hint kinds, "show me", and the toggle ----------------
@@ -1162,6 +1342,23 @@ try:
         intro_rows = []     # one per question: full, folded, opened heights
         fold3_rows = []     # one per build step: where, the finished step's height
         fold3_pics = []     # the foreman's ew4 Q1 pictures: where the folded intro sits
+        ew5_vis = []        # ew5, per pick step at 375 x 667: how much sketch shares the screen with the options
+        SKVIS_JS = r"""(k) => {
+          const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
+          const bar = document.querySelector('.topbar');
+          const head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+          const vh = window.innerHeight, y = window.scrollY;
+          const s = document.querySelector('.ewe-q .q-diagram svg').getBoundingClientRect();
+          const os = [...st.querySelectorAll('.ewe-opt')].map(e => e.getBoundingClientRect());
+          const optTop = Math.min(...os.map(r => r.top)), optBot = Math.max(...os.map(r => r.bottom));
+          const p = st.getBoundingClientRect();
+          const seen = (top, bot, shift) => Math.max(0, Math.min(bot - shift, vh) - Math.max(top - shift, head));
+          /* best: the smallest scroll that puts the last option at the bottom edge (or none needed) */
+          const shift = Math.max(-y, optBot - vh);
+          return { head: Math.round(head), vh, sh: Math.round(s.height), now: Math.round(seen(s.top, s.bottom, 0)),
+                   optsOn: optTop >= head - 0.5 && optBot <= vh + 0.5, stepTop: Math.round(p.top),
+                   best: Math.round(seen(s.top, s.bottom, shift)), bestOptsOn: optTop - shift >= head - 0.5,
+                   bestPromptOn: p.top - shift >= head - 0.5 }; }"""
         def checkf(name, ok):
             fold_checks.append((name, ok))
             if not ok: fail(name)
@@ -1191,7 +1388,7 @@ try:
           const seenEl = e => { const c = getComputedStyle(e), r = e.getBoundingClientRect(); return c.display !== 'none' && c.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
           const vis = all.filter(seenEl);
           const fb = st.querySelector('.ewe-fb');
-          return { all: all.length, vis: vis.length, text: vis.map(e => e.getAttribute('aria-label') || e.textContent.trim()),
+          return { all: all.length, vis: vis.length, text: vis.map(e => e.dataset.opt || e.getAttribute('aria-label') || e.textContent.trim()),
                    green: vis.filter(e => e.classList.contains('is-correct')).length, red: vis.filter(e => e.classList.contains('is-wrong')).length,
                    fb: fb && seenEl(fb) ? fb.textContent : '' }; }"""
         FRAME_JS = r"""(k) => {
@@ -1277,6 +1474,10 @@ try:
                         settle(page)
                         no_popup(f"{tag}: options measured")
                         o0 = page.evaluate(OPTS_JS, k)
+                        if R["id"] == "ew5":
+                            v = page.evaluate(SKVIS_JS, k)
+                            ew5_vis.append({"where": f"ew5 Q{n} s{k}", "kind": "HEIGHT" if q["id"] in ("ew5q1", "ew5q3", "ew5q6") else "ANGLE", **v})
+                            vshot(page, f"fold-ew5-q{n}-s{k}-options.png")
                         checkf(f"{tag}: all {o0['all']} options on screen before an answer", o0["all"] >= 2 and o0["vis"] == o0["all"])
                         wrong = next(o["text"] for o in st["options"] if not o["correct"])
                         right = next(o["text"] for o in st["options"] if o["correct"])
@@ -1396,6 +1597,11 @@ print("\new4 CHECKS")
 print(f"  {'ok  ' if ew4_locked_before else 'FAIL'} ew4 locked on the map before ew3 is passed")
 for name, ok in ew4_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 
+print("\new5 CHECKS")
+print(f"  {'ok  ' if ew5_locked_before else 'FAIL'} ew5 locked on the map before ew4 is passed")
+for name, ok in ew5_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
+print(f"  {sum(1 for _, ok in ew5_checks if ok) + (1 if ew5_locked_before else 0)} of {len(ew5_checks) + 1} ew5 checks pass")
+
 print("\nANGLE HATS (ink top measured against the inner top edge of its chip, box, option or card, or the bar above it)")
 by_kind = {}
 for label, nh, gap, where in hat_rows:
@@ -1431,6 +1637,13 @@ for i in range(0, len(fold3_rows), 4):
 for r in fold3_pics:
     print(f"  {r['where']}: the folded intro line is {r['intro']} (fold3-ew4-q1-s*.png as the auto-scroll leaves it, *-swipe-up.png one swipe up)")
 
+print("\n  ew5 PICK STEPS at 375 x 667: px of the sketch on screen with the step's options (sketch height, top bar, screen)")
+print(f"  {'step':11} {'kind':6} {'sketch':>6}  {'as the auto-scroll leaves it':34}  best with every option on screen")
+for r in ew5_vis:
+    now = f"{r['now']:3} px" + (", all options on" if r["optsOn"] else ", options NOT all on")
+    best = f"{r['best']:3} px" + ("" if r["bestOptsOn"] else " (the options alone overflow the screen)") + ("" if r["bestPromptOn"] else ", the prompt above the bar")
+    print(f"  {r['where']:11} {r['kind']:6} {r['sh']:4} px  {now:34}  {best}")
+
 print(f"\nSAVING (local backend): ew1 progress {json.dumps(saved['progress'])}, XP events {saved['xpEvents']}, map shows ✓: {map_done}")
 if not (saved["progress"] and saved["progress"].get("passed")): fail("ew1 not saved as passed")
 print(f"SAVING (local backend): ew2 progress {json.dumps(saved2['progress'])}, XP events {saved2['xpEvents']}")
@@ -1441,6 +1654,9 @@ if saved3["xpEvents"] != [50]: fail(f"ew3 XP should be 5 questions x 10 = 50, go
 print(f"SAVING (local backend): ew4 progress {json.dumps(saved4['progress'])}, XP events {saved4['xpEvents']}")
 if not (saved4["progress"] and saved4["progress"].get("passed")): fail("ew4 not saved as passed")
 if saved4["xpEvents"] != [50]: fail(f"ew4 XP should be 5 questions x 10 = 50, got {saved4['xpEvents']}")
+print(f"SAVING (local backend): ew5 progress {json.dumps(saved5['progress'])}, XP events {saved5['xpEvents']}")
+if not (saved5["progress"] and saved5["progress"].get("passed")): fail("ew5 not saved as passed")
+if saved5["xpEvents"] != [60]: fail(f"ew5 XP should be 6 questions x 10 = 60, got {saved5['xpEvents']}")
 print(f"\nNETWORK: {len(blocked)} request(s) to other hosts blocked" + (": " + ", ".join(sorted({urlparse(u).hostname for u in blocked})) if blocked else ""))
 print(f"CONSOLE ERRORS: {len(console_errors)}")
 for e in console_errors[:10]: print("  ", e[:200])
