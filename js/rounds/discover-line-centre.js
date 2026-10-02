@@ -44,7 +44,7 @@ const MODEL = () => ({
       { label: { en: "Angle line makes with chord", af: "Hoek met die koord" }, value: Math.round(m.angle) + "°", hot: sq },
       { label: { en: "Left piece AM", af: "Linkerstuk AM" }, value: Math.round(m.am), color: PINK },
       { label: { en: "Right piece MB", af: "Regterstuk MB" }, value: Math.round(m.mb), color: BLUE },
-      { label: { en: "Equal pieces?", af: "Gelyke stukke?" }, value: eq ? "✓ AM = MB" : "✗ not equal", hot: eq },
+      { label: { en: "Equal pieces?", af: "Gelyke stukke?" }, value: eq ? "✓ AM = MB" : { en: "✗ not equal", af: "✗ nie gelyk" }, hot: eq },
     ];
   },
 });
