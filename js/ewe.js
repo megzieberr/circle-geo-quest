@@ -40,11 +40,14 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, simLineHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, frameHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
 
 /* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
-   "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts) */
-const glue = t => esc(t).replace(/(\S) ∥ (\S)/g, "$1\u00A0∥\u00A0$2").replace(/Δ (\S)/g, "Δ\u00A0$1");
+   "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts).
+   ew3 adds "Opp Δ ABC" and a product "½ · basis · ⊥h": each stays one
+   unit too (neither appears in ew1 or ew2). */
+const glue = t => esc(t).replace(/(\S) ∥ (\S)/g, "$1\u00A0∥\u00A0$2").replace(/Δ (\S)/g, "Δ\u00A0$1")
+  .replace(/Opp Δ/g, "Opp\u00A0Δ").replace(/ · /g, "\u00A0·\u00A0");
 
 /* Afrikaans only, whatever the toggle says (her ruling). Plain strings,
    no tx(): there is no other language to fall back to. */
@@ -312,7 +315,12 @@ function mountBuild(host, step, onDone) {
   host.appendChild(fb); host.appendChild(hint); host.appendChild(showMe);
 
   let wrong = 0, over = false;
-  const frame = [{ n: [SLOT], d: [SLOT] }, "=", { n: [SLOT], d: [SLOT] }];
+  /* ew3, opt-in: a step may bring its own frame (the pad's frame contract,
+     text cells allowed in a fraction); the fill is then as long as ITS
+     boxes, and the finished line is drawn from that frame. Without
+     step.frame: the four boxes and ratioHtml, exactly as before. */
+  const frame = step.frame || [{ n: [SLOT], d: [SLOT] }, "=", { n: [SLOT], d: [SLOT] }];
+  const lineOf = f => (step.frame ? frameHtml(step.frame, f) : ratioHtml(f));
   const pad = mountFillPad(padHost, {
     frame, chips: step.chips,
     fixed: step.fixed,          // ew2: a chip already in the first box (opt-in)
@@ -329,7 +337,7 @@ function mountBuild(host, step, onDone) {
         hint.hidden = true; showMe.hidden = true;
         fb.hidden = false;
         fb.className = "dp-feedback good ewe-fb";
-        fb.innerHTML = `<span class="ewe-tick">✓</span> ${ratioHtml(fill)}`;
+        fb.innerHTML = `<span class="ewe-tick">✓</span> ${lineOf(fill)}`;
         onDone({ firstTry: wrong === 0, fill });
         return;
       }
@@ -350,13 +358,16 @@ function mountBuild(host, step, onDone) {
     hint.hidden = true; showMe.hidden = true;
     fb.hidden = false;
     fb.className = "dp-feedback revealed ewe-fb";
-    fb.innerHTML = `💡 ${UI.shown} ${ratioHtml(step.answer)}`;
+    fb.innerHTML = `💡 ${UI.shown} ${lineOf(step.answer)}`;
     onDone({ firstTry: false, fill: step.answer });
   });
 }
 
 function hintHtml(step, why) {
   const h = step.hints;
+  /* ew3 (the area marker): one plain sentence per wrong reason (crossed,
+     shared, repeat, order, pattern), keyed by the reason itself */
+  if (step.spec && step.spec.mode === "area") return esc(h[why] || h.pattern);
   if (why === "par") return esc(h.par);
   if (why === "repeat") return esc(h.repeat);
   if (why === "whole") return esc(h.whole);
@@ -429,6 +440,8 @@ function writeCard(q, fill) {
   card.appendChild(el("div", "ewe-write-tag", "✍️ " + UI.writeTag));
   const body = el("div", "ewe-write-body");
   if (q.write.text) body.appendChild(el("p", "ewe-write-text", esc(q.write.text)));
+  /* ew3, opt-in: her three-fraction area chain, the ½ and ⊥h struck through */
+  else if (q.write.area) body.innerHTML = areaLineHtml(q.write.area, q.write.reason);
   /* ew2, opt-in: TWO lines as on the exam page, the similar triangles
      first, then the ratio. A step with no build (ew2 Q4) brings its own
      fill. ew1 has neither, so its card is unchanged. */
@@ -458,7 +471,8 @@ function renderEnd(app, host, round, r) {
       <div class="ewe-write ewe-takeaway">
         <div class="ewe-write-tag">${UI.remember}</div>
         <p class="ewe-write-text">${esc(tk.text)}</p>
-        <div class="ewe-write-body">${tk.sim ? simLineHtml(tk.sim, tk.simReason) : ""}${writtenLineHtml(tk.fill, tk.reason)}</div>
+        <div class="ewe-write-body">${tk.area ? areaLineHtml(tk.area, tk.reason)
+          : (tk.sim ? simLineHtml(tk.sim, tk.simReason) : "") + writtenLineHtml(tk.fill, tk.reason)}</div>
       </div>
       <div class="result-actions"></div>
     </div>`;

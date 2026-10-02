@@ -9,6 +9,9 @@
                       line across two of its sides. The cut points are
                       COMPUTED (D = A + t(B - A), E = A + t(C - A)),
                       never placed by eye, so a "∥" line really is ∥.
+     · sharedHeight() ew3: an apex over a base line with three points,
+                      the foot of the ⊥h COMPUTED (see below).
+     · markArea()     ew3: the two-box area marker (see below).
      · markRatio()    the ratio marker. It decides "is this fill of
                       ☐/☐ = ☐/☐ right?" from the SHAPE of the fill
                       only: which cut side each chip lies on, and where
@@ -114,8 +117,10 @@ export function segLength(tri, name) {
      "pattern"  anything else
 
    spec.mode "similar" (ew2, opt-in) takes a different path, see
-   markSimilar below. Without it, nothing here changes. */
+   markSimilar below. spec.mode "area" (ew3, opt-in) is a TWO-box fill and
+   goes to markArea at the very top. Without a mode, nothing here changes. */
 export function markRatio(fill, spec) {
+  if (spec && spec.mode === "area") return markArea(fill, spec);
   if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
   const s = fill.map(n => spec.seg[n]);
   if (s.some(x => !x)) return { ok: false, why: "unknown" };
@@ -167,4 +172,109 @@ function markSimilar(fill, s, spec) {
   if (!sameTri && !across) return { ok: false, why: "pattern" };
   if (spec.needPar && ![a, b, c, d].some(x => x.K === "p")) return { ok: false, why: "nopar" };
   return { ok: true, why: "ok", form: sameTri ? "same" : "across" };
+}
+
+/* ======================= ew3: a shared height =======================
+   Her p.42 ③ "Aangrensende driehoeke": a base line with three points on it
+   and an apex off it. Every triangle with that apex and its base on that
+   line has the SAME height ⊥h, so the ratio of two such areas is the ratio
+   of their bases. */
+
+/* the two factors she strikes through: chips, but not segments */
+export const HALF = "½";
+export const PERP_H = "⊥h";
+
+/* ---------------- one shared-height sketch ----------------
+   apex   the vertex off the base line ("A")
+   base   the three base points in order along the line ["B", "C", "D"]
+   xy     screen coordinates (y down) of the apex and the two END points
+          of the base (B and D), any scale: the renderer fits them
+   s      where the middle point sits, as a fraction of the way from B to D
+   tris   the two named triangles, in the order the question names them
+          (top first): e.g. ["ABC", "ACD"]. They are tinted in the sketch.
+
+   The middle point C = B + s(D − B) and the FOOT of the height (the
+   projection of the apex on BD) are COMPUTED, never placed by eye, so the
+   dotted ⊥h really is perpendicular. It throws when the foot is not
+   strictly inside BD, or sits on C or on the middle of BD (the sketch would
+   then hide the very thing it must show).
+
+   seg, for the area marker: every segment between two of the four points,
+   and the two struck factors
+     { from, to, base: true }    on the base line   (BC, CD, BD)
+     { from, to, base: false }   from the apex      (AB, AC, AD)
+     { struck: true }            ½ and ⊥h: factors, not segments
+   names maps the generic roles to this sketch's letters (BC → "KL", …). */
+export function sharedHeight({ apex, base, xy, s, tris }) {
+  const A = apex, [B, C, D] = base;
+  if (!(s > 0 && s < 1)) throw new Error("sharedHeight: the middle point must be strictly between the ends");
+  const pts = { [A]: xy[A], [B]: xy[B], [C]: lerp(xy[B], xy[D], s), [D]: xy[D] };
+  /* the foot: project the apex onto line BD */
+  const bx = pts[D].x - pts[B].x, by = pts[D].y - pts[B].y, L2 = bx * bx + by * by;
+  const u = ((pts[A].x - pts[B].x) * bx + (pts[A].y - pts[B].y) * by) / L2;
+  const foot = lerp(pts[B], pts[D], u);
+  if (!(u > 0.05 && u < 0.95)) throw new Error("sharedHeight: the foot of the height must be strictly inside the base");
+  if (Math.abs(u - s) < 0.06) throw new Error("sharedHeight: the foot of the height sits (almost) on the middle point");
+  if (Math.abs(u - 0.5) < 0.03) throw new Error("sharedHeight: the foot of the height sits on the middle of the base");
+  const names = { BC: B + C, CD: C + D, BD: B + D, AB: A + B, AC: A + C, AD: A + D };
+  const seg = {
+    [names.BC]: { from: B, to: C, base: true },
+    [names.CD]: { from: C, to: D, base: true },
+    [names.BD]: { from: B, to: D, base: true },
+    [names.AB]: { from: A, to: B, base: false },
+    [names.AC]: { from: A, to: C, base: false },
+    [names.AD]: { from: A, to: D, base: false },
+    [HALF]: { struck: true },
+    [PERP_H]: { struck: true },
+  };
+  /* the right-angle box goes on the side of the foot AWAY from the middle
+     point, so it never touches the middle line from the apex */
+  const away = u > s ? 1 : -1, bl = Math.sqrt(L2);
+  return {
+    apex: A, base, s, pts, foot, seg, names, tris,
+    sketch: {
+      pts,
+      lines: [[B, D], [A, B], [A, C], [A, D]],
+      par: [],
+      tints: tris.map(t => [...t]),
+      height: { from: A, foot, dir: { x: away * bx / bl, y: away * by / bl } },
+    },
+  };
+}
+
+/* ---------------- the area marker (ew3, spec.mode "area") ----------------
+   fill  the two chip names in box order: [top, bottom]
+   spec  { mode: "area", seg, tris: ["ABC", "ACD"] }   (seg from sharedHeight,
+         tris = the named triangles, top first)
+
+   RIGHT when the top chip is the BASE of the first named Δ and the bottom
+   chip the base of the second: a segment on the base line whose two ends
+   are both corners of that Δ. The order matters here: the triangles are
+   named, so the bases follow the names.
+
+   WRONG, with a reason the screen turns into a hint. The checks for one
+   particular wrong chip come before "repeat", as in ew1 and ew2:
+     "empty"    a box is still empty
+     "unknown"  a chip that is not in this sketch (caller bug)
+     "crossed"  ½ or ⊥h: struck through, they do not stay (the cross-out step)
+     "shared"   the side the two named Δe SHARE: a side, not a base
+     "repeat"   one chip in both boxes: the fraction says nothing
+     "order"    the two right bases, swapped
+     "pattern"  anything else
+   Like markRatio, it reads only the SHAPE of the fill (which corners, which
+   line), never a length. tools/check-ewe-marker.mjs proves it against
+   areas measured from the coordinates. */
+export function markArea(fill, spec) {
+  if (!Array.isArray(fill) || fill.length !== 2 || fill.some(x => !x)) return { ok: false, why: "empty" };
+  const s = fill.map(n => spec.seg[n]);
+  if (s.some(x => !x)) return { ok: false, why: "unknown" };
+  if (s.some(x => x.struck)) return { ok: false, why: "crossed" };
+  const [T1, T2] = spec.tris.map(t => new Set(t));
+  const inT = (x, T) => T.has(x.from) && T.has(x.to);
+  if (s.some(x => inT(x, T1) && inT(x, T2))) return { ok: false, why: "shared" };
+  if (fill[0] === fill[1]) return { ok: false, why: "repeat" };
+  const baseOf = (x, T) => x.base && inT(x, T);
+  if (baseOf(s[0], T1) && baseOf(s[1], T2)) return { ok: true, why: "ok" };
+  if (baseOf(s[0], T2) && baseOf(s[1], T1)) return { ok: false, why: "order" };
+  return { ok: false, why: "pattern" };
 }

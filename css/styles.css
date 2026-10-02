@@ -1090,3 +1090,24 @@ body.has-preview-banner .view{padding-bottom:84px;}
    a stacked fraction */
 .ewe-show{margin:6px 0 10px; min-height:0;}
 .ewe-opt .ewf{font-size:1.1rem; font-weight:700;}
+/* ew3 "Deel 'n sy": her colour habit. Each named triangle has a light tint
+   of its own, in the sketch AND on the words "Opp Δ …" in the pad and on
+   the card, so the order is seen, not guessed. The text tints are the
+   sketch tints laid over white, so the two read as the same colour. */
+.ewtint{color:var(--ink); border-radius:5px; padding:.04em .28em;}
+.ewpad-fx.ewtint{color:var(--ink); padding:.04em .28em;}
+.ewtint-1{background:#ffef9e;}
+.ewtint-2{background:#ffcfe3;}
+svg.diag .ewe-tint{stroke:none;}
+svg.diag .ewe-tint-1{fill:#ffd400; fill-opacity:.38;}
+svg.diag .ewe-tint-2{fill:#ff5fa2; fill-opacity:.3;}
+/* the dotted ⊥h, its right-angle box and its label: red, her p.41 code
+   ("⊥h rooi = loodregte hoogte") */
+svg.diag .ln.ewe-h{stroke:#e03131; stroke-width:2; stroke-dasharray:.5 5;}
+svg.diag .mk.ewe-ra{stroke:#e03131; stroke-width:1.6;}
+svg.diag .pl.ewe-hl{fill:#e03131;}
+/* her purple strokes through the ½ and the ⊥h: a span INSIDE the one
+   fraction drawer, never a second drawer */
+.ewf-x{text-decoration:line-through; text-decoration-color:#8c3fd1; text-decoration-thickness:2.5px;}
+/* a filled box, written out as a finished line (✓ feedback, "Wys my") */
+.ewpad-in{color:var(--ink); padding:0 .06em;}

@@ -29,6 +29,15 @@ What it does (all against a LOCAL copy, never the live class):
     first EMPTY box), a bottom-piece answer with its hint, the right
     answer, the half-built question's stacked-fraction options, every
     two-line card, the end screen. Its PNGs start with "ew2-".
+  * ew3 ("Deel 'n sy"): it is locked on the map until ew2 is passed; then
+    ew2's end screen leads on to it and the map unlocks it. The walk: every
+    step of every ew3 question, boxes empty, the wrong fills with their
+    hints (the swapped order, the shared side, a struck-through ½ or ⊥h),
+    the right fill, every three-fraction card (no break inside a fraction,
+    the chain breaking only before an "=", the reason moved down whole, the
+    ½ and ⊥h struck INSIDE the one drawer), Q5's Nee, the end screen; the
+    two tints and the dotted ⊥h with its right-angle box in every sketch.
+    Its PNGs start with "ew3-".
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -48,7 +57,11 @@ def free_port():
     s = socket.socket(); s.bind(("127.0.0.1", 0)); p = s.getsockname()[1]; s.close(); return p
 
 PORT = free_port()
-BASE = f"http://localhost:{PORT}/index.html"
+# 127.0.0.1, not "localhost": serve.py listens on IPv4 only, and on this machine
+# every "localhost" connection first waits about a second on IPv6, which made
+# each page load take ~7 s and some logins time out (2026-10-02). Same server,
+# same checks.
+BASE = f"http://127.0.0.1:{PORT}/index.html"
 server = subprocess.Popen([sys.executable, "serve.py", str(PORT)], cwd=ROOT,
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -127,14 +140,17 @@ LABELS_JS = r"""
   };
   const texts = [...svg.querySelectorAll('text.pl')];
   const lines = [...svg.querySelectorAll('line.ln')].map(l => ['x1','y1','x2','y2'].map(k => +l.getAttribute(k)));
-  const marks = [...svg.querySelectorAll('path.ewe-par')].map(R);
+  const marks = [...svg.querySelectorAll('path.ewe-par, path.ewe-ra')].map(R);
   const dots = [...svg.querySelectorAll('circle')].map(c => { const x = +c.getAttribute('cx'), y = +c.getAttribute('cy'), r = +c.getAttribute('r'); return { x0: x - r, y0: y - r, x1: x + r, y1: y + r }; });
   const vb = svg.viewBox.baseVal;
-  const res = { labels: texts.length, lines: lines.length, arrows: marks.length, collisions: [] };
+  const res = { labels: texts.length, lines: lines.length, arrows: svg.querySelectorAll('path.ewe-par').length, collisions: [],
+                tints: svg.querySelectorAll('polygon.ewe-tint').length, heights: svg.querySelectorAll('line.ewe-h').length,
+                dotted: [...svg.querySelectorAll('line.ewe-h')].every(l => getComputedStyle(l).strokeDasharray !== 'none'),
+                boxes: svg.querySelectorAll('path.ewe-ra').length, hlabel: [...texts].filter(t => t.textContent === '⊥h').length };
   texts.forEach((t, i) => {
     const r = R(t);
     lines.forEach(l => { if (segHitsRect(...l, r)) res.collisions.push(`${t.textContent} touches a line`); });
-    marks.forEach(m => { if (hit(r, m)) res.collisions.push(`${t.textContent} touches a ∥ arrow`); });
+    marks.forEach(m => { if (hit(r, m)) res.collisions.push(`${t.textContent} touches a ∥ arrow or the right-angle box`); });
     dots.forEach(d => { if (hit(r, d)) res.collisions.push(`${t.textContent} touches a dot`); });
     texts.forEach((u, j) => { if (j > i && hit(r, R(u))) res.collisions.push(`${t.textContent} touches ${u.textContent}`); });
     if (r.x0 < 0 || r.y0 < 0 || r.x1 > vb.width || r.y1 > vb.height) res.collisions.push(`${t.textContent} outside the sketch`);
@@ -342,6 +358,8 @@ try:
         map_done = has(page, ".round-card.done")
         ew2_unlocked = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 2 && !c[1].classList.contains('locked') && !!c[1].querySelector('.btn'); }""")
         if not ew2_unlocked: fail("ew2 not unlocked after ew1 was passed")
+        ew3_locked_before = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 3 && c[2].classList.contains('locked') && !c[2].querySelector('.btn'); }""")
+        if not ew3_locked_before: fail("ew3 should be locked before ew2 is passed")
 
         # ---------------- the ew2 walk ----------------
         page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[1].querySelector('.btn').click(); }")
@@ -435,6 +453,147 @@ try:
         saved2 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
             const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew2');
             return { progress: p.ew2 || null, xpEvents: ev.map(e => e.xp) }; }""")
+
+        # ---------------- ew2 -> ew3: the way on, and the map ----------------
+        ew3_checks = []
+        def check3(name, ok):
+            ew3_checks.append((name, ok))
+            if not ok: fail(name)
+        check3("ew2's end screen offers the next round", page.evaluate("""() => [...document.querySelectorAll('.ewe-end .btn')].some(b => b.textContent.includes('Volgende rondte'))"""))
+        click_btn(page, ".ewe-end .btn", "▶ Volgende rondte")
+        page.wait_for_selector(".ewe-play")
+        check3("the way on from ew2 opens ew3", "Deel 'n sy" in page.inner_text(".play-title"))
+        page.evaluate("window.__APP__.go('ewes')")
+        page.wait_for_selector(".round-card")
+        check3("the map unlocks ew3 once ew2 is passed (ew2 shows ✓)", page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')];
+            return c.length >= 3 && c[1].classList.contains('done') && !c[2].classList.contains('locked') && !!c[2].querySelector('.btn'); }"""))
+
+        # ---------------- the ew3 walk ----------------
+        page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[2].querySelector('.btn').click(); }")
+        page.wait_for_selector(".ewe-play")
+        data3 = page.evaluate("""async () => { const m = await import('./js/rounds/ewe3-deel-n-sy.js');
+            return m.round.eweQuestions.map(q => ({ id: q.id, area: !!(q.write && q.write.area), steps: q.steps.map(s => {
+              const T = m.SKETCHES[q.id], tris = s.spec ? s.spec.tris : null;
+              const inBoth = c => { const g = T.seg[c]; return !!g && !g.struck && tris.every(t => t.includes(g.from) && t.includes(g.to)); };
+              const isBase = c => { const g = T.seg[c]; return !!g && !g.struck && g.base; };
+              return { type: s.type, chips: s.chips || [], answer: s.answer || [], hints: s.hints || {},
+                shared: (s.chips || []).filter(inBoth), struck: (s.chips || []).filter(c => T.seg[c] && T.seg[c].struck),
+                other: (s.chips || []).filter(c => T.seg[c] && !T.seg[c].struck && !inBoth(c) && !(s.answer || []).includes(c) && !isBase(c)),
+                options: s.options && s.options.map(o => ({ text: o.text, correct: !!o.correct, hint: o.hint || '' })), okLine: s.okLine || '' }; }) })); }""")
+        CARD3_JS = r"""() => {
+          const c = document.querySelector('.ewe-write'); if (!c) return null;
+          const line = c.querySelector('.ewl-area');
+          const res = { area: !!line, text: (c.querySelector('.ewe-write-text') || {}).textContent || '', fracs: c.querySelectorAll('.ewf').length };
+          if (!line) return res;
+          const fr = [...line.querySelectorAll('.ewf')];
+          const strikes = [...line.querySelectorAll('.ewf-x')];
+          res.strikes = strikes.length;
+          res.strikesInsideMiddle = strikes.every(x => x.closest('.ewf') === fr[1] && !!x.closest('.ewf-n, .ewf-d'));
+          res.struckText = strikes.map(x => x.textContent).join(' ');
+          res.tints = [...fr[0].querySelectorAll('.ewtint')].map(x => x.className.match(/ewtint-\d/)[0] + ':' + x.textContent);
+          /* each "=" unit is ONE line (nothing breaks inside it) */
+          res.unitsWrapped = [...line.querySelectorAll('.ewq-u')].filter(u => {
+            const r = u.getBoundingClientRect(), f = u.querySelector('.ewf').getBoundingClientRect();
+            return r.height > f.height + 2; }).length;
+          /* rows, by each unit's vertical CENTRE (units on one row are centred,
+             and their heights differ, so their tops do not line up) */
+          res.rows = new Set([...line.querySelectorAll('.ewq-u')].map(u => { const r = u.getBoundingClientRect(); return Math.round((r.top + r.bottom) / 8); })).size;
+          const rs = line.querySelector('.ewl-rs');
+          res.reason = rs ? rs.textContent : '';
+          if (rs) { const rg = document.createRange(); rg.selectNodeContents(rs);
+            res.reasonLines = new Set([...rg.getClientRects()].map(r => Math.round(r.top))).size;
+            const q = line.querySelector('.ewq').getBoundingClientRect(), r = rs.getBoundingClientRect();
+            res.reasonBelow = r.top >= q.bottom - 1; }
+          return res; }"""
+        for qi, q in enumerate(data3):
+            n = qi + 1
+            P = f"ew3 Q{n}"
+            lab = page.evaluate(LABELS_JS)
+            label_rows.append((q["id"], lab))
+            if lab is None: fail(f"{P}: no sketch")
+            else:
+                for c in lab["collisions"]: fail(f"{P} sketch: {c}")
+                check3(f"{P} sketch: two tinted triangles", lab["tints"] == 2)
+                if q["area"]:
+                    check3(f"{P} sketch: the dotted ⊥h, its right-angle box and its label", lab["heights"] == 1 and lab["dotted"] and lab["boxes"] == 1 and lab["hlabel"] == 1)
+                else:
+                    check3(f"{P} sketch: no ⊥h and no ∥ arrows (Q5)", lab["heights"] == 0 and lab["arrows"] == 0)
+            for si, st in enumerate(q["steps"]):
+                tag = f"{P} step {si + 1} ({st['type']})"
+                k = si + 1
+                if st["type"] == "build":
+                    a = st["answer"]
+                    ps = pad_state()
+                    check3(f"{tag}: {len(a)} boxes, the glow on the first", len(ps["texts"]) == len(a) and ps["next"] == 0)
+                    if si == 0:
+                        tw = page.evaluate("() => [...document.querySelectorAll('.ewe-step:last-child .ewpad-disp .ewtint')].map(x => x.className.match(/ewtint-\\d/)[0] + ':' + x.textContent)")
+                        check3(f"{tag}: the two 'Opp Δ' words carry the two tints {tw}", len(tw) == 2 and tw[0].startswith("ewtint-1:Opp Δ") and tw[1].startswith("ewtint-2:Opp Δ"))
+                    measure(page, f"{tag}: boxes empty")
+                    shot(page, f"ew3-q{n}-s{k}-a-boxes-empty.png")
+                    wrongs = [([a[1], a[0]], "Kyk watter Δ staan bo", "swapped order")]
+                    if st["shared"]: wrongs.append(([st["shared"][0], a[1]], "DEEL", f"the shared side {st['shared'][0]}"))
+                    for c in st["struck"]: wrongs.append(([c, a[1]] if c == "½" else [a[0], c], "doodgetrek", f"struck-through {c}"))
+                    if n == 1 and si == 0:
+                        wrongs.append(([a[0], a[0]], "sê die breuk niks", "the same chip twice"))
+                        if st["other"]: wrongs.append(([st["other"][0], a[1]], "Soek dié sy", f"not a base: {st['other'][0]}"))
+                    for wi, (fill, want, name) in enumerate(wrongs):
+                        clear_pad()
+                        for c in fill: click_chip(page, c)
+                        measure(page, f"{tag}: boxes full ({name})")
+                        click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                        measure(page, f"{tag}: {name} + hint")
+                        hint = page.inner_text(".ewe-step:last-child .ewe-hint") if seen(page, ".ewe-step:last-child .ewe-hint") else ""
+                        check3(f"{tag}: {'/'.join(fill)} ({name}) gets its hint", want in hint)
+                        shot(page, f"ew3-q{n}-s{k}-b{wi + 1}-wrong.png")
+                    clear_pad()
+                    for c in a: click_chip(page, c)
+                    measure(page, f"{tag}: boxes full (right)")
+                    shot(page, f"ew3-q{n}-s{k}-c-boxes-full.png")
+                    click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                    measure(page, f"{tag}: marked right")
+                    check3(f"{tag}: right answer {'/'.join(a)} accepted", has(page, f".ewe-steps > .ewe-step:nth-child({k}) .ewpad.is-locked"))
+                    fbf = page.evaluate("(k) => document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-fb.good .ewf`).length", k)
+                    check3(f"{tag}: the ✓ line is the finished frame ({fbf} fractions)", fbf == (2 if si == 0 else 1))
+                else:
+                    measure(page, f"{tag}: options")
+                    shot(page, f"ew3-q{n}-s{k}-d-options.png")
+                    for o in [o for o in st["options"] if not o["correct"]]:
+                        click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
+                        measure(page, f"{tag}: wrong pick {o['text'][:24]}")
+                        hint = page.inner_text(".ewe-step:last-child .ewe-hint") if seen(page, ".ewe-step:last-child .ewe-hint") else ""
+                        check3(f"{tag}: '{o['text']}' shows its own hint", o["hint"] and o["hint"] in hint)
+                    shot(page, f"ew3-q{n}-s{k}-e-wrong-pick.png")
+                    right = next(o["text"] for o in st["options"] if o["correct"])
+                    click_btn(page, ".ewe-step:last-child .ewe-opt", right)
+                    measure(page, f"{tag}: right pick")
+                    # the card and the way on now follow this step, so it is no
+                    # longer :last-child: address it by its place
+                    fsel = f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb"
+                    fb = page.inner_text(fsel) if seen(page, fsel) else ""
+                    check3(f"{tag}: '{right}' is right and ends on its takeaway", st["okLine"] in fb)
+            card = page.evaluate(CARD3_JS)
+            if q["area"]:
+                ok = (bool(card) and card["area"] and card["fracs"] == 3 and card["strikes"] == 4 and card["strikesInsideMiddle"]
+                      and card["struckText"] == "½ ⊥h ½ ⊥h" and card["unitsWrapped"] == 0
+                      and card["reason"] == "(gemeenskaplike hoogte ⊥ en lyn)" and card["reasonLines"] == 1
+                      and len(card["tints"]) == 2)
+                check3(f"{P}: card = three fractions, ½ and ⊥h struck inside the middle one, chain on {card and card.get('rows')} row(s), reason whole{' (moved down)' if card and card.get('reasonBelow') else ''}", ok)
+                if not ok: print("   card:", card)
+            else:
+                check3(f"{P}: card = the Nee takeaway, no fraction", bool(card) and not card["area"] and card["fracs"] == 0 and "ander gereedskap" in card["text"])
+            measure(page, f"{P}: Só skryf jy dit card")
+            page.evaluate("document.querySelector('.ewe-write').scrollIntoView()")
+            shot(page, f"ew3-q{n}-f-card.png")
+            click_btn(page, ".ewe-next")
+            page.wait_for_timeout(250)
+        page.wait_for_selector(".ewe-end", timeout=8000)
+        measure(page, "ew3 end of round")
+        check3("ew3 end screen: the takeaway carries the three-fraction chain",
+               page.evaluate("() => { const l = document.querySelector('.ewe-end .ewe-takeaway .ewl-area'); return !!l && l.querySelectorAll('.ewf').length === 3 && l.querySelectorAll('.ewf-x').length === 4; }"))
+        shot(page, "ew3-end-of-round.png")
+        saved3 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
+            const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew3');
+            return { progress: p.ew3 || null, xpEvents: ev.map(e => e.xp) }; }""")
         ctx.close()
 
         # ---------------- the other hint kinds, "show me", and the toggle ----------------
@@ -525,6 +684,31 @@ try:
         click_btn(page, ".ewe-next"); page.wait_for_timeout(200)
         try_fill2(["NP", "NL", "NQ", "NM"], "wil die ∥ lyne", "Q3 NP/NL = NQ/NM (true, no ∥ line) -> ∥-lines hint")
         ctx.close()
+
+        # ---------------- ew3: "show me" on a step with its own frame ----------------
+        ctx, page = new_page(browser)
+        login(page, "Demo Matric", "gr12", ewe="1")
+        page.evaluate("window.__APP__.go('ewe', { roundId: 'ew3' })")
+        page.wait_for_selector(".ewe-play")
+        early = seen(page, ".ewe-step:last-child .ewe-showme")
+        extra.append(("ew3: 'show me' NOT on screen before any wrong try", not early))
+        if early: fail("ew3: 'show me' is on screen before any wrong try")
+        for fill in (["CD", "BC"], ["AC", "CD"], ["BC", "BC"]):
+            page.evaluate("() => { const d = document.querySelector('.ewe-step:last-child .ewkey-del'); while (!d.disabled) d.click(); }")
+            for c in fill: click_chip(page, c)
+            click_btn(page, ".ewe-step:last-child .ewkey-sub")
+        shown = seen(page, ".ewe-step:last-child .ewe-showme")
+        extra.append(("ew3: 'show me' offered after 3 wrong tries", shown))
+        if not shown: fail("ew3: 'show me' not offered after 3 wrong tries")
+        click_btn(page, ".ewe-step:last-child .ewe-showme")
+        filled = page.evaluate("() => [...document.querySelectorAll('.ewe-steps > .ewe-step:first-child .ewslot')].map(x => x.textContent)")
+        fbf = page.evaluate("() => document.querySelectorAll('.ewe-steps > .ewe-step:first-child .ewe-fb.revealed .ewf').length")
+        locked = has(page, ".ewpad.is-locked") and not seen(page, ".ewe-showme") and filled == ["BC", "CD"] and fbf == 2
+        extra.append((f"ew3: 'show me' fills {filled}, shows the finished frame ({fbf} fractions) and moves on", locked))
+        if not locked: fail("ew3: 'show me' did not fill and lock with the frame line")
+        measure(page, "ew3 Q1 after 'show me'")
+        shot(page, "ew3-show-me.png")
+        ctx.close()
         browser.close()
 finally:
     server.terminate()
@@ -548,13 +732,18 @@ print(f"  {len(fraction_rows)} states, {T} fraction renders measured, {B} bad")
 
 print("\nSKETCH LABELS")
 for qid, lab in label_rows:
-    if lab: print(f"  {qid}: {lab['labels']} labels, {lab['lines']} lines, {lab['arrows']} ∥ arrows, {len(lab['collisions'])} collisions")
+    if lab: print(f"  {qid}: {lab['labels']} labels, {lab['lines']} lines, {lab['arrows']} ∥ arrows, {len(lab['collisions'])} collisions"
+                  + (f", {lab['tints']} tints, {lab['heights']} dotted ⊥h, {lab['boxes']} right-angle box" if lab.get('tints') else ""))
 
 print("\new2 CHECKS")
 for name, ok in ew2_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 print(f"  {'ok  ' if ew2_locked_before else 'FAIL'} ew2 locked on the map before ew1 is passed")
 print(f"  {'ok  ' if next_is_ew2 else 'FAIL'} ew1's end screen offers the next round")
 print(f"  {'ok  ' if ew2_unlocked else 'FAIL'} ew2 unlocked once ew1 is passed")
+
+print("\new3 CHECKS")
+print(f"  {'ok  ' if ew3_locked_before else 'FAIL'} ew3 locked on the map before ew2 is passed")
+for name, ok in ew3_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 
 print("\nOTHER BEHAVIOURS")
 for name, ok in extra: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
@@ -563,6 +752,9 @@ print(f"\nSAVING (local backend): ew1 progress {json.dumps(saved['progress'])}, 
 if not (saved["progress"] and saved["progress"].get("passed")): fail("ew1 not saved as passed")
 print(f"SAVING (local backend): ew2 progress {json.dumps(saved2['progress'])}, XP events {saved2['xpEvents']}")
 if not (saved2["progress"] and saved2["progress"].get("passed")): fail("ew2 not saved as passed")
+print(f"SAVING (local backend): ew3 progress {json.dumps(saved3['progress'])}, XP events {saved3['xpEvents']}")
+if not (saved3["progress"] and saved3["progress"].get("passed")): fail("ew3 not saved as passed")
+if saved3["xpEvents"] != [50]: fail(f"ew3 XP should be 5 questions x 10 = 50, got {saved3['xpEvents']}")
 print(f"\nNETWORK: {len(blocked)} request(s) to other hosts blocked" + (": " + ", ".join(sorted({urlparse(u).hostname for u in blocked})) if blocked else ""))
 print(f"CONSOLE ERRORS: {len(console_errors)}")
 for e in console_errors[:10]: print("  ", e[:200])
