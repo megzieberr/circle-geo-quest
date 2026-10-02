@@ -319,6 +319,17 @@ export function sketchSvg(spec) {
      centre is farthest from every line, chevron, placed label and edge */
   const cx = xs.length ? names.reduce((a, k) => a + P[k].x, 0) / names.length : W / 2;
   const cy = names.reduce((a, k) => a + P[k].y, 0) / names.length;
+  /* ew3, HER RULING 2026-10-02 (Q3: S and T had drifted above the base line,
+     into the yellow Δ): a point label never sits INSIDE a tinted triangle.
+     Only sketches with tints carry the rule, so ew1 and ew2 keep the layouts
+     she approved. */
+  const tintPolys = (spec.tints || []).map(t => t.map(k => P[k]));
+  const inTri = (x, y, [a, b, c]) => {
+    const s1 = (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
+    const s2 = (c.x - b.x) * (y - b.y) - (c.y - b.y) * (x - b.x);
+    const s3 = (a.x - c.x) * (y - c.y) - (a.y - c.y) * (x - c.x);
+    return (s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0);
+  };
   const placed = [];
   const labels = [];
   names.forEach(k => {
@@ -333,6 +344,8 @@ export function sketchSvg(spec) {
       marks.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - 4); });
       placed.forEach(q => { score = Math.min(score, Math.hypot(lx - q.x, ly - q.y) - 8); });
       score = Math.min(score, lx - 7, W - 7 - lx, ly - 8, H - 8 - ly);
+      /* inside a tinted Δ is never allowed (see tintPolys above) */
+      if (tintPolys.some(t => inTri(lx, ly, t))) score -= 1000;
       /* a small pull towards "outside the figure", only to break ties */
       score += 0.6 * Math.cos(ang - out0);
       if (score > bestScore) { bestScore = score; best = { x: lx, y: ly }; }
