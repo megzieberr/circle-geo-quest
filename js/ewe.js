@@ -336,10 +336,13 @@ function calm() {
    we established in blipwork", or the Gr12 class scrolls up and down all
    the time. Blipwork's precedent: an answered input disappears with
    display:none and no height animation, so the scroll to the next step is
-   measured on the final layout. Two folds here, both in this shared player,
+   measured on the final layout. Three folds here, all in this shared player,
    so every round gets them:
      1. the intro, once step 1 of a question is right (foldIntro below);
-     2. a finished pick step keeps only its chosen option (mountPick).
+     2. a finished pick step keeps only its chosen option (mountPick);
+     3. a finished build step drops its locked frame, and its ✓ line (the
+        full written line) is the answer display (mountBuild; foreman
+        ruling 2026-10-02, after the fold walk measured ew4's step 3).
    No new words: a chevron is the only new thing on the screen. */
 
 /* Fold 1: the intro becomes ONE line, a chevron and the text cut with an
@@ -406,6 +409,15 @@ function mountBuild(host, step, onDone) {
   host.appendChild(fb); host.appendChild(hint); host.appendChild(showMe);
 
   let wrong = 0, over = false;
+  /* Fold 3 (foreman ruling 2026-10-02): once the step is finished, right or
+     shown, the locked frame (the boxes with their chips) and the line under
+     it say the same thing twice, and on a small phone the frame is what
+     pushes the sketch off the top for the next step. So the frame goes,
+     instantly ([hidden] is display:none in .ewe-q, no height animation),
+     BEFORE onDone brings the next step in, so that scroll is measured on
+     the folded page. The prompt and the full written line stay, as
+     Blipwork keeps the entered value and drops the pad. */
+  const fold = () => { padHost.hidden = true; };
   /* ew3, opt-in: a step may bring its own frame (the pad's frame contract,
      text cells allowed in a fraction); the fill is then as long as ITS
      boxes, and the finished line is drawn from that frame. Without
@@ -429,6 +441,7 @@ function mountBuild(host, step, onDone) {
         fb.hidden = false;
         fb.className = "dp-feedback good ewe-fb";
         fb.innerHTML = `<span class="ewe-tick">✓</span> ${lineOf(fill)}`;
+        fold();
         onDone({ firstTry: wrong === 0, fill });
         return;
       }
@@ -450,6 +463,7 @@ function mountBuild(host, step, onDone) {
     fb.hidden = false;
     fb.className = "dp-feedback revealed ewe-fb";
     fb.innerHTML = `💡 ${UI.shown} ${lineOf(step.answer)}`;
+    fold();
     onDone({ firstTry: false, fill: step.answer });
   });
 }

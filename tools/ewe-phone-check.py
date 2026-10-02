@@ -65,6 +65,14 @@ What it does (all against a LOCAL copy, never the live class):
     bottom of Kontroleer is REPORTED (a number, not a pass/fail). Plus one
     reduced-motion run: the scroll is a jump, not a glide. Viewport PNGs
     start with "fold-".
+  * Fold 3 (foreman ruling 2026-10-02): after EVERY build step of ew1 to
+    ew4 is answered right (and after each "show me"), its boxes and
+    Kontroleer are hidden and its prompt and line are on screen. The fold
+    walk and the reduced-motion run first close the pop-ups a fresh login
+    opens on home (the install sheet, the Weekend Rally modal) with their
+    own ✕, and every fold measurement checks that no pop-up is open, the
+    page is not scroll-locked, and a finger on the sketch's bottom edge or
+    on a box touches it, not a sheet. Viewport PNGs start with "fold3-".
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -355,6 +363,60 @@ def seen(page, sel):
     return page.evaluate("""(s) => [...document.querySelectorAll(s)].some(e => {
         const c = getComputedStyle(e), r = e.getBoundingClientRect();
         return c.display !== 'none' && c.visibility !== 'hidden' && r.width > 0 && r.height > 0; })""", sel)
+
+# Pop-ups (foreman, 2026-10-02): a fresh login lands on home, which opens the
+# one-time install sheet and, Friday to Sunday, the Weekend Rally modal. They
+# are fixed sheets over the WHOLE app (going to a round does not close them)
+# and an open one locks the page's scroll (body overflow hidden). A walk that
+# measures what a learner sees closes them first, the way a learner does: the
+# ✕ of the top one, then the next. Every pop-up shell here is a *-overlay.
+POPUPS_JS = r"""() => ({
+  open: [...document.querySelectorAll('[class*=overlay]')].filter(e => { const c = getComputedStyle(e); return c.position === 'fixed' && c.display !== 'none' && c.visibility !== 'hidden'; })
+        .map(e => e.className + (e.querySelector('h1') ? ' (' + e.querySelector('h1').textContent.trim() + ')' : '')),
+  locked: document.body.style.overflow === 'hidden' })"""
+
+def popups(page):
+    return page.evaluate(POPUPS_JS)
+
+def close_popups(page):
+    """Close every open pop-up with its own ✕, top one first, as a learner
+    would (a real click, so a sheet still covering the ✕ would stop it).
+    Returns what was closed."""
+    closed = []
+    for _ in range(8):
+        p = popups(page)
+        if not p["open"]: break
+        page.evaluate("""() => { const all = [...document.querySelectorAll('[class*=overlay]')].filter(e => getComputedStyle(e).position === 'fixed');
+            all.forEach(e => e.removeAttribute('data-pw-top')); all[all.length - 1].setAttribute('data-pw-top', '1'); }""")
+        closed.append(p["open"][-1])
+        try:
+            page.click("[data-pw-top] .wk-close", timeout=5000)
+            page.wait_for_function("() => !document.querySelector('[data-pw-top]')", timeout=3000)
+        except Exception as e:
+            fail(f"pop-up {p['open'][-1]!r} would not close with its ✕: {e}")
+            break
+    page.wait_for_timeout(100)
+    return closed
+
+# Fold 3 (foreman ruling 2026-10-02): a finished BUILD step, what a learner
+# sees of it. Its boxes and Kontroleer gone (display:none), its prompt and its
+# line (✓, or 💡 after "show me") on screen.
+FINISHED_JS = r"""(k) => {
+  const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
+  const seenEl = e => { if (!e) return false; const c = getComputedStyle(e), r = e.getBoundingClientRect(); return c.display !== 'none' && c.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
+  const slots = [...st.querySelectorAll('.ewpad-disp .ewslot')];
+  const fb = st.querySelector('.ewe-fb');
+  return { slots: slots.length, slotsSeen: slots.filter(seenEl).length, disp: seenEl(st.querySelector('.ewpad-disp')),
+           sub: seenEl(st.querySelector('.ewkey-sub')), prompt: seenEl(st.querySelector('.ewe-prompt')),
+           fb: seenEl(fb) ? fb.textContent.trim() : '', fbKind: fb ? fb.className : '', fbFracs: fb ? fb.querySelectorAll('.ewf').length : 0,
+           h: Math.round(st.getBoundingClientRect().height) }; }"""
+
+def finished(page, k):
+    return page.evaluate(FINISHED_JS, k)
+
+def frame_gone(fz, mark):
+    # the boxes all hidden, Kontroleer hidden, the prompt and the line on screen
+    return fz["slots"] > 0 and fz["slotsSeen"] == 0 and not fz["disp"] and not fz["sub"] and fz["prompt"] and fz["fb"].startswith(mark)
 
 try:
     for _ in range(50):
@@ -910,6 +972,7 @@ try:
         extra = []
         ctx, page = new_page(browser)
         login(page, "Demo Matric", "gr12", ewe="1")
+        close_popups(page)       # the login pop-ups, closed with their ✕, as a learner would
         page.evaluate("window.__APP__.go('ewe', { roundId: 'ew1' })")
         page.wait_for_selector(".ewe-play")
         def try_fill(fill, want_text, name):
@@ -937,6 +1000,10 @@ try:
         locked = has(page, ".ewpad.is-locked") and has(page, ".ewe-fb.revealed") and not seen(page, ".ewe-showme")
         extra.append(("'show me' fills the answer and moves on", locked))
         if not locked: fail("'show me' did not fill and lock")
+        fz = finished(page, 1)
+        fz_ok = frame_gone(fz, "💡") and "revealed" in fz["fbKind"]
+        extra.append((f"Fold 3, after 'show me' its {fz['slots']} boxes and Kontroleer are hidden, the 💡 line ({fz['fbFracs']} fractions) is on screen", fz_ok))
+        if not fz_ok: fail("after 'show me' the frame did not fold away (Fold 3)")
         measure(page, "Q1 after 'show me'")
         click_btn(page, ".ewe-step:last-child .ewe-opt", "∠∠∠")
         click_btn(page, ".ewe-step:last-child .ewe-opt", "lyn ∥ een sy v. Δ, DE ∥ BC")
@@ -956,6 +1023,7 @@ try:
         # ---------------- ew2: the other hint kinds and "show me" ----------------
         ctx, page = new_page(browser)
         login(page, "Demo Matric", "gr12", ewe="1")
+        close_popups(page)       # the login pop-ups, closed with their ✕, as a learner would
         page.evaluate("window.__APP__.go('ewe', { roundId: 'ew2' })")
         page.wait_for_selector(".ewe-play")
         def try_fill2(rest, want_text, name):
@@ -981,6 +1049,10 @@ try:
         locked = has(page, ".ewpad.is-locked") and has(page, ".ewe-fb.revealed") and not seen(page, ".ewe-showme") and filled[:1] == ["JK"]
         extra.append((f"ew2: 'show me' fills {filled} (JK kept first) and moves on", locked))
         if not locked: fail("ew2: 'show me' did not fill and lock")
+        fz = finished(page, 1)
+        fz_ok = frame_gone(fz, "💡") and "revealed" in fz["fbKind"]
+        extra.append((f"ew2: Fold 3, after 'show me' its {fz['slots']} boxes and Kontroleer are hidden, the 💡 line ({fz['fbFracs']} fractions) is on screen", fz_ok))
+        if not fz_ok: fail("ew2: after 'show me' the frame did not fold away (Fold 3)")
         measure(page, "ew2 Q1 after 'show me'")
         # her ruling 2026-10-02: the ∥ reason is RIGHT here too (two right options)
         click_btn(page, ".ewe-step:last-child .ewe-opt", "lyn ∥ een sy v. Δ, JK ∥ GH")
@@ -1000,6 +1072,7 @@ try:
         # ---------------- ew3: "show me" on a step with its own frame ----------------
         ctx, page = new_page(browser)
         login(page, "Demo Matric", "gr12", ewe="1")
+        close_popups(page)       # the login pop-ups, closed with their ✕, as a learner would
         page.evaluate("window.__APP__.go('ewe', { roundId: 'ew3' })")
         page.wait_for_selector(".ewe-play")
         early = seen(page, ".ewe-step:last-child .ewe-showme")
@@ -1018,6 +1091,10 @@ try:
         locked = has(page, ".ewpad.is-locked") and not seen(page, ".ewe-showme") and filled == ["BC", "CD"] and fbf == 2
         extra.append((f"ew3: 'show me' fills {filled}, shows the finished frame ({fbf} fractions) and moves on", locked))
         if not locked: fail("ew3: 'show me' did not fill and lock with the frame line")
+        fz = finished(page, 1)
+        fz_ok = frame_gone(fz, "💡") and "revealed" in fz["fbKind"]
+        extra.append((f"ew3: Fold 3, after 'show me' its {fz['slots']} boxes and Kontroleer are hidden, the 💡 line ({fz['fbFracs']} fractions) is on screen", fz_ok))
+        if not fz_ok: fail("ew3: after 'show me' the frame did not fold away (Fold 3)")
         measure(page, "ew3 Q1 after 'show me'")
         shot(page, "ew3-show-me.png")
         ctx.close()
@@ -1025,6 +1102,7 @@ try:
         # ---------------- ew4: "show me" on a four-box product step ----------------
         ctx, page = new_page(browser)
         login(page, "Demo Matric", "gr12", ewe="1")
+        close_popups(page)       # the login pop-ups, closed with their ✕, as a learner would
         page.evaluate("window.__APP__.go('ewe', { roundId: 'ew4' })")
         page.wait_for_selector(".ewe-play")
         click_btn(page, ".ewe-step:last-child .ewe-opt", "Â")
@@ -1045,6 +1123,10 @@ try:
         locked = has(page, ".ewe-steps > .ewe-step:nth-child(2) .ewpad.is-locked") and not seen(page, ".ewe-showme") and filled == ["AD", "AE", "AB", "AC"] and fbf == 2
         extra.append((f"ew4: 'show me' fills {filled}, shows the finished frame ({fbf} fractions) and moves on", locked))
         if not locked: fail("ew4: 'show me' did not fill and lock with the frame line")
+        fz = finished(page, 2)
+        fz_ok = frame_gone(fz, "💡") and "revealed" in fz["fbKind"]
+        extra.append((f"ew4: Fold 3, after 'show me' its {fz['slots']} boxes and Kontroleer are hidden, the 💡 line ({fz['fbFracs']} fractions) is on screen", fz_ok))
+        if not fz_ok: fail("ew4: after 'show me' the frame did not fold away (Fold 3)")
         measure(page, "ew4 Q1 after 'show me'")
         hats(page, "ew4 Q1 after 'show me'")
         shot(page, "ew4-show-me.png")
@@ -1078,9 +1160,22 @@ try:
         fold_checks = []
         fold_rows = []      # one per build step: where, auto-scrolled?, the measures
         intro_rows = []     # one per question: full, folded, opened heights
+        fold3_rows = []     # one per build step: where, the finished step's height
+        fold3_pics = []     # the foreman's ew4 Q1 pictures: where the folded intro sits
         def checkf(name, ok):
             fold_checks.append((name, ok))
             if not ok: fail(name)
+        # the pop-ups this fresh login opened on home: closed with their ✕
+        # BEFORE any measurement (8144db8 measured through them)
+        closed = close_popups(page)
+        p0 = popups(page)
+        checkf(f"fold walk: the pop-ups from login closed with their ✕ ({'; '.join(closed) or 'none opened'}), none open, the page not scroll-locked",
+               not p0["open"] and not p0["locked"])
+        pop_log = []        # per question: every measurement point's open pop-ups
+        def no_popup(where):
+            p = popups(page)
+            pop_log.append((where, p))
+            return not p["open"] and not p["locked"]
         INTRO_JS = r"""() => {
           const p = document.querySelector('.ewe-q .ewe-intro'), cs = getComputedStyle(p), r = p.getBoundingClientRect();
           const fs = parseFloat(cs.fontSize); let lh = parseFloat(cs.lineHeight); if (!(lh > 0)) lh = 1.2 * fs;
@@ -1104,9 +1199,19 @@ try:
           const bar = document.querySelector('.topbar');
           const head = bar ? bar.getBoundingClientRect().bottom : 0;
           const s = document.querySelector('.ewe-q .q-diagram').getBoundingClientRect();
-          const slots = [...st.querySelectorAll('.ewpad-disp .ewslot')].map(e => { const r = e.getBoundingClientRect(); return [r.top, r.bottom]; });
+          const slotEls = [...st.querySelectorAll('.ewpad-disp .ewslot')];
+          const slots = slotEls.map(e => { const r = e.getBoundingClientRect(); return [r.top, r.bottom]; });
           const sub = st.querySelector('.ewkey-sub').getBoundingClientRect();
-          return { head, vh: window.innerHeight, y: window.scrollY, sTop: s.top, sBot: s.bottom, slots, subTop: sub.top, subBot: sub.bottom }; }"""
+          // what a finger at that point would touch: inside the step (or the
+          // sketch), not a sheet over it; null when the point is off screen
+          const vw = document.documentElement.clientWidth, vh = window.innerHeight;
+          const hit = (x, y, box) => { if (y < head || y > vh || x < 0 || x > vw) return null; const e = document.elementFromPoint(x, y); return !!e && box.contains(e); };
+          const fig = document.querySelector('.ewe-q .q-diagram');
+          const covered = slotEls.filter(e => { const r = e.getBoundingClientRect(); return hit((r.left + r.right) / 2, (r.top + r.bottom) / 2, st) === false; }).length;
+          const sketchHit = hit((s.left + s.right) / 2, s.bottom - 3, fig);
+          return { head, vh, y: window.scrollY, sTop: s.top, sBot: s.bottom, slots, subTop: sub.top, subBot: sub.bottom, covered, sketchHit }; }"""
+        INTRO_AT_JS = r"""() => { const bar = document.querySelector('.topbar'); const head = bar ? bar.getBoundingClientRect().bottom : 0;
+          const r = document.querySelector('.ewe-q .ewe-intro').getBoundingClientRect(); return { top: r.top, bottom: r.bottom, head, vh: window.innerHeight }; }"""
         for R in fold_rounds:
             page.evaluate("(id) => window.__APP__.go('ewe', { roundId: id })", R["id"])
             page.wait_for_selector(".ewe-play")
@@ -1116,6 +1221,8 @@ try:
                 P = f"{R['id']} Q{n}"
                 multi = len(q["steps"]) > 1
                 page.wait_for_selector(f".ewe-q[data-q='{q['id']}']")
+                pop_from = len(pop_log)
+                no_popup(f"fold {P}: the intro measured")
                 i0 = page.evaluate(INTRO_JS)
                 checkf(f"fold {P}: the intro is full before step 1 (no chevron, {i0['h']}px)", not i0["folded"] and i0["chev"] is None and not i0["clipped"] and i0["role"] is None)
                 folded_h = None
@@ -1135,15 +1242,40 @@ try:
                                           "cut": max(0, round(f["head"] - f["sTop"])), "y": round(f["y"]), "head": round(f["head"]),
                                           "room": round(f["vh"] - f["sBot"]), "over": over,
                                           "under": max(0, round(f["head"] - f["sBot"]))})
+                        clear = no_popup(f"{tag}: frame measured")
                         if auto:
                             checkf(f"{tag}: after its auto-scroll the sketch's bottom edge is on screen ({f['sBot']:.0f}px, bar {f['head']:.0f}, screen {f['vh']})", sketch_in)
                             checkf(f"{tag}: after its auto-scroll all {len(f['slots'])} boxes of the frame are on screen" + (f" (the lowest box ends {over}px below the screen)" if over else ""), frame_in)
+                            checkf(f"{tag}: no pop-up open, and nothing covers the sketch's bottom edge or the {len(f['slots'])} boxes (a finger there touches them: {len(f['slots']) - f['covered']} of {len(f['slots'])})",
+                                   clear and f["covered"] == 0 and f["sketchHit"] is not False)
                             measure(page, f"{tag}: after the auto-scroll")
                         vshot(page, f"fold-{R['id']}-q{n}-s{k}-build.png")
+                        if R["id"] == "ew4" and n == 1 and k in (2, 3):
+                            # the foreman's pictures: ew4 Q1 as the learner sees it after
+                            # the auto-scroll, then one swipe up to the folded intro line
+                            ia = page.evaluate(INTRO_AT_JS)
+                            fold3_pics.append({"where": f"ew4 Q1 s{k} brought in", "intro": "on screen" if ia["top"] >= ia["head"] - 0.5 and ia["bottom"] <= ia["vh"] + 0.5
+                                               else f"{round(ia['head'] - ia['top'])}px above the bar's edge (under the bar or off the top)"})
+                            vshot(page, f"fold3-ew4-q1-s{k}.png")
+                            y_keep = page.evaluate("window.scrollY")
+                            page.evaluate("() => { const bar = document.querySelector('.topbar'); const head = bar ? bar.getBoundingClientRect().bottom : 0; window.scrollTo({ top: window.scrollY + document.querySelector('.ewe-q .ewe-intro').getBoundingClientRect().top - head - 4, behavior: 'instant' }); }")
+                            vshot(page, f"fold3-ew4-q1-s{k}-swipe-up.png")
+                            page.evaluate("(y) => window.scrollTo({ top: y, behavior: 'instant' })", y_keep)
                         for c in st["answer"][len(st["fixed"]):]: click_chip(page, c)
                         click_btn(page, ".ewe-step:last-child .ewkey-sub")
                         checkf(f"{tag}: right answer accepted", has(page, f".ewe-steps > .ewe-step:nth-child({k}) .ewpad.is-locked"))
+                        # Fold 3: the frame goes at once, the ✓ line stays
+                        fz = finished(page, k)
+                        checkf(f"{tag}: Fold 3, answered right: its {fz['slots']} boxes and Kontroleer are hidden, the prompt and the ✓ line ({fz['fbFracs']} fractions) are on screen ({fz['h']}px high now)",
+                               frame_gone(fz, "✓") and "good" in fz["fbKind"])
+                        fold3_rows.append({"where": f"{R['id']} Q{n} s{k}", "h": fz["h"]})
+                        settle(page)
+                        no_popup(f"{tag}: finished")
+                        measure(page, f"{tag}: finished, the frame folded away")
+                        vshot(page, f"fold3-{R['id']}-q{n}-s{k}-done.png")
                     else:
+                        settle(page)
+                        no_popup(f"{tag}: options measured")
                         o0 = page.evaluate(OPTS_JS, k)
                         checkf(f"{tag}: all {o0['all']} options on screen before an answer", o0["all"] >= 2 and o0["vis"] == o0["all"])
                         wrong = next(o["text"] for o in st["options"] if not o["correct"])
@@ -1156,6 +1288,7 @@ try:
                         checkf(f"{tag}: after the right tap only '{right}' stays, green, with its ✓ line",
                                o2["vis"] == 1 and o2["text"] == [right] and o2["green"] == 1 and o2["red"] == 0 and bool(st["okLine"]) and st["okLine"] in o2["fb"])
                         settle(page)
+                        no_popup(f"{tag}: folded to the chosen option")
                         measure(page, f"{tag}: folded to the chosen option")
                         vshot(page, f"fold-{R['id']}-q{n}-s{k}-pick.png")
                     if si == 0:
@@ -1194,6 +1327,9 @@ try:
                 else:
                     intro_rows.append((P, i0["h"], None, None, i0["lh"]))
                 checkf(f"fold {P}: the 'Só skryf jy dit' card follows", has(page, ".ewe-write"))
+                pq = pop_log[pop_from:]
+                bad_pop = [f"{w}: {', '.join(p['open']) or 'page scroll-locked'}" for w, p in pq if p["open"] or p["locked"]]
+                checkf(f"fold {P}: no pop-up or sheet open at any of its {len(pq)} measurements" + (f" ({'; '.join(bad_pop)})" if bad_pop else ""), not bad_pop)
                 click_btn(page, ".ewe-next")
                 page.wait_for_timeout(250)
             page.wait_for_selector(".ewe-end", timeout=8000)
@@ -1202,6 +1338,7 @@ try:
         # reduced motion: the build step's scroll is a jump, not a glide
         ctx, page = new_page(browser, height=667, reduced_motion="reduce")
         login(page, "Demo Matric", "gr12", ewe="1")
+        closed_rm = close_popups(page)       # as the fold walk: their ✕, before anything is measured
         page.evaluate("window.__APP__.go('ewe', { roundId: 'ew3' })")
         page.wait_for_selector(".ewe-play")
         page.wait_for_timeout(150)
@@ -1213,8 +1350,10 @@ try:
         page.wait_for_timeout(700)
         y_b = page.evaluate("window.scrollY")
         f = page.evaluate(FRAME_JS, 2)
-        rm_ok = y_a > 0 and y_a == y_b and f["head"] - 0.5 <= f["sBot"] <= f["vh"] + 0.5 and all(t >= f["head"] - 0.5 and b <= f["vh"] + 0.5 for t, b in f["slots"])
-        checkf(f"reduced motion, ew3 Q1 step 2: the page jumps to its place at once ({y_a}px after 110 ms, {y_b}px later), sketch and frame on screen", rm_ok)
+        p_rm = popups(page)
+        rm_ok = (y_a > 0 and y_a == y_b and f["head"] - 0.5 <= f["sBot"] <= f["vh"] + 0.5 and all(t >= f["head"] - 0.5 and b <= f["vh"] + 0.5 for t, b in f["slots"])
+                 and not p_rm["open"] and not p_rm["locked"] and f["covered"] == 0)
+        checkf(f"reduced motion, ew3 Q1 step 2: the page jumps to its place at once ({y_a}px after 110 ms, {y_b}px later), sketch and frame on screen, no pop-up (closed with ✕: {'; '.join(closed_rm) or 'none opened'})", rm_ok)
         ctx.close()
         browser.close()
 finally:
@@ -1286,6 +1425,11 @@ for r in fold_rows:
     frame = "on" if r["frame_in"] else f"OFF by {r['over']}px"
     sk = "on screen" if r["sketch_in"] else f"OFF by {r['under']}px"
     print(f"  {r['where']:12} {how:22} {r['dist']:18} {r['room']:12}  {sk:13}  {frame:16}  {'on' if r['sub_in'] else 'below':10}  {r['cut']}px")
+print("\n  FOLD 3: a finished build step, its frame gone, the ✓ line left (px high, prompt + line)")
+for i in range(0, len(fold3_rows), 4):
+    print("  " + "   ".join(f"{r['where']:12} {r['h']:4}" for r in fold3_rows[i:i + 4]))
+for r in fold3_pics:
+    print(f"  {r['where']}: the folded intro line is {r['intro']} (fold3-ew4-q1-s*.png as the auto-scroll leaves it, *-swipe-up.png one swipe up)")
 
 print(f"\nSAVING (local backend): ew1 progress {json.dumps(saved['progress'])}, XP events {saved['xpEvents']}, map shows ✓: {map_done}")
 if not (saved["progress"] and saved["progress"].get("passed")): fail("ew1 not saved as passed")
