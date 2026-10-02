@@ -14,15 +14,18 @@
 
    Each question is two steps and the card:
      1  pick   "Deel 'n sy" (a shared height) or "Deel 'n hoek" (a shared
-               angle), each with its formula on a small second line. On
-               the angle kind her star appears at the corner once it is
-               right (sketchAfter, as in ew4)
-     2  pick   the first line: four stacked fractions; the lead line
-               Opp Δ … over Opp Δ … = ☐ above them fills with the right one
+               angle), each with its formula on a small second line. The
+               sketch is bare until this is right; then (sketchAfter) the
+               height kind shows the dotted ⊥h with its box, the angle kind
+               the arc and her star
+     2  pick   the first line: four stacked fractions in a 2 x 2 grid
+               (grid: 2); the lead line Opp Δ … over Opp Δ … = ☐ above
+               them fills with the right one
      card      the three-fraction chain of ew3 (area) or ew4 (sine), with
                the reason in brackets
 
-   The sketches are the ew3 and ew4 builders, as they are: sharedHeight()
+   The sketches are the ew3 and ew4 builders, as they are (the question
+   shows them bare first, see `bare` below): sharedHeight()
    (ONLY the adjacent case: the whole-over-part case shares the height AND
    the angle, so both tools would be right) and sharedAngle() (the cut
    line never ∥). To scale from coordinates. tools/check-ewe-marker.mjs
@@ -32,7 +35,11 @@
 
    Content shape: the same as ew1 to ew4 (read by js/ewe.js), plus the
    opt-in keys this round adds:
-     pick   { …, lead: { n:[cells], d:[cells] } }   the fixed fraction, "="
+     pick   { …, grid: 2 }      the options in a 2 x 2 grid
+            { …, keepSketch: true }   brought in like a build step: the
+                                 sketch stays at the top, the options on
+                                 screen under it (not centred)
+            { …, lead: { n:[cells], d:[cells] } }   the fixed fraction, "="
                                  and one glowing box above the options; the
                                  box becomes the chosen option's fraction
             options [{ text, sub }]    a second, smaller line (the formula)
@@ -63,6 +70,15 @@ const swap = f => ({ n: f.d, d: f.n });
 /* the lead line: the two named triangles, each word in its tint */
 const lead = (tris, tints) => ({ n: [{ t: `Opp Δ ${tris[0]}`, tint: tints[0] }], d: [{ t: `Opp Δ ${tris[1]}`, tint: tints[1] }] });
 
+/* Foreman review 2026-10-02, her standing rule: the picture must not give
+   the answer away. Before step 1 is answered the sketch is BARE: points,
+   lines, labels and the two tints only. The builder's sketch without its
+   `height` (no dotted ⊥h, no right-angle box) or its `angle` (no arc, no
+   star). The right tool brings the tool's mark through step 1's
+   sketchAfter: the ⊥h with its box (ew3's drawing) or the arc with her
+   star (ew4's). sharedHeight and sharedAngle themselves are untouched. */
+const bare = (sk, key) => { const { [key]: _drop, ...rest } = sk; return rest; };
+
 const PROMPT_1 = "Deel hierdie twee Δe 'n HOOGTE of 'n HOEK?";
 const PROMPT_2 = "Watter eerste lyn skryf jy?";
 
@@ -82,7 +98,7 @@ function heightQ(id, T, intro) {
   const tool = { n: [HALF, "·", s1[0], "·", s1[1], "·", SIN], d: [HALF, "·", s2[0], "·", s2[1], "·", SIN] };
   const shared = { n: [HALF, "·", n.AC, "·", PERP_H], d: [HALF, "·", b2, "·", PERP_H] };
   return {
-    id, intro, sketch: T.sketch,
+    id, intro, sketch: bare(T.sketch, "height"),
     steps: [
       {
         type: "pick",
@@ -93,11 +109,14 @@ function heightQ(id, T, intro) {
           { text: TOOL_A, sub: SUB_A,
             hint: `Kyk by ${A}: ${g1} en ${g2} is twee verskillende hoeke. Maar die basisse ${b1} en ${b2} lê op EEN lyn, en die hoogte van ${A} af is dieselfde vir albei. Dit is 'n HOOGTE wat hulle deel.` },
         ],
-        okLine: nb(`Ja. Die basisse ${b1} en ${b2} lê op een lyn, en die hoogte van ${A} af is dieselfde. Deel 'n sy: ½ · basis · ⊥h.`),
+        okLine: nb(`Ja: die basisse ${b1} en ${b2} lê op een lyn, en die hoogte van ${A} af is dieselfde. Deel 'n sy.`),
+        sketchAfter: T.sketch,
       },
       {
         type: "pick",
         prompt: PROMPT_2,
+        grid: 2,
+        keepSketch: true,
         lead: lead(tris, [1, 2]),
         options: [
           fracOpt(right, { correct: true }),
@@ -123,7 +142,7 @@ function angleQ(id, S, intro) {
   const tool = { n: [HALF, "·", d1, "·", PERP_H], d: [HALF, "·", d2, "·", PERP_H] };
   const third = { n: [HALF, "·", S.top[0], "·", d1, "·", SIN], d: right.d };
   return {
-    id, intro, sketch: S.sketch,
+    id, intro, sketch: bare(S.sketch, "angle"),
     steps: [
       {
         type: "pick",
@@ -134,12 +153,14 @@ function angleQ(id, S, intro) {
             hint: `${d1} lê nie op dieselfde lyn as ${d2} nie, dus is daar nie een hoogte vir albei Δe nie. Maar albei Δe het ${H}. Dit is 'n HOEK wat hulle deel.` },
           { text: TOOL_A, sub: SUB_A, correct: true },
         ],
-        okLine: nb(`Ja. Albei Δe het ${H}, en ${d1} lê nie op ${d2} se lyn nie. Deel 'n hoek: ½ · a · b · sin ${H}.`),
+        okLine: nb(`Ja: albei Δe het ${H}, en ${d1} lê nie op ${d2} se lyn nie. Deel 'n hoek.`),
         sketchAfter: S.sketchStar,
       },
       {
         type: "pick",
         prompt: PROMPT_2,
+        grid: 2,
+        keepSketch: true,
         lead: lead(tris, S.tints),
         options: [
           fracOpt(right, { correct: true }),
@@ -195,7 +216,7 @@ export const round = {
   },
   eweQuestions: [
     heightQ("ew5q1", T1,
-      "In Deel 'n sy het die Δe 'n HOOGTE gedeel: hul basisse lê op een lyn en die hoogte kom van dieselfde punt af. In Deel 'n hoek het hulle 'n HOEK gedeel. Nou kry jy net die skets. Kyk eers: hoogte of hoek?"),
+      "Deel 'n sy: die Δe deel 'n HOOGTE, hul basisse lê op een lyn. Deel 'n hoek: die Δe deel 'n HOEK. Nou kry jy net die skets. Kyk eers: hoogte of hoek?"),
     angleQ("ew5q2", S2,
       "K lê op GH en L lê op GJ. Kyk na Opp Δ GKL en Opp Δ GHJ."),
     heightQ("ew5q3", T3,

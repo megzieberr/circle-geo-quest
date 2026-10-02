@@ -235,8 +235,11 @@ export function renderEweRound(app, host, params) {
         steps.appendChild(stepBox);
         /* phone folds (her ruling 2026-10-02): a build step is filled while
            looking at the sketch, so it keeps the sketch on screen; a pick
-           step is still centred as before */
-        if (!first) { if (step.type === "build") bringBuild(stepBox, fig); else bringIn(stepBox); }
+           step is still centred as before. ew5, opt-in (foreman review
+           2026-10-02): a pick step with `keepSketch` is read off the sketch
+           too, so it is brought in like a build step, its options in the
+           place of the frame. */
+        if (!first) { if (step.type === "build" || step.keepSketch) bringBuild(stepBox, fig); else bringIn(stepBox); }
         const done = (res) => {
           run.gated++;
           if (res.firstTry) run.firstTry++;
@@ -385,7 +388,8 @@ function bringBuild(node, fig) {
     const head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
     const y0 = window.scrollY, vh = window.innerHeight;
     const s = fig.getBoundingClientRect();
-    const f = (node.querySelector(".ewpad-disp") || node).getBoundingClientRect();
+    /* a pick step (ew5 keepSketch): its options are what must be on screen */
+    const f = (node.querySelector(".ewe-opts") || node.querySelector(".ewpad-disp") || node).getBoundingClientRect();
     let y = y0 + s.top - head - EDGE;                  // the sketch just under the bar
     const need = y0 + f.bottom + EDGE - vh;            // the frame just above the bottom edge
     if (need > y) {
@@ -503,7 +507,11 @@ function mountPick(host, step, onDone) {
     : lead ? el("div", "ewpad-disp ewe-show ewe-lead", eqHtml(cellFracHtml(lead), '<span class="ewslot is-next"></span>')) : null;
   if (show) host.appendChild(show);
   const yesno = step.layout === "yesno";
-  const opts = el("div", "q-options ewe-opts" + (yesno ? " yesno" : ""));
+  /* ew5, opt-in: `grid: 2` sets the options in a 2 x 2 grid (one stacked
+     fraction per cell), so the sketch keeps its room on a small phone.
+     Without the key the options stack as before. */
+  const grid = !yesno && step.grid === 2;
+  const opts = el("div", "q-options ewe-opts" + (yesno ? " yesno" : "") + (grid ? " grid2 ewe-grid" : ""));
   const hint = el("div", "dp-hint ewe-hint"); hint.hidden = true;
   const fb = el("div", "dp-feedback ewe-fb"); fb.hidden = true;
   /* Ja / Nee keep their natural order; the reasons are shuffled so the

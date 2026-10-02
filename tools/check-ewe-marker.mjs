@@ -552,9 +552,14 @@ console.log(`TOTAL           ${"".padStart(5)}  ${String(T4).padStart(11)}  ${St
      right =  EXACTLY ONE option matches, and it is the one marked correct.
    Step 1: the option marked correct is "Deel 'n sy" for the HEIGHT kind,
    "Deel 'n hoek" for the ANGLE kind, and nothing else is marked. The
-   sketch carries the ⊥h for the HEIGHT kind and the arc (no star yet) for
-   the ANGLE kind, whose step 1 brings the star (sketchAfter). The card
-   names the lead line's triangles and writes the true ratio. */
+   builder's sketch carries the ⊥h for the HEIGHT kind and the arc (no star
+   yet) for the ANGLE kind. No spoilers (foreman review 2026-10-02): the
+   question SHOWS that sketch bare (no ⊥h, no box, no arc, no star: the
+   builder's sketch minus its height or angle key, nothing else changed),
+   and step 1's sketchAfter brings the builder's full sketch (HEIGHT) or
+   its star sketch (ANGLE). The card names the lead line's triangles and
+   writes the true ratio. */
+const bareOf = (sk, key) => { const { [key]: _drop, ...rest } = sk; return rest; };
 /* the apex two named triangles share a height from: a side of each on one
    line, and the SAME corner opposite both */
 function heightApex(pts, n1, n2) {
@@ -610,7 +615,8 @@ for (const q of round5.eweQuestions) {
     if (kindGap < GAP) { problems++; console.error(`✗ ${q.id}: the apex angles have (almost) the same sine (${x1}, ${x2}), so the sin-form would be true too`); }
     const h = S.sketch.height;
     if (!h || h.from !== A || S.sketch.angle || (S.sketch.par || []).length) { problems++; console.error(`✗ ${q.id}: a HEIGHT sketch must carry the ⊥h from ${A}, no arc, no ∥ arrows`); }
-    if (s1.sketchAfter) { problems++; console.error(`✗ ${q.id}: a HEIGHT sketch has no star`); }
+    if (JSON.stringify(q.sketch) !== JSON.stringify(bareOf(S.sketch, "height")) || q.sketch.height || q.sketch.angle) { problems++; console.error(`✗ ${q.id}: the question's sketch is not the bare HEIGHT sketch (no ⊥h before step 1)`); }
+    if (JSON.stringify(s1.sketchAfter) !== JSON.stringify(S.sketch)) { problems++; console.error(`✗ ${q.id}: step 1's sketchAfter is not the full HEIGHT sketch (the ⊥h and its box)`); }
   } else {
     const V = angleAt;
     const thirdOf = n => [...n].filter(k => k !== V);
@@ -623,6 +629,7 @@ for (const q of round5.eweQuestions) {
     if (!after || !after.angle || !after.angle.star || JSON.stringify({ ...after, angle: { ...after.angle, star: false } }) !== JSON.stringify(S.sketch)) {
       problems++; console.error(`✗ ${q.id}: step 1's sketchAfter is not the same sketch with the star on`);
     }
+    if (JSON.stringify(q.sketch) !== JSON.stringify(bareOf(S.sketch, "angle")) || q.sketch.height || q.sketch.angle) { problems++; console.error(`✗ ${q.id}: the question's sketch is not the bare ANGLE sketch (no arc, no star before step 1)`); }
     /* the cut line not ∥ the third side of the whole Δ */
     const [u, w] = named.map(n => { const [a, b] = thirdOf(n); return unitV(P[a], P[b]); });
     const parAngle = Math.asin(Math.min(1, Math.abs(cross(u, w)))) * 180 / Math.PI;

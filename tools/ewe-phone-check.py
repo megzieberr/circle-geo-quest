@@ -75,17 +75,23 @@ What it does (all against a LOCAL copy, never the live class):
     on a box touches it, not a sheet. Viewport PNGs start with "fold3-".
   * ew5 ("Watter een is dit?"): locked on the map until ew4 is passed; then
     ew4's end screen leads on to it and the map unlocks it. No pad: two
-    picks per question. Step 1, the two tools side by side in their
-    natural order, each name with its formula on a smaller line (one line,
-    inside its button, not clipped), the wrong tool with its hint, the
-    right one (her star on the ANGLE kind only, no label moving), Fold 2.
+    picks per question. No spoilers (foreman review 2026-10-02): before
+    step 1 the sketch is BARE (no ⊥h, no box, no arc, no star), also after
+    a wrong tool; after the right tool it has exactly its kind's mark (the
+    dotted ⊥h with its box and label, or the arc with her star), to the end
+    of the question; labels measured clear in both states. Step 1, the two
+    tools side by side in their natural order, each name with its formula
+    on a smaller line (one line, inside its button, not clipped), the wrong
+    tool with its hint, the right one, its ✓ line on two lines, Fold 2.
     Step 2, the lead line (the tinted "Opp Δ" fraction, "=", one glowing
-    box), the four first-line options each ONE stacked fraction (measured
-    like every fraction, hats measured), every wrong option with its hint,
-    the right one filling the lead line. Every card (the ew3 or ew4 chain
-    and its reason), the end screen. In the 375 x 667 fold walk it REPORTS,
-    per pick step, how much of the sketch is on screen with all options on
-    screen (as the auto-scroll leaves it, and at best). PNGs start "ew5-".
+    box, at most 64 px high), the four first-line options in a 2 x 2 grid,
+    each ONE stacked fraction inside its button's padding (measured like
+    every fraction, hats measured), every wrong option with its hint, the
+    right one filling the lead line. Every card (the ew3 or ew4 chain and
+    its reason), the end screen. In the 375 x 667 fold walk: Q1's step 1
+    options on screen before any scroll, and at step 2 at least 150 px of
+    the sketch on screen with all four options, as the auto-scroll leaves
+    it; it REPORTS the px per pick step. PNGs start "ew5-".
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -983,6 +989,8 @@ try:
             return { progress: p.ew4 || null, xpEvents: ev.map(e => e.xp) }; }""")
         # ---------------- ew4 -> ew5: the way on, and the map ----------------
         ew5_checks = []
+        ew5_grid = []       # per step 2: kind, widest fraction, narrowest cell content, font
+        ew5_moved = []      # per question: labels placed afresh when the mark appears
         def check5(name, ok):
             ew5_checks.append((name, ok))
             if not ok: fail(name)
@@ -1024,7 +1032,7 @@ try:
           const lead = st.querySelector('.ewe-lead');
           if (!lead) return null;
           const fr = [...lead.querySelectorAll('.ewf')];
-          return { fracs: fr.length, slots: lead.querySelectorAll('.ewslot').length, glow: lead.querySelectorAll('.ewslot.is-next').length,
+          return { h: Math.round(lead.getBoundingClientRect().height * 10) / 10, fracs: fr.length, slots: lead.querySelectorAll('.ewslot').length, glow: lead.querySelectorAll('.ewslot.is-next').length,
                    words: [...lead.querySelectorAll('.ewtint')].map(x => x.className.match(/ewtint-\d/)[0].slice(7) + ':' + x.textContent.replace(/^Opp\s*Δ\s*/, '')),
                    second: fr[1] ? fr[1].textContent.replace(/\s+/g, '') : '' }; }"""
         FRACOPTS_JS = r"""(k) => {
@@ -1034,7 +1042,10 @@ try:
             const i = { l: r.left + parseFloat(c.borderLeftWidth), r: r.right - parseFloat(c.borderRightWidth), t: r.top + parseFloat(c.borderTopWidth), b: r.bottom - parseFloat(c.borderBottomWidth) };
             const f = [...b.querySelectorAll('.ewf')];
             const q = f[0] ? f[0].getBoundingClientRect() : null;
+            const cl = i.l + parseFloat(c.paddingLeft), cr = i.r - parseFloat(c.paddingRight);
             return { label: b.getAttribute('aria-label') || '', fracs: f.length, text: f[0] ? f[0].textContent.replace(/\s+/g, '') : '',
+                     top: Math.round(r.top), left: Math.round(r.left), cw: Math.round(cr - cl), fitPad: !!q && q.left >= cl - 0.5 && q.right <= cr + 0.5,
+                     font: f[0] ? parseFloat(getComputedStyle(f[0]).fontSize) : 0, grid: b.parentElement.classList.contains('ewe-grid'),
                      inside: !!q && q.left >= i.l - 0.5 && q.right <= i.r + 0.5 && q.top >= i.t - 0.5 && q.bottom <= i.b + 0.5,
                      onScreen: r.left >= -0.5 && r.right <= vw + 0.5, h: Math.round(r.height), w: Math.round(r.width), fw: q ? Math.round(q.width) : 0 }; }); }"""
         for qi, q in enumerate(data5):
@@ -1042,17 +1053,20 @@ try:
             P = f"ew5 Q{n}"
             angle = q["kind"] == "ANGLE"
             lab = page.evaluate(LABELS_JS)
-            label_rows.append((q["id"], lab))
+            label_rows.append((q["id"] + " bare", lab))
             if lab is None:
                 fail(f"{P}: no sketch")
                 continue
             tmap = page.evaluate(TINTMAP_JS)
             for c in lab["collisions"]: fail(f"{P} sketch: {c}")
             check5(f"{P} sketch: two tinted triangles {tmap}, no ∥ arrows", lab["tints"] == 2 and "?" not in "".join(tmap) and lab["arrows"] == 0)
+            BARE = lambda L: L["heights"] == 0 and L["boxes"] == 0 and L["hlabel"] == 0 and L["arcs"] == 0 and L["stars"] == 0
             if angle:
-                check5(f"{P} sketch (ANGLE kind): the arc at the shared angle, no star yet, no ⊥h", lab["arcs"] == 1 and lab["stars"] == 0 and lab["heights"] == 0)
+                AFTER = lambda L: L["arcs"] == 1 and L["stars"] == 1 and L["heights"] == 0 and L["boxes"] == 0 and L["hlabel"] == 0
             else:
-                check5(f"{P} sketch (HEIGHT kind): the dotted ⊥h, its right-angle box and its label, no arc, no star", lab["heights"] == 1 and lab["dotted"] and lab["boxes"] == 1 and lab["hlabel"] == 1 and lab["arcs"] == 0 and lab["stars"] == 0)
+                AFTER = lambda L: L["heights"] == 1 and L["dotted"] and L["boxes"] == 1 and L["hlabel"] == 1 and L["arcs"] == 0 and L["stars"] == 0
+            check5(f"{P} sketch before step 1 ({q['kind']} kind) is BARE: points, lines, {lab['labels']} labels and the two tints only; no ⊥h, no right-angle box, no arc, no star; {len(lab['collisions'])} label collisions",
+                   BARE(lab) and not lab["collisions"])
             for si, st in enumerate(q["steps"]):
                 k = si + 1
                 tag = f"{P} step {k}"
@@ -1067,12 +1081,20 @@ try:
                     if not parts_ok: print("   tools:", pr)
                 else:
                     ld = page.evaluate(LEAD_JS, k)
-                    check5(f"{tag}: the lead line, one fraction 'Opp Δ' over 'Opp Δ', '=' and ONE glowing box", bool(ld) and ld["fracs"] == 1 and ld["slots"] == 1 and ld["glow"] == 1)
+                    check5(f"{tag}: the lead line, one fraction 'Opp Δ' over 'Opp Δ', '=' and ONE glowing box, {ld and ld['h']}px high (at most 64)", bool(ld) and ld["fracs"] == 1 and ld["slots"] == 1 and ld["glow"] == 1 and ld["h"] <= 64)
                     check5(f"{tag}: the lead's 'Opp Δ' words {ld and ld['words']} carry the sketch's tints {tmap}", bool(ld) and tints_match(tmap, ld["words"]))
                     fo = page.evaluate(FRACOPTS_JS, k)
                     fo_ok = len(fo) == 4 and all(o["fracs"] == 1 and o["inside"] and o["onScreen"] and o["label"] for o in fo)
                     check5(f"{tag}: four options, each ONE stacked fraction inside its button with its words as aria-label (widths {', '.join(str(o['fw']) for o in fo)}px)", fo_ok)
                     if not fo_ok: print("   options:", fo)
+                    tops, lefts = sorted({o["top"] for o in fo}), sorted({o["left"] for o in fo})
+                    grid_ok = (len(fo) == 4 and all(o["grid"] for o in fo) and len(tops) == 2 and len(lefts) == 2
+                               and all(sum(1 for o in fo if o["top"] == t) == 2 for t in tops) and all(o["fitPad"] for o in fo))
+                    fonts = sorted({o["font"] for o in fo})
+                    ew5_grid.append((tag, q["kind"], max(o["fw"] for o in fo), min(o["cw"] for o in fo), fonts))
+                    check5(f"{tag}: a 2 x 2 grid, each fraction inside its button's padding (widest {max(o['fw'] for o in fo)}px in {min(o['cw'] for o in fo)}px, font {', '.join(str(x) for x in fonts)}px), no fraction broken",
+                           grid_ok)
+                    if not grid_ok: print("   grid:", fo)
                     check5(f"{tag}: the options are the data's four, in some order", sorted(o["label"] for o in fo) == sorted(o["text"] for o in st["options"]))
                 measure(page, f"{tag}: options")
                 h = hats(page, f"{tag}: options")
@@ -1090,7 +1112,7 @@ try:
                     check5(f"{tag}: the wrong pick '{o['text']}' shows its own hint", bool(o["hint"]) and o["hint"] in hint)
                     shot(page, f"ew5-q{n}-s{k}-b{wi + 1}-wrong.png")
                 if si == 0:
-                    check5(f"{tag}: no star after the wrong pick", page.evaluate(LABELS_JS)["stars"] == 0)
+                    check5(f"{tag}: after the wrong tool the sketch is still bare", BARE(page.evaluate(LABELS_JS)))
                 click_btn(page, ".ewe-step:last-child .ewe-opt", right["text"])
                 measure(page, f"{tag}: right pick")
                 hats(page, f"{tag}: right pick")
@@ -1102,20 +1124,22 @@ try:
                 check5(f"{tag}: Fold 2, only the chosen option stays, green", kept == [right["text"] + "+"])
                 if si == 0:
                     lab1 = page.evaluate(LABELS_JS)
-                    if angle:
-                        label_rows.append((q["id"] + " +star", lab1))
-                        for c in lab1["collisions"]: fail(f"{P} sketch with the star: {c}")
-                        check5(f"{tag}: her star appears at the shared angle, the arc stays, no label moves", lab1["stars"] == 1 and lab1["arcs"] == 1 and lab1["at"] == lab["at"])
-                        shot(page, f"ew5-q{n}-s{k}-c-star.png")
-                    else:
-                        check5(f"{tag}: HEIGHT kind, no star after the right pick, the sketch unchanged", lab1["stars"] == 0 and lab1["at"] == lab["at"])
+                    label_rows.append((q["id"] + (" +arc+star" if angle else " +height"), lab1))
+                    for c in lab1["collisions"]: fail(f"{P} sketch after the right tool: {c}")
+                    moved = sum(1 for a, b in zip(lab["at"], lab1["at"]) if a != b)
+                    ew5_moved.append((P, q["kind"], moved, len(lab["at"])))
+                    check5(f"{tag}: after the right tool the sketch shows exactly its mark: " + ("the arc and her star at the shared angle, no ⊥h" if angle else "the dotted ⊥h, its right-angle box and its label, no arc, no star")
+                           + f"; {len(lab1['collisions'])} label collisions", AFTER(lab1) and not lab1["collisions"])
+                    fbl = page.evaluate("""(k) => { const f = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-fb`); const rg = document.createRange(); rg.selectNodeContents(f); return new Set([...rg.getClientRects()].map(x => Math.round(x.top))).size; }""", k)
+                    check5(f"{tag}: its ✓ line is on {fbl} lines at 375 px (at most 2)", fbl <= 2)
+                    shot(page, f"ew5-q{n}-s{k}-c-mark.png")
                 else:
                     ld = page.evaluate(LEAD_JS, k)
                     want = next((o["text"] for o in page.evaluate(FRACOPTS_JS, k) if o["label"] == right["text"]), None)
                     chosen = page.evaluate("""([k, t]) => { const b = [...document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-opt`)].find(e => e.getAttribute('aria-label') === t); return b ? b.querySelector('.ewf').textContent.replace(/\\s+/g, '') : ''; }""", [k, right["text"]])
                     check5(f"{tag}: the lead line is filled: two fractions, no box, the second the chosen first line", bool(ld) and ld["fracs"] == 2 and ld["slots"] == 0 and ld["second"] == chosen and bool(chosen))
                     shot(page, f"ew5-q{n}-s{k}-c-lead-filled.png")
-            if angle: check5(f"{P}: the star stays to the end of the question", page.evaluate(LABELS_JS)["stars"] == 1)
+            check5(f"{P}: the tool's mark stays to the end of the question (the card is up)", AFTER(page.evaluate(LABELS_JS)))
             if angle:
                 card = page.evaluate(CARD4_JS)
                 ok = (bool(card) and card["sine"] and card["fracs"] == 3 and card["strikes"] == 4 and card["strikesInsideMiddle"]
@@ -1355,7 +1379,7 @@ try:
           const seen = (top, bot, shift) => Math.max(0, Math.min(bot - shift, vh) - Math.max(top - shift, head));
           /* best: the smallest scroll that puts the last option at the bottom edge (or none needed) */
           const shift = Math.max(-y, optBot - vh);
-          return { head: Math.round(head), vh, sh: Math.round(s.height), now: Math.round(seen(s.top, s.bottom, 0)),
+          return { y: Math.round(y), head: Math.round(head), vh, sh: Math.round(s.height), now: Math.round(seen(s.top, s.bottom, 0)),
                    optsOn: optTop >= head - 0.5 && optBot <= vh + 0.5, stepTop: Math.round(p.top),
                    best: Math.round(seen(s.top, s.bottom, shift)), bestOptsOn: optTop - shift >= head - 0.5,
                    bestPromptOn: p.top - shift >= head - 0.5 }; }"""
@@ -1478,6 +1502,10 @@ try:
                             v = page.evaluate(SKVIS_JS, k)
                             ew5_vis.append({"where": f"ew5 Q{n} s{k}", "kind": "HEIGHT" if q["id"] in ("ew5q1", "ew5q3", "ew5q6") else "ANGLE", **v})
                             vshot(page, f"fold-ew5-q{n}-s{k}-options.png")
+                            if k == 1 and n == 1:
+                                checkf(f"{tag}: ew5 Q1, the two tools on screen before any scroll (scrollY {v['y']})", v["y"] == 0 and v["optsOn"])
+                            if k == 2:
+                                checkf(f"{tag}: ew5, {v['now']}px of the {v['sh']}px sketch on screen with all four options, as the auto-scroll leaves it (at least 150)", v["optsOn"] and v["now"] >= 150)
                         checkf(f"{tag}: all {o0['all']} options on screen before an answer", o0["all"] >= 2 and o0["vis"] == o0["all"])
                         wrong = next(o["text"] for o in st["options"] if not o["correct"])
                         right = next(o["text"] for o in st["options"] if o["correct"])
@@ -1601,6 +1629,9 @@ print("\new5 CHECKS")
 print(f"  {'ok  ' if ew5_locked_before else 'FAIL'} ew5 locked on the map before ew4 is passed")
 for name, ok in ew5_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 print(f"  {sum(1 for _, ok in ew5_checks if ok) + (1 if ew5_locked_before else 0)} of {len(ew5_checks) + 1} ew5 checks pass")
+print("  ew5 step 2 grid at 375 px: widest fraction / narrowest cell content, fraction font")
+for tag, kind, fw, cw, fonts in ew5_grid: print(f"    {tag:22} {kind:6} {fw:4} / {cw} px   font {', '.join(str(x) for x in fonts)} px")
+print("  ew5 labels placed afresh when the tool's mark appears: " + "; ".join(f"{p} {m}/{t}" for p, k, m, t in ew5_moved))
 
 print("\nANGLE HATS (ink top measured against the inner top edge of its chip, box, option or card, or the bar above it)")
 by_kind = {}

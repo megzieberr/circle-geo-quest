@@ -1150,3 +1150,17 @@ svg.diag .ewe-star{fill:#1c7ed6; stroke:#1864ab; stroke-width:.8; stroke-linejoi
 .ewe-opt-sub{font-size:.8rem; font-weight:600; white-space:nowrap; opacity:.85;}
 .ewe-opt.has-frac{text-align:center; padding:8px 12px;}
 .ewe-opt.has-frac .ewpad-fx,.ewe-lead .ewpad-fx:not(.ewtint){color:inherit;}
+/* Foreman review 2026-10-02, ew5: the sketch stays on screen at step 2 on
+   a 375 x 667 phone. The four first-line options sit in a 2 x 2 grid
+   (step key grid: 2, class .ewe-grid), one centred stacked fraction per
+   cell, a little less side padding so the longest sine form fits its
+   cell; the lead line above them keeps less air (at most 64 px high). */
+.ewe-opts.ewe-grid{gap:8px;}
+.ewe-opts.ewe-grid .opt.has-frac{padding:6px 4px; display:flex; justify-content:center; align-items:center; min-width:0;}
+.ewe-show.ewe-lead{padding:3px 8px; margin:2px 0 8px;}
+.ewe-opts.ewe-grid .opt.has-frac .ewf{font-size:.9rem;}
+/* ew5 step 1, once it is right (opt-in: only ew5's tools carry .has-sub):
+   the chosen tool keeps less air, and its ✓ line is a touch smaller, so the
+   line sits on two lines at 375 px and the sketch keeps its room. */
+.ewe-step.is-done .ewe-opts.yesno .opt.has-sub{padding-top:6px; padding-bottom:6px;}
+.ewe-step.is-done:has(.ewe-opt.has-sub) .ewe-fb{font-size:.9rem;}
