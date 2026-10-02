@@ -97,7 +97,7 @@ function question(id, S, { line, decoy, intro }) {
   const steps = [crossStep];
   if (sq) steps.unshift({
     type: "build",
-    prompt: "Skryf eers die kwadraat as 'n sy keer homself:",
+    prompt: "Skryf die kwadraat as dieselfde sy twee keer:",
     frame: PROD_FRAME,
     chips,
     spec: { mode: "prod", pairs, chips },
