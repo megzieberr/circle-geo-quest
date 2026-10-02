@@ -53,6 +53,18 @@ What it does (all against a LOCAL copy, never the live class):
     other. Every angle hat (Â, B̂ …) MEASURED: its ink top below the top
     edge of its chip, box or option, and below the bar of a fraction. Its
     PNGs start with "ew4-".
+  * the phone folds (her ruling 2026-10-02), at 375 x 667, every question
+    of ew1 to ew4: the intro is full before step 1, ONE line high with its
+    chevron once step 1 is right, a tap (and Enter) opens it to its full
+    height and folds it again; a one-step question never folds. A pick
+    step shows every option before the right answer (a wrong tap stays
+    red), and exactly one, the correct one, with its green line after it.
+    Every BUILD step brought in by the auto-scroll: the sketch's bottom
+    edge and every box of its frame inside the screen, below the top bar;
+    per build step the distance from the sketch's bottom edge to the
+    bottom of Kontroleer is REPORTED (a number, not a pass/fail). Plus one
+    reduced-motion run: the scroll is a jump, not a glide. Viewport PNGs
+    start with "fold-".
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -289,8 +301,10 @@ def shot(page, name):
     page.evaluate("document.fonts.ready")
     page.screenshot(path=os.path.join(OUT, name), full_page=True)
 
-def new_page(browser):
-    ctx = browser.new_context(viewport={"width": 375, "height": 812}, device_scale_factor=1)
+def new_page(browser, height=812, reduced_motion="no-preference"):
+    # the fold walk asks for 375 x 667 (the smallest phone in the class);
+    # every other walk keeps its 375 x 812
+    ctx = browser.new_context(viewport={"width": 375, "height": height}, device_scale_factor=1, reduced_motion=reduced_motion)
     def guard(route):
         host = urlparse(route.request.url).hostname or ""
         if host in ALLOWED_HOSTS: return route.continue_()
@@ -1035,6 +1049,173 @@ try:
         hats(page, "ew4 Q1 after 'show me'")
         shot(page, "ew4-show-me.png")
         ctx.close()
+
+        # ---------------- the phone folds at 375 x 667 (her ruling 2026-10-02) ----------------
+        def settle(page):
+            # the player waits 80 ms before it scrolls; then the scroll is
+            # done when scrollY stops changing
+            page.wait_for_timeout(130)
+            last, same = None, 0
+            for _ in range(100):
+                y = page.evaluate("window.scrollY")
+                same = same + 1 if y == last else 0
+                if same >= 4: break
+                last = y
+                page.wait_for_timeout(40)
+            return last
+
+        def vshot(page, name):
+            # what the learner sees: the screen, not the whole page
+            page.evaluate("document.fonts.ready")
+            page.screenshot(path=os.path.join(OUT, name), full_page=False)
+
+        ctx, page = new_page(browser, height=667)
+        login(page, "Demo Matric", "gr12", ewe="1")
+        fold_rounds = page.evaluate("""async () => { const m = await import('./js/rounds/index.js');
+            return m.EWE.map(r => ({ id: r.id, qs: r.eweQuestions.map(q => ({ id: q.id, steps: q.steps.map(s => ({ type: s.type,
+              answer: s.answer || [], fixed: s.fixed || [], okLine: s.okLine || '',
+              options: (s.options || []).map(o => ({ text: o.text, correct: !!o.correct })) })) })) })); }""")
+        fold_checks = []
+        fold_rows = []      # one per build step: where, auto-scrolled?, the measures
+        intro_rows = []     # one per question: full, folded, opened heights
+        def checkf(name, ok):
+            fold_checks.append((name, ok))
+            if not ok: fail(name)
+        INTRO_JS = r"""() => {
+          const p = document.querySelector('.ewe-q .ewe-intro'), cs = getComputedStyle(p), r = p.getBoundingClientRect();
+          const fs = parseFloat(cs.fontSize); let lh = parseFloat(cs.lineHeight); if (!(lh > 0)) lh = 1.2 * fs;
+          const ch = p.querySelector('.ewe-chev');
+          return { h: Math.round(r.height * 10) / 10, lh: Math.round(lh * 10) / 10, folded: p.classList.contains('is-folded'),
+                   chev: ch ? ch.textContent : null, chevSeen: !!ch && ch.getBoundingClientRect().width > 0,
+                   role: p.getAttribute('role'), expanded: p.getAttribute('aria-expanded'), tab: p.tabIndex,
+                   clipped: p.scrollWidth > p.clientWidth + 1, ellipsis: cs.textOverflow, ws: cs.whiteSpace,
+                   right: r.right, vw: document.documentElement.clientWidth }; }"""
+        OPTS_JS = r"""(k) => {
+          const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
+          const all = [...st.querySelectorAll('.ewe-opt')];
+          const seenEl = e => { const c = getComputedStyle(e), r = e.getBoundingClientRect(); return c.display !== 'none' && c.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
+          const vis = all.filter(seenEl);
+          const fb = st.querySelector('.ewe-fb');
+          return { all: all.length, vis: vis.length, text: vis.map(e => e.getAttribute('aria-label') || e.textContent.trim()),
+                   green: vis.filter(e => e.classList.contains('is-correct')).length, red: vis.filter(e => e.classList.contains('is-wrong')).length,
+                   fb: fb && seenEl(fb) ? fb.textContent : '' }; }"""
+        FRAME_JS = r"""(k) => {
+          const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
+          const bar = document.querySelector('.topbar');
+          const head = bar ? bar.getBoundingClientRect().bottom : 0;
+          const s = document.querySelector('.ewe-q .q-diagram').getBoundingClientRect();
+          const slots = [...st.querySelectorAll('.ewpad-disp .ewslot')].map(e => { const r = e.getBoundingClientRect(); return [r.top, r.bottom]; });
+          const sub = st.querySelector('.ewkey-sub').getBoundingClientRect();
+          return { head, vh: window.innerHeight, y: window.scrollY, sTop: s.top, sBot: s.bottom, slots, subTop: sub.top, subBot: sub.bottom }; }"""
+        for R in fold_rounds:
+            page.evaluate("(id) => window.__APP__.go('ewe', { roundId: id })", R["id"])
+            page.wait_for_selector(".ewe-play")
+            page.wait_for_timeout(150)
+            for qi, q in enumerate(R["qs"]):
+                n = qi + 1
+                P = f"{R['id']} Q{n}"
+                multi = len(q["steps"]) > 1
+                page.wait_for_selector(f".ewe-q[data-q='{q['id']}']")
+                i0 = page.evaluate(INTRO_JS)
+                checkf(f"fold {P}: the intro is full before step 1 (no chevron, {i0['h']}px)", not i0["folded"] and i0["chev"] is None and not i0["clipped"] and i0["role"] is None)
+                folded_h = None
+                for si, st in enumerate(q["steps"]):
+                    k = si + 1
+                    tag = f"fold {P} step {k} ({st['type']})"
+                    if st["type"] == "build":
+                        auto = si > 0
+                        settle(page)       # also the glide back to the top between questions
+                        f = page.evaluate(FRAME_JS, k)
+                        top_ok, bot_ok = f["head"] - 0.5, f["vh"] + 0.5
+                        sketch_in = top_ok <= f["sBot"] <= bot_ok
+                        frame_in = bool(f["slots"]) and all(t >= top_ok and b <= bot_ok for t, b in f["slots"])
+                        over = max(0, round(max((b for t, b in f["slots"]), default=0) - f["vh"]))
+                        fold_rows.append({"where": f"{R['id']} Q{n} s{k}", "auto": auto, "dist": round(f["subBot"] - f["sBot"]),
+                                          "sketch_in": sketch_in, "frame_in": frame_in, "sub_in": f["subBot"] <= bot_ok,
+                                          "cut": max(0, round(f["head"] - f["sTop"])), "y": round(f["y"]), "head": round(f["head"]),
+                                          "room": round(f["vh"] - f["sBot"]), "over": over,
+                                          "under": max(0, round(f["head"] - f["sBot"]))})
+                        if auto:
+                            checkf(f"{tag}: after its auto-scroll the sketch's bottom edge is on screen ({f['sBot']:.0f}px, bar {f['head']:.0f}, screen {f['vh']})", sketch_in)
+                            checkf(f"{tag}: after its auto-scroll all {len(f['slots'])} boxes of the frame are on screen" + (f" (the lowest box ends {over}px below the screen)" if over else ""), frame_in)
+                            measure(page, f"{tag}: after the auto-scroll")
+                        vshot(page, f"fold-{R['id']}-q{n}-s{k}-build.png")
+                        for c in st["answer"][len(st["fixed"]):]: click_chip(page, c)
+                        click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                        checkf(f"{tag}: right answer accepted", has(page, f".ewe-steps > .ewe-step:nth-child({k}) .ewpad.is-locked"))
+                    else:
+                        o0 = page.evaluate(OPTS_JS, k)
+                        checkf(f"{tag}: all {o0['all']} options on screen before an answer", o0["all"] >= 2 and o0["vis"] == o0["all"])
+                        wrong = next(o["text"] for o in st["options"] if not o["correct"])
+                        right = next(o["text"] for o in st["options"] if o["correct"])
+                        click_btn(page, ".ewe-step:last-child .ewe-opt", wrong)
+                        o1 = page.evaluate(OPTS_JS, k)
+                        checkf(f"{tag}: after a wrong tap all {o1['all']} options stay, the wrong one red", o1["vis"] == o1["all"] and o1["red"] == 1)
+                        click_btn(page, ".ewe-step:last-child .ewe-opt", right)
+                        o2 = page.evaluate(OPTS_JS, k)
+                        checkf(f"{tag}: after the right tap only '{right}' stays, green, with its ✓ line",
+                               o2["vis"] == 1 and o2["text"] == [right] and o2["green"] == 1 and o2["red"] == 0 and bool(st["okLine"]) and st["okLine"] in o2["fb"])
+                        settle(page)
+                        measure(page, f"{tag}: folded to the chosen option")
+                        vshot(page, f"fold-{R['id']}-q{n}-s{k}-pick.png")
+                    if si == 0:
+                        i1 = page.evaluate(INTRO_JS)
+                        if multi:
+                            folded_h = i1["h"]
+                            checkf(f"fold {P}: step 1 right, the intro is ONE line ({i1['h']}px, line {i1['lh']}px) with ▸, cut by an ellipsis",
+                                   i1["folded"] and i1["h"] <= i1["lh"] + 0.5 and i1["chev"] == "▸" and i1["chevSeen"]
+                                   and i1["ws"] == "nowrap" and i1["ellipsis"] == "ellipsis" and i1["right"] <= i1["vw"] + 0.5)
+                            checkf(f"fold {P}: the folded line is keyboard-reachable (role=button, tabindex 0, aria-expanded false)",
+                                   i1["role"] == "button" and i1["tab"] == 0 and i1["expanded"] == "false")
+                        else:
+                            checkf(f"fold {P}: one step only, the intro never folds ({i1['h']}px)", not i1["folded"] and i1["chev"] is None and i1["role"] is None and abs(i1["h"] - i0["h"]) < 0.6)
+                # every step done: the toggle (at the end, so it never moves a measured scroll)
+                if multi:
+                    page.evaluate("document.querySelector('.ewe-q .ewe-intro').click()")
+                    i2 = page.evaluate(INTRO_JS)
+                    checkf(f"fold {P}: a tap opens the intro to its full height ({i2['h']}px, full was {i0['h']}px) with ▾",
+                           not i2["folded"] and i2["h"] >= i0["h"] - 0.5 and not i2["clipped"] and i2["chev"] == "▾" and i2["expanded"] == "true")
+                    measure(page, f"fold {P}: intro opened")
+                    if n == 1:
+                        page.evaluate("document.querySelector('.ewe-q .ewe-intro').scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy({ top: -90, behavior: 'instant' })")
+                        vshot(page, f"fold-{R['id']}-q{n}-intro-open.png")
+                    page.evaluate("document.querySelector('.ewe-q .ewe-intro').click()")
+                    i3 = page.evaluate(INTRO_JS)
+                    checkf(f"fold {P}: a second tap folds it again ({i3['h']}px)", i3["folded"] and i3["h"] <= i3["lh"] + 0.5 and i3["chev"] == "▸" and i3["expanded"] == "false")
+                    if n == 1:
+                        vshot(page, f"fold-{R['id']}-q{n}-intro-folded.png")
+                    page.evaluate("document.querySelector('.ewe-q .ewe-intro').focus({ preventScroll: true })")
+                    page.keyboard.press("Enter")
+                    k1 = page.evaluate(INTRO_JS)
+                    page.keyboard.press("Enter")
+                    k2 = page.evaluate(INTRO_JS)
+                    checkf(f"fold {P}: Enter opens and folds it too", not k1["folded"] and k1["expanded"] == "true" and k2["folded"] and k2["expanded"] == "false")
+                    intro_rows.append((P, i0["h"], folded_h, i2["h"], i0["lh"]))
+                else:
+                    intro_rows.append((P, i0["h"], None, None, i0["lh"]))
+                checkf(f"fold {P}: the 'Só skryf jy dit' card follows", has(page, ".ewe-write"))
+                click_btn(page, ".ewe-next")
+                page.wait_for_timeout(250)
+            page.wait_for_selector(".ewe-end", timeout=8000)
+        ctx.close()
+
+        # reduced motion: the build step's scroll is a jump, not a glide
+        ctx, page = new_page(browser, height=667, reduced_motion="reduce")
+        login(page, "Demo Matric", "gr12", ewe="1")
+        page.evaluate("window.__APP__.go('ewe', { roundId: 'ew3' })")
+        page.wait_for_selector(".ewe-play")
+        page.wait_for_timeout(150)
+        a3 = fold_rounds[2]["qs"][0]["steps"][0]["answer"]
+        for c in a3: click_chip(page, c)
+        click_btn(page, ".ewe-step:last-child .ewkey-sub")
+        page.wait_for_timeout(110)          # the player's 80 ms, and no glide after it
+        y_a = page.evaluate("window.scrollY")
+        page.wait_for_timeout(700)
+        y_b = page.evaluate("window.scrollY")
+        f = page.evaluate(FRAME_JS, 2)
+        rm_ok = y_a > 0 and y_a == y_b and f["head"] - 0.5 <= f["sBot"] <= f["vh"] + 0.5 and all(t >= f["head"] - 0.5 and b <= f["vh"] + 0.5 for t, b in f["slots"])
+        checkf(f"reduced motion, ew3 Q1 step 2: the page jumps to its place at once ({y_a}px after 110 ms, {y_b}px later), sketch and frame on screen", rm_ok)
+        ctx.close()
         browser.close()
 finally:
     server.terminate()
@@ -1090,6 +1271,21 @@ for label, nh, gap, where in sorted(measured, key=lambda r: r[2])[:4]:
 
 print("\nOTHER BEHAVIOURS")
 for name, ok in extra: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
+
+print("\nPHONE FOLDS at 375 x 667 (her ruling 2026-10-02)")
+for name, ok in fold_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
+print(f"  {sum(1 for _, ok in fold_checks if ok)} of {len(fold_checks)} fold checks pass")
+print("\n  THE INTRO, px high: full at the start, folded after step 1, opened by a tap (line height)")
+for P, h0, hf, ho, lh in intro_rows:
+    print(f"  {P:9} full {h0:6.1f}   " + (f"folded {hf:5.1f}   opened {ho:6.1f}" if hf is not None else "one step: never folds      ") + f"   (line {lh})")
+print("\n  BUILD STEPS: distance from the sketch's bottom edge to the bottom of Kontroleer (px; screen 667, top bar "
+      + (f"{fold_rows[0]['head']}px)" if fold_rows else "?)"))
+print(f"  {'step':12} {'scroll':22} {'sketch->Kontroleer':>18} {'below sketch':>12}  sketch bottom  frame             Kontroleer  sketch top cut")
+for r in fold_rows:
+    how = f"auto-scroll to {r['y']}" if r["auto"] else "question start (top)"
+    frame = "on" if r["frame_in"] else f"OFF by {r['over']}px"
+    sk = "on screen" if r["sketch_in"] else f"OFF by {r['under']}px"
+    print(f"  {r['where']:12} {how:22} {r['dist']:18} {r['room']:12}  {sk:13}  {frame:16}  {'on' if r['sub_in'] else 'below':10}  {r['cut']}px")
 
 print(f"\nSAVING (local backend): ew1 progress {json.dumps(saved['progress'])}, XP events {saved['xpEvents']}, map shows ✓: {map_done}")
 if not (saved["progress"] and saved["progress"].get("passed")): fail("ew1 not saved as passed")

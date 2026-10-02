@@ -217,7 +217,8 @@ export function renderEweRound(app, host, params) {
     clear(qHost);
     const box = el("div", "ewe-q");
     box.dataset.q = q.id;
-    box.appendChild(el("p", "q-prompt ewe-intro", glue(q.intro)));
+    const intro = el("p", "q-prompt ewe-intro", glue(q.intro));
+    box.appendChild(intro);
     const fig = el("div", "q-diagram");
     fig.innerHTML = sketchSvg(q.sketch);
     box.appendChild(fig);
@@ -229,18 +230,30 @@ export function renderEweRound(app, host, params) {
     const nextStep = () => {
       if (si < q.steps.length) {
         const step = q.steps[si++];
+        const first = si === 1;
         const stepBox = el("div", "ewe-step");
         steps.appendChild(stepBox);
-        if (si > 1) bringIn(stepBox);
+        /* phone folds (her ruling 2026-10-02): a build step is filled while
+           looking at the sketch, so it keeps the sketch on screen; a pick
+           step is still centred as before */
+        if (!first) { if (step.type === "build") bringBuild(stepBox, fig); else bringIn(stepBox); }
         const done = (res) => {
           run.gated++;
           if (res.firstTry) run.firstTry++;
           if (res.fill) lastFill = res.fill;
+          /* phone folds: a finished step is history now; its spacing
+             tightens (CSS .ewe-step.is-done), no words change */
+          stepBox.classList.add("is-done");
           /* ew4, opt-in: a step that brings `sketchAfter` redraws the
              question's sketch once it is answered right (her star at the
              shared angle), and it stays for the rest of the question.
              Without the key the sketch is never touched. */
           if (step.sketchAfter) fig.innerHTML = sketchSvg(step.sketchAfter);
+          /* phone folds: step 1 is right, so the intro folds to one line,
+             BEFORE the next step is brought in (its scroll is measured on
+             the folded page). A one-step question never folds: nothing
+             follows it. */
+          if (first && q.steps.length > 1) foldIntro(intro);
           nextStep();
         };
         if (step.type === "build") mountBuild(stepBox, step, done);
@@ -304,9 +317,81 @@ export function renderEweRound(app, host, params) {
    screen. A timeout, not requestAnimationFrame: the block must be laid out
    first, and rAF does not run in every test browser. */
 function bringIn(node) {
+  setTimeout(() => centre(node), 80);
+}
+function centre(node) {
+  try { node.scrollIntoView({ behavior: calm() ? "instant" : "smooth", block: "center" }); }
+  catch { node.scrollIntoView(); }
+}
+
+/* a learner who asked their phone for less motion gets a jump, not a glide
+   (the page's own scroll-behavior is smooth, so "instant" must be said) */
+function calm() {
+  try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+  catch { return false; }
+}
+
+/* ---------------- the phone folds (her ruling 2026-10-02) ----------------
+   Her words after playing ew4 on the phone: the top must fold away, "like
+   we established in blipwork", or the Gr12 class scrolls up and down all
+   the time. Blipwork's precedent: an answered input disappears with
+   display:none and no height animation, so the scroll to the next step is
+   measured on the final layout. Two folds here, both in this shared player,
+   so every round gets them:
+     1. the intro, once step 1 of a question is right (foldIntro below);
+     2. a finished pick step keeps only its chosen option (mountPick).
+   No new words: a chevron is the only new thing on the screen. */
+
+/* Fold 1: the intro becomes ONE line, a chevron and the text cut with an
+   ellipsis (CSS, .ewe-intro.is-folded). A tap, or Enter or Space, opens it
+   to its full text and closes it again. Instant. */
+function foldIntro(intro) {
+  const chev = el("span", "ewe-chev", "▸");
+  chev.setAttribute("aria-hidden", "true");
+  intro.prepend(chev);
+  intro.classList.add("is-folded");
+  intro.setAttribute("role", "button");
+  intro.setAttribute("aria-expanded", "false");
+  intro.tabIndex = 0;
+  const flip = () => {
+    const folded = intro.classList.toggle("is-folded");
+    chev.textContent = folded ? "▸" : "▾";
+    intro.setAttribute("aria-expanded", String(!folded));
+  };
+  intro.addEventListener("click", flip);
+  intro.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); }
+  });
+}
+
+/* A new BUILD step: the sketch stays on screen with the step under it. The
+   sketch's top goes just under the sticky top bar, instead of the step
+   being centred with the sketch pushed off the top. Only when the step's
+   frame (the boxes) would then sit below the screen does the page go
+   further down, by just enough, as long as the sketch's bottom edge stays
+   below the bar. If even that cannot show the frame (too much finished
+   work sits between the sketch and the new step on a small phone), the
+   step is brought in as before, centred, so its boxes and chips are on the
+   screen. Measured once from the laid-out page (the folds above are
+   already done and instant), never from a smooth scroll in flight; same
+   timeout as bringIn, same fallback when smooth is refused. */
+const EDGE = 8;   // px of air above the sketch and below the frame
+function bringBuild(node, fig) {
   setTimeout(() => {
-    try { node.scrollIntoView({ behavior: "smooth", block: "center" }); }
-    catch { node.scrollIntoView(); }
+    const bar = document.querySelector(".topbar");
+    const head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+    const y0 = window.scrollY, vh = window.innerHeight;
+    const s = fig.getBoundingClientRect();
+    const f = (node.querySelector(".ewpad-disp") || node).getBoundingClientRect();
+    let y = y0 + s.top - head - EDGE;                  // the sketch just under the bar
+    const need = y0 + f.bottom + EDGE - vh;            // the frame just above the bottom edge
+    if (need > y) {
+      if (need > y0 + s.bottom - head - EDGE) return centre(node);   // both cannot fit
+      y = need;
+    }
+    y = Math.max(0, Math.round(y));
+    try { window.scrollTo({ top: y, behavior: calm() ? "instant" : "smooth" }); }
+    catch { window.scrollTo(0, y); }
   }, 80);
 }
 
@@ -418,7 +503,12 @@ function mountPick(host, step, onDone) {
       if (o.correct) {
         over = true;
         b.classList.add("is-correct");
-        opts.querySelectorAll("button").forEach(x => { x.disabled = true; });
+        /* Fold 2 (her ruling 2026-10-02): the chosen option IS the answer
+           now (with the sketch), so every other option goes, instantly
+           ([hidden] is display:none in .ewe-q). The chosen one keeps its
+           green and the ✓ line stays under it. Ja / Nee too. Nothing is
+           hidden before the right answer: a wrong tap stays red as before. */
+        opts.querySelectorAll("button").forEach(x => { x.disabled = true; if (x !== b) x.hidden = true; });
         if (show && o.fill) show.innerHTML = ratioHtml(o.fill);
         hint.hidden = true;
         fb.hidden = false;
