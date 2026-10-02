@@ -92,7 +92,7 @@ const ORDER = [
   r18, r19, r20, r21,                                    // g5 · Circle Grand Master · FINAL_QUEST_ROUND_ID = r21
   // g7 · Proof rounds (PROOF-ROUNDS-PLAN.md). P0-P9 all built now, six
   // sessions total. MUST stay AFTER r21 and BEFORE inv1: the Investigation
-  // Station is hidden (stationsLive: false in config.js) and its unlock
+  // Station is gated per class (stationsLive + stationsFor in config.js) and its unlock
   // chain is pinned to FINAL_QUEST_ROUND_ID (below), not to whatever round
   // happens to sit last in this array — see js/stations.js.
   // pr8b sits BETWEEN pr8 and pr9 on purpose: it belongs to the T4 arc
