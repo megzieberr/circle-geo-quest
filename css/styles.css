@@ -338,7 +338,10 @@ svg.diag .hit.locked{pointer-events:none;}
 .rc-kind{font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); margin-top:6px;}
 
 /* ---------- interactive drag diagram ---------- */
-.iv-wrap{display:flex; flex-direction:column; gap:10px; align-items:center; touch-action:none;}
+/* touch-action:none lives on the drag picture only (svg.diag.iv below). It used
+   to sit on .iv-wrap too, so the readout rows under the picture ate every swipe
+   and on an iPhone "Gaan voort" could not be scrolled to (2026-10-02). */
+.iv-wrap{display:flex; flex-direction:column; gap:10px; align-items:center;}
 .iv-box{width:100%;}
 svg.diag.iv{width:100%; max-width:360px; height:auto; touch-action:none; display:block; margin:0 auto;}
 .iv-seg{stroke:#2b2f4a; stroke-width:2.4; stroke-linecap:round; fill:none;}

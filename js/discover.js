@@ -148,7 +148,12 @@ function mountPanel(host, panel, accent, onDone) {
     if (panel.until && iv) {
       cont.disabled = true;
       cont.classList.add("waiting");
-      const tick = (m) => { if (panel.until(m)) { cont.disabled = false; cont.classList.remove("waiting"); } };
+      let shown = false;
+      const tick = (m) => {
+        if (!panel.until(m)) return;
+        cont.disabled = false; cont.classList.remove("waiting");
+        if (!shown) { shown = true; showButton(cont); }
+      };
       panel.interactive.onChange = wrap(panel.interactive.onChange, tick);
       iv.refresh();
     }
@@ -194,6 +199,7 @@ function mountPanel(host, panel, accent, onDone) {
     cont.hidden = false;
     cont.textContent = t("continue");
     cont.focus();
+    showButton(cont);
   }
   // shown when the game gives the answer after REVEAL_AFTER misses
   function showRevealed() {
@@ -204,6 +210,7 @@ function mountPanel(host, panel, accent, onDone) {
     cont.hidden = false;
     cont.textContent = t("continue");
     cont.focus();
+    showButton(cont);
   }
 
   if (panel.type === "blank") {
@@ -258,6 +265,41 @@ function mountPanel(host, panel, accent, onDone) {
 }
 
 function wrap(orig, extra) { return (m, p, c) => { if (orig) orig(m, p, c); extra(m, p, c); }; }
+
+/* Phone fix 2026-10-02 (two iPhone learners, round 4): when Continue appears
+   or unlocks below the screen, the page glides down until it shows. focus()
+   alone does not scroll on an iPhone. While a finger is still dragging the
+   picture we wait for it to lift, so the page never slides away mid-drag.
+   A timeout, not requestAnimationFrame (rAF does not run in every test
+   browser); same pattern as bringIn() in js/ewe.js. */
+let fingerDown = false;
+window.addEventListener("pointerdown", () => { fingerDown = true; }, true);
+window.addEventListener("pointerup", () => { fingerDown = false; }, true);
+window.addEventListener("pointercancel", () => { fingerDown = false; }, true);
+
+function showButton(btn) {
+  const go = () => setTimeout(() => {
+    if (!btn.isConnected || btn.hidden) return;
+    const r = btn.getBoundingClientRect();
+    if (r.top >= 0 && r.bottom <= window.innerHeight) return;   // already on screen
+    try { btn.scrollIntoView({ behavior: calm() ? "instant" : "smooth", block: "nearest" }); }
+    catch { btn.scrollIntoView(false); }
+  }, 80);
+  if (!fingerDown) { go(); return; }
+  const up = () => {
+    window.removeEventListener("pointerup", up);
+    window.removeEventListener("pointercancel", up);
+    go();
+  };
+  window.addEventListener("pointerup", up);
+  window.addEventListener("pointercancel", up);
+}
+
+/* less motion asked for on the phone = a jump, not a glide */
+function calm() {
+  try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+  catch { return false; }
+}
 
 /* the formal teaching block shown after a correct discovery */
 function noteBlock(panel) {
