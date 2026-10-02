@@ -21,6 +21,9 @@
    table): the similarity line is written first, "Δ PRQ ||| Δ PST (LLL)",
    where her (LLL) is (∠∠∠), corners in MATCHING order; the ratio line
    then carries "(uit |||)".
+   HER RULING 2026-10-02 (while playing round 2): the proportionality
+   reason `lyn ∥ een sy v. Δ, JK ∥ GH` is ACCEPTED here as well, so the
+   reason step has TWO right options. The card keeps "(uit |||)".
 
    Content shape: the same as ew1 (read by js/ewe.js), plus opt-in keys:
      build  { …, fixed?:[chip] }          a chip already in the first box
@@ -55,8 +58,8 @@ function reasonStep(tri) {
     prompt: "Watter rede skryf jy langs hierdie lyn?",
     options: [
       { text: RATIO_REASON, correct: true },
-      { text: `lyn ∥ een sy v. Δ, ${par}`,
-        hint: "Daardie rede is vir die stukke van die twee sye, soos laas rondte. Hier is die ∥ lyne self in die verhouding." },
+      // right as well since 2026-10-02 (her ruling): the ∥ reason is accepted here too
+      { text: `lyn ∥ een sy v. Δ, ${par}`, correct: true },
       { text: "lyn verdeel sye v. Δ in verh.",
         hint: `Dit is die omgekeerde stelling. Dit bewys dat 'n lyn ∥ is. Hier gee die vraag reeds ${par}.` },
       { text: "middelpuntstelling",

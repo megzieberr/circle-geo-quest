@@ -672,11 +672,13 @@ try:
         extra.append((f"ew2: 'show me' fills {filled} (JK kept first) and moves on", locked))
         if not locked: fail("ew2: 'show me' did not fill and lock")
         measure(page, "ew2 Q1 after 'show me'")
+        # her ruling 2026-10-02: the ∥ reason is RIGHT here too (two right options)
         click_btn(page, ".ewe-step:last-child .ewe-opt", "lyn ∥ een sy v. Δ, JK ∥ GH")
-        h = page.inner_text(".ewe-step:last-child .ewe-hint")
-        extra.append(("ew2: last round's reason gets its own hint", "laas rondte" in h))
-        if "laas rondte" not in h: fail(f"ew2: reason hint was {h!r}")
-        click_btn(page, ".ewe-step:last-child .ewe-opt", "uit |||")
+        # a right pick ends the step: the card and the way on are appended after it,
+        # so the reason step is no longer :last-child. Read the whole question instead.
+        par_ok = has(page, ".ewe-steps .ewe-opt.is-correct") and has(page, ".ewe-steps .ewe-write") and not seen(page, ".ewe-steps .ewe-hint")
+        extra.append(("ew2: the ∥ reason 'lyn ∥ een sy v. Δ, JK ∥ GH' is accepted too (her ruling 2026-10-02)", par_ok))
+        if not par_ok: fail("ew2: the ∥ reason was not accepted as right")
         click_btn(page, ".ewe-next"); page.wait_for_timeout(200)
         for c in ["RT", "UV", "RV"]: click_chip(page, c)
         click_btn(page, ".ewe-step:last-child .ewkey-sub")
