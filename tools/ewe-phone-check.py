@@ -84,10 +84,13 @@ What it does (all against a LOCAL copy, never the live class):
     on a smaller line (one line, inside its button, not clipped), the wrong
     tool with its hint, the right one, its ✓ line on two lines, Fold 2.
     Step 2, the lead line (the tinted "Opp Δ" fraction, "=", one glowing
-    box, at most 64 px high), the four first-line options in a 2 x 2 grid,
-    each ONE stacked fraction inside its button's padding (measured like
-    every fraction, hats measured), every wrong option with its hint, the
-    right one filling the lead line. Every card (the ew3 or ew4 chain and
+    box, at most 64 px high), the prompt "Wat bly oor nadat jy doodgetrek
+    het?" and the four leftovers in a 2 x 2 grid (her ruling 2026-10-02:
+    base over base or product over product, no ½, no ⊥h, no sin; options,
+    hints and ✓ line checked against the ruling's wording built from the
+    sketch's letters), each ONE stacked fraction inside its button's
+    padding (measured like every fraction, no hats left), every wrong
+    option with its hint, the right one filling the lead line. Every card (the ew3 or ew4 chain and
     its reason), the end screen. In the 375 x 667 fold walk: Q1's step 1
     options on screen before any scroll, and at step 2 at least 150 px of
     the sketch on screen with all four options, as the auto-scroll leaves
@@ -1006,10 +1009,11 @@ try:
         # ---------------- the ew5 walk: two picks per question, no pad ----------------
         page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[4].querySelector('.btn').click(); }")
         page.wait_for_selector(".ewe-play")
-        data5 = page.evaluate("""async () => { const m = await import('./js/rounds/ewe5-watter-een.js');
+        data5 = page.evaluate("""async () => { const m = await import('./js/rounds/ewe5-watter-een.js'); const core = await import('./js/ewe-core.js');
             return m.round.eweQuestions.map(q => { const S = m.SKETCHES[q.id];
               return { id: q.id, kind: S.sketch.height ? 'HEIGHT' : 'ANGLE', sin: S.sin || '', reason: (q.write && q.write.reason) || '', tip: (q.write && q.write.tip) || '',
-                steps: q.steps.map(s => ({ type: s.type, star: !!s.sketchAfter, lead: !!s.lead,
+                tris: S.tris, apex: S.apex || '', names: S.names || {}, corner: S.corner || '', hatV: S.corner ? core.hat(S.corner) : '', top: S.top || [], bot: S.bot || [], third: S.third || [],
+                steps: q.steps.map(s => ({ type: s.type, star: !!s.sketchAfter, lead: !!s.lead, prompt: s.prompt || '',
                   options: s.options.map(o => ({ text: o.text, sub: o.sub || '', frac: !!o.frac, correct: !!o.correct, hint: o.hint || '' })), okLine: s.okLine || '' })) }; }); }""")
         # step 1: the two tools side by side, each name and its formula line whole
         PAIR_JS = r"""() => {
@@ -1048,6 +1052,38 @@ try:
                      font: f[0] ? parseFloat(getComputedStyle(f[0]).fontSize) : 0, grid: b.parentElement.classList.contains('ewe-grid'),
                      inside: !!q && q.left >= i.l - 0.5 && q.right <= i.r + 0.5 && q.top >= i.t - 0.5 && q.bottom <= i.b + 0.5,
                      onScreen: r.left >= -0.5 && r.right <= vw + 0.5, h: Math.round(r.height), w: Math.round(r.width), fw: q ? Math.round(q.width) : 0 }; }); }"""
+        # step 2 (her ruling 2026-10-02): what is LEFT after the cross-out, no
+        # ½, no ⊥h, no sin. The expected four options, their hints and the
+        # ✓ line, built here from the sketch's own letters (the brief's
+        # wording), not read back from the round file.
+        PROMPT5 = "Wat bly oor nadat jy doodgetrek het?"
+        NBDOT = " · "
+        def expect5(q):
+            tris = q["tris"]
+            if q["kind"] == "HEIGHT":
+                A, nm = q["apex"], q["names"]
+                base = lambda t: next(b for b in (nm["BC"], nm["CD"]) if all(k in t for k in b))
+                b1, b2 = base(tris[0]), base(tris[1])
+                s1, s2 = (A + b1[0], A + b1[1]), (A + b2[0], A + b2[1])
+                opts = {
+                    f"{b1} oor {b2}": None,
+                    f"{s1[0]} · {s1[1]} oor {s2[0]} · {s2[1]}": "Produkte is die HOEK-gereedskap se antwoord. Hierdie Δe deel 'n HOOGTE, dus bly net die basisse oor.",
+                    f"{b2} oor {b1}": f"Kyk watter Δ staan bo. Δ {tris[0]} se basis {b1} kom bo.",
+                    f"{nm['AC']} oor {b2}": f"{nm['AC']} is die sy wat hulle DEEL. Dit is nie 'n basis nie. Die basisse lê op die lyn {nm['BD']}.",
+                }
+                ok = f"Die basisse bly oor: {b1} oor {b2}."
+            else:
+                V, H, (t0, t1), (u0, u1) = q["corner"], q["hatV"], q["top"], q["bot"]
+                third = lambda t: next(x for x in q["third"] if all(k in t for k in x))
+                d1, d2 = third(tris[0]), third(tris[1])
+                opts = {
+                    f"{t0} · {t1} oor {u0} · {u1}": None,
+                    f"{d1} oor {d2}": f"Een sy oor een sy is die HOOGTE-gereedskap se antwoord. Hierdie Δe deel 'n HOEK, dus bly die produkte van die twee sye by {H} oor.",
+                    f"{u0} · {u1} oor {t0} · {t1}": "Kyk watter Δ staan bo. Daardie Δ se twee sye kom bo.",
+                    f"{t0} · {d1} oor {u0} · {u1}": f"{d1} raak nie aan {H} nie. Net die twee sye wat by {V} bymekaarkom, bly oor.",
+                }
+                ok = f"Die produkte bly oor: {t0}{NBDOT}{t1} oor {u0}{NBDOT}{u1}."
+            return opts, ok
         for qi, q in enumerate(data5):
             n = qi + 1
             P = f"ew5 Q{n}"
@@ -1096,13 +1132,21 @@ try:
                            grid_ok)
                     if not grid_ok: print("   grid:", fo)
                     check5(f"{tag}: the options are the data's four, in some order", sorted(o["label"] for o in fo) == sorted(o["text"] for o in st["options"]))
+                    want_opts, want_ok = expect5(q)
+                    got_opts = {o["text"]: (None if o["correct"] else o["hint"]) for o in st["options"]}
+                    check5(f"{tag}: the four leftovers, their hints and the ✓ line are the ruling's ({' | '.join(want_opts)})", got_opts == want_opts and st["okLine"] == want_ok)
+                    if got_opts != want_opts or st["okLine"] != want_ok: print("   want:", want_opts, repr(want_ok), "\n   got: ", got_opts, repr(st["okLine"]))
+                    shown_prompt = page.inner_text(".ewe-step:last-child .ewe-prompt").replace(" ", " ").strip()
+                    check5(f"{tag}: the prompt reads '{PROMPT5}'", st["prompt"] == PROMPT5 and shown_prompt == PROMPT5)
+                    check5(f"{tag}: nothing struck is drawn on the options (no ½, no ⊥h, no sin): {', '.join(o['text'] for o in fo)}",
+                           all(not any(x in o["text"] + o["label"] for x in ("½", "⊥", "sin")) for o in fo))
                 measure(page, f"{tag}: options")
                 h = hats(page, f"{tag}: options")
                 if si == 1:
-                    # a hat in a numerator counts as "option", one in a denominator as "under a fraction bar"
+                    # a hat in a numerator counts as "option", one in a denominator as "under a fraction bar";
+                    # the leftovers carry no sin, so no hat (her ruling 2026-10-02)
                     nh = h["where"].get("option", 0) + h["where"].get("under a fraction bar", 0)
-                    check5(f"{tag}: every angle hat on the options measured ({nh}: {h['where'].get('option', 0)} in numerators, {h['where'].get('under a fraction bar', 0)} under a bar, smallest gap {h['minGap']}px)",
-                           nh >= (6 if angle else 2))
+                    check5(f"{tag}: no angle hat on the options, the sin is gone ({nh} found)", nh == 0)
                 shot(page, f"ew5-q{n}-s{k}-a-options.png")
                 for wi, o in enumerate(wrongs):
                     click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
@@ -1137,7 +1181,7 @@ try:
                     ld = page.evaluate(LEAD_JS, k)
                     want = next((o["text"] for o in page.evaluate(FRACOPTS_JS, k) if o["label"] == right["text"]), None)
                     chosen = page.evaluate("""([k, t]) => { const b = [...document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-opt`)].find(e => e.getAttribute('aria-label') === t); return b ? b.querySelector('.ewf').textContent.replace(/\\s+/g, '') : ''; }""", [k, right["text"]])
-                    check5(f"{tag}: the lead line is filled: two fractions, no box, the second the chosen first line", bool(ld) and ld["fracs"] == 2 and ld["slots"] == 0 and ld["second"] == chosen and bool(chosen))
+                    check5(f"{tag}: the lead line is filled: two fractions, no box, the second the chosen leftover", bool(ld) and ld["fracs"] == 2 and ld["slots"] == 0 and ld["second"] == chosen and bool(chosen))
                     shot(page, f"ew5-q{n}-s{k}-c-lead-filled.png")
             check5(f"{P}: the tool's mark stays to the end of the question (the card is up)", AFTER(page.evaluate(LABELS_JS)))
             if angle:

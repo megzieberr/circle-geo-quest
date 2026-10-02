@@ -8,9 +8,10 @@
 
    ew3 taught the shared-HEIGHT tool and ew4 the shared-ANGLE tool. Here
    the learner gets only the sketch and the two names, the two kinds
-   mixed, and picks (1) the tool and (2) the FIRST LINE, the full form for
-   both triangles (her rule 15: ½ · basis · ⊥h, or ½ · a · b · sin(hoek),
-   never shortened). No boxes, no chips, no pad: every step is a pick.
+   mixed, and picks (1) the tool and (2) what is LEFT after the cross-out
+   (her ruling 2026-10-02: the ½ and the ⊥h or the sin are not shown in
+   step 2, they already saw what cancels; the card still writes the full
+   form, her rule 15). No boxes, no chips, no pad: every step is a pick.
 
    Each question is two steps and the card:
      1  pick   "Deel 'n sy" (a shared height) or "Deel 'n hoek" (a shared
@@ -18,9 +19,10 @@
                sketch is bare until this is right; then (sketchAfter) the
                height kind shows the dotted ⊥h with its box, the angle kind
                the arc and her star
-     2  pick   the first line: four stacked fractions in a 2 x 2 grid
-               (grid: 2); the lead line Opp Δ … over Opp Δ … = ☐ above
-               them fills with the right one
+     2  pick   what is left: four stacked fractions in a 2 x 2 grid
+               (grid: 2), base over base (height) or product over product
+               (angle); the lead line Opp Δ … over Opp Δ … = ☐ above them
+               fills with the right one
      card      the three-fraction chain of ew3 (area) or ew4 (sine), with
                the reason in brackets
 
@@ -47,7 +49,7 @@
                                  drawn as ONE stacked fraction through the
                                  frame cell renderer; text = its aria-label
    ============================================================ */
-import { sharedAngle, sharedHeight, hat, sinOf, HALF, PERP_H } from "../ewe-core.js";
+import { sharedAngle, sharedHeight, hat } from "../ewe-core.js";
 
 const REASON_H = "gemeenskaplike hoogte ⊥ en lyn";
 const REASON_A = "gemene hoekpunt";
@@ -61,7 +63,7 @@ const nb = s => s.replace(/ · /g, " · ").replace(/\bsin /g, "sin ");
 const TOOL_H = "Deel 'n sy", TOOL_A = "Deel 'n hoek";
 const SUB_H = nb("½ · basis · ⊥h"), SUB_A = nb("½ · a · b · sin(hoek)");
 
-/* a fraction option's plain words (its aria-label): "½ · BC · ⊥h oor ½ · CD · ⊥h" */
+/* a fraction option's plain words (its aria-label): "BC oor CD", "AD · AE oor AB · AC" */
 const word = c => (typeof c === "object" ? c.t : c);
 const plain = f => `${f.n.map(word).join(" ")} oor ${f.d.map(word).join(" ")}`;
 const fracOpt = (f, extra) => ({ text: plain(f), frac: f, ...extra });
@@ -80,7 +82,7 @@ const lead = (tris, tints) => ({ n: [{ t: `Opp Δ ${tris[0]}`, tint: tints[0] }]
 const bare = (sk, key) => { const { [key]: _drop, ...rest } = sk; return rest; };
 
 const PROMPT_1 = "Deel hierdie twee Δe 'n HOOGTE of 'n HOEK?";
-const PROMPT_2 = "Watter eerste lyn skryf jy?";
+const PROMPT_2 = "Wat bly oor nadat jy doodgetrek het?";
 
 /* ---------------- the HEIGHT kind (ew3's sketch) ---------------- */
 function heightQ(id, T, intro) {
@@ -92,11 +94,13 @@ function heightQ(id, T, intro) {
   const angOf = b => `${b[0]}${hat(A)}${b[1]}`;
   const [g1, g2] = [b1, b2].map(angOf);
   const sidesAt = b => [A + b[0], A + b[1]];
-  const SIN = { t: sinOf(A), hat: true };
-  const right = { n: [HALF, "·", b1, "·", PERP_H], d: [HALF, "·", b2, "·", PERP_H] };
+  /* step 2 shows what is LEFT after the cross-out (her ruling 2026-10-02):
+     the right one is base over base; the other tool's leftover is the
+     product of the two sides at the apex of each Δ */
+  const right = { n: [b1], d: [b2] };
   const [s1, s2] = [sidesAt(b1), sidesAt(b2)];
-  const tool = { n: [HALF, "·", s1[0], "·", s1[1], "·", SIN], d: [HALF, "·", s2[0], "·", s2[1], "·", SIN] };
-  const shared = { n: [HALF, "·", n.AC, "·", PERP_H], d: [HALF, "·", b2, "·", PERP_H] };
+  const tool = { n: [s1[0], "·", s1[1]], d: [s2[0], "·", s2[1]] };
+  const shared = { n: [n.AC], d: [b2] };
   return {
     id, intro, sketch: bare(T.sketch, "height"),
     steps: [
@@ -120,11 +124,11 @@ function heightQ(id, T, intro) {
         lead: lead(tris, [1, 2]),
         options: [
           fracOpt(right, { correct: true }),
-          fracOpt(tool, { hint: nb(`Dit is die sin-vorm, maar ${g1} en ${g2} is nie dieselfde hoek nie. Jy het pas gesê hulle deel 'n HOOGTE: skryf ½ · basis · ⊥h.`) }),
+          fracOpt(tool, { hint: "Produkte is die HOEK-gereedskap se antwoord. Hierdie Δe deel 'n HOOGTE, dus bly net die basisse oor." }),
           fracOpt(swap(right), { hint: `Kyk watter Δ staan bo. Δ ${tris[0]} se basis ${b1} kom bo.` }),
           fracOpt(shared, { hint: `${n.AC} is die sy wat hulle DEEL. Dit is nie 'n basis nie. Die basisse lê op die lyn ${n.BD}.` }),
         ],
-        okLine: nb("Volle vorm eers: ½ · basis · ⊥h vir albei. Trek dan die ½ en die ⊥h dood, die basisse bly oor."),
+        okLine: `Die basisse bly oor: ${b1} oor ${b2}.`,
       },
     ],
     write: { area: { tris, bases: [b1, b2] }, reason: REASON_H, tip: "Hoogte gedeel: die basisse bly oor." },
@@ -137,10 +141,12 @@ function angleQ(id, S, intro) {
   /* each named Δ's third side: the one that does not touch the corner */
   const thirdOf = t => S.third.find(x => [...x].every(k => t.includes(k)));
   const [d1, d2] = tris.map(thirdOf);
-  const SIN = { t: S.sin, hat: true };
-  const right = { n: [HALF, "·", S.top[0], "·", S.top[1], "·", SIN], d: [HALF, "·", S.bot[0], "·", S.bot[1], "·", SIN] };
-  const tool = { n: [HALF, "·", d1, "·", PERP_H], d: [HALF, "·", d2, "·", PERP_H] };
-  const third = { n: [HALF, "·", S.top[0], "·", d1, "·", SIN], d: right.d };
+  /* step 2 shows what is LEFT after the cross-out (her ruling 2026-10-02):
+     the right one is product over product (the two sides at the corner);
+     the other tool's leftover is the two third sides, one over the other */
+  const right = { n: [S.top[0], "·", S.top[1]], d: [S.bot[0], "·", S.bot[1]] };
+  const tool = { n: [d1], d: [d2] };
+  const third = { n: [S.top[0], "·", d1], d: right.d };
   return {
     id, intro, sketch: bare(S.sketch, "angle"),
     steps: [
@@ -164,11 +170,11 @@ function angleQ(id, S, intro) {
         lead: lead(tris, S.tints),
         options: [
           fracOpt(right, { correct: true }),
-          fracOpt(tool, { hint: nb(`Dit is die hoogte-vorm, maar ${d1} en ${d2} lê nie op een lyn nie, dus is daar nie een ⊥h vir albei nie. Jy het pas gesê hulle deel 'n HOEK: skryf ½ · a · b · sin ${H}.`) }),
+          fracOpt(tool, { hint: `Een sy oor een sy is die HOOGTE-gereedskap se antwoord. Hierdie Δe deel 'n HOEK, dus bly die produkte van die twee sye by ${H} oor.` }),
           fracOpt(swap(right), { hint: "Kyk watter Δ staan bo. Daardie Δ se twee sye kom bo." }),
-          fracOpt(third, { hint: `${d1} raak nie aan ${H} nie. Net die twee sye wat by ${V} bymekaarkom, kom in die formule.` }),
+          fracOpt(third, { hint: `${d1} raak nie aan ${H} nie. Net die twee sye wat by ${V} bymekaarkom, bly oor.` }),
         ],
-        okLine: nb(`Volle vorm eers: ½ · a · b · sin ${H} vir albei. Trek dan die ½ en die sin ${H} dood, die produkte bly oor.`),
+        okLine: nb(`Die produkte bly oor: ${S.top[0]} · ${S.top[1]} oor ${S.bot[0]} · ${S.bot[1]}.`),
       },
     ],
     write: { sine: { tris, tints: S.tints, top: S.top, bot: S.bot, sin: S.sin }, reason: REASON_A, tip: "Hoek gedeel: die produkte bly oor." },
@@ -207,8 +213,8 @@ export const round = {
   kind: "ewe",
   accent: "#d9480f",
   title: { en: "Watter een is dit?", af: "Watter een is dit?" },
-  blurb: { en: "Net die skets. Deel die Δe 'n hoogte of 'n hoek? Kies die gereedskap en die eerste lyn.",
-           af: "Net die skets. Deel die Δe 'n hoogte of 'n hoek? Kies die gereedskap en die eerste lyn." },
+  blurb: { en: "Net die skets. Deel die Δe 'n hoogte of 'n hoek? Kies die gereedskap en wat oorbly.",
+           af: "Net die skets. Deel die Δe 'n hoogte of 'n hoek? Kies die gereedskap en wat oorbly." },
   takeaway: {
     text: nb("Vra eers: deel die Δe 'n HOOGTE of 'n HOEK? Hoogte: ½ · basis · ⊥h, die basisse bly oor. Hoek: ½ · a · b · sin(hoek), die produkte bly oor."),
     area: { tris: T1.tris, bases: [T1.names.BC, T1.names.CD] },

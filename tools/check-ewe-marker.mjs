@@ -35,10 +35,11 @@
    on (which angle is shared, measured; the cut line not ∥; every chip
    drawn).
 
-   ew5 (which tool, then the first line) has no fills: every step is a
-   pick. Its oracle, at the very end, decides the KIND of each sketch from
-   the coordinates (a shared height or a shared angle, exactly one), and
-   evaluates EVERY first-line option as a number against the shoelace area
+   ew5 (which tool, then what is left after the cross-out) has no fills:
+   every step is a pick. Its oracle, at the very end, decides the KIND of
+   each sketch from the coordinates (a shared height or a shared angle,
+   exactly one), and evaluates EVERY step-2 option (a length over a length,
+   or a product over a product) as a number against the shoelace area
    ratio: exactly one may be true, and it must be the marked one.
 
    Run: node tools/check-ewe-marker.mjs        (exit 1 on any disagreement) */
@@ -541,13 +542,16 @@ console.log(`TOTAL           ${"".padStart(5)}  ${String(T4).padStart(11)}  ${St
      generic   no two of the sketch's segments (every pair of its named
                points) share a length, no two pairwise products of them
                (squares too) are equal; HEIGHT: the two apex angles have
-               different sines (else the sin-form would be true as well);
-               ANGLE: the two "wrong" ⊥ heights (from the corner to each
-               third side's line) differ (else the ⊥h-form would be true).
-     an option a stacked fraction of cells. The factors it claims are shared
-               (½, ⊥h, a sine) must be the SAME on top and bottom; they are
-               struck, and what is left is read as lengths, product over
-               product. Its value is compared with
+               different sines (else the angle leftover, the product of
+               the apex sides, would be true as well); ANGLE: the two
+               "wrong" ⊥ heights (from the corner to each third side's
+               line) differ (else the height leftover, third side over
+               third side, would be true).
+     an option a stacked fraction of cells: what is LEFT after the
+               cross-out (her ruling 2026-10-02), so only segments joined
+               by "·", nothing struck (a ½, ⊥h or sine cell fails). It is
+               read as lengths, one over one or product over product, the
+               same count top and bottom. Its value is compared with
                area(first named Δ) / area(second named Δ)   (relative 1e-9).
      right =  EXACTLY ONE option matches, and it is the one marked correct.
    Step 1: the option marked correct is "Deel 'n sy" for the HEIGHT kind,
@@ -612,7 +616,7 @@ for (const q of round5.eweQuestions) {
     const sinAt = n => { const [u, v] = [...n].filter(k => k !== A).map(k => vec(P[A], P[k])); return Math.abs(cross(u, v)) / (Math.hypot(u.x, u.y) * Math.hypot(v.x, v.y)); };
     const [x1, x2] = named.map(sinAt);
     kindGap = Math.abs(x1 - x2) / Math.max(x1, x2);
-    if (kindGap < GAP) { problems++; console.error(`✗ ${q.id}: the apex angles have (almost) the same sine (${x1}, ${x2}), so the sin-form would be true too`); }
+    if (kindGap < GAP) { problems++; console.error(`✗ ${q.id}: the apex angles have (almost) the same sine (${x1}, ${x2}), so the product leftover would be true too`); }
     const h = S.sketch.height;
     if (!h || h.from !== A || S.sketch.angle || (S.sketch.par || []).length) { problems++; console.error(`✗ ${q.id}: a HEIGHT sketch must carry the ⊥h from ${A}, no arc, no ∥ arrows`); }
     if (JSON.stringify(q.sketch) !== JSON.stringify(bareOf(S.sketch, "height")) || q.sketch.height || q.sketch.angle) { problems++; console.error(`✗ ${q.id}: the question's sketch is not the bare HEIGHT sketch (no ⊥h before step 1)`); }
@@ -622,7 +626,7 @@ for (const q of round5.eweQuestions) {
     const thirdOf = n => [...n].filter(k => k !== V);
     const [h1, h2] = named.map(n => { const [a, b] = thirdOf(n); return lineDist(P[a], P[b], P[V]); });
     kindGap = Math.abs(h1 - h2) / Math.max(h1, h2);
-    if (kindGap < GAP) { problems++; console.error(`✗ ${q.id}: the ⊥ heights from ${V} to the two third sides are (almost) equal, so the ⊥h-form would be true too`); }
+    if (kindGap < GAP) { problems++; console.error(`✗ ${q.id}: the ⊥ heights from ${V} to the two third sides are (almost) equal, so the third side over third side would be true too`); }
     const ang = S.sketch.angle;
     if (!ang || ang.at !== V || ang.star || (S.sketch.par || []).length || S.sketch.height) { problems++; console.error(`✗ ${q.id}: an ANGLE sketch must carry the arc at ${V} (no star yet), no ⊥h, no ∥ arrows`); }
     const after = s1.sketchAfter;
@@ -643,11 +647,13 @@ for (const q of round5.eweQuestions) {
 
   /* 3 · step 2: evaluate every option from its cells */
   const want = area[0] / area[1];
-  const struckKey = cells => cells.filter(c => !isSeg(c) && word(c) !== "·").map(word).sort().join("|");
+  /* only segments and "·" may be drawn: nothing struck is left on screen */
+  const onlySegs = cells => cells.every((c, i) => (i % 2 === 0 ? isSeg(c) : word(c) === "·")) && cells.length % 2 === 1;
   const evals = s2.options.map(o => {
     const f = o.frac;
     if (!f) return { text: o.text, ok: false, ratio: NaN, correct: !!o.correct };
-    const same = struckKey(f.n) === struckKey(f.d);
+    const same = onlySegs(f.n) && onlySegs(f.d);
+    if (!same) { problems++; console.error(`✗ ${q.id}: option "${o.text}" draws something other than sides joined by "·" (a struck factor left in?)`); }
     const pr = cells => cells.filter(isSeg).reduce((m, c) => m * len(c), 1);
     const nSeg = f.n.filter(isSeg).length, dSeg = f.d.filter(isSeg).length;
     const ratio = (pr(f.n) / pr(f.d)) / want;
@@ -673,7 +679,7 @@ for (const q of round5.eweQuestions) {
   rows5.push({ q: q.id, kind, named, minLenGap, minProdGap, kindGap, step1: marked1.join(), evals, oneRight });
 }
 
-console.log("\new5 (no fills: the tool, then the first line, against the shoelace area ratio)");
+console.log("\new5 (no fills: the tool, then what is left, against the shoelace area ratio)");
 console.log("question  kind    named            step 1 marked  smallest length gap  smallest product gap  kind gap  options true  exactly one, the marked one");
 for (const r of rows5) {
   console.log(`${r.q.padEnd(9)} ${r.kind.padEnd(7)} ${r.named.join(" / ").padEnd(16)} ${r.step1.padEnd(14)} ${(100 * r.minLenGap).toFixed(2).padStart(18)}% ${(100 * r.minProdGap).toFixed(2).padStart(19)}% ${(100 * r.kindGap).toFixed(1).padStart(7)}%  ${String(r.evals.filter(e => e.ok).length).padStart(12)}  ${r.oneRight ? "yes" : "NO"}`);
@@ -681,4 +687,4 @@ for (const r of rows5) {
 }
 
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3 and ew4), and every ew5 question has exactly one true first line, the marked one.");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3 and ew4), and every ew5 question has exactly one true leftover, the marked one.");
