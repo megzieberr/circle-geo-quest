@@ -40,14 +40,15 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, frameHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, frameHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
 
 /* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
    "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts).
    ew3 adds "Opp Δ ABC" and a product "½ · basis · ⊥h": each stays one
-   unit too (neither appears in ew1 or ew2). */
+   unit too (neither appears in ew1 or ew2). ew4 adds "sin Â": the sine
+   and its angle stay together (no prompt or intro of ew1 to ew3 has one). */
 const glue = t => esc(t).replace(/(\S) ∥ (\S)/g, "$1\u00A0∥\u00A0$2").replace(/Δ (\S)/g, "Δ\u00A0$1")
-  .replace(/Opp Δ/g, "Opp\u00A0Δ").replace(/ · /g, "\u00A0·\u00A0");
+  .replace(/Opp Δ/g, "Opp\u00A0Δ").replace(/ · /g, "\u00A0·\u00A0").replace(/\bsin /g, "sin\u00A0");
 
 /* Afrikaans only, whatever the toggle says (her ruling). Plain strings,
    no tx(): there is no other language to fall back to. */
@@ -235,6 +236,11 @@ export function renderEweRound(app, host, params) {
           run.gated++;
           if (res.firstTry) run.firstTry++;
           if (res.fill) lastFill = res.fill;
+          /* ew4, opt-in: a step that brings `sketchAfter` redraws the
+             question's sketch once it is answered right (her star at the
+             shared angle), and it stays for the rest of the question.
+             Without the key the sketch is never touched. */
+          if (step.sketchAfter) fig.innerHTML = sketchSvg(step.sketchAfter);
           nextStep();
         };
         if (step.type === "build") mountBuild(stepBox, step, done);
@@ -346,7 +352,7 @@ function mountBuild(host, step, onDone) {
       fb.className = "dp-feedback bad ewe-fb";
       fb.textContent = UI.notYet;
       hint.hidden = false;
-      hint.innerHTML = `<span class="dp-hint-tag">💡 ${UI.hintTag}</span> ${hintHtml(step, r.why)}`;
+      hint.innerHTML = `<span class="dp-hint-tag">💡 ${UI.hintTag}</span> ${hintHtml(step, r.why, r)}`;
       if (wrong >= SHOW_ME_AFTER) showMe.hidden = false;
     },
   });
@@ -363,11 +369,14 @@ function mountBuild(host, step, onDone) {
   });
 }
 
-function hintHtml(step, why) {
+function hintHtml(step, why, r) {
   const h = step.hints;
   /* ew3 (the area marker): one plain sentence per wrong reason (crossed,
      shared, repeat, order, pattern), keyed by the reason itself */
   if (step.spec && step.spec.mode === "area") return esc(h[why] || h.pattern);
+  /* ew4 (the product marker): the same, and "{chip}" in a hint becomes the
+     very chip the marker named (the third side they used: DE or BC) */
+  if (step.spec && step.spec.mode === "sine") return esc((h[why] || h.pattern).replace("{chip}", (r && r.chip) || ""));
   if (why === "par") return esc(h.par);
   if (why === "repeat") return esc(h.repeat);
   if (why === "whole") return esc(h.whole);
@@ -442,6 +451,9 @@ function writeCard(q, fill) {
   if (q.write.text) body.appendChild(el("p", "ewe-write-text", esc(q.write.text)));
   /* ew3, opt-in: her three-fraction area chain, the ½ and ⊥h struck through */
   else if (q.write.area) body.innerHTML = areaLineHtml(q.write.area, q.write.reason);
+  /* ew4, opt-in: the same chain for a shared angle, the ½ and sin struck
+     through, the products inside the last fraction */
+  else if (q.write.sine) body.innerHTML = sineLineHtml(q.write.sine, q.write.reason);
   /* ew2, opt-in: TWO lines as on the exam page, the similar triangles
      first, then the ratio. A step with no build (ew2 Q4) brings its own
      fill. ew1 has neither, so its card is unchanged. */
@@ -471,7 +483,7 @@ function renderEnd(app, host, round, r) {
       <div class="ewe-write ewe-takeaway">
         <div class="ewe-write-tag">${UI.remember}</div>
         <p class="ewe-write-text">${esc(tk.text)}</p>
-        <div class="ewe-write-body">${tk.area ? areaLineHtml(tk.area, tk.reason)
+        <div class="ewe-write-body">${tk.sine ? sineLineHtml(tk.sine, tk.reason) : tk.area ? areaLineHtml(tk.area, tk.reason)
           : (tk.sim ? simLineHtml(tk.sim, tk.simReason) : "") + writtenLineHtml(tk.fill, tk.reason)}</div>
       </div>
       <div class="result-actions"></div>

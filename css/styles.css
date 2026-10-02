@@ -1111,3 +1111,12 @@ svg.diag .pl.ewe-hl{fill:#e03131;}
 .ewf-x{text-decoration:line-through; text-decoration-color:#8c3fd1; text-decoration-thickness:2.5px;}
 /* a filled box, written out as a finished line (✓ feedback, "Wys my") */
 .ewpad-in{color:var(--ink); padding:0 .06em;}
+/* ew4 "Deel 'n hoek": the arc of the shared angle, and her coloured star
+   (her sterretjie for "gemeen") that appears beside it once the learner has
+   found the angle. Blue, her colour for the shared angle in her notes. */
+svg.diag .mk.ewe-arc{stroke:#1c7ed6; stroke-width:2;}
+svg.diag .ewe-star{fill:#1c7ed6; stroke:#1864ab; stroke-width:.8; stroke-linejoin:round;}
+/* a denominator holding an angle hat ("sin Â") gets a little room under the
+   bar, so the hat never touches it (measured by tools/ewe-phone-check.py).
+   Only ew4 writes .ewf-hat, so no other fraction changes. */
+.ewf-d:has(.ewf-hat){padding-top:.26em;}

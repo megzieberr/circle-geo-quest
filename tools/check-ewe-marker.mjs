@@ -29,11 +29,18 @@
    of every two-box build step against an oracle that measures AREAS
    (shoelace) and lengths from the coordinates.
 
+   ew4 (the area ratio from a shared angle) last: every fill of every
+   four-box product step (6⁴ each) against the same kind of oracle, areas
+   and lengths from the coordinates, plus the sketch facts the round leans
+   on (which angle is shared, measured; the cut line not ∥; every chip
+   drawn).
+
    Run: node tools/check-ewe-marker.mjs        (exit 1 on any disagreement) */
 import { markRatio, segLength, dist } from "../js/ewe-core.js";
 import { round, TRIANGLES } from "../js/rounds/ewe1-watter-sye.js";
 import { round as round2, TRIANGLES as TRIANGLES2 } from "../js/rounds/ewe2-met-die-lyne.js";
 import { round as round3, SKETCHES as SKETCHES3 } from "../js/rounds/ewe3-deel-n-sy.js";
+import { round as round4, SKETCHES as SKETCHES4 } from "../js/rounds/ewe4-deel-n-hoek.js";
 
 const REL = 1e-9;             // "equal" for lengths that are equal by construction
 const GAP = 1e-3;             // anything closer than this that is NOT forced is an accident
@@ -341,5 +348,178 @@ for (const r of rows3) {
 }
 console.log(`TOTAL           ${"".padStart(5)}  ${String(T3).padStart(11)}  ${String(A3).padStart(8)}  ${String(R3).padStart(8)}  ${String(D3).padStart(13)}`);
 
+/* ======================= ew4 =======================
+   The ew4 ORACLE, written from the round's rule, not from the marker. It
+   reads only the COORDINATES the sketch is drawn from, and the two triangle
+   names the learner SEES in the frame ("Opp Δ ADE" over "Opp Δ ABC"):
+     segment       a chip that is two point names of the sketch; anything
+                   else (½, sin Â) is a factor, not a length, and never right
+     area          shoelace, from the three corners' coordinates
+     says nothing  a chip twice in one product, or the same pair of chips
+                   top and bottom
+     right =  all four chips are segments
+              AND the fill does not say nothing
+              AND len(top1)·len(top2) / (len(bot1)·len(bot2))
+                  = area(first Δ) / area(second Δ)     (relative 1e-9)
+   Before that, per sketch: GENERIC (no two of the six sides share a length,
+   no two pairwise products of them, squares too, are equal); the shared
+   angle MEASURED (the corner of both triangles where their sides run along
+   the same two rays) and the arc drawn there; the cut line not ∥ (no ∥
+   arrows, the two third sides at a clear angle); every chip lies on a drawn
+   line (so Q4's ray really runs through to K).
+   Q5 (Ja / Nee): "Nee" must be right exactly when the two tinted triangles
+   share NO angle (measured) and they do share a height. */
+const HATS = /^(?:[A-Z]\u0302|[\u00C2\u0108\u00CA\u011C\u0124\u00CE\u0134\u00D4\u015C\u00DB\u0174\u0176\u1E90])$/u;
+const unitV = (P, Q) => { const L = dist(P, Q); return { x: (Q.x - P.x) / L, y: (Q.y - P.y) / L }; };
+const sameDir = (u, v) => Math.abs(u.x - v.x) < 1e-9 && Math.abs(u.y - v.y) < 1e-9;
+/* the corner where two named triangles share ONE ANGLE: a common corner
+   where the two other corners of each lie on the same two rays from it */
+function sharedAngleAt(pts, n1, n2) {
+  for (const V of [...n1].filter(k => n2.includes(k))) {
+    const rays = n => [...n].filter(k => k !== V).map(k => unitV(pts[V], pts[k]));
+    const [r1, r2] = [rays(n1), rays(n2)];
+    if (r1.every(u => r2.some(v => sameDir(u, v))) && r2.every(u => r1.some(v => sameDir(u, v)))) return V;
+  }
+  return null;
+}
+function onSegment(P, Q, X) {
+  const L = dist(P, Q), cr = Math.abs((Q.x - P.x) * (X.y - P.y) - (X.x - P.x) * (Q.y - P.y)) / L;
+  const along = ((X.x - P.x) * (Q.x - P.x) + (X.y - P.y) * (Q.y - P.y)) / (L * L);
+  return cr < 1e-6 && along > -1e-9 && along < 1 + 1e-9;
+}
+
+const rows4 = [];
+for (const q of round4.eweQuestions) {
+  const S = SKETCHES4[q.id];
+  const P = S.pts;
+  if (!q.steps.some(x => x.type === "build")) {
+    const [n1, n2] = S.sketch.tints.map(t => (Array.isArray(t) ? t : t.pts).join(""));
+    const angle = sharedAngleAt(P, n1, n2), height = shareHeight(P, n1, n2);
+    const st = q.steps[0];
+    const right = st.options.find(o => o.correct).text;
+    if (right !== (angle ? "Ja" : "Nee")) { problems++; console.error(`✗ ${q.id}: marked "${right}", but the oracle says shared angle = ${angle}`); }
+    if (!height) { problems++; console.error(`✗ ${q.id}: Δ ${n1} and Δ ${n2} should share a height`); }
+    if (S.sketch.angle || (S.sketch.par || []).length) { problems++; console.error(`✗ ${q.id}: an angle arc or ∥ arrows in a sketch with no shared angle`); }
+    rows4.push({ q: q.id, yesno: `Δ ${n1} and Δ ${n2}: shared angle ${angle || "none"}, shared height ${height ? "yes" : "no"}, right answer "${right}"` });
+    continue;
+  }
+  const named = namedOnScreen(q);
+  const area = named.map(n => shoelace([...n].map(k => P[k])));
+  const isSeg = c => [...c].length === 2 && [...c].every(k => P[k]);
+  const len = c => dist(P[[...c][0]], P[[...c][1]]);
+  const full = q.steps.find(x => x.type === "build");
+  const sides = full.chips.filter(isSeg);
+
+  /* 0 · the shared angle, measured, and the arc drawn at it */
+  const V = sharedAngleAt(P, named[0], named[1]);
+  if (!V) { problems++; console.error(`✗ ${q.id}: Δ ${named[0]} and Δ ${named[1]} share no angle`); continue; }
+  const ang = S.sketch.angle;
+  if (!ang || ang.at !== V || ang.star) { problems++; console.error(`✗ ${q.id}: the arc is not at the shared angle ${V} (or the star shows from the start)`); }
+  else {
+    const arcRays = ang.rays.map(k => unitV(P[V], P[k]));
+    const triRays = [...named[1]].filter(k => k !== V).map(k => unitV(P[V], P[k]));
+    if (!arcRays.every(u => triRays.some(v => sameDir(u, v)))) { problems++; console.error(`✗ ${q.id}: the arc does not run between the two sides of the angle`); }
+  }
+  /* the star version differs ONLY by the star */
+  const after = q.steps[0].sketchAfter;
+  if (!after || !after.angle || !after.angle.star || JSON.stringify({ ...after, angle: { ...after.angle, star: false } }) !== JSON.stringify(S.sketch)) {
+    problems++; console.error(`✗ ${q.id}: step 1's sketchAfter is not the same sketch with the star on`);
+  }
+
+  /* 1 · generic: the six sides, distinct lengths, distinct products */
+  const L = Object.fromEntries(sides.map(c => [c, len(c)]));
+  if (sides.length !== 6) { problems++; console.error(`✗ ${q.id}: ${sides.length} side chips, want 6`); }
+  for (let i = 0; i < sides.length; i++) for (let j = i + 1; j < sides.length; j++) {
+    const a = L[sides[i]], b = L[sides[j]];
+    if (Math.abs(a - b) / Math.max(a, b) < GAP) { problems++; console.error(`✗ ${q.id}: ${sides[i]} and ${sides[j]} are accidentally equal (${a.toFixed(3)})`); }
+  }
+  const prods = [];
+  for (let i = 0; i < sides.length; i++) for (let j = i; j < sides.length; j++) prods.push([`${sides[i]}·${sides[j]}`, L[sides[i]] * L[sides[j]]]);
+  let minProdGap = Infinity;
+  for (let i = 0; i < prods.length; i++) for (let j = i + 1; j < prods.length; j++) {
+    const gap = Math.abs(prods[i][1] - prods[j][1]) / Math.max(prods[i][1], prods[j][1]);
+    minProdGap = Math.min(minProdGap, gap);
+    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${prods[i][0]} and ${prods[j][0]} are accidentally equal`); }
+  }
+
+  /* 2 · not ∥: no arrows, and the two sides that do not touch the angle
+     meet at a clear angle; every side chip lies along a drawn line */
+  const thirds = sides.filter(c => ![...c].includes(V));
+  const [u, w] = thirds.map(c => unitV(P[[...c][0]], P[[...c][1]]));
+  const parAngle = Math.asin(Math.min(1, Math.abs(u.x * w.y - u.y * w.x))) * 180 / Math.PI;
+  if ((S.sketch.par || []).length || thirds.length !== 2 || parAngle < 8) { problems++; console.error(`✗ ${q.id}: the cut line is (nearly) ∥ or carries ∥ arrows (${parAngle.toFixed(1)}°)`); }
+  for (const c of sides) {
+    const [a, b] = [...c].map(k => P[k]);
+    if (!S.sketch.lines.some(([p, r]) => onSegment(P[p], P[r], a) && onSegment(P[p], P[r], b))) { problems++; console.error(`✗ ${q.id}: ${c} is not along any drawn line`); }
+  }
+
+  /* 3 · step 1: the right corner is the measured one; every wrong corner
+     belongs to ONE of the two triangles only; each option one hatted letter */
+  const pick = q.steps[0];
+  for (const o of pick.options) {
+    if (!HATS.test(o.text) || o.text.normalize("NFC") !== o.text) { problems++; console.error(`✗ ${q.id}: option ${JSON.stringify(o.text)} is not one hatted letter (NFC)`); }
+    const letter = o.text.normalize("NFD")[0];
+    if (!!o.correct !== (letter === V)) { problems++; console.error(`✗ ${q.id}: option ${o.text} marked ${!!o.correct}, the shared angle is at ${V}`); }
+    if (!o.correct && named[0].includes(letter) === named[1].includes(letter)) { problems++; console.error(`✗ ${q.id}: wrong option ${o.text} is not in exactly one Δ`); }
+  }
+  const pickLine = `${pick.options.map(o => `${o.text}${o.correct ? " right" : ""}`).join(", ")}`;
+
+  /* 4 · step 4 and the card: the reason names the measured angle; the card
+     names the frame's triangles and writes the shown answer; tints match */
+  const reason = q.steps[3].options.find(o => o.correct).text;
+  const hatV = (V + "\u0302").normalize("NFC");
+  if (reason !== `${hatV} gemeen` || q.write.reason !== reason) { problems++; console.error(`✗ ${q.id}: reason ${reason} / card ${q.write.reason}, want "${hatV} gemeen"`); }
+  if (q.write.sine.tris.join() !== named.join()) { problems++; console.error(`✗ ${q.id}: the card names ${q.write.sine.tris}, the frame ${named}`); }
+  const tintOf = n => { const t = S.sketch.tints.find(x => [...(Array.isArray(x) ? x : x.pts)].sort().join() === [...n].sort().join()); return t && (Array.isArray(t) ? 0 : t.tint); };
+  const frameTints = [full.frame[0].n[0].tint, full.frame[0].d[0].tint];
+  if (frameTints.join() !== named.map(tintOf).join() || q.write.sine.tints.join() !== frameTints.join()) { problems++; console.error(`✗ ${q.id}: the "Opp Δ" tints ${frameTints} do not match the sketch ${named.map(tintOf)}`); }
+
+  /* 5 · every fill of every build step */
+  q.steps.forEach((step, si) => {
+    if (step.type !== "build") return;
+    if (step.spec.mode !== "sine") { problems++; console.error(`✗ ${q.id} step ${si + 1}: not in sine mode`); return; }
+    let tried = 0, accepted = 0, rejected = 0, disagree = 0;
+    const why = {};
+    const want = area[0] / area[1];
+    const c = step.chips;
+    for (const x1 of c) for (const x2 of c) for (const x3 of c) for (const x4 of c) {
+      tried++;
+      const fill = [x1, x2, x3, x4];
+      const saysNothing = x1 === x2 || x3 === x4 || [x1, x2].sort().join() === [x3, x4].sort().join();
+      let right = false;
+      if (fill.every(isSeg) && !saysNothing) {
+        const rel = Math.abs((len(x1) * len(x2)) / (len(x3) * len(x4)) / want - 1);
+        right = rel < REL;
+        if (!right && rel < GAP) { problems++; console.error(`✗ ${q.id}: ${x1}·${x2} / ${x3}·${x4} is ACCIDENTALLY almost the area ratio, move a point`); }
+      }
+      const verdict = markRatio(fill, step.spec);
+      why[verdict.why] = (why[verdict.why] || 0) + 1;
+      if (verdict.ok) accepted++; else rejected++;
+      if (verdict.ok !== right) {
+        disagree++;
+        if (disagree <= 5) console.error(`✗ ${q.id} step ${si + 1}: ${x1}·${x2} / ${x3}·${x4}  marker ${verdict.ok} (${verdict.why}), oracle ${right}`);
+      }
+    }
+    /* the shown answer is right, and it is the card's two products */
+    if (!markRatio(step.answer, step.spec).ok) { problems++; console.error(`✗ ${q.id} step ${si + 1}: its own shown answer is marked wrong`); }
+    if (step.answer.join() !== [...q.write.sine.top, ...q.write.sine.bot].join()) { problems++; console.error(`✗ ${q.id} step ${si + 1}: the shown answer is not the card's products`); }
+    problems += disagree;
+    rows4.push({ q: q.id, step: si + 1, chips: c.length, tried, accepted, rejected, disagree, minProdGap, parAngle, V, pickLine, why });
+  });
+}
+
+console.log("\new4 (sine mode, four boxes, two products)");
+console.log("question  step  chips  fills tried  accepted  rejected  disagreements  smallest product gap  shared angle  cut line vs third side");
+let T4 = 0, A4 = 0, R4 = 0, D4 = 0;
+let lastQ = null;
+for (const r of rows4) {
+  if (r.yesno) { console.log(`${r.q.padEnd(9)} Ja / Nee: ${r.yesno}`); continue; }
+  if (r.q !== lastQ) { console.log(`${r.q.padEnd(9)} step 1 pick: ${r.pickLine}`); lastQ = r.q; }
+  T4 += r.tried; A4 += r.accepted; R4 += r.rejected; D4 += r.disagree;
+  console.log(`${r.q.padEnd(9)} ${String(r.step).padStart(4)}  ${String(r.chips).padStart(5)}  ${String(r.tried).padStart(11)}  ${String(r.accepted).padStart(8)}  ${String(r.rejected).padStart(8)}  ${String(r.disagree).padStart(13)}  ${(100 * r.minProdGap).toFixed(2).padStart(19)}%  ${r.V.padStart(12)}  ${r.parAngle.toFixed(1).padStart(21)}°`);
+  console.log(`          rejected because: ${Object.entries(r.why).filter(([k]) => k !== "ok").map(([k, v]) => `${k} ${v}`).join(", ")}`);
+}
+console.log(`TOTAL           ${"".padStart(5)}  ${String(T4).padStart(11)}  ${String(A4).padStart(8)}  ${String(R4).padStart(8)}  ${String(D4).padStart(13)}`);
+
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2 and ew3).");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3 and ew4).");

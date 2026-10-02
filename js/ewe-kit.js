@@ -36,7 +36,8 @@
 
    3 · THE SKETCH   sketchSvg()
        A to-scale triangle sketch with ∥ arrows (ew3, opt-in: tinted
-       triangles and a dotted ⊥h with its right-angle box), drawn with the same
+       triangles and a dotted ⊥h with its right-angle box; ew4, opt-in: the
+       arc of a shared angle and her star beside it), drawn with the same
        svg.diag classes as the circle engine (js/engine.js) so it looks
        like the rest of the app. Labels are PLACED, not typed: each one
        goes where it is farthest from every line, arrow and other label.
@@ -124,6 +125,33 @@ export function areaLineHtml(area, reason) {
   return `<div class="ewl ewl-area">${chain}`
        + (reason ? `<span class="ewl-rs">(${esc(reason)})</span>` : "") + `</div>`;
 }
+/* ew4: her area chain for a SHARED ANGLE, as on her p.44 (rule 15), with
+   the reason next to it:
+     Opp Δ ADE     ½ · AD · AE · sin Â     AD · AE
+     --------- = ------------------- = -------     (Â gemeen)
+     Opp Δ ABC     ½ · AB · AC · sin Â     AB · AC
+   The sibling of areaLineHtml, built from the SAME pieces: fracHtml (the one
+   drawer), prodHtml (rule 7: each product sits INSIDE its numerator or
+   denominator), the ½ and the sine struck through by a span inside the
+   drawer, chainHtml (breaks only before an "="), the reason moving down
+   whole. Each "Opp Δ" carries its triangle's own tint, as in the sketch.
+   sine = { tris: ["ADE", "ABC"], tints: [1, 2], top: ["AD", "AE"],
+            bot: ["AB", "AC"], sin: "sin Â" } */
+export function sineLineHtml(sine, reason) {
+  const [t1, t2] = sine.tris.map(esc), [k1, k2] = sine.tints || [1, 2];
+  const top = sine.top.map(esc), bot = sine.bot.map(esc), sn = esc(sine.sin);
+  const x = v => `<span class="ewf-x">${v}</span>`;
+  /* the sine carries a hat (sin Â): .ewf-hat gives a denominator that holds
+     one a little room under the bar, so the hat never touches it */
+  const xs = `<span class="ewf-x ewf-hat">${sn}</span>`;
+  const chain = chainHtml([
+    fracHtml(tintHtml(`Opp Δ ${t1}`, k1), tintHtml(`Opp Δ ${t2}`, k2)), "=",
+    fracHtml([x("½"), ...top, xs], [x("½"), ...bot, xs]), "=",
+    fracHtml(top, bot),
+  ]);
+  return `<div class="ewl ewl-sine">${chain}`
+       + (reason ? `<span class="ewl-rs">(${esc(reason)})</span>` : "") + `</div>`;
+}
 /* a word in one of the two triangle tints (trusted HTML in, already escaped) */
 function tintHtml(html, k) { return `<span class="ewtint ewtint-${k}">${html}</span>`; }
 
@@ -144,8 +172,11 @@ function chainHtml(units) {
 }
 
 /* a frame's text cell: plain text, or (ew3, opt-in) { t, tint } for a word
-   in a triangle's tint, e.g. { t: "Opp Δ ABC", tint: 1 } */
+   in a triangle's tint, e.g. { t: "Opp Δ ABC", tint: 1 }, or (ew4, opt-in)
+   { t: "sin Â", hat: true } for a word with an angle hat (room under the
+   bar, see .ewf-hat) */
 function fxCell(c) {
+  if (c && typeof c === "object" && c.hat) return `<span class="ewpad-fx ewf-hat">${esc(c.t)}</span>`;
   if (c && typeof c === "object") return `<span class="ewpad-fx ewtint ewtint-${c.tint}">${esc(c.t)}</span>`;
   return `<span class="ewpad-fx">${esc(c)}</span>`;
 }
@@ -262,9 +293,37 @@ export function shuffle(xs) {
      height  { from: "A", foot:{x,y}, dir:{x,y} }   the dotted ⊥h from the
              apex to its foot, the right-angle box at the foot (on the side
              `dir` along the base) and the label "⊥h" beside it, placed like
-             the point labels */
+             the point labels
+   ew4, OPT-IN (left out, nothing changes):
+     tints   an entry may also be { pts: ["A","B","C"], tint: 2 }: the tint
+             is then named, not taken from the entry's place, so the whole
+             Δ can be drawn first in tint 2 and the cut-off Δ on top in tint 1
+     angle   { at: "A", rays: ["B","C"], star: false }   a small arc inside
+             the shared angle at `at`, between the rays to rays[0] and
+             rays[1]; with star: true, her coloured star just OUTSIDE the
+             corner (her sterretjie for "gemeen"). The star's spot is kept
+             clear of every label even while the star is hidden, so nothing
+             moves when it appears.
+     labBox  true: each point label keeps its BOX clear of its own dot on
+             every slant (boxRadius below), not just its centre 14 away */
 const W = 320, H = 232, MARGIN = 24, LAB_R = 14;
+const ARC_R = 17, STAR_D = 15, STAR_R = 5.5;
 const N = v => Math.round(v * 10) / 10;
+
+/* ew4, opt-in (spec.labBox): how far a label sits from its own point,
+   following the label's BOX instead of a circle. A letter is taller than
+   it is wide, so on a slant a 14-unit circle let the corner of the label's
+   box reach its own dot. Here the box (half-width, room above and below its
+   centre) plus the dot plus a small gap must clear the point along the
+   chosen direction; never closer than the old 14. */
+const BOX_HW = 5.5 + 2.6 + 2, BOX_UP = 10 + 2.6 + 2, BOX_DN = 8 + 2.6 + 2;
+function boxRadius(c, s) {
+  let t = Infinity;
+  if (Math.abs(c) > 1e-6) t = Math.min(t, BOX_HW / Math.abs(c));
+  if (s > 1e-6) t = Math.min(t, BOX_UP / s);        // label below the point (y down): its top clears the dot
+  if (s < -1e-6) t = Math.min(t, BOX_DN / -s);      // label above the point: its bottom clears the dot
+  return Math.max(LAB_R, t);
+}
 
 function segDist(px, py, a, b) {
   const dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy;
@@ -283,8 +342,12 @@ export function sketchSvg(spec) {
   names.forEach(k => { P[k] = { x: ox + (spec.pts[k].x - x0) * s, y: oy + (spec.pts[k].y - y0) * s }; });
 
   let out = "";
+  /* a tint entry: ["A","B","C"] takes its tint from its place (ew3), or
+     (ew4, opt-in) { pts, tint } names it */
+  const tintPts = t => (Array.isArray(t) ? t : t.pts);
   (spec.tints || []).forEach((t, i) => {
-    out += `<polygon class="ewe-tint ewe-tint-${i + 1}" points="${t.map(k => `${N(P[k].x)},${N(P[k].y)}`).join(" ")}"/>`;
+    const k = Array.isArray(t) ? i + 1 : t.tint;
+    out += `<polygon class="ewe-tint ewe-tint-${k}" points="${tintPts(t).map(k => `${N(P[k].x)},${N(P[k].y)}`).join(" ")}"/>`;
   });
   const segs = spec.lines.map(([a, b]) => [P[a], P[b]]);
   segs.forEach(([a, b]) => { out += `<line class="ln" x1="${N(a.x)}" y1="${N(a.y)}" x2="${N(b.x)}" y2="${N(b.y)}"/>`; });
@@ -315,6 +378,38 @@ export function sketchSvg(spec) {
   }
   const obst = hSeg ? segs.concat([hSeg]) : segs;
 
+  /* ew4: the shared angle. The arc runs inside the angle (the smaller turn
+     from one ray to the other); the star sits on the line that halves the
+     angle, on the far side of the corner, so it is clear of both rays. Both
+     join the obstacles the labels keep away from, as round discs: the arc
+     as a string of points along it, the star as one disc, ALWAYS (drawn or
+     not), so the labels do not jump when the star appears. */
+  const discs = [];
+  if (spec.angle) {
+    const V = P[spec.angle.at];
+    const unit = k => { const dx = P[k].x - V.x, dy = P[k].y - V.y, L = Math.hypot(dx, dy) || 1; return { x: dx / L, y: dy / L }; };
+    const u1 = unit(spec.angle.rays[0]), u2 = unit(spec.angle.rays[1]);
+    const a1 = Math.atan2(u1.y, u1.x);
+    let da = Math.atan2(u2.y, u2.x) - a1;
+    while (da > Math.PI) da -= 2 * Math.PI;
+    while (da < -Math.PI) da += 2 * Math.PI;
+    out += `<path class="mk ewe-arc" d="M ${N(V.x + ARC_R * u1.x)} ${N(V.y + ARC_R * u1.y)} A ${ARC_R} ${ARC_R} 0 0 ${da > 0 ? 1 : 0} ${N(V.x + ARC_R * u2.x)} ${N(V.y + ARC_R * u2.y)}"/>`;
+    for (let i = 0; i <= 10; i++) { const a = a1 + da * i / 10; discs.push({ x: V.x + ARC_R * Math.cos(a), y: V.y + ARC_R * Math.sin(a), r: 1.5 }); }
+    let bx = -(u1.x + u2.x), by = -(u1.y + u2.y);
+    const bl = Math.hypot(bx, by) || 1;
+    bx /= bl; by /= bl;
+    const sx = V.x + STAR_D * bx, sy = V.y + STAR_D * by;
+    discs.push({ x: sx, y: sy, r: STAR_R + 1 });
+    if (spec.angle.star) {
+      const pts = [];
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? STAR_R * 0.45 : STAR_R;
+        pts.push(`${N(sx + rr * Math.cos(a))},${N(sy + rr * Math.sin(a))}`);
+      }
+      out += `<polygon class="ewe-star" points="${pts.join(" ")}"/>`;
+    }
+  }
+
   /* labels: for each point try 36 directions and keep the one whose label
      centre is farthest from every line, chevron, placed label and edge */
   const cx = xs.length ? names.reduce((a, k) => a + P[k].x, 0) / names.length : W / 2;
@@ -323,7 +418,7 @@ export function sketchSvg(spec) {
      into the yellow Δ): a point label never sits INSIDE a tinted triangle.
      Only sketches with tints carry the rule, so ew1 and ew2 keep the layouts
      she approved. */
-  const tintPolys = (spec.tints || []).map(t => t.map(k => P[k]));
+  const tintPolys = (spec.tints || []).map(t => tintPts(t).map(k => P[k]));
   const inTri = (x, y, [a, b, c]) => {
     const s1 = (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
     const s2 = (c.x - b.x) * (y - b.y) - (c.y - b.y) * (x - b.x);
@@ -338,10 +433,12 @@ export function sketchSvg(spec) {
     const out0 = Math.atan2(p.y - cy, p.x - cx);
     for (let i = 0; i < 36; i++) {
       const ang = i * Math.PI / 18;
-      const lx = p.x + LAB_R * Math.cos(ang), ly = p.y + LAB_R * Math.sin(ang);
+      const r = spec.labBox ? boxRadius(Math.cos(ang), Math.sin(ang)) : LAB_R;
+      const lx = p.x + r * Math.cos(ang), ly = p.y + r * Math.sin(ang);
       let score = Infinity;
       obst.forEach(([a, b]) => { score = Math.min(score, segDist(lx, ly, a, b)); });
       marks.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - 4); });
+      discs.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - m.r); });
       placed.forEach(q => { score = Math.min(score, Math.hypot(lx - q.x, ly - q.y) - 8); });
       score = Math.min(score, lx - 7, W - 7 - lx, ly - 8, H - 8 - ly);
       /* inside a tinted Δ is never allowed (see tintPolys above) */

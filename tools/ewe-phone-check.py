@@ -38,6 +38,21 @@ What it does (all against a LOCAL copy, never the live class):
     ½ and ⊥h struck INSIDE the one drawer), Q5's Nee, the end screen; the
     two tints and the dotted ⊥h with its right-angle box in every sketch.
     Its PNGs start with "ew3-".
+  * ew4 ("Deel 'n hoek"): locked on the map until ew3 is passed; then
+    ew3's end screen leads on to it and the map unlocks it. The walk: every
+    step of every ew4 question. Step 1 (which angle is shared?) before and
+    after the right pick: her star absent, then present, and no label moves
+    when it appears. The build steps: boxes empty, the wrong fills with
+    their hints (a third side, the swapped products, a mixed product, the
+    same chip twice, a struck ½ or sine), the right fill. Every card (the
+    chain measured: no break inside a fraction, the products INSIDE the
+    numerator and the denominator, the ½ and the sine struck inside the one
+    drawer, the reason moved down whole). Q5's Nee, the end screen. In
+    every sketch the two tints (matched to the coloured "Opp Δ" words), the
+    arc, and the labels clear of lines, dots, the arc, the star and each
+    other. Every angle hat (Â, B̂ …) MEASURED: its ink top below the top
+    edge of its chip, box or option, and below the bar of a fraction. Its
+    PNGs start with "ew4-".
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -142,11 +157,24 @@ LABELS_JS = r"""
   const lines = [...svg.querySelectorAll('line.ln')].map(l => ['x1','y1','x2','y2'].map(k => +l.getAttribute(k)));
   const marks = [...svg.querySelectorAll('path.ewe-par, path.ewe-ra')].map(R);
   const dots = [...svg.querySelectorAll('circle')].map(c => { const x = +c.getAttribute('cx'), y = +c.getAttribute('cy'), r = +c.getAttribute('r'); return { x0: x - r, y0: y - r, x1: x + r, y1: y + r }; });
+  /* ew4: her star (a box) and the arc (sampled along its length: its box
+     would be far bigger than the stroke) */
+  const stars = [...svg.querySelectorAll('polygon.ewe-star')].map(R);
+  const arcPts = [...svg.querySelectorAll('path.ewe-arc')].flatMap(p => { const L = p.getTotalLength(); return Array.from({ length: 61 }, (_, i) => p.getPointAtLength(L * i / 60)); });
+  /* her ruling 2026-10-02: a point label never sits inside a tinted Δ */
+  const tris = [...svg.querySelectorAll('polygon.ewe-tint')].map(p => p.getAttribute('points').split(' ').map(s => s.split(',').map(Number)));
+  const inTri = (x, y, [a, b, c]) => {
+    const s1 = (b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]);
+    const s2 = (c[0] - b[0]) * (y - b[1]) - (c[1] - b[1]) * (x - b[0]);
+    const s3 = (a[0] - c[0]) * (y - c[1]) - (a[1] - c[1]) * (x - c[0]);
+    return (s1 > 0 && s2 > 0 && s3 > 0) || (s1 < 0 && s2 < 0 && s3 < 0); };
   const vb = svg.viewBox.baseVal;
   const res = { labels: texts.length, lines: lines.length, arrows: svg.querySelectorAll('path.ewe-par').length, collisions: [],
                 tints: svg.querySelectorAll('polygon.ewe-tint').length, heights: svg.querySelectorAll('line.ewe-h').length,
                 dotted: [...svg.querySelectorAll('line.ewe-h')].every(l => getComputedStyle(l).strokeDasharray !== 'none'),
-                boxes: svg.querySelectorAll('path.ewe-ra').length, hlabel: [...texts].filter(t => t.textContent === '⊥h').length };
+                boxes: svg.querySelectorAll('path.ewe-ra').length, hlabel: [...texts].filter(t => t.textContent === '⊥h').length,
+                arcs: svg.querySelectorAll('path.ewe-arc').length, stars: stars.length,
+                at: texts.map(t => { const b = R(t); return [t.textContent, Math.round(b.x0 * 10) / 10, Math.round(b.y0 * 10) / 10]; }) };
   texts.forEach((t, i) => {
     const r = R(t);
     lines.forEach(l => { if (segHitsRect(...l, r)) res.collisions.push(`${t.textContent} touches a line`); });
@@ -154,10 +182,97 @@ LABELS_JS = r"""
     dots.forEach(d => { if (hit(r, d)) res.collisions.push(`${t.textContent} touches a dot`); });
     texts.forEach((u, j) => { if (j > i && hit(r, R(u))) res.collisions.push(`${t.textContent} touches ${u.textContent}`); });
     if (r.x0 < 0 || r.y0 < 0 || r.x1 > vb.width || r.y1 > vb.height) res.collisions.push(`${t.textContent} outside the sketch`);
+    stars.forEach(m => { if (hit(r, m)) res.collisions.push(`${t.textContent} touches the star`); });
+    if (arcPts.some(p => p.x > r.x0 && p.x < r.x1 && p.y > r.y0 && p.y < r.y1)) res.collisions.push(`${t.textContent} touches the arc`);
+    if (t.textContent !== '⊥h' && tris.some(tr => inTri((r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2, tr))) res.collisions.push(`${t.textContent} sits inside a tinted triangle`);
+  });
+  stars.forEach(s => {
+    lines.forEach(l => { if (segHitsRect(...l, s)) res.collisions.push('the star touches a line'); });
+    dots.forEach(d => { if (hit(s, d)) res.collisions.push('the star touches a dot'); });
+    if (s.x0 < 0 || s.y0 < 0 || s.x1 > vb.width || s.y1 > vb.height) res.collisions.push('the star is outside the sketch');
   });
   return res;
 }
 """
+
+# ew4: every angle hat on screen (Â, Ĉ precomposed; B̂, K̂ with the combining
+# hat U+0302), MEASURED. The ink top of the hatted letter comes from the
+# canvas (same computed font, so the same fallback fonts as the page): the
+# text's own box gives the baseline (box top + the font's ascent), minus
+# the glyph's real ink ascent. It must sit below the inner top edge of its
+# chip, box or option (inside the border), and below the bar when it is in
+# a denominator. Code points, not escapes, so this file stays plain ASCII
+# where it can.
+HATS_JS = r"""
+async () => {
+  await document.fonts.ready;
+  const PRE = new Set([0xC2, 0x108, 0xCA, 0x11C, 0x124, 0xCE, 0x134, 0xD4, 0x15C, 0xDB, 0x174, 0x176, 0x1E90].map(c => String.fromCharCode(c)));
+  const COMB = String.fromCharCode(0x302);
+  const cv = document.createElement('canvas').getContext('2d');
+  const out = { hats: 0, clipped: [], minGap: null, where: {}, minBy: {} };
+  const walker = document.createTreeWalker(document.querySelector('.view'), NodeFilter.SHOW_TEXT);
+  for (let t; (t = walker.nextNode());) {
+    const txt = t.textContent, el = t.parentElement;
+    if (el.closest('svg')) continue;
+    const spots = [];
+    for (let i = 0; i < txt.length; i++) {
+      if (PRE.has(txt[i])) spots.push([i, i + 1]);
+      else if (txt[i + 1] === COMB) spots.push([i, i + 2]);
+    }
+    if (!spots.length) continue;
+    const r0 = el.getBoundingClientRect();
+    if (!r0.width && !r0.height) continue;                    // hidden
+    const cs = getComputedStyle(el);
+    cv.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const den = el.closest('.ewf-d');
+    const box = el.closest('.ewchip, .ewslot, .ewe-opt, .opt, .ewpad-disp, .ewe-write, .dp-hint, .dp-feedback');
+    let limit, kind;
+    if (den) { limit = den.parentElement.querySelector(':scope > .ewf-bar').getBoundingClientRect().bottom; kind = 'under a fraction bar'; }
+    else if (box) { const b = box.getBoundingClientRect(); limit = b.top + parseFloat(getComputedStyle(box).borderTopWidth);
+      kind = box.matches('.ewchip') ? 'chip' : box.matches('.ewslot') ? 'box' : box.matches('.ewe-opt, .opt') ? 'option' : box.matches('.ewpad-disp') ? 'pad' : box.matches('.ewe-write') ? 'card' : 'hint/feedback'; }
+    else { limit = el.getBoundingClientRect().top; kind = 'text'; }
+    for (const [a, b] of spots) {
+      const rg = document.createRange(); rg.setStart(t, a); rg.setEnd(t, b);
+      const rr = rg.getBoundingClientRect();
+      const m = cv.measureText(txt.slice(a, b));
+      const inkTop = rr.top + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent;
+      const gap = inkTop - limit;
+      out.hats++; out.where[kind] = (out.where[kind] || 0) + 1;
+      out.minBy[kind] = Math.min(out.minBy[kind] ?? Infinity, Math.round(gap * 10) / 10);
+      out.minGap = out.minGap == null ? gap : Math.min(out.minGap, gap);
+      if (gap < 0) out.clipped.push(`${txt.slice(a, b)} in ${kind}: ink top ${inkTop.toFixed(1)}, edge ${limit.toFixed(1)}`);
+    }
+  }
+  out.minGap = out.minGap == null ? null : Math.round(out.minGap * 10) / 10;
+  return out;
+}
+"""
+
+# ew4: the tints in the sketch, by the corners they cover, e.g. ["2:ABC", "1:ADE"].
+# The i-th dot and the i-th point label belong to the same point (sketchSvg
+# writes both in the same order), so a polygon's corners can be named.
+TINTMAP_JS = r"""
+() => {
+  const svg = document.querySelector('svg.ewe-sketch');
+  const dots = [...svg.querySelectorAll('circle')], labs = [...svg.querySelectorAll('text.pl')];
+  const at = {}; dots.forEach((c, i) => { at[labs[i].textContent] = [+c.getAttribute('cx'), +c.getAttribute('cy')]; });
+  return [...svg.querySelectorAll('polygon.ewe-tint')].map(p => {
+    const k = p.getAttribute('class').match(/ewe-tint-(\d)/)[1];
+    const pts = p.getAttribute('points').split(' ').map(s => s.split(',').map(Number));
+    return k + ':' + pts.map(([x, y]) => Object.keys(at).find(n => Math.abs(at[n][0] - x) < 0.2 && Math.abs(at[n][1] - y) < 0.2) || '?').sort().join('');
+  });
+}
+"""
+hat_rows = []
+hat_min = {}       # kind -> (smallest gap in px, the state it was seen in)
+
+def hats(page, label):
+    h = page.evaluate(HATS_JS)
+    hat_rows.append((label, h["hats"], h["minGap"], h["where"]))
+    for kind, g in h["minBy"].items():
+        if kind not in hat_min or g < hat_min[kind][0]: hat_min[kind] = (g, label)
+    for c in h["clipped"]: fail(f"{label}: hat clipped: {c}")
+    return h
 
 def measure(page, label, scope=".ewe-play, .ewe-end"):
     m = page.evaluate(MEASURE_JS, scope)
@@ -467,6 +582,8 @@ try:
         page.wait_for_selector(".round-card")
         check3("the map unlocks ew3 once ew2 is passed (ew2 shows ✓)", page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')];
             return c.length >= 3 && c[1].classList.contains('done') && !c[2].classList.contains('locked') && !!c[2].querySelector('.btn'); }"""))
+        ew4_locked_before = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 4 && c[3].classList.contains('locked') && !c[3].querySelector('.btn'); }""")
+        if not ew4_locked_before: fail("ew4 should be locked before ew3 is passed")
 
         # ---------------- the ew3 walk ----------------
         page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[2].querySelector('.btn').click(); }")
@@ -594,6 +711,185 @@ try:
         saved3 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
             const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew3');
             return { progress: p.ew3 || null, xpEvents: ev.map(e => e.xp) }; }""")
+
+        # ---------------- ew3 -> ew4: the way on, and the map ----------------
+        ew4_checks = []
+        def check4(name, ok):
+            ew4_checks.append((name, ok))
+            if not ok: fail(name)
+        check4("ew3's end screen offers the next round", page.evaluate("""() => [...document.querySelectorAll('.ewe-end .btn')].some(b => b.textContent.includes('Volgende rondte'))"""))
+        click_btn(page, ".ewe-end .btn", "▶ Volgende rondte")
+        page.wait_for_selector(".ewe-play")
+        check4("the way on from ew3 opens ew4", "Deel 'n hoek" in page.inner_text(".play-title"))
+        page.evaluate("window.__APP__.go('ewes')")
+        page.wait_for_selector(".round-card")
+        check4("the map unlocks ew4 once ew3 is passed (ew3 shows ✓)", page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')];
+            return c.length >= 4 && c[2].classList.contains('done') && !c[3].classList.contains('locked') && !!c[3].querySelector('.btn'); }"""))
+
+        # ---------------- the ew4 walk ----------------
+        page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[3].querySelector('.btn').click(); }")
+        page.wait_for_selector(".ewe-play")
+        data4 = page.evaluate("""async () => { const m = await import('./js/rounds/ewe4-deel-n-hoek.js');
+            return m.round.eweQuestions.map(q => { const S = m.SKETCHES[q.id];
+              return { id: q.id, sine: !!(q.write && q.write.sine), third: S.third || [], sin: S.sin || '', reason: (q.write && q.write.reason) || '',
+                steps: q.steps.map(s => ({ type: s.type, chips: s.chips || [], answer: s.answer || [], star: !!s.sketchAfter,
+                  options: s.options && s.options.map(o => ({ text: o.text, correct: !!o.correct, hint: o.hint || '' })), okLine: s.okLine || '' })) }; }); }""")
+        CARD4_JS = r"""() => {
+          const c = document.querySelector('.ewe-write'); if (!c) return null;
+          const line = c.querySelector('.ewl-sine');
+          const res = { sine: !!line, text: (c.querySelector('.ewe-write-text') || {}).textContent || '', fracs: c.querySelectorAll('.ewf').length };
+          if (!line) return res;
+          const fr = [...line.querySelectorAll('.ewf')];
+          const strikes = [...line.querySelectorAll('.ewf-x')];
+          res.strikes = strikes.length;
+          res.strikesInsideMiddle = strikes.every(x => x.closest('.ewf') === fr[1] && !!x.closest('.ewf-n, .ewf-d'));
+          res.struckText = strikes.map(x => x.textContent).join(' ');
+          /* fraction rule 7: each product sits INSIDE its numerator or
+             denominator: both factors and the dot in the one box, above or
+             below the one bar, and the bar as wide as both */
+          const last = fr[2], ln = last.querySelector(':scope > .ewf-n'), ld = last.querySelector(':scope > .ewf-d');
+          res.prodTop = ln.textContent; res.prodBot = ld.textContent;
+          res.dotsInside = ln.querySelectorAll('.ewf-dot').length === 1 && ld.querySelectorAll('.ewf-dot').length === 1;
+          const bar = last.querySelector(':scope > .ewf-bar').getBoundingClientRect(), nr = ln.getBoundingClientRect(), dr = ld.getBoundingClientRect();
+          res.prodInside = nr.bottom <= bar.top + 0.5 && dr.top >= bar.bottom - 0.5 && bar.width + 0.5 >= nr.width && bar.width + 0.5 >= dr.width
+                        && nr.height < 2.2 * parseFloat(getComputedStyle(last).fontSize) && dr.height < 2.2 * parseFloat(getComputedStyle(last).fontSize);
+          res.tints = [...fr[0].querySelectorAll('.ewtint')].map(x => x.className.match(/ewtint-\d/)[0].slice(7) + ':' + x.textContent.replace(/^Opp\s*Δ\s*/, ''));
+          /* each "=" unit is ONE line (nothing breaks inside it) */
+          res.unitsWrapped = [...line.querySelectorAll('.ewq-u')].filter(u => {
+            const r = u.getBoundingClientRect(), f = u.querySelector('.ewf').getBoundingClientRect();
+            return r.height > f.height + 2; }).length;
+          res.rows = new Set([...line.querySelectorAll('.ewq-u')].map(u => { const r = u.getBoundingClientRect(); return Math.round((r.top + r.bottom) / 8); })).size;
+          const rs = line.querySelector('.ewl-rs');
+          res.reason = rs ? rs.textContent : '';
+          if (rs) { const rg = document.createRange(); rg.selectNodeContents(rs);
+            res.reasonLines = new Set([...rg.getClientRects()].map(r => Math.round(r.top))).size;
+            const q = line.querySelector('.ewq').getBoundingClientRect(), r = rs.getBoundingClientRect();
+            res.reasonBelow = r.top >= q.bottom - 1; }
+          return res; }"""
+        def tints_match(tmap, words):
+            # words like ["2:RSC", "1:TPC"] (tint : the named Δ); tmap like ["2:CRS", "1:CPT"] (tint : sorted corners)
+            norm = lambda w: w.split(":")[0] + ":" + "".join(sorted(w.split(":")[1]))
+            return len(words) == 2 and sorted(map(norm, words)) == sorted(tmap)
+        for qi, q in enumerate(data4):
+            n = qi + 1
+            P = f"ew4 Q{n}"
+            lab = page.evaluate(LABELS_JS)
+            label_rows.append((q["id"], lab))
+            if lab is None:
+                fail(f"{P}: no sketch")
+                continue
+            tmap = page.evaluate(TINTMAP_JS)
+            for c in lab["collisions"]: fail(f"{P} sketch: {c}")
+            check4(f"{P} sketch: two tinted triangles {tmap}", lab["tints"] == 2 and "?" not in "".join(tmap))
+            check4(f"{P} sketch: no ∥ arrows", lab["arrows"] == 0)
+            if q["sine"]:
+                check4(f"{P} sketch: the arc at the shared angle, no star yet", lab["arcs"] == 1 and lab["stars"] == 0)
+            else:
+                check4(f"{P} sketch: no arc and no star; the dotted ⊥h (Q5)", lab["arcs"] == 0 and lab["stars"] == 0 and lab["heights"] == 1)
+            for si, st in enumerate(q["steps"]):
+                tag = f"{P} step {si + 1} ({st['type']})"
+                k = si + 1
+                if st["type"] == "build":
+                    a = st["answer"]
+                    ps = pad_state()
+                    check4(f"{tag}: {len(a)} boxes, the glow on the first", len(ps["texts"]) == len(a) and ps["next"] == 0)
+                    if si == 1:
+                        words = page.evaluate("() => [...document.querySelectorAll('.ewe-step:last-child .ewpad-disp .ewtint')].map(x => x.className.match(/ewtint-\\d/)[0].slice(7) + ':' + x.textContent.replace(/^Opp\\s*Δ\\s*/, ''))")
+                        check4(f"{tag}: the 'Opp Δ' words {words} carry the sketch's tints {tmap}", tints_match(tmap, words))
+                    measure(page, f"{tag}: boxes empty")
+                    hats(page, f"{tag}: boxes empty")
+                    shot(page, f"ew4-q{n}-s{k}-a-boxes-empty.png")
+                    th = q["third"]
+                    if si == 1:
+                        wrongs = [([th[0], a[1], a[2], a[3]], f"{th[0]} raak nie aan", f"a third side {th[0]}"),
+                                  ([a[2], a[3], a[0], a[1]], "Kyk watter Δ staan bo", "the products swapped"),
+                                  ([a[0], a[2], a[1], a[3]], "Bo kom net", "a mixed product")]
+                        if n == 1:
+                            wrongs += [([a[0], a[1], a[2], th[1]], f"{th[1]} raak nie aan", f"the other third side {th[1]}"),
+                                       ([a[0], a[0], a[2], a[3]], "dieselfde stuk twee keer", "one chip twice in a product"),
+                                       ([a[0], a[1], a[1], a[0]], "dieselfde stuk twee keer", "the same pair top and bottom")]
+                    else:
+                        wrongs = [(["½", a[1], a[2], a[3]], "doodgetrek", "a struck ½"),
+                                  ([a[0], a[1], a[2], q["sin"]], "doodgetrek", f"a struck {q['sin']}"),
+                                  ([a[2], a[3], a[0], a[1]], "Kyk watter Δ staan bo", "the products swapped"),
+                                  ([a[0], a[2], a[1], a[3]], "Bo kom net", "a mixed product")]
+                    for wi, (fill, want, name) in enumerate(wrongs):
+                        clear_pad()
+                        for c in fill: click_chip(page, c)
+                        measure(page, f"{tag}: boxes full ({name})")
+                        hats(page, f"{tag}: boxes full ({name})")
+                        click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                        measure(page, f"{tag}: {name} + hint")
+                        hint = page.inner_text(".ewe-step:last-child .ewe-hint") if seen(page, ".ewe-step:last-child .ewe-hint") else ""
+                        check4(f"{tag}: {'·'.join(fill[:2])} / {'·'.join(fill[2:])} ({name}) gets its hint", want in hint)
+                        hats(page, f"{tag}: {name} + hint")
+                        shot(page, f"ew4-q{n}-s{k}-b{wi + 1}-wrong.png")
+                    clear_pad()
+                    for c in a: click_chip(page, c)
+                    measure(page, f"{tag}: boxes full (right)")
+                    hats(page, f"{tag}: boxes full (right)")
+                    shot(page, f"ew4-q{n}-s{k}-c-boxes-full.png")
+                    click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                    measure(page, f"{tag}: marked right")
+                    hats(page, f"{tag}: marked right")
+                    check4(f"{tag}: right answer {'·'.join(a[:2])} / {'·'.join(a[2:])} accepted", has(page, f".ewe-steps > .ewe-step:nth-child({k}) .ewpad.is-locked"))
+                    fbf = page.evaluate("(k) => document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-fb.good .ewf`).length", k)
+                    check4(f"{tag}: the ✓ line is the finished frame ({fbf} fractions)", fbf == (2 if si == 1 else 1))
+                else:
+                    measure(page, f"{tag}: options")
+                    h = hats(page, f"{tag}: options")
+                    if st["star"]:
+                        check4(f"{tag}: the {len(st['options'])} hatted options measured ({h['where'].get('option', 0)} hats on options, smallest gap {h['minGap']}px)", h["where"].get("option", 0) >= len(st["options"]))
+                    shot(page, f"ew4-q{n}-s{k}-d-options.png")
+                    for o in [o for o in st["options"] if not o["correct"]]:
+                        click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
+                        measure(page, f"{tag}: wrong pick {o['text'][:24]}")
+                        hint = page.inner_text(".ewe-step:last-child .ewe-hint") if seen(page, ".ewe-step:last-child .ewe-hint") else ""
+                        check4(f"{tag}: '{o['text']}' shows its own hint", bool(o["hint"]) and o["hint"] in hint)
+                        hats(page, f"{tag}: wrong pick {o['text'][:24]} + hint")
+                    shot(page, f"ew4-q{n}-s{k}-e-wrong-pick.png")
+                    if st["star"]:
+                        check4(f"{tag}: no star after the wrong picks", page.evaluate(LABELS_JS)["stars"] == 0)
+                    right = next(o["text"] for o in st["options"] if o["correct"])
+                    click_btn(page, ".ewe-step:last-child .ewe-opt", right)
+                    measure(page, f"{tag}: right pick")
+                    hats(page, f"{tag}: right pick")
+                    fsel = f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb"
+                    fb = page.inner_text(fsel) if seen(page, fsel) else ""
+                    check4(f"{tag}: '{right}' is right and ends on its takeaway", st["okLine"] in fb)
+                    if st["star"]:
+                        lab1 = page.evaluate(LABELS_JS)
+                        label_rows.append((q["id"] + " +star", lab1))
+                        for c in lab1["collisions"]: fail(f"{P} sketch with the star: {c}")
+                        check4(f"{tag}: her star appears at the shared angle, the arc stays", lab1["stars"] == 1 and lab1["arcs"] == 1)
+                        check4(f"{tag}: no label moved when the star appeared", lab1["at"] == lab["at"])
+                        shot(page, f"ew4-q{n}-s{k}-f-star.png")
+            card = page.evaluate(CARD4_JS)
+            if q["sine"]:
+                check4(f"{P}: the star stays to the end of the question", page.evaluate(LABELS_JS)["stars"] == 1)
+                ok = (bool(card) and card["sine"] and card["fracs"] == 3 and card["strikes"] == 4 and card["strikesInsideMiddle"]
+                      and card["struckText"] == f"½ {q['sin']} ½ {q['sin']}" and card["dotsInside"] and card["prodInside"]
+                      and card["unitsWrapped"] == 0 and card["reason"] == f"({q['reason']})" and card["reasonLines"] == 1
+                      and tints_match(tmap, card["tints"]))
+                check4(f"{P}: card = three fractions, ½ and {q['sin']} struck inside the middle one, {card and card.get('prodTop')} over {card and card.get('prodBot')} inside the last, chain on {card and card.get('rows')} row(s), reason whole{' (moved down)' if card and card.get('reasonBelow') else ''}", ok)
+                if not ok: print("   card:", card)
+            else:
+                check4(f"{P}: card = the Nee takeaway, no fraction", bool(card) and not card["sine"] and card["fracs"] == 0 and "vorige rondte" in card["text"])
+            measure(page, f"{P}: Só skryf jy dit card")
+            hats(page, f"{P}: Só skryf jy dit card")
+            page.evaluate("document.querySelector('.ewe-write').scrollIntoView()")
+            shot(page, f"ew4-q{n}-g-card.png")
+            click_btn(page, ".ewe-next")
+            page.wait_for_timeout(250)
+        page.wait_for_selector(".ewe-end", timeout=8000)
+        measure(page, "ew4 end of round")
+        hats(page, "ew4 end of round")
+        check4("ew4 end screen: the takeaway carries the three-fraction sine chain",
+               page.evaluate("() => { const l = document.querySelector('.ewe-end .ewe-takeaway .ewl-sine'); return !!l && l.querySelectorAll('.ewf').length === 3 && l.querySelectorAll('.ewf-x').length === 4; }"))
+        shot(page, "ew4-end-of-round.png")
+        saved4 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
+            const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew4');
+            return { progress: p.ew4 || null, xpEvents: ev.map(e => e.xp) }; }""")
         ctx.close()
 
         # ---------------- the other hint kinds, "show me", and the toggle ----------------
@@ -711,6 +1007,34 @@ try:
         measure(page, "ew3 Q1 after 'show me'")
         shot(page, "ew3-show-me.png")
         ctx.close()
+
+        # ---------------- ew4: "show me" on a four-box product step ----------------
+        ctx, page = new_page(browser)
+        login(page, "Demo Matric", "gr12", ewe="1")
+        page.evaluate("window.__APP__.go('ewe', { roundId: 'ew4' })")
+        page.wait_for_selector(".ewe-play")
+        click_btn(page, ".ewe-step:last-child .ewe-opt", "Â")
+        page.wait_for_timeout(150)
+        early = seen(page, ".ewe-step:last-child .ewe-showme")
+        extra.append(("ew4: 'show me' NOT on screen before any wrong try", not early))
+        if early: fail("ew4: 'show me' is on screen before any wrong try")
+        for fill in (["AB", "AC", "AD", "AE"], ["AD", "AB", "AE", "AC"], ["DE", "AE", "AB", "AC"]):
+            page.evaluate("() => { const d = document.querySelector('.ewe-step:last-child .ewkey-del'); while (!d.disabled) d.click(); }")
+            for c in fill: click_chip(page, c)
+            click_btn(page, ".ewe-step:last-child .ewkey-sub")
+        shown = seen(page, ".ewe-step:last-child .ewe-showme")
+        extra.append(("ew4: 'show me' offered after 3 wrong tries", shown))
+        if not shown: fail("ew4: 'show me' not offered after 3 wrong tries")
+        click_btn(page, ".ewe-step:last-child .ewe-showme")
+        filled = page.evaluate("() => [...document.querySelectorAll('.ewe-steps > .ewe-step:nth-child(2) .ewslot')].map(x => x.textContent)")
+        fbf = page.evaluate("() => document.querySelectorAll('.ewe-steps > .ewe-step:nth-child(2) .ewe-fb.revealed .ewf').length")
+        locked = has(page, ".ewe-steps > .ewe-step:nth-child(2) .ewpad.is-locked") and not seen(page, ".ewe-showme") and filled == ["AD", "AE", "AB", "AC"] and fbf == 2
+        extra.append((f"ew4: 'show me' fills {filled}, shows the finished frame ({fbf} fractions) and moves on", locked))
+        if not locked: fail("ew4: 'show me' did not fill and lock with the frame line")
+        measure(page, "ew4 Q1 after 'show me'")
+        hats(page, "ew4 Q1 after 'show me'")
+        shot(page, "ew4-show-me.png")
+        ctx.close()
         browser.close()
 finally:
     server.terminate()
@@ -735,7 +1059,8 @@ print(f"  {len(fraction_rows)} states, {T} fraction renders measured, {B} bad")
 print("\nSKETCH LABELS")
 for qid, lab in label_rows:
     if lab: print(f"  {qid}: {lab['labels']} labels, {lab['lines']} lines, {lab['arrows']} ∥ arrows, {len(lab['collisions'])} collisions"
-                  + (f", {lab['tints']} tints, {lab['heights']} dotted ⊥h, {lab['boxes']} right-angle box" if lab.get('tints') else ""))
+                  + (f", {lab['tints']} tints, {lab['heights']} dotted ⊥h, {lab['boxes']} right-angle box" if lab.get('tints') else "")
+                  + (f", {lab['arcs']} arc, {lab['stars']} star" if lab.get('arcs') else ""))
 
 print("\new2 CHECKS")
 for name, ok in ew2_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
@@ -747,6 +1072,22 @@ print("\new3 CHECKS")
 print(f"  {'ok  ' if ew3_locked_before else 'FAIL'} ew3 locked on the map before ew2 is passed")
 for name, ok in ew3_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 
+print("\new4 CHECKS")
+print(f"  {'ok  ' if ew4_locked_before else 'FAIL'} ew4 locked on the map before ew3 is passed")
+for name, ok in ew4_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
+
+print("\nANGLE HATS (ink top measured against the inner top edge of its chip, box, option or card, or the bar above it)")
+by_kind = {}
+for label, nh, gap, where in hat_rows:
+    for kind, cnt in where.items():
+        by_kind[kind] = by_kind.get(kind, 0) + cnt
+measured = [r for r in hat_rows if r[1]]
+print(f"  {len(hat_rows)} states, {sum(r[1] for r in hat_rows)} hat renders measured: " + ", ".join(f"{k} {v}" for k, v in sorted(by_kind.items())))
+for kind, (g, label) in sorted(hat_min.items()):
+    print(f"  smallest gap, {kind:22} {g:5.1f} px  ({label[:60]})")
+for label, nh, gap, where in sorted(measured, key=lambda r: r[2])[:4]:
+    print(f"  tightest: {gap:5.1f} px  {label[:70]}  ({', '.join(f'{k} {v}' for k, v in sorted(where.items()))})")
+
 print("\nOTHER BEHAVIOURS")
 for name, ok in extra: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 
@@ -757,6 +1098,9 @@ if not (saved2["progress"] and saved2["progress"].get("passed")): fail("ew2 not 
 print(f"SAVING (local backend): ew3 progress {json.dumps(saved3['progress'])}, XP events {saved3['xpEvents']}")
 if not (saved3["progress"] and saved3["progress"].get("passed")): fail("ew3 not saved as passed")
 if saved3["xpEvents"] != [50]: fail(f"ew3 XP should be 5 questions x 10 = 50, got {saved3['xpEvents']}")
+print(f"SAVING (local backend): ew4 progress {json.dumps(saved4['progress'])}, XP events {saved4['xpEvents']}")
+if not (saved4["progress"] and saved4["progress"].get("passed")): fail("ew4 not saved as passed")
+if saved4["xpEvents"] != [50]: fail(f"ew4 XP should be 5 questions x 10 = 50, got {saved4['xpEvents']}")
 print(f"\nNETWORK: {len(blocked)} request(s) to other hosts blocked" + (": " + ", ".join(sorted({urlparse(u).hostname for u in blocked})) if blocked else ""))
 print(f"CONSOLE ERRORS: {len(console_errors)}")
 for e in console_errors[:10]: print("  ", e[:200])

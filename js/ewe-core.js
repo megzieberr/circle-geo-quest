@@ -12,6 +12,9 @@
      · sharedHeight() ew3: an apex over a base line with three points,
                       the foot of the ⊥h COMPUTED (see below).
      · markArea()     ew3: the two-box area marker (see below).
+     · sharedAngle()  ew4: two triangles that share ONE ANGLE, a cut
+                      line that is never ∥ (see below).
+     · markSine()     ew4: the four-box product marker (see below).
      · markRatio()    the ratio marker. It decides "is this fill of
                       ☐/☐ = ☐/☐ right?" from the SHAPE of the fill
                       only: which cut side each chip lies on, and where
@@ -118,9 +121,12 @@ export function segLength(tri, name) {
 
    spec.mode "similar" (ew2, opt-in) takes a different path, see
    markSimilar below. spec.mode "area" (ew3, opt-in) is a TWO-box fill and
-   goes to markArea at the very top. Without a mode, nothing here changes. */
+   goes to markArea at the very top; spec.mode "sine" (ew4, opt-in) is a
+   four-box PRODUCT fill and goes to markSine. Without a mode, nothing here
+   changes. */
 export function markRatio(fill, spec) {
   if (spec && spec.mode === "area") return markArea(fill, spec);
+  if (spec && spec.mode === "sine") return markSine(fill, spec);
   if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
   const s = fill.map(n => spec.seg[n]);
   if (s.some(x => !x)) return { ok: false, why: "unknown" };
@@ -276,5 +282,138 @@ export function markArea(fill, spec) {
   const baseOf = (x, T) => x.base && inT(x, T);
   if (baseOf(s[0], T1) && baseOf(s[1], T2)) return { ok: true, why: "ok" };
   if (baseOf(s[0], T2) && baseOf(s[1], T1)) return { ok: false, why: "order" };
+  return { ok: false, why: "pattern" };
+}
+
+/* ======================= ew4: a shared angle =======================
+   Her p.44 and her habit 15/16: two triangles that do NOT share a height
+   but DO share an angle. Write ½ · a · b · sin for both, strike the ½ and
+   the sine through, and what is left is the PRODUCT of the two sides that
+   touch the shared angle, top over bottom. */
+
+/* the angle at a point, as in her notes: a hat on the letter. Precomposed
+   where Unicode has the glyph (Â Ĉ Ê Ĝ Ĥ Ŝ …), the letter plus the
+   combining hat U+0302 otherwise (B̂ D̂ F̂ K̂ …). NFC makes that choice. */
+export const hat = L => (L + "̂").normalize("NFC");
+/* the sine factor she strikes through, e.g. "sin Â": a chip, not a segment */
+export const sinOf = V => `sin ${hat(V)}`;
+
+/* ---------------- one shared-angle sketch ----------------
+   corner  the vertex of the shared angle ("A")
+   ends    the other two vertices of the WHOLE triangle ["B", "C"]
+   cuts    the cut points ["D", "E"]: D = A + t(B − A), E = A + t2(C − A).
+           t2 may be MORE than 1 (ew4 Q4): E then lies on AC EXTENDED, past
+           C, and the ray from A is drawn through to E.
+   xy      screen coordinates (y down) of A, B and C, any scale
+   tris    the two triangles in the order the question NAMES them (top
+           first), spelt as the question spells them: ["ADE", "ABC"], or
+           the other way round (ew4 Q3: ["RSC", "TPC"])
+   spell   optional: the side spellings of her notes, e.g. ["RC", "TC"],
+           where the default (corner first) would say "CR", "CT"
+
+   It throws when t and t2 differ by less than 0.15: this line must NEVER
+   look ∥ (the sketch carries no ∥ arrows, ever).
+
+   seg, for the product marker: the six sides of the two triangles, and
+   the two struck factors
+     { from, to }       a side, by its two corner letters
+     { struck: true }   ½ and sin Â: factors, not segments
+   top / bot   the two sides of the first / second named Δ that touch the
+               shared angle (the right fill, in a natural order)
+   tints       the tint of the first / second named Δ: the whole Δ is
+               tint 2 and drawn first, the cut-off Δ tint 1 on top, so a
+               triangle keeps its colour whichever way round it is named
+   sketch / sketchStar   the sketch before and after the shared angle is
+               found: the same, except that her star is drawn */
+export function sharedAngle({ corner, ends, cuts, xy, t, t2, tris, spell = [] }) {
+  const A = corner, [B, C] = ends, [D, E] = cuts;
+  if (!(t > 0 && t2 > 0 && t !== 1 && t2 !== 1)) throw new Error("sharedAngle: a cut point must be on a ray from the corner, and not on an end");
+  if (Math.abs(t - t2) < 0.15) throw new Error("sharedAngle: t and t2 must differ by at least 0.15, so DE never looks ∥ BC");
+  const pts = { [A]: xy[A], [B]: xy[B], [C]: xy[C] };
+  pts[D] = lerp(xy[A], xy[B], t);
+  pts[E] = lerp(xy[A], xy[C], t2);
+  const nm = (P, Q) => (spell.includes(Q + P) ? Q + P : P + Q);
+  const names = { AD: nm(A, D), AE: nm(A, E), AB: nm(A, B), AC: nm(A, C), DE: nm(D, E), BC: nm(B, C) };
+  const key = s => [...s].sort().join("");
+  const small = A + D + E, whole = A + B + C;
+  const role = tris.map(n => (key(n) === key(small) ? "small" : key(n) === key(whole) ? "whole" : null));
+  if (role.includes(null) || role[0] === role[1]) throw new Error("sharedAngle: tris must name the cut-off Δ and the whole Δ");
+  const SIN = sinOf(A);
+  const seg = {
+    [names.AD]: { from: A, to: D },
+    [names.AE]: { from: A, to: E },
+    [names.AB]: { from: A, to: B },
+    [names.AC]: { from: A, to: C },
+    [names.DE]: { from: D, to: E },
+    [names.BC]: { from: B, to: C },
+    [HALF]: { struck: true },
+    [SIN]: { struck: true },
+  };
+  const sidesAt = r => (r === "small" ? [names.AD, names.AE] : [names.AB, names.AC]);
+  const angle = { at: A, rays: [B, C], star: false };
+  const sketch = {
+    pts,
+    /* each ray from the corner is drawn to the farther of its two points */
+    lines: [[A, t > 1 ? D : B], [A, t2 > 1 ? E : C], [B, C], [D, E]],
+    par: [],
+    tints: [{ pts: [...whole], tint: 2 }, { pts: [...small], tint: 1 }],
+    angle,
+    labBox: true,
+  };
+  return {
+    corner: A, ends, cuts, t, t2, pts, seg, names, tris, sin: SIN,
+    tints: role.map(r => (r === "small" ? 1 : 2)),
+    top: sidesAt(role[0]), bot: sidesAt(role[1]), third: [names.DE, names.BC],
+    sketch,
+    sketchStar: { ...sketch, angle: { ...angle, star: true } },
+  };
+}
+
+/* ---------------- the product marker (ew4, spec.mode "sine") ----------------
+   fill  the four chip names in box order: [top1, top2, bot1, bot2], read as
+         top1 · top2 over bot1 · bot2
+   spec  { mode: "sine", seg, tris: ["ADE", "ABC"], at: "A" }   (seg from
+         sharedAngle, tris = the named triangles, top first, at = the corner
+         of the shared angle)
+
+   RIGHT when the top pair is the two sides of the FIRST named Δ that touch
+   the shared angle (either order) and the bottom pair the second Δ's two
+   (either order). The order of the two products matters: the triangles
+   are named, so the products follow the names.
+
+   WRONG, with a reason the screen turns into a hint. The checks for one
+   particular wrong chip come first, as in ew1 to ew3; `chip` names it so
+   the hint can say which one:
+     "empty"    a box is still empty
+     "unknown"  a chip that is not in this sketch (caller bug)
+     "crossed"  ½ or the sine: struck through, they do not stay (cross-out)
+     "third"    a side that does not touch the shared angle (DE, BC)
+     "repeat"   a chip twice in one product, or the same pair top and
+                bottom: the fraction says nothing
+     "mixed"    a product with one side from each Δ
+     "order"    the two right products, swapped
+     "pattern"  anything else
+   Like markRatio, it reads only the SHAPE of the fill (which corners),
+   never a length. tools/check-ewe-marker.mjs proves it against areas
+   measured from the coordinates. */
+export function markSine(fill, spec) {
+  if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
+  const s = fill.map(n => spec.seg[n]);
+  if (s.some(x => !x)) return { ok: false, why: "unknown" };
+  const struck = s.findIndex(x => x.struck);
+  if (struck >= 0) return { ok: false, why: "crossed", chip: fill[struck] };
+  const V = spec.at, [T1, T2] = spec.tris.map(t => new Set(t));
+  const inT = (x, T) => T.has(x.from) && T.has(x.to);
+  const atV = x => x.from === V || x.to === V;
+  const third = s.findIndex(x => !atV(x) && (inT(x, T1) || inT(x, T2)));
+  if (third >= 0) return { ok: false, why: "third", chip: fill[third] };
+  const [a, b, c, d] = fill;
+  if (a === b || c === d || [a, b].sort().join() === [c, d].sort().join()) return { ok: false, why: "repeat" };
+  const who = x => (!atV(x) ? 0 : inT(x, T1) ? 1 : inT(x, T2) ? 2 : 0);
+  const w = s.map(who);
+  if (w.includes(0)) return { ok: false, why: "pattern" };
+  if (w[0] !== w[1] || w[2] !== w[3]) return { ok: false, why: "mixed" };
+  if (w[0] === 1 && w[2] === 2) return { ok: true, why: "ok" };
+  if (w[0] === 2 && w[2] === 1) return { ok: false, why: "order" };
   return { ok: false, why: "pattern" };
 }
