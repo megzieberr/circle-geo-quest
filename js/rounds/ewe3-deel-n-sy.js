@@ -103,7 +103,7 @@ function reasonStep(T) {
         hint: "Daar is geen ∥ lyn in hierdie skets nie." },
       { text: "uit |||",
         hint: "Niemand het gelykvormige Δe genoem nie. Hier deel die Δe 'n hoogte." },
-      { text: "gemeenskaplike hoek, ½ab·sin C",
+      { text: "gemene hoekpunt",
         hint: "Daardie gereedskap is vir twee Δe wat 'n HOEK deel. Hier deel hulle 'n HOOGTE. Dit kom in die volgende rondte." },
     ],
     okLine: `Albei Δe het die hoekpunt ${T.apex}, en albei basisse lê op die lyn ${T.names.BD}. Een ⊥h werk vir albei.`,

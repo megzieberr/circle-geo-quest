@@ -468,7 +468,7 @@ for (const q of round4.eweQuestions) {
      names the frame's triangles and writes the shown answer; tints match */
   const reason = q.steps[3].options.find(o => o.correct).text;
   const hatV = (V + "\u0302").normalize("NFC");
-  if (reason !== `${hatV} gemeen` || q.write.reason !== reason) { problems++; console.error(`✗ ${q.id}: reason ${reason} / card ${q.write.reason}, want "${hatV} gemeen"`); }
+  if (reason !== "gemene hoekpunt" || q.write.reason !== reason) { problems++; console.error(`✗ ${q.id}: reason ${reason} / card ${q.write.reason}, want "gemene hoekpunt"`); }
   if (q.write.sine.tris.join() !== named.join()) { problems++; console.error(`✗ ${q.id}: the card names ${q.write.sine.tris}, the frame ${named}`); }
   const tintOf = n => { const t = S.sketch.tints.find(x => [...(Array.isArray(x) ? x : x.pts)].sort().join() === [...n].sort().join()); return t && (Array.isArray(t) ? 0 : t.tint); };
   const frameTints = [full.frame[0].n[0].tint, full.frame[0].d[0].tint];

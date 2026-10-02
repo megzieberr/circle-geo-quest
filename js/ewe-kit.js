@@ -128,7 +128,7 @@ export function areaLineHtml(area, reason) {
 /* ew4: her area chain for a SHARED ANGLE, as on her p.44 (rule 15), with
    the reason next to it:
      Opp Δ ADE     ½ · AD · AE · sin Â     AD · AE
-     --------- = ------------------- = -------     (Â gemeen)
+     --------- = ------------------- = -------     (gemene hoekpunt)
      Opp Δ ABC     ½ · AB · AC · sin Â     AB · AC
    The sibling of areaLineHtml, built from the SAME pieces: fracHtml (the one
    drawer), prodHtml (rule 7: each product sits INSIDE its numerator or

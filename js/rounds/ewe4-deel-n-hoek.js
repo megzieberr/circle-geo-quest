@@ -11,14 +11,15 @@
    ½ · a · b · sin for both, strike the ½ and the sine through, and what
    is left is the PRODUCT of the two sides that touch the shared angle,
    top over bottom. The reason is her one word for a shared angle,
-   "gemeen", with the angle named: "Â gemeen".
+   "gemene hoekpunt" (her ruling 2026-10-02 18:52: "we usually use
+   gemene hoekpunt as the reason").
 
    Each question is four steps and the card:
      1  pick   which angle do the two triangles share? Her star appears
                at that corner on the sketch once it is found
      2  build  Opp Δ ADE / Opp Δ ABC = ½ · ☐ · ☐ · sin Â / ½ · ☐ · ☐ · sin Â
      3  build  strike the ½ and the sin Â: ☐ · ☐ / ☐ · ☐ is what is left
-     4  pick   the reason, "Â gemeen"
+     4  pick   the reason, "gemene hoekpunt"
      card      the three-fraction chain, the ½ and sin Â struck through,
                the two products inside the last fraction
    Q5 is a single Ja / Nee: two triangles that share a HEIGHT, not an
@@ -44,9 +45,9 @@
    ============================================================ */
 import { sharedAngle, sharedHeight, hat, SLOT, HALF } from "../ewe-core.js";
 
-/* her one word for a shared angle (her reasons table: "gemeen"), with the
-   angle named, as in her "Ĉ = Ĉ (gemeen)"; the card adds the brackets */
-const reasonOf = S => `${hat(S.corner)} gemeen`;
+/* her class's reason for two triangles with one shared corner (her ruling
+   2026-10-02 18:52); the card adds the brackets */
+const reasonOf = () => "gemene hoekpunt";
 
 const CLICK = "Klik op 'n stuk om dit in die blokkie te sit wat gloei.";
 
@@ -71,7 +72,7 @@ function anglePick(S) {
       only(S.ends[1], whole, small),
       only(S.cuts[0], small, whole),
     ],
-    okLine: `Albei Δe se twee sye kom by ${V} bymekaar. ${hat(V)} is gemeen, dit is die hoek wat in die sin kom.`,
+    okLine: `Albei Δe se twee sye kom by ${V} bymekaar. ${V} is die gemene hoekpunt, en ${hat(V)} is die hoek wat in die sin kom.`,
     sketchAfter: S.sketchStar,
   };
 }
@@ -132,7 +133,7 @@ function crossStep(S) {
   };
 }
 
-/* Step 4: the reason. The right one is her word "gemeen"; the other three
+/* Step 4: the reason. The right one is her "gemene hoekpunt"; the other three
    are real reasons that do not fit here, one idea per hint. */
 function reasonStep(S) {
   const V = hat(S.corner);
