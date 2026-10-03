@@ -461,15 +461,23 @@ function segDist(px, py, a, b) {
    fixed), so the arcs are laid out AFTER the points are fitted:
      level 1  a shallow circular arc (sag SARC_H1) over a piece, its label
               just outside its top
-     level 2  the arc over the WHOLE side, a flattened arc (superellipse,
-              power SARC_P2) high enough that it clears every level-1 label
-              box under it by SARC_GAP, measured from the very boxes; its
-              label outside its top
+     level 2  the arc over the WHOLE side, a bow of the same kind, bowed
+              just far enough out that every level-1 label box under it is
+              SARC_GAP clear of it, measured from the very boxes; its label
+              outside it
+   Foreman review 2026-10-03: every arc is a plain circular bow between its
+   two points (never more than a half circle, so it never runs past either
+   end along the side), sag at most SARC_MAX of its chord. The old whole-side
+   arc was a flattened superellipse that left each end straight out from the
+   side, which read as a teardrop at an apex.
    "Outside" is away from the centre of spec.outside (or of all points).
-   A label sits on the arc's middle normal, AL_PAD beyond the arc, the
-   reach of its box along that normal taken from the box itself. */
-const SARC_H1 = 7, SARC_GAP = 4, SARC_P2 = 3, AL_HH = 7, AL_CW = 7.4, AL_PAD = 3, ARC_EDGE = 4;
-const supShape = (u, p) => Math.pow(Math.max(0, 1 - Math.pow(Math.abs(2 * u - 1), p)), 1 / p);
+   A piece's label sits on its arc's middle normal, AL_PAD beyond the arc,
+   the reach of its box along that normal taken from the box itself. The
+   whole side's label sits outside its own arc the same way, at its middle,
+   or slid along its own arc when it would stand level with a piece label
+   right beside it (her Q5, upside down: 5k and 4k side by side). */
+const SARC_H1 = 7, SARC_GAP = 6, SARC_MAX = 0.42, AL_HH = 8, AL_CW = 7.6, AL_PAD = 5, ARC_EDGE = 4;
+const AL_SLIDE = [0.5, 0.55, 0.45, 0.6, 0.4, 0.65, 0.35, 0.7, 0.3];
 function arcGeo(spec, P) {
   const ref = (spec.outside || Object.keys(P)).map(k => P[k]);
   const cx = ref.reduce((a, p) => a + p.x, 0) / ref.length, cy = ref.reduce((a, p) => a + p.y, 0) / ref.length;
@@ -482,34 +490,59 @@ function arcGeo(spec, P) {
     return { a, F, L, ux, uy, nx, ny, w, ext: Math.abs(nx) * w / 2 + Math.abs(ny) * AL_HH, level: a.level === 2 ? 2 : 1, h: SARC_H1 };
   });
   const at = (g, u, n) => ({ x: g.F.x + u * g.L * g.ux + n * g.nx, y: g.F.y + u * g.L * g.uy + n * g.ny });
+  /* the bow's circle, in the side's own frame: along (0 at F, L at T), out */
+  const circ = (g, h) => { const R = (g.L * g.L / 4 + h * h) / (2 * h); return { R, ca: g.L / 2, cn: h - R }; };
+  const local = (g, p) => { const rx = p.x - g.F.x, ry = p.y - g.F.y; return { a: rx * g.ux + ry * g.uy, n: rx * g.nx + ry * g.ny }; };
+  const corners = (lab, w) => [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([dx, dy]) => ({ x: lab.x + dx * w / 2, y: lab.y + dy * AL_HH }));
   G.filter(g => g.level === 1).forEach(g => { g.lab = at(g, 0.5, g.h + g.ext + AL_PAD); });
   G.filter(g => g.level === 2).forEach(g => {
-    let h = 2 * SARC_H1 + 8;
-    G.filter(i => i.level === 1 && i.a.label).forEach(i => {
-      for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-        const rx = i.lab.x + dx * i.w / 2 - g.F.x, ry = i.lab.y + dy * AL_HH - g.F.y;
-        const u = (rx * g.ux + ry * g.uy) / g.L, n = rx * g.nx + ry * g.ny;
-        if (u <= 0.01 || u >= 0.99 || n <= 0) continue;
-        h = Math.max(h, (n + SARC_GAP) / supShape(u, SARC_P2));
-      }
-    });
-    g.h = h;
-    g.lab = at(g, 0.5, h + g.ext + AL_PAD);
+    /* every corner of a piece label that stands over this side, in its frame */
+    const under = [];
+    G.filter(i => i.level === 1 && i.a.label).forEach(i => corners(i.lab, i.w).forEach(q => {
+      const c = local(g, q);
+      if (c.n > 0 && c.a > 0 && c.a < g.L) under.push(c);
+    }));
+    const clear = h => { const C = circ(g, h); return Math.min(Infinity, ...under.map(c => C.R - Math.hypot(c.a - C.ca, c.n - C.cn))); };
+    let lo = 2 * SARC_H1 + 8, hi = SARC_MAX * g.L;
+    if (hi < lo) hi = lo;
+    if (clear(lo) >= SARC_GAP) hi = lo;
+    else if (clear(hi) < SARC_GAP) lo = hi;
+    for (let it = 0; it < 40 && hi - lo > 0.05; it++) { const m = (lo + hi) / 2; if (clear(m) >= SARC_GAP) hi = m; else lo = m; }
+    g.h = hi;
+    /* its label, outside the bow on the bow's own radius at `u` */
+    const C = circ(g, g.h);
+    const labAt = u => {
+      const a = u * g.L, d = a - C.ca, on = Math.sqrt(Math.max(0, C.R * C.R - d * d)) + C.cn;
+      const ra = d / C.R, rn = (on - C.cn) / C.R;                       // the outward radius, side frame
+      const dx = ra * g.ux + rn * g.nx, dy = ra * g.uy + rn * g.ny;     // the same, screen
+      const r = Math.abs(dx) * g.w / 2 + Math.abs(dy) * AL_HH + AL_PAD;
+      const p = at(g, u, on);
+      return { x: p.x + dx * r, y: p.y + dy * r };
+    };
+    const pieces = G.filter(i => i.level === 1 && i.a.label).map(i => ({ x0: i.lab.x - i.w / 2, x1: i.lab.x + i.w / 2, y0: i.lab.y - AL_HH, y1: i.lab.y + AL_HH }));
+    const score = lab => {
+      const b = { x0: lab.x - g.w / 2, x1: lab.x + g.w / 2, y0: lab.y - AL_HH, y1: lab.y + AL_HH };
+      let gap = Infinity, level = false;
+      pieces.forEach(q => {
+        const gx = Math.max(0, q.x0 - b.x1, b.x0 - q.x1), gy = Math.max(0, q.y0 - b.y1, b.y0 - q.y1);
+        gap = Math.min(gap, Math.hypot(gx, gy));
+        if (gy < 2 && gx < 40) level = true;                           // side by side at one height
+      });
+      return { gap, level };
+    };
+    let best = null;
+    for (const u of AL_SLIDE) {
+      const lab = labAt(u), s = score(lab);
+      if (!s.level) { best = lab; break; }
+      if (!best || s.gap > best.gap) best = { ...lab, gap: s.gap };
+    }
+    g.lab = { x: best.x, y: best.y };
   });
   G.forEach(g => {
+    /* a circular bow of chord L and sag h (h never more than L/2) */
     g.pts = [];
-    if (g.level === 1) {
-      /* a circular arc of chord L and sag h */
-      const R = (g.L * g.L / 4 + g.h * g.h) / (2 * g.h);
-      for (let i = 0; i <= 30; i++) { const u = i / 30, d = g.L * (u - 0.5); g.pts.push(at(g, u, Math.sqrt(Math.max(0, R * R - d * d)) - (R - g.h))); }
-    } else {
-      /* a superellipse, sampled by its angle so its steep ends are smooth */
-      for (let i = 0; i <= 48; i++) {
-        const th = Math.PI * i / 48, c = Math.cos(th);
-        const X = Math.sign(c) * Math.pow(Math.abs(c), 2 / SARC_P2), Y = Math.pow(Math.abs(Math.sin(th)), 2 / SARC_P2);
-        g.pts.push(at(g, (1 - X) / 2, g.h * Y));
-      }
-    }
+    const R = (g.L * g.L / 4 + g.h * g.h) / (2 * g.h), k = g.level === 2 ? 48 : 30;
+    for (let i = 0; i <= k; i++) { const u = i / k, d = g.L * (u - 0.5); g.pts.push(at(g, u, Math.sqrt(Math.max(0, R * R - d * d)) - (R - g.h))); }
   });
   return G;
 }

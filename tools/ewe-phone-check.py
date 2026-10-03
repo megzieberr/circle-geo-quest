@@ -1401,6 +1401,7 @@ try:
         ew6_checks = []
         ew6_cards = []
         ew6_still = []      # per sketch change: labels moved / labels total
+        ew6_arcs = []       # per sketch state: the tightest arc-label clearance (screen px) and each arc's bow
         def check6(name, ok):
             ew6_checks.append((name, ok))
             if not ok: fail(name)
@@ -1479,6 +1480,40 @@ try:
             return (s1 > 0 && s2 > 0 && s3 > 0) || (s1 < 0 && s2 < 0 && s3 < 0); };
           texts.forEach(t => { const r = box(t); if ([[r.x0, r.y0], [r.x1, r.y0], [r.x0, r.y1], [r.x1, r.y1], [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2]].some(([x, y]) => inside(x, y))) out.collisions.push(`${t.textContent} sits inside the Δ`); });
           out.minGap = out.minGap == null ? null : Math.round(out.minGap * 10) / 10;
+          /* Foreman review 2026-10-03, Fix 1: every arc is a clean bow. Sampled
+             along its own path (getPointAtLength): every sample's projection onto
+             its side lies within [P, Q] (0.5 px), and every sample lies on the
+             outward side of the side (away from the Δ's centre). */
+          const sc = Math.min(svg.getBoundingClientRect().width / vb.width, svg.getBoundingClientRect().height / vb.height);
+          const G0 = { x: (A.x + B.x + C.x) / 3, y: (A.y + B.y + C.y) / 3 };
+          out.bow = [];
+          [...svg.querySelectorAll('path.ewe-sarc')].forEach((p, i) => {
+            const L = p.getTotalLength(), S = Array.from({ length: 201 }, (_, j) => p.getPointAtLength(L * j / 200));
+            const P0 = S[0], Q0 = S[S.length - 1], len = Math.hypot(Q0.x - P0.x, Q0.y - P0.y), ux = (Q0.x - P0.x) / len, uy = (Q0.y - P0.y) / len;
+            let nx = -uy, ny = ux; if ((G0.x - P0.x) * nx + (G0.y - P0.y) * ny > 0) { nx = -nx; ny = -ny; }
+            let past = 0, inward = 0, sag = 0;
+            S.forEach(q => { const a = (q.x - P0.x) * ux + (q.y - P0.y) * uy, n = (q.x - P0.x) * nx + (q.y - P0.y) * ny;
+              past = Math.max(past, (-a) * sc, (a - len) * sc); inward = Math.max(inward, -n * sc); sag = Math.max(sag, n); });
+            out.bow.push({ lvl: p.classList.contains('ewe-sarc-2') ? 2 : 1, past: Math.round(past * 100) / 100, inward: Math.round(inward * 100) / 100, ratio: Math.round(sag / len * 100) / 100 });
+            if (past > 0.5) out.collisions.push(`arc ${i + 1} runs ${past.toFixed(2)}px past an end of its side`);
+            if (inward > 0.5) out.collisions.push(`arc ${i + 1} dips ${inward.toFixed(2)}px inside its side`);
+          });
+          /* Fix 2: every arc label at least 4 px (screen) clear of every arc,
+             every other label, every line, every dot and every ∥ arrow */
+          const chev = [...svg.querySelectorAll('path.ewe-par')].flatMap(p => { const L = p.getTotalLength(); return Array.from({ length: 41 }, (_, j) => p.getPointAtLength(L * j / 40)); });
+          const dotsC = dots.map(c => ({ x: +c.getAttribute('cx'), y: +c.getAttribute('cy'), r: +c.getAttribute('r') }));
+          const pdist = (q, r) => Math.hypot(Math.max(0, r.x0 - q.x, q.x - r.x1), Math.max(0, r.y0 - q.y, q.y - r.y1));
+          let tight = null;
+          alabs.forEach(t => { const r = box(t);
+            const take = (d, what) => { d *= sc; if (!tight || d < tight.d) tight = { d, what: `${t.textContent} to ${what}` }; };
+            arcs.forEach((a, i) => take(Math.min(...a.pts.map(q => pdist(q, r))), `arc ${i + 1}`));
+            texts.filter(o => o !== t).forEach(o => { const b = box(o); take(Math.hypot(Math.max(0, b.x0 - r.x1, r.x0 - b.x1), Math.max(0, b.y0 - r.y1, r.y0 - b.y1)), `label ${o.textContent}`); });
+            lines.forEach(([x1, y1, x2, y2]) => { let m = Infinity; for (let j = 0; j <= 200; j++) m = Math.min(m, pdist({ x: x1 + (x2 - x1) * j / 200, y: y1 + (y2 - y1) * j / 200 }, r)); take(m, 'a line'); });
+            dotsC.forEach(c => take(Math.max(0, pdist(c, r) - c.r), 'a dot'));
+            if (chev.length) take(Math.min(...chev.map(q => pdist(q, r))), 'an ∥ arrow');
+          });
+          out.alTight = tight ? { d: Math.round(tight.d * 10) / 10, what: tight.what } : null;
+          if (tight && tight.d < 4) out.collisions.push(`arc label clearance ${tight.d.toFixed(1)}px < 4 (${tight.what})`);
           return out; }"""
         GIVEN6_JS = r"""(k) => { const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`); const g = st.querySelector('.ewe-given'); if (!g) return null;
           const p = st.querySelector('.ewe-prompt'); const vw = document.documentElement.clientWidth, r = g.getBoundingClientRect();
@@ -1521,6 +1556,7 @@ try:
             for c in lab["collisions"] + a0["collisions"]: fail(f"{P} sketch: {c}")
             check6(f"{P} sketch at the start: {lab['lines']} lines, 2 ∥ arrows, no tints, arcs {a0['alabels'] or 'none'} (want {q['arcs0'] or 'none'}), every label outside Δ {BIG}, {len(lab['collisions']) + len(a0['collisions'])} collisions (closest label to an arc {a0['minGap']}px)",
                    lab["arrows"] == 2 and lab["tints"] == 0 and a0["alabels"] == q["arcs0"] and a0["arcs"] == len(q["arcs0"]) and not lab["collisions"] and not a0["collisions"])
+            ew6_arcs.append((P, "start", a0["alTight"], a0["bow"]))
             shot(page, f"ew6-q{n}-a-sketch.png")
             prev = a0
             for si, st in enumerate(q["steps"]):
@@ -1596,6 +1632,7 @@ try:
                     for c in l1["collisions"] + a1["collisions"]: fail(f"{P} sketch after step {k}: {c}")
                     moved = sum(1 for a, b in zip(prev["at"], a1["at"]) if a != b)
                     ew6_still.append((f"{P} after step {k}", moved, len(a1["at"])))
+                    ew6_arcs.append((P, f"after step {k}", a1["alTight"], a1["bow"]))
                     if st["type"] == "build":
                         check6(f"{tag}: the whole-side arc appears ({a1['alabels']}, want {q['arcs1']}), no point label moves ({moved} of {len(a1['at'])} moved), {len(l1['collisions']) + len(a1['collisions'])} collisions",
                                a1["alabels"] == q["arcs1"] and a1["lvl2"] == 1 and moved == 0 and not l1["collisions"] and not a1["collisions"])
@@ -2376,6 +2413,9 @@ print(f"  {'ok  ' if ew6_locked_before else 'FAIL'} ew6 locked on the map before
 for name, ok in ew6_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 print(f"  {sum(1 for _, ok in ew6_checks if ok) + (1 if ew6_locked_before else 0)} of {len(ew6_checks) + 1} ew6 checks pass")
 print("  ew6 labels moved when the sketch changes (the whole-side arc, the tints): " + "; ".join(f"{w} {m}/{t}" for w, m, t in ew6_still))
+print("  ew6 arcs (Fix 1: px past an end / px inside the side, sag over chord) and the tightest arc-label clearance (Fix 2, screen px, at least 4)")
+for P, stage, t, bow in ew6_arcs:
+    print(f"    {P:7} {stage:13} " + ("; ".join(f"L{b['lvl']} past {b['past']} in {b['inward']} sag/chord {b['ratio']}" for b in bow) or "no arcs") + (f"   tightest {t['d']}px ({t['what']})" if t else ""))
 print("  ew6 cards at 375 px (part (c) rows, the three '=' left edges, the widest right edge)")
 for P, c in ew6_cards:
     if c and c.get("trap"): print(f"    {P:7} {c['head']} {' | '.join(c['rows'])}   = at {c['eqs']}   right {round(c['right'])}px of {c['vw']}   fractions {c['fracs']} + {c['soFracs']}")
