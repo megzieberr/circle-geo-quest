@@ -40,7 +40,7 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
 
 /* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
    "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts).
@@ -404,9 +404,25 @@ function bringBuild(node, fig) {
   }, 80);
 }
 
+/* ew6, opt-in: a GIVEN line that belongs to a step, drawn like a frame with
+   no boxes (ew4's result above step 2, the area ratio a question gives
+   above step 3), with an optional plain sentence under it. `first` puts it
+   above the step's prompt, else it sits between the prompt and the frame or
+   the options. It is part of the step, not of the pad, so it stays when
+   the step is finished. Without step.given nothing is added. */
+function mountGiven(host, step, where) {
+  const g = step.given;
+  if (!g || !!g.first !== (where === "first")) return;
+  const box = el("div", "ewe-given", givenHtml(g.line));
+  if (g.text) box.appendChild(el("p", "ewe-given-tx", glue(g.text)));
+  host.appendChild(box);
+}
+
 /* ---------------- a build step (the pad) ---------------- */
 function mountBuild(host, step, onDone) {
+  mountGiven(host, step, "first");
   host.appendChild(el("p", "q-prompt ewe-prompt", glue(step.prompt)));
+  mountGiven(host, step, "after");
   const padHost = el("div", "ewe-padhost");
   host.appendChild(padHost);
   const hint = el("div", "dp-hint ewe-hint"); hint.hidden = true;
@@ -433,7 +449,9 @@ function mountBuild(host, step, onDone) {
   /* ew7, opt-in: a build step with an okLine says its takeaway under the
      finished line (a "²" in it drawn by sqText). Without the key the ✓ line
      is the finished line alone, as before. */
-  const okHtml = step.okLine ? `<div class="ewe-okline">${sqText(esc(step.okLine))}</div>` : "";
+  /* ew6, opt-in: an okLine that is an ARRAY carries stacked fractions in
+     its sentence (richHtml, the one drawer); a string is drawn as before */
+  const okHtml = step.okLine ? `<div class="ewe-okline">${Array.isArray(step.okLine) ? richHtml(step.okLine) : sqText(esc(step.okLine))}</div>` : "";
   const pad = mountFillPad(padHost, {
     frame, chips: step.chips,
     fixed: step.fixed,          // ew2: a chip already in the first box (opt-in)
@@ -480,6 +498,9 @@ function mountBuild(host, step, onDone) {
 
 function hintHtml(step, why, r) {
   const h = step.hints;
+  /* ew6 (the exact marker): one plain sentence per wrong reason, the
+     reasons named by the question data */
+  if (step.spec && step.spec.mode === "exact") return esc(h[why] || h.pattern);
   /* ew3 (the area marker): one plain sentence per wrong reason (crossed,
      shared, repeat, order, pattern), keyed by the reason itself */
   if (step.spec && step.spec.mode === "area") return esc(h[why] || h.pattern);
@@ -511,7 +532,9 @@ function hintHtml(step, why, r) {
 
 /* ---------------- a pick step (reason, or yes / no) ---------------- */
 function mountPick(host, step, onDone) {
+  mountGiven(host, step, "first");
   host.appendChild(el("p", "q-prompt ewe-prompt", glue(step.prompt)));
+  mountGiven(host, step, "after");
   /* ew2 Q4, opt-in: a half-built ratio a/b = c/☐ above the options, the
      empty box glowing; it becomes the finished ratio once it is right */
   const half = step.half ? step.half.map(esc) : null;
@@ -602,6 +625,9 @@ function writeCard(q, fill) {
   /* ew7, opt-in: the product line rewritten, the last line the fractions
      the learner built (their fill) */
   else if (q.write.cross) body.innerHTML = crossLineHtml({ ...q.write.cross, fill: fill || q.write.cross.fill });
+  /* ew6, opt-in: her trapezium page, part (c) and, after a full chain, the
+     two lines above it */
+  else if (q.write.trap) body.innerHTML = trapLineHtml(q.write.trap);
   /* ew2, opt-in: TWO lines as on the exam page, the similar triangles
      first, then the ratio. A step with no build (ew2 Q4) brings its own
      fill. ew1 has neither, so its card is unchanged. */
@@ -631,7 +657,7 @@ function renderEnd(app, host, round, r) {
       <div class="ewe-write ewe-takeaway">
         <div class="ewe-write-tag">${UI.remember}</div>
         <p class="ewe-write-text">${sqText(esc(tk.text))}</p>
-        <div class="ewe-write-body">${tk.cross ? crossLineHtml(tk.cross) : tk.sine ? sineLineHtml(tk.sine, tk.reason) : tk.area ? areaLineHtml(tk.area, tk.reason)
+        <div class="ewe-write-body">${tk.trap ? trapLineHtml(tk.trap) : tk.cross ? crossLineHtml(tk.cross) : tk.sine ? sineLineHtml(tk.sine, tk.reason) : tk.area ? areaLineHtml(tk.area, tk.reason)
           : (tk.sim ? simLineHtml(tk.sim, tk.simReason) : "") + writtenLineHtml(tk.fill, tk.reason)}</div>
       </div>
       <div class="result-actions"></div>

@@ -1,5 +1,5 @@
 /* ============================================================
-   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew5 and ew7)
+   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew7)
    ------------------------------------------------------------
    Three things, each ONE copy for the whole feature:
 
@@ -184,6 +184,72 @@ export function crossLineHtml(cross) {
   lines.push(ratioHtml(cross.fill));
   return `<div class="ewl ewl-cross">${lines.map(l => `<div class="ewl-cross-ln">${l}</div>`).join("")}</div>`;
 }
+/* ew6: her worked page for the trapezium, as she writes it, left-aligned:
+     AE   AD   3
+     -- = -- = -          (lyn ∥ een sy v. Δ, DE ∥ BC)
+     AC   AB   5
+     Opp Δ ADE   ½ · AD · AE · sin Â   AD · AE   3 · 3   9
+     --------- = ------------------- = ------- = ----- = --   (gemene hoekpunt)
+     Opp Δ ABC   ½ · AB · AC · sin Â   AB · AC   5 · 5   25
+     Opp DBCE = Opp Δ ABC − Opp Δ ADE
+              = 25k − 9k
+              = 16k
+     ∴ Opp Δ ADE / Opp DBCE = 9/16          (stacked)
+   The first two lines only for a question that ran the whole chain (`side`,
+   `sine`); her part (c) always. The same pieces as every card: fracHtml
+   (the one drawer), prodHtml inside a numerator or denominator (rule 7),
+   the ½ and the sine struck inside the drawer (ew4's card), chainHtml (a
+   chain breaks only before an "="), the reason moving down whole. Part (c)
+   is a small grid so its three "=" stand under each other; a term moves
+   down whole if the phone is too narrow. Tints as in the sketch: the small
+   Δ tint 1, the trapezium tint 2, the big Δ (both of them) none.
+   trap = { side: { pairs: [["AE","AC"],["AD","AB"]], val: ["3","5"], reason },
+            sine: { small, big, top, bot, sin, nums: [["3","3"],["5","5"]], val: ["9","25"], reason },
+            sub:  { trap: "DBCE", big: "ABC", small: "ADE", k: ["25","9","16"] },
+            ask:  { n: { t, tint }, d: { t, tint }, val: ["9","16"] } } */
+export function trapLineHtml(t) {
+  const x = v => `<span class="ewf-x">${v}</span>`;
+  const word = c => (c.tint ? tintHtml(esc(c.t), c.tint) : esc(c.t));
+  const rs = r => (r ? `<span class="ewl-rs">(${esc(r)})</span>` : "");
+  const out = [];
+  if (t.side) {
+    const [[a, b], [c, d]] = t.side.pairs.map(p => p.map(esc)), [p, q] = t.side.val.map(esc);
+    out.push(`<div class="ewl ewl-trap-ln">${chainHtml([fracHtml(a, b), "=", fracHtml(c, d), "=", fracHtml(p, q)])}${rs(t.side.reason)}</div>`);
+  }
+  if (t.sine) {
+    const S = t.sine, top = S.top.map(esc), bot = S.bot.map(esc);
+    const sn = `<span class="ewf-x ewf-hat">${esc(S.sin)}</span>`;
+    const [nt, nb] = S.nums.map(p => p.map(esc));
+    out.push(`<div class="ewl ewl-trap-ln">${chainHtml([
+      fracHtml(tintHtml(`Opp Δ ${esc(S.small)}`, 1), `Opp Δ ${esc(S.big)}`), "=",
+      fracHtml([x("½"), ...top, sn], [x("½"), ...bot, sn]), "=",
+      fracHtml(top, bot), "=", fracHtml(nt, nb), "=", fracHtml(esc(S.val[0]), esc(S.val[1])),
+    ])}${rs(S.reason)}</div>`);
+  }
+  const s = t.sub, [kb, ks, kt] = s.k.map(esc);
+  const eq = `<span class="ewq-eq">=</span>`, minus = `<span class="ewl-ts-op">−</span>`;
+  out.push(`<div class="ewl-trap-sub">`
+    + `<span class="ewl-ts-l">${tintHtml(`Opp ${esc(s.trap)}`, 2)}</span>`
+    + `<span class="ewl-ts-r"><span class="ewl-ts-u">${eq}Opp Δ ${esc(s.big)}</span><span class="ewl-ts-u">${minus}${tintHtml(`Opp Δ ${esc(s.small)}`, 1)}</span></span>`
+    + `<span class="ewl-ts-l"></span><span class="ewl-ts-r"><span class="ewl-ts-u">${eq}${kb}k${minus}${ks}k</span></span>`
+    + `<span class="ewl-ts-l"></span><span class="ewl-ts-r"><span class="ewl-ts-u">${eq}${kt}k</span></span></div>`);
+  out.push(`<div class="ewl-trap-so"><span class="ewl-ts-so">∴</span>${eqHtml(fracHtml(word(t.ask.n), word(t.ask.d)), fracHtml(esc(t.ask.val[0]), esc(t.ask.val[1])))}</div>`);
+  return `<div class="ewl-trap">${out.join("")}</div>`;
+}
+
+/* ew6, opt-in: a sentence with stacked fractions in it (a build step's
+   okLine): strings, and { n:[cells], d:[cells] } drawn by cellFracHtml, the
+   one drawer. A plain string okLine never comes here. */
+export function richHtml(parts) {
+  return parts.map(p => (typeof p === "string" ? sqText(esc(p)) : cellFracHtml(p))).join("");
+}
+
+/* ew6, opt-in: a GIVEN line above a step (ew4's result, or the area ratio
+   the question gives): frame entries with no boxes, drawn like a frame */
+export function givenHtml(line) {
+  return chainHtml(frameUnits(line, fxCell));
+}
+
 /* a word in one of the two triangle tints (trusted HTML in, already escaped) */
 function tintHtml(html, k) { return `<span class="ewtint ewtint-${k}">${html}</span>`; }
 
@@ -353,7 +419,16 @@ export function shuffle(xs) {
              two arms (computed from the arms, never drawn by eye). Its
              corners join the obstacles the labels keep away from
      outside ["A", "B", "C"]   no point label may sit inside this Δ (the
-             tint rule of ew3, for a figure without tints) */
+             tint rule of ew3, for a figure without tints)
+   ew6, OPT-IN (left out, nothing changes):
+     sideArcs [{ from: "A", to: "D", label: "3k", level: 1, hidden }, …]
+             her coloured arcs along a side, OUTSIDE the Δ (see arcGeo
+             above): level 1 over a piece, level 2 over the whole side,
+             above the level-1 labels. `hidden` keeps its place (the fit and
+             the label obstacles) without drawing it, so it can appear
+             later without moving anything
+     tints   an entry may have FOUR corners (the trapezium); the label rule
+             tests it as a polygon */
 const W = 320, H = 232, MARGIN = 24, LAB_R = 14;
 const ARC_R = 17, STAR_D = 15, STAR_R = 5.5, RA_B = 9;
 const N = v => Math.round(v * 10) / 10;
@@ -380,14 +455,104 @@ function segDist(px, py, a, b) {
   return Math.hypot(px - (a.x + t * dx), py - (a.y + t * dy));
 }
 
+/* ---------------- ew6, opt-in: the side arcs (spec.sideArcs) ----------------
+   Her arcs over the pieces of a side: 3k over AD, 2k over DB, and 5k over
+   the whole AB, OUTSIDE the Δ. Sizes are in sketch units (the label font is
+   fixed), so the arcs are laid out AFTER the points are fitted:
+     level 1  a shallow circular arc (sag SARC_H1) over a piece, its label
+              just outside its top
+     level 2  the arc over the WHOLE side, a flattened arc (superellipse,
+              power SARC_P2) high enough that it clears every level-1 label
+              box under it by SARC_GAP, measured from the very boxes; its
+              label outside its top
+   "Outside" is away from the centre of spec.outside (or of all points).
+   A label sits on the arc's middle normal, AL_PAD beyond the arc, the
+   reach of its box along that normal taken from the box itself. */
+const SARC_H1 = 7, SARC_GAP = 4, SARC_P2 = 3, AL_HH = 7, AL_CW = 7.4, AL_PAD = 3, ARC_EDGE = 4;
+const supShape = (u, p) => Math.pow(Math.max(0, 1 - Math.pow(Math.abs(2 * u - 1), p)), 1 / p);
+function arcGeo(spec, P) {
+  const ref = (spec.outside || Object.keys(P)).map(k => P[k]);
+  const cx = ref.reduce((a, p) => a + p.x, 0) / ref.length, cy = ref.reduce((a, p) => a + p.y, 0) / ref.length;
+  const G = spec.sideArcs.map(a => {
+    const F = P[a.from], T = P[a.to], L = Math.hypot(T.x - F.x, T.y - F.y) || 1;
+    const ux = (T.x - F.x) / L, uy = (T.y - F.y) / L;
+    let nx = -uy, ny = ux;
+    if (((F.x + T.x) / 2 - cx) * nx + ((F.y + T.y) / 2 - cy) * ny < 0) { nx = -nx; ny = -ny; }
+    const w = AL_CW * String(a.label || "").length;
+    return { a, F, L, ux, uy, nx, ny, w, ext: Math.abs(nx) * w / 2 + Math.abs(ny) * AL_HH, level: a.level === 2 ? 2 : 1, h: SARC_H1 };
+  });
+  const at = (g, u, n) => ({ x: g.F.x + u * g.L * g.ux + n * g.nx, y: g.F.y + u * g.L * g.uy + n * g.ny });
+  G.filter(g => g.level === 1).forEach(g => { g.lab = at(g, 0.5, g.h + g.ext + AL_PAD); });
+  G.filter(g => g.level === 2).forEach(g => {
+    let h = 2 * SARC_H1 + 8;
+    G.filter(i => i.level === 1 && i.a.label).forEach(i => {
+      for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+        const rx = i.lab.x + dx * i.w / 2 - g.F.x, ry = i.lab.y + dy * AL_HH - g.F.y;
+        const u = (rx * g.ux + ry * g.uy) / g.L, n = rx * g.nx + ry * g.ny;
+        if (u <= 0.01 || u >= 0.99 || n <= 0) continue;
+        h = Math.max(h, (n + SARC_GAP) / supShape(u, SARC_P2));
+      }
+    });
+    g.h = h;
+    g.lab = at(g, 0.5, h + g.ext + AL_PAD);
+  });
+  G.forEach(g => {
+    g.pts = [];
+    if (g.level === 1) {
+      /* a circular arc of chord L and sag h */
+      const R = (g.L * g.L / 4 + g.h * g.h) / (2 * g.h);
+      for (let i = 0; i <= 30; i++) { const u = i / 30, d = g.L * (u - 0.5); g.pts.push(at(g, u, Math.sqrt(Math.max(0, R * R - d * d)) - (R - g.h))); }
+    } else {
+      /* a superellipse, sampled by its angle so its steep ends are smooth */
+      for (let i = 0; i <= 48; i++) {
+        const th = Math.PI * i / 48, c = Math.cos(th);
+        const X = Math.sign(c) * Math.pow(Math.abs(c), 2 / SARC_P2), Y = Math.pow(Math.abs(Math.sin(th)), 2 / SARC_P2);
+        g.pts.push(at(g, (1 - X) / 2, g.h * Y));
+      }
+    }
+  });
+  return G;
+}
+/* the fit with room for the arcs: start from the usual margins and widen
+   the side an arc or its label pokes out of, until everything is inside */
+function fitArcs(spec, names, x0, x1, y0, y1) {
+  const m = { l: MARGIN, r: MARGIN, t: MARGIN, b: MARGIN };
+  let res = null;
+  for (let it = 0; it < 16; it++) {
+    const s = Math.min((W - m.l - m.r) / (x1 - x0 || 1), (H - m.t - m.b) / (y1 - y0 || 1));
+    const ox = m.l + (W - m.l - m.r - s * (x1 - x0)) / 2, oy = m.t + (H - m.t - m.b - s * (y1 - y0)) / 2;
+    const P = {};
+    names.forEach(k => { P[k] = { x: ox + (spec.pts[k].x - x0) * s, y: oy + (spec.pts[k].y - y0) * s }; });
+    const G = arcGeo(spec, P);
+    res = { s, ox, oy, P, G };
+    let lx = Infinity, ly = Infinity, hx = -Infinity, hy = -Infinity;
+    const take = (x, y) => { lx = Math.min(lx, x); ly = Math.min(ly, y); hx = Math.max(hx, x); hy = Math.max(hy, y); };
+    G.forEach(g => {
+      g.pts.forEach(q => take(q.x, q.y));
+      if (g.a.label) { take(g.lab.x - g.w / 2, g.lab.y - AL_HH); take(g.lab.x + g.w / 2, g.lab.y + AL_HH); }
+    });
+    const over = { l: ARC_EDGE - lx, r: hx - (W - ARC_EDGE), t: ARC_EDGE - ly, b: hy - (H - ARC_EDGE) };
+    let moved = false;
+    for (const k of ["l", "r", "t", "b"]) if (over[k] > 0.25) { m[k] += over[k] + 0.5; moved = true; }
+    if (!moved) break;
+  }
+  return res;
+}
+
 export function sketchSvg(spec) {
   const names = Object.keys(spec.pts);
   const xs = names.map(k => spec.pts[k].x), ys = names.map(k => spec.pts[k].y);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-  const s = Math.min((W - 2 * MARGIN) / (x1 - x0 || 1), (H - 2 * MARGIN) / (y1 - y0 || 1));
-  const ox = (W - s * (x1 - x0)) / 2, oy = (H - s * (y1 - y0)) / 2;
-  const P = {};
-  names.forEach(k => { P[k] = { x: ox + (spec.pts[k].x - x0) * s, y: oy + (spec.pts[k].y - y0) * s }; });
+  let s, ox, oy, P, arcs = null;
+  /* ew6, opt-in: side arcs need room outside the Δ, so the fit makes room
+     for them (fitArcs below). Without spec.sideArcs: the fit as always. */
+  if (spec.sideArcs) ({ s, ox, oy, P, G: arcs } = fitArcs(spec, names, x0, x1, y0, y1));
+  else {
+    s = Math.min((W - 2 * MARGIN) / (x1 - x0 || 1), (H - 2 * MARGIN) / (y1 - y0 || 1));
+    ox = (W - s * (x1 - x0)) / 2; oy = (H - s * (y1 - y0)) / 2;
+    P = {};
+    names.forEach(k => { P[k] = { x: ox + (spec.pts[k].x - x0) * s, y: oy + (spec.pts[k].y - y0) * s }; });
+  }
 
   let out = "";
   /* a tint entry: ["A","B","C"] takes its tint from its place (ew3), or
@@ -473,6 +638,17 @@ export function sketchSvg(spec) {
     discs.push({ x: (V.x + p2.x) / 2, y: (V.y + p2.y) / 2, r: b / 2 });
   });
 
+  /* ew6: the side arcs and their labels. Every arc, drawn or `hidden`,
+     joins the discs the point labels keep away from (a string of points
+     along it, and its label's box as one disc), so no label moves when a
+     hidden arc appears (the 5k arc after step 1). Only the drawn ones are
+     drawn. */
+  (arcs || []).forEach(g => {
+    g.pts.forEach(q => discs.push({ x: q.x, y: q.y, r: 1.5 }));
+    if (g.a.label) discs.push({ x: g.lab.x, y: g.lab.y, r: Math.hypot(g.w / 2, AL_HH) + 1 });
+    if (!g.a.hidden) out += `<path class="mk ewe-sarc ewe-sarc-${g.level}" d="${g.pts.map((q, i) => `${i ? "L" : "M"} ${N(q.x)} ${N(q.y)}`).join(" ")}"/>`;
+  });
+
   /* labels: for each point try 36 directions and keep the one whose label
      centre is farthest from every line, chevron, placed label and edge */
   const cx = xs.length ? names.reduce((a, k) => a + P[k].x, 0) / names.length : W / 2;
@@ -489,6 +665,16 @@ export function sketchSvg(spec) {
     const s2 = (c.x - b.x) * (y - b.y) - (c.y - b.y) * (x - b.x);
     const s3 = (a.x - c.x) * (y - c.y) - (a.y - c.y) * (x - c.x);
     return (s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0);
+  };
+  /* ew6, opt-in by content: a tint with FOUR corners (the trapezium) is
+     tested as a polygon; a triangle keeps the test above, unchanged */
+  const inPoly = (x, y, poly) => {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const a = poly[i], b = poly[j];
+      if ((a.y > y) !== (b.y > y) && x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x) inside = !inside;
+    }
+    return inside;
   };
   const placed = [];
   const labels = [];
@@ -507,7 +693,7 @@ export function sketchSvg(spec) {
       placed.forEach(q => { score = Math.min(score, Math.hypot(lx - q.x, ly - q.y) - 8); });
       score = Math.min(score, lx - 7, W - 7 - lx, ly - 8, H - 8 - ly);
       /* inside a tinted Δ is never allowed (see tintPolys above) */
-      if (tintPolys.some(t => inTri(lx, ly, t))) score -= 1000;
+      if (tintPolys.some(t => (t.length === 3 ? inTri(lx, ly, t) : inPoly(lx, ly, t)))) score -= 1000;
       /* a small pull towards "outside the figure", only to break ties */
       score += 0.6 * Math.cos(ang - out0);
       if (score > bestScore) { bestScore = score; best = { x: lx, y: ly }; }
@@ -541,5 +727,10 @@ export function sketchSvg(spec) {
 
   names.forEach(k => { out += `<circle cx="${N(P[k].x)}" cy="${N(P[k].y)}" r="2.6" fill="#2b2f4a"/>`; });
   labels.forEach(l => { out += `<text class="${l.cls || "pl"}" x="${N(l.x)}" y="${N(l.y)}">${esc(l.k)}</text>`; });
+  /* ew6: the arc labels come AFTER the point labels, so the i-th point
+     label still belongs to the i-th dot (the phone check reads them so) */
+  (arcs || []).forEach(g => {
+    if (g.a.label && !g.a.hidden) out += `<text class="pl ewe-al ewe-al-${g.level}" x="${N(g.lab.x)}" y="${N(g.lab.y)}">${esc(g.a.label)}</text>`;
+  });
   return `<svg class="diag ewe-sketch" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">${out}</svg>`;
 }

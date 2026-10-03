@@ -20,6 +20,8 @@
                       COMPUTED (see below).
      · markProd()     ew7: ☐ · ☐ = ☐ · ☐, a square written out (see below).
      · markCross()    ew7: the product line as two fractions (see below).
+     · markExact()    ew6: a fill of numbers with ONE right order, the
+                      wrong reasons named by the question data (see below).
      · markRatio()    the ratio marker. It decides "is this fill of
                       ☐/☐ = ☐/☐ right?" from the SHAPE of the fill
                       only: which cut side each chip lies on, and where
@@ -129,8 +131,10 @@ export function segLength(tri, name) {
    goes to markArea at the very top; spec.mode "sine" (ew4, opt-in) is a
    four-box PRODUCT fill and goes to markSine; spec.mode "prod" and "cross"
    (ew7, opt-in) are the rewrite of a product line and go to markProd and
-   markCross. Without a mode, nothing here changes. */
+   markCross; spec.mode "exact" (ew6, opt-in) is a fill of NUMBERS with one
+   right order and goes to markExact. Without a mode, nothing here changes. */
 export function markRatio(fill, spec) {
+  if (spec && spec.mode === "exact") return markExact(fill, spec);
   if (spec && spec.mode === "area") return markArea(fill, spec);
   if (spec && spec.mode === "sine") return markSine(fill, spec);
   if (spec && spec.mode === "prod") return markProd(fill, spec);
@@ -570,5 +574,42 @@ export function markCross(fill, spec) {
     if (fill.filter(x => x === sq).length < 2) return { ok: false, why: "once" };
     if ((a === sq && b === sq) || (c === sq && d === sq)) return { ok: false, why: "same" };
   } else if (new Set(fill).size < 4) return { ok: false, why: "repeat" };
+  return { ok: false, why: "pattern" };
+}
+
+/* ======================= ew6: the trapezium =======================
+   "Die trapesium": the big Δ minus the small Δ, in k's. Every build step
+   is a fill of NUMBERS (the parts of a side, the k's of an area), and each
+   has exactly one right fill in one right order: 3 over 5, 3 · 3 over
+   5 · 5, 25k − 9k = 16k, 9 over 16.
+
+   ---------------- the exact marker (ew6, spec.mode "exact") ----------------
+   fill  the chips in box order
+   spec  { mode: "exact", expect: ["3", "5"], chips: [...], why: [rules] }
+
+   RIGHT when the fill is exactly `expect`.
+
+   WRONG, with a reason the screen turns into a hint. The reasons come from
+   the QUESTION DATA, not from this function: `why` is an ordered list of
+   rules, the first one that matches names the reason ("piece", "flipped",
+   "mixed", "sum", "order", "again", ...), and a fill no rule matches is
+   "pattern". A rule looks at the whole fill, or at fill.slice(from, to):
+     { why, has: ["2"] }            every listed chip is in it
+     { why, is: ["5", "3"] }        it is exactly this, in this order
+   plus, before any rule:
+     "empty"    a box is still empty
+     "unknown"  a chip that is not in the bank (caller bug)
+   Pure, no lengths: tools/check-ewe-marker.mjs proves every fill of every
+   ew6 step against areas measured (shoelace) from the coordinates. */
+export function markExact(fill, spec) {
+  const want = spec.expect;
+  if (!Array.isArray(fill) || fill.length !== want.length || fill.some(x => !x)) return { ok: false, why: "empty" };
+  if (spec.chips && fill.some(x => !spec.chips.includes(x))) return { ok: false, why: "unknown" };
+  if (fill.every((x, i) => x === want[i])) return { ok: true, why: "ok" };
+  for (const r of spec.why || []) {
+    const part = fill.slice(r.from ?? 0, r.to ?? fill.length);
+    if (r.has && r.has.every(c => part.includes(c))) return { ok: false, why: r.why };
+    if (r.is && r.is.length === part.length && r.is.every((c, i) => part[i] === c)) return { ok: false, why: r.why };
+  }
   return { ok: false, why: "pattern" };
 }

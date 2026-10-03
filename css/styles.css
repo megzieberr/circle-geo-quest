@@ -1174,3 +1174,28 @@ svg.diag .mk.ewe-rt{stroke-width:1.6;}
    line sits on two lines at 375 px and the sketch keeps its room. */
 .ewe-step.is-done .ewe-opts.yesno .opt.has-sub{padding-top:6px; padding-bottom:6px;}
 .ewe-step.is-done:has(.ewe-opt.has-sub) .ewe-fb{font-size:.9rem;}
+/* ew6 "Die trapesium" (opt-in classes, written only by its data). Her side
+   arcs: the pieces green, the whole side blue, each label in its arc's
+   colour. A GIVEN line above a step, in ink, no box. Her card: the lines
+   left-aligned as on her page, the block centred in the card; part (c) a
+   small grid so its three "=" stand under each other. */
+svg.diag .mk.ewe-sarc{stroke-width:2;}
+svg.diag .mk.ewe-sarc-1{stroke:#2b8a3e;}
+svg.diag .mk.ewe-sarc-2{stroke:#1971c2;}
+svg.diag .pl.ewe-al{font-size:12px;}
+svg.diag .pl.ewe-al-1{fill:#2b8a3e;}
+svg.diag .pl.ewe-al-2{fill:#1971c2;}
+.ewe-given{display:flex; flex-direction:column; align-items:center; gap:4px; margin:4px 0 8px; font-size:1.1rem; font-weight:700;}
+.ewe-given .ewpad-fx{color:inherit;}
+.ewe-given-tx{margin:0; font-size:.95rem; font-weight:600; text-align:center;}
+.ewe-step.is-done .ewe-given{margin:2px 0 4px;}
+.ewe-okline .ewf{font-size:1.05rem;}
+.ewl-trap{display:flex; flex-direction:column; align-items:flex-start; width:max-content; max-width:100%; margin:0 auto; gap:12px; text-align:left;}
+.ewl-trap .ewl,.ewl-trap .ewq{justify-content:flex-start;}
+.ewl-trap-ln{max-width:100%;}
+.ewl-trap-sub{display:grid; grid-template-columns:max-content minmax(0,max-content); row-gap:6px; align-items:center; max-width:100%; font-size:1.2rem; font-weight:700;}
+.ewl-ts-r{display:flex; flex-wrap:wrap; align-items:center; row-gap:4px; min-width:0;}
+.ewl-ts-u{display:inline-flex; align-items:center; white-space:nowrap;}
+.ewl-ts-op{padding:0 .3em;}
+.ewl-trap-so{display:flex; align-items:center; max-width:100%; font-size:1.2rem; font-weight:700;}
+.ewl-ts-so{padding-right:.35em;}
