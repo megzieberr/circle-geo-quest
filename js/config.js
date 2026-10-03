@@ -83,7 +83,9 @@ export const CONFIG = {
   // Read once, in js/rounds/index.js (the filter on ROUNDS).
   // RELEASED 2026-10-03: ew6 "Die trapesium" and ew7 "Vreemde formaat" (her
   // ship-yes, 3 Oct 09:56). The next round built (ew8) goes in here first.
-  eweHeld: [],
+  // HELD 2026-10-03: ew8 "Driehoeke of sye?", built, waiting for her
+  // play-through and her ship-yes.
+  eweHeld: ["ew8"],
   // ---- IS DYNAMIC GEOMETRY RELEASED TO LEARNERS? ----
   // Same one-flag hiding as stationsLive below: false = no 🧲 card on the home
   // screen, and the `dynamics` / `dynamic` routes bounce back home, so a
