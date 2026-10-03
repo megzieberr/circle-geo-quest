@@ -1448,7 +1448,7 @@ for (const q of round10.eweQuestions) {
       "the sketch lays that line flat": tf === flN || tf === [...fl].reverse().join(""),
       "✓ line says hoogte H": pl10(s.okLine) === `Dieselfde hoogte ${H}, dus bly net die basisse oor.`,
       "the struck letter is H": s.done.strike.includes(H) && !s.done.strike.includes(other),
-      "the height hint": pl10(s.hints.height) === `${other} staan loodreg op ${otherLine}. Hierdie twee Δe se basisse lê op ${flN}. Hulle hoogte is ${H}.`,
+      "the height hint": pl10(s.hints.height) === `${other} staan loodreg op ${otherLine}. Hierdie twee Δe se basisse lê op ${flN}. Albei se hoogte is ${H}.`,
       "the shown answer uses H": s.answer[1] === H && s.answer[3] === H,
       "the card's line uses H": card && card.h === H,
     };

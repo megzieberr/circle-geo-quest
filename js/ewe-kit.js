@@ -45,7 +45,7 @@
 
    All learner-facing text in here is Afrikaans only (her ruling).
    ============================================================ */
-import { SLOT, BRK } from "./ewe-core.js";
+import { SLOT, BRK, HK_GROUP } from "./ewe-core.js";
 import { el } from "./ui.js";
 
 export function esc(t) {
@@ -915,6 +915,85 @@ function fitArcs(spec, names, x0, x1, y0, y1) {
   return res;
 }
 
+/* ew10 fix round, opt-in: where a height's letter sits with spec.hk, from
+   the height's vertex A and foot F on the canvas: the point a fraction `t`
+   of the way from F to A (0.5 = the middle), then `off` units out along
+   the normal (-u.y, u.x) of u = F→A, times `side`. A turn moves A, F and
+   the normal together, so the letter keeps its place relative to its line
+   in every view. */
+function hkAt(A, F, { side, off, t = 0.5 }) {
+  const L = Math.hypot(A.x - F.x, A.y - F.y) || 1, ux = (A.x - F.x) / L, uy = (A.y - F.y) / L;
+  return { x: F.x + t * (A.x - F.x) - side * off * uy, y: F.y + t * (A.y - F.y) + side * off * ux };
+}
+/* the INK of a height's letter h or k (13 px, bold Instrument Sans),
+   measured on screen: 8 wide, from 6.7 above the text's y to 3.3 below
+   (the font's box, getBBox, is 16 high: it holds the room for accents and
+   descenders that h and k do not have); plus a little */
+const hkBox = (x, y) => ({ x0: x - 4.4, x1: x + 4.4, y0: y - 7, y1: y + 3.6 });
+/* The letters' plan for ONE question (ew10 fix round, her rule via the
+   foreman, 3 Oct): `states` = every sketch state of the question that draws
+   the heights (all at one scale, spec.fitAll). For each letter: the side of
+   its height AWAY from the other height (the side where the letter is
+   further from the other dashed line); then the place nearest the MIDDLE
+   of its height (t = 0.5, else a step at a time towards either end, at
+   most 0.15 of the height) and there the SMALLEST offset at which its box
+   is at least `gap` units clear of every line (its own height too),
+   outline, arc, mark, box, point label and the sketch's edge in EVERY
+   state, and of the other letter. Returns { h: { side, off, t }, k: …,
+   clear } (clear: the worst clearance found, sketch units); if nothing
+   reaches `gap`, the place with the most room. Pure. */
+const HK_CACHE = new WeakMap();
+function hkPlanOf(views) { if (!HK_CACHE.has(views)) HK_CACHE.set(views, planHeightLetters(views)); return HK_CACHE.get(views); }
+export function planHeightLetters(states, gap = 4.2) {
+  const geo = states.map(st => { let g = null; sketchSvg({ ...st, [HK_GROUP]: null, hk: null, _probe: x => { g = x; } }); return g; }).filter(g => g && g.hts.length);
+  if (!geo.length) return null;
+  const labs = geo[0].hts.map(h => h.ht.label);
+  const sides = labs.map((_, i) => {
+    if (labs.length < 2) return 1;
+    const o = geo[0].hts[1 - i], far = s => { const c = hkAt(geo[0].hts[i].A, geo[0].hts[i].F, { side: s, off: 12 }); return segDist(c.x, c.y, o.A, o.F); };
+    return far(1) >= far(-1) ? 1 : -1;
+  });
+  const boxOf = (g, i, pl) => { const c = hkAt(g.hts[i].A, g.hts[i].F, { side: sides[i], ...pl }); return hkBox(c.x, c.y); };
+  const room = (g, bx) => {
+    let d = Math.min(bx.x0, W - bx.x1, bx.y0, H - bx.y1);
+    g.obst.concat(g.olSegs).forEach(([a, b]) => { d = Math.min(d, segBoxDist(a, b, bx)); });
+    /* the ∥ arrows by the points of their own strokes (chevPts), not by
+       their middles: ew10 has no other marks */
+    g.discs.forEach(m => { d = Math.min(d, ptBoxDist(m, bx) - m.r); });
+    g.chevPts.forEach(m => { d = Math.min(d, ptBoxDist(m, bx) - 1.5); });
+    g.placed.forEach(q => { d = Math.min(d, boxGap(q.box || labBoxAt("", q.x, q.y), bx)); });
+    return d;
+  };
+  /* and the letter's whole FONT box (8.1 x 16, as getBBox gives it) keeps
+     2.3 units from every line and outline too, as the phone check's older
+     label measure asks (2 px) */
+  const fontRoom = (g, c) => { const fb = { x0: c.x - 4.1, x1: c.x + 4.1, y0: c.y - 9.8, y1: c.y + 6.4 };
+    return Math.min(...g.obst.concat(g.olSegs).map(([a, b]) => segBoxDist(a, b, fb))) - 2.3 + gap; };
+  const worst = (i, pl) => Math.min(...geo.map(g => { const c = hkAt(g.hts[i].A, g.hts[i].F, { side: sides[i], ...pl }); return Math.min(room(g, hkBox(c.x, c.y)), fontRoom(g, c)); }));
+  /* per letter, per place along its height (t from 0.35 to 0.65), the
+     smallest offset that keeps `gap`; then the PAIR of places nearest the
+     middles (and nearest their lines) whose letters also keep `gap` from
+     each other in every view */
+  const TS = []; for (let k = 35; k <= 65; k++) TS.push(k / 100);
+  const OFFS = []; for (let o = 6; o <= 26; o += 0.5) OFFS.push(o);
+  const cost = pl => 100 * Math.abs(pl.t - 0.5) + pl.off;
+  const opts = labs.map((_, i) => TS.map(t => { const off = OFFS.find(o => worst(i, { t, off: o }) >= gap); return off == null ? null : { t, off }; }).filter(Boolean).sort((a, b) => cost(a) - cost(b)));
+  const gapOf = (a, b) => Math.min(...geo.map(g => boxGap(boxOf(g, 0, a), boxOf(g, 1, b))));
+  let pls = null;
+  if (labs.length < 2) pls = opts[0].length ? [opts[0][0]] : null;
+  else {
+    let bc = Infinity;
+    for (const a of opts[0]) for (const b of opts[1]) { const c = cost(a) + cost(b); if (c < bc && gapOf(a, b) >= gap) { bc = c; pls = [a, b]; } }
+  }
+  /* nothing keeps `gap`: the places with the most room (reported by `clear`) */
+  if (!pls) pls = labs.map((_, i) => { let best = { t: 0.5, off: OFFS[0] }, bv = -Infinity;
+    for (const t of TS) for (const off of OFFS) { const v = worst(i, { t, off }); if (v > bv) { bv = v; best = { t, off }; } } return best; });
+  const pairGap = () => (labs.length < 2 ? Infinity : gapOf(pls[0], pls[1]));
+  const plan = { clear: Math.min(pairGap(), ...labs.map((_, i) => worst(i, pls[i]))) };
+  labs.forEach((k, i) => { plan[k] = { side: sides[i], ...pls[i] }; });
+  return plan;
+}
+
 /* ew10: the angle that lays the line flat[0]–flat[1] flat with `up` above
    it (screen y down: above = a smaller y), and a point turned by it */
 function turnAngle(pts, o) {
@@ -948,6 +1027,8 @@ function fitCap(spec) {
 }
 
 export function sketchSvg(spec) {
+  /* ew10 fix round, opt-in: the letters' plan of the question (once per question) */
+  if (spec[HK_GROUP] && !spec.hk) spec = { ...spec, hk: hkPlanOf(spec[HK_GROUP]) };
   if (spec.turn) return sketchSvg(turnedSpec(spec));
   if (spec.fitAll && spec._cap == null) spec = { ...spec, _cap: fitCap(spec) };
   const names = Object.keys(spec.pts);
@@ -1283,7 +1364,13 @@ export function sketchSvg(spec) {
      letters are placed TOGETHER (the pair whose worse clearance, and their
      gap, is largest), so the first never takes the only room the second
      had. They sit inside the small Δ, where the heights are. */
-  const cands = hts.map(({ A, F, ht }) => {
+  /* ew10 fix round, opt-in (spec.hk, from planHeightLetters below): each
+     letter FIXED beside the middle of its own height, on the side away from
+     the other height, `off` sketch units out, the same in every view of the
+     question, so it never jumps and never reads as a side's label. A probe
+     (spec._probe, the planner's only) gets what the letters keep clear of. */
+  if (spec._probe) { spec._probe({ hts, obst, olSegs, marks, discs, chevPts, placed }); return ""; }
+  const cands = spec.hk ? [] : hts.map(({ A, F, ht }) => {
     const L = Math.hypot(A.x - F.x, A.y - F.y) || 1, ux = (A.x - F.x) / L, uy = (A.y - F.y) / L, nx = -uy, ny = ux;
     const cs = [];
     for (let t = 0.15; t < 0.86; t += 0.05) for (const side of [1, -1]) for (let off = 8; off <= 24; off += 2) {
@@ -1300,7 +1387,8 @@ export function sketchSvg(spec) {
     }
     return cs;
   });
-  let pick = cands.map(cs => cs.reduce((a, c) => (c.score - c.pen > a.score - a.pen ? c : a)));
+  let pick = spec.hk ? hts.map(({ A, F, ht }) => hkAt(A, F, spec.hk[ht.label]))
+    : cands.map(cs => cs.reduce((a, c) => (c.score - c.pen > a.score - a.pen ? c : a)));
   if (cands.length === 2) {
     let bestV = -Infinity;
     for (const a of cands[0]) for (const b of cands[1]) {

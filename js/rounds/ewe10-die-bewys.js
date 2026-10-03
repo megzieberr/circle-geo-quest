@@ -64,7 +64,7 @@
    and, for the tools only: proof (1 or 2), fig (the figure: points,
    heights, triangles), roles, sketches (every state).
    ============================================================ */
-import { proofFigure, SLOT, HALF } from "../ewe-core.js";
+import { proofFigure, SLOT, HALF, HK_GROUP } from "../ewe-core.js";
 
 const NB = " ";
 /* the strings the player shows WITHOUT its no-break glue carry their own:
@@ -80,8 +80,12 @@ const letters = s => s.replace(/(^|[\s(])([A-Za-z]) (?=\S)/g, `$1$2${NB}`).repla
 const tail = s => s.replace(/ (\S+)$/, `${NB}$1`);
 const tx = s => tail(letters(nb(s)));
 
-const REASON_EQ = (st, qr) => `dies. basis en dies. ⊥h, ${st} ∥ ${qr}`;
-const REASON_SUM = (small) => `albei is Δ ${small} plus een van die gelyke Δe`;
+/* the reasons end glued (fix round 3 Oct: "Δe)" stood alone on the card's
+   last line at 375 px): the last plain space becomes a no-break one, so the
+   last word (or the glued "ST ∥ QR") never stands alone, nor "Δ PST" */
+const lastRun = s => s.replace(/ ([^ ]+)$/, `${NB}$1`);
+const REASON_EQ = (st, qr) => lastRun(nb(`dies. basis en dies. ⊥h, ${st} ∥ ${qr}`));
+const REASON_SUM = (small) => lastRun(nb(`albei is Δ ${small} plus een van die gelyke Δe`));
 const CARD_TIP = "Die konstruksie kry ook punte: skryf dit altyd eerste.";
 
 /* ---------------- one proof question ----------------
@@ -137,6 +141,13 @@ function proofQ(id, { F, proof, intro, lead, konShown, konCard, edge = 10 }) {
   const sum = { ...built, tints: three, outlines: [ol(tri.wholeL, "p"), ol(tri.wholeR, "y")] };
   const fin = { ...built, tints: three,
     outlines: two ? [ol(tri.small, "g"), ol(tri.wholeL, "p"), ol(tri.wholeR, "y")] : [ol(tri.small, "g"), ol(tri.left, "p"), ol(tri.right, "y")] };
+  /* fix round 3 Oct: the letters h and k each FIXED beside the middle of
+     its own height, on the side away from the other height, at least 4.5
+     units clear of everything, ONE plan for every view of the question, so
+     they never jump and never read as a side's label (kit planHeightLetters,
+     computed in the browser from these views) */
+  const views = [kon, konDone, flatL, flatR, par, ...(two ? [sum] : []), fin];
+  views.forEach(v => { v[HK_GROUP] = views; });
 
   /* ---- step 1: the konstruksie ---- */
   const joinChips = [n.QT, n.RS, n.BC, n.DE, n.AB];
@@ -144,7 +155,7 @@ function proofQ(id, { F, proof, intro, lead, konShown, konCard, edge = 10 }) {
   const s1 = {
     type: "build", role: "kon",
     given: { first: true, text: tx(konShown) },
-    prompt: tx("Verbind nou nog twee hoekpunte, sodat jy drie driehoeke kry."),
+    prompt: tx("Trek nou twee nuwe lyne, sodat jy drie driehoeke kry."),
     frame: [["Verbind", SLOT, "en", SLOT]],
     compact: true, mid: true,
     chips: joinChips,
@@ -176,7 +187,7 @@ function proofQ(id, { F, proof, intro, lead, konShown, konCard, edge = 10 }) {
       spec: { mode: "height", seg: F.seg, heights: F.heights, flat, line, tris, H },
       answer: [bases[0], H, bases[1], H],
       hints: {
-        height: tx(`${Ho} staan loodreg op ${oLine}. Hierdie twee Δe se basisse lê op ${fl}. Hulle hoogte is ${H}.`),
+        height: tx(`${Ho} staan loodreg op ${oLine}. Hierdie twee Δe se basisse lê op ${fl}. Albei se hoogte is ${H}.`),
         off: tx(two ? `{chip} lê nie op die plat lyn nie. Die basisse lê op ${fl}.` : `{chip} lê nie op die plat lyn nie. Die basisse is die twee stukke van ${fl}.`),
         order: tx(`Δ ${t1} staan bo, dus kom sy basis ${bases[0]} bo.`),
         repeat: tx(`Jy het dieselfde basis bo en onder gebruik. Elke Δ het sy eie basis op ${fl}.`),
@@ -218,7 +229,8 @@ function proofQ(id, { F, proof, intro, lead, konShown, konCard, edge = 10 }) {
   const reason = REASON_EQ(n.DE, n.BC);
   const s4r = {
     type: "pick", role: "reason", keepSketch: true,
-    prompt: tx("Watter rede skryf jy langs hierdie lyn?"),
+    /* fix round 3 Oct: the prompt names its line (it is built by now) */
+    prompt: tx(`Watter rede skryf jy langs Opp Δ ${tri.left} = Opp Δ ${tri.right}?`),
     options: [
       { text: nb(reason), correct: true },
       { text: nb(`lyn ∥ een sy v. Δ, ${n.DE} ∥ ${n.BC}`), hint: tx("Dit is die stelling wat jy BEWYS. Jy mag dit nie as rede gebruik nie.") },
@@ -291,8 +303,11 @@ function proofQ(id, { F, proof, intro, lead, konShown, konCard, edge = 10 }) {
    land well inside Δ PST. A repeated proof is a FEATURE (her standing
    ruling): Q3 repeats proof 1, Q4 proof 2. */
 
-/* Q1 · her boekie figure: Δ PQR, P on top; proof 1, PS/SQ = PT/TR */
-const F1 = proofFigure({ corner: "P", ends: ["Q", "R"], cuts: ["S", "T"], t: 0.55,
+/* Q1 · her boekie figure: Δ PQR, P on top; proof 1, PS/SQ = PT/TR.
+   Fix round 3 Oct: S and T a little lower (t 0.55 → 0.60), so Δ PST has
+   room for the letters h and k beside the MIDDLES of their heights, 4 px
+   clear of everything in every view (kit planHeightLetters) */
+const F1 = proofFigure({ corner: "P", ends: ["Q", "R"], cuts: ["S", "T"], t: 0.6,
   xy: { P: { x: 150, y: 18 }, Q: { x: 28, y: 205 }, R: { x: 296, y: 205 } } });
 const Q1 = proofQ("ew10q1", {
   F: F1, proof: 1,
@@ -305,7 +320,7 @@ const Q1 = proofQ("ew10q1", {
 /* Q2 · the same figure and letters: only the statement differs; proof 2 */
 const Q2 = proofQ("ew10q2", {
   F: F1, proof: 2,
-  intro: "Dieselfde skets, maar nou 'n stuk oor die HELE sy. Bewys dit, stap vir stap.",
+  intro: "Dieselfde skets, maar nou staan die HELE sy onder in die breuke. Bewys dit, stap vir stap.",
   lead: { given: "ST ∥ QR", bewys: ["PS", "PQ", "PT", "PR"] },
   konShown: "Konstruksie: Trek hoogtelyn h en k in Δ PST.",
   konCard: "Trek hoogtelyn h en k in Δ PST. Verbind RS en QT.",
@@ -314,26 +329,33 @@ const Q2 = proofQ("ew10q2", {
 
 /* Q3 · her exam figure (DBE 9.1): Δ ABC, M on AB, N on AC, MN ∥ BC;
    proof 1 again. The heights named as on her exam page: k ⊥ AM (from N,
-   the AB step), h ⊥ AN (from M, the AC step) */
-const F3 = proofFigure({ corner: "A", ends: ["B", "C"], cuts: ["M", "N"], t: 0.58, hts: ["k", "h"],
+   the AB step), h ⊥ AN (from M, the AC step). Fix round 3 Oct: A a little
+   to the right (x 110 → 130) and MN a little lower (t 0.58 → 0.62): at the
+   old shape the ∥ arrow on MN sat right under the middle of k, so the
+   letter k had no room beside its own line on the side away from h */
+const F3 = proofFigure({ corner: "A", ends: ["B", "C"], cuts: ["M", "N"], t: 0.62, hts: ["k", "h"],
   tris: { left: "BMN", right: "CMN", wholeL: "ABN", wholeR: "AMC" }, spell: ["MC"],
-  xy: { A: { x: 110, y: 18 }, B: { x: 20, y: 205 }, C: { x: 300, y: 205 } } });
+  xy: { A: { x: 130, y: 18 }, B: { x: 20, y: 205 }, C: { x: 300, y: 205 } } });
 const Q3 = proofQ("ew10q3", {
   F: F3, proof: 1,
-  intro: "Die eksamen, vraag 9.1: in Δ ABC lê M op AB en N op AC, met MN ∥ BC. Kyk mooi watter hoogte hier h is.",
+  intro: "Eksamenvraag 9.1: In Δ ABC lê M op AB en N op AC, met MN ∥ BC. Kyk mooi watter hoogte hier h is.",
   lead: { pre: "Bewys die stelling wat meld dat", bewys: ["AM", "MB", "AN", "NC"] },
   konShown: "Konstruksie: Trek h ⊥ op AN en k ⊥ AM.",
   konCard: "Trek h ⊥ op AN en k ⊥ AM, en verbind BN en MC.",
 });
 
 /* Q4 · a fresh figure and letters, on its side (D points left); proof 2
-   again. No H or K as a point: those read like the heights h and k */
-const F4 = proofFigure({ corner: "D", ends: ["E", "F"], cuts: ["G", "J"], t: 0.56,
+   again. No H or K as a point: those read like the heights h and k.
+   Fix round 3 Oct: the angle at D opened up (D x 40 → 125, about 49° →
+   71°) and GJ a little further from D (t 0.56 → 0.65): with the narrow
+   angle the two heights crossed near their middles, so the letters h and
+   k, each beside the middle of its own height, had no room */
+const F4 = proofFigure({ corner: "D", ends: ["E", "F"], cuts: ["G", "J"], t: 0.65,
   tris: { left: "EGJ", right: "GJF", wholeL: "DEJ", wholeR: "DGF" },
-  xy: { D: { x: 40, y: 119 }, E: { x: 272, y: 8 }, F: { x: 292, y: 230 } } });
+  xy: { D: { x: 125, y: 119 }, E: { x: 272, y: 8 }, F: { x: 292, y: 230 } } });
 const Q4 = proofQ("ew10q4", {
   F: F4, proof: 2,
-  intro: "'n Nuwe Δ, op sy sy: D wys na links. G lê op DE en J op DF, met GJ ∥ EF. Weer 'n stuk oor die hele sy.",
+  intro: "'n Nuwe Δ, op sy sy: D wys na links. G lê op DE en J op DF, met GJ ∥ EF. Weer staan die hele sy onder.",
   lead: { given: "GJ ∥ EF", bewys: ["DG", "DE", "DJ", "DF"] },
   konShown: "Konstruksie: Trek hoogtelyn h en k in Δ DGJ.",
   konCard: "Trek hoogtelyn h en k in Δ DGJ. Verbind FG en EJ.",

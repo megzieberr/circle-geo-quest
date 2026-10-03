@@ -54,6 +54,12 @@ export const SLOT = "☐";
    `lyn ∥ een sy v. Δ ☐, ☐ ∥ ☐`): the frame may wrap there, never inside
    a unit. No frame of ew1 to ew8 has one. */
 export const BRK = "⏎brk";
+/* ew10 fix round, opt-in: a sketch state that carries this key (a SYMBOL,
+   so no walk over the round data, no Object.keys and no JSON ever sees it)
+   holds the list of every view of its question; the kit then places the
+   letters h and k by ONE plan for all those views (ewe-kit
+   planHeightLetters), computed once, in the browser. */
+export const HK_GROUP = Symbol("ew10 height letters: the question's views");
 
 export const lerp = (P, Q, t) => ({ x: P.x + t * (Q.x - P.x), y: P.y + t * (Q.y - P.y) });
 export const dist = (P, Q) => Math.hypot(P.x - Q.x, P.y - Q.y);
