@@ -64,14 +64,16 @@ export const CONFIG = {
   // screen, and the `ewes` / `ewe` routes bounce back home.
   //
   // Added 2026-09-29, shipped FALSE: round 1 is built, not yet played
-  // through by her. Flip to true once she says release.
+  // through by her.
+  // RELEASED 2026-10-03: ew1 to ew5 (her ship ruling, 3 Oct 08:39). Rounds
+  // still waiting stay out through eweHeld below, not through this flag.
   //
   // ⚠️ This flag is only HALF the gate. The card and routes also need the
   // logged-in learner's OWN class to be gr12 (read off the server, see
   // js/ewe.js eweVisible) — a Gr11 learner never sees it, true or false.
   //
   // `?ewe=1` overrides the flag (never the class check), for previewing.
-  eweLive: false,
+  eweLive: true,
   // ---- EWEREDIGHEID ROUNDS HELD BACK ----
   // Rounds listed here are built and approved but not yet released. A live
   // learner never sees them (not on the map, not in the "{n} van {total}
