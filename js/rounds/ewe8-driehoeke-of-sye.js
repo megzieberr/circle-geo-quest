@@ -142,7 +142,8 @@ function q8(id, { corner, ends, cuts, xy, t, fracs, kind, intro, rule, labOut })
      the conclusion, so the hint's own last sentence goes (foreman review
      2026-10-03: it said the answer twice) */
   const hintSides = tail(nb(`${n.DB} en ${n.EC} is STUKKE van die sye. Hulle is nie sye van 'n Δ nie, en daar is geen ∥ lyn in die breuke nie.`
-    + (rule ? " " + ruleSides(n) : " Dit is sye in verhouding.")));
+    /* foreman 2026-10-03: "'n STUK" glued, so "'n" never ends a line (Q3, Q6, Q8) */
+    + (rule ? " " + ruleSides(n).replace("'n STUK", `'n${NB}STUK`) : " Dit is sye in verhouding.")));
   const hintTri = tail(nb(`${n.DE} en ${n.BC} is die ∥ lyne. Hulle lê nie op een sy nie: ${n.DE} is 'n sy van die klein Δ, ${n.BC} van die groot Δ.`
     + (rule ? " " + ruleTri(n) : " Dit is twee gelykvormige driehoeke.")));
   /* the tops of the fractions are sides of the big Δ (Q5) or the small one */
