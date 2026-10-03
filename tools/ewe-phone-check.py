@@ -19,13 +19,13 @@ What it does (all against a LOCAL copy, never the live class):
   * measures every sketch: no label touching a line, a ∥ arrow, a dot or
     another label;
   * proves who can see the group (released 2026-10-03, eweLive true):
-    Gr12 without ?ewe=1 sees the card and EXACTLY the seven released rounds
-    (ew1 to ew7), no "Driehoeke of sye?" (ew8, held back by
-    CONFIG.eweHeld), a guessed ew8 link lands on the map, and ew7's end
-    screen offers no next round; Gr12 with ?ewe=1 sees eight (ew8 eighth,
-    locked); Gr11 sees nothing, with or without ?ewe=1 and with or without
-    class=gr12 in the link; teacher preview sees the card, seven rounds
-    without the flag and eight with it;
+    Gr12 without ?ewe=1 sees the card and EXACTLY the eight released rounds
+    (ew1 to ew8), no "Lees dit af" (ew9, held back by CONFIG.eweHeld), a
+    guessed ew9 link lands on the map, and ew8's end screen offers no next
+    round; Gr12 with ?ewe=1 sees nine (ew9 ninth, locked); Gr11 sees
+    nothing, with or without ?ewe=1 and with or without class=gr12 in the
+    link; teacher preview sees the card, eight rounds without the flag and
+    nine with it;
   * saves 375 px PNGs to tools/_out/ewe/ (git-ignored) for the foreman.
     This script never opens them.
   * ew2 ("Nou met die ∥ lyne"): after ew1 is passed, the end screen's way
@@ -573,16 +573,16 @@ try:
         ctx.close()
 
         # Released 2026-10-03 (eweLive true): a Gr12 learner with NO flag sees
-        # the card and the SEVEN released rounds (ew1 to ew7, her ship-yes of
-        # 3 Oct 09:56); ew8 "Driehoeke of sye?" is held back (CONFIG.eweHeld)
-        # and must not show anywhere, nor be reachable, and ew7's end screen
-        # must not offer a way on to it.
+        # the card and the EIGHT released rounds (ew1 to ew8; ew8 by her
+        # ship-yes of 3 Oct 12:40); ew9 "Lees dit af" is held back
+        # (CONFIG.eweHeld) and must not show anywhere, nor be reachable, and
+        # ew8's end screen must not offer a way on to it.
         live_checks = []
         def checkl(name, ok):
             live_checks.append((name, ok))
             if not ok: fail(name)
-        LIVE_TITLES = ["Watter sye hoort saam?", "Nou met die ∥ lyne", "Deel 'n sy", "Deel 'n hoek", "Watter een is dit?", "Die trapesium", "Vreemde formaat"]
-        HELD_TITLES = ["Driehoeke of sye?"]
+        LIVE_TITLES = ["Watter sye hoort saam?", "Nou met die ∥ lyne", "Deel 'n sy", "Deel 'n hoek", "Watter een is dit?", "Die trapesium", "Vreemde formaat", "Driehoeke of sye?"]
+        HELD_TITLES = ["Lees dit af"]
         MAP_JS = """() => [...document.querySelectorAll('.round-card')].map(c => ({ n: c.querySelector('.rc-num').textContent.trim(),
             title: c.querySelector('h3').textContent.trim(), done: c.classList.contains('done'), locked: c.classList.contains('locked') }))"""
         errs0 = len(console_errors)
@@ -590,64 +590,64 @@ try:
         login(page, "Demo Matric", "gr12")
         card = has(page, ".ewe-banner")
         card_txt = page.inner_text(".ewe-banner") if card else ""
-        checkl(f"Gr12, no flag: the 📏 card is on home and reads '0 van 7 klaar' ({' / '.join(l for l in card_txt.splitlines() if 'klaar' in l) or 'no count'})",
-               card and "0 van 7 klaar" in card_txt)
+        checkl(f"Gr12, no flag: the 📏 card is on home and reads '0 van 8 klaar' ({' / '.join(l for l in card_txt.splitlines() if 'klaar' in l) or 'no count'})",
+               card and "0 van 8 klaar" in card_txt)
         page.evaluate("window.__APP__.go('ewes')")
         page.wait_for_selector(".round-card")
         m0 = page.evaluate(MAP_JS)
-        checkl(f"Gr12, no flag: the map lists exactly seven rounds, in order ({' | '.join(c['n'] + '. ' + c['title'] for c in m0)})",
-               [c["title"] for c in m0] == LIVE_TITLES and [c["n"] for c in m0] == [str(i) for i in range(1, 8)])
-        checkl("Gr12, no flag: no 'Driehoeke of sye?' anywhere on the map", "Driehoeke of sye?" not in page.inner_text(".view"))
-        shot(page, "live-map-seven.png")
+        checkl(f"Gr12, no flag: the map lists exactly eight rounds, in order ({' | '.join(c['n'] + '. ' + c['title'] for c in m0)})",
+               [c["title"] for c in m0] == LIVE_TITLES and [c["n"] for c in m0] == [str(i) for i in range(1, 9)])
+        checkl("Gr12, no flag: no 'Lees dit af' anywhere on the map", "Lees dit af" not in page.inner_text(".view"))
+        shot(page, "live-map-eight.png")
         mods = page.evaluate("""async () => { const m = await import('./js/rounds/index.js');
-            return { ewe: m.EWE.map(r => r.id), byId: !!m.ROUND_BY_ID.ew8, total: m.ROUNDS.length }; }""")
-        checkl(f"Gr12, no flag: the page's round list holds ew1 to ew7 only ({', '.join(mods['ewe'])}; ROUND_BY_ID.ew8 {mods['byId']}; ROUNDS {mods['total']})",
-               mods["ewe"] == ["ew1", "ew2", "ew3", "ew4", "ew5", "ew6", "ew7"] and not mods["byId"])
-        page.evaluate("window.__APP__.go('ewe', { roundId: 'ew8' })")
+            return { ewe: m.EWE.map(r => r.id), byId: !!m.ROUND_BY_ID.ew9, total: m.ROUNDS.length }; }""")
+        checkl(f"Gr12, no flag: the page's round list holds ew1 to ew8 only ({', '.join(mods['ewe'])}; ROUND_BY_ID.ew9 {mods['byId']}; ROUNDS {mods['total']})",
+               mods["ewe"] == ["ew1", "ew2", "ew3", "ew4", "ew5", "ew6", "ew7", "ew8"] and not mods["byId"])
+        page.evaluate("window.__APP__.go('ewe', { roundId: 'ew9' })")
         page.wait_for_timeout(200)
         guessed = has(page, ".ewe-play")
         on_map = has(page, ".round-card") and "Eweredigheid" in page.inner_text("h1")
-        checkl("Gr12, no flag: a guessed ew8 link does not open the round, it lands on the map", not guessed and on_map)
+        checkl("Gr12, no flag: a guessed ew9 link does not open the round, it lands on the map", not guessed and on_map)
         page.evaluate("window.__APP__.go('ewe', { roundId: 'ew1' })")
         page.wait_for_timeout(200)
         checkl("Gr12, no flag: ew1 opens", has(page, ".ewe-play"))
-        vis.append(("Gr12 learner, no flag (released, ew8 held)", card, has(page, ".ewe-play")))
-        # ew1 to ew6 passed (seeded in the local store), then ew7 played to the end
+        vis.append(("Gr12 learner, no flag (released, ew9 held)", card, has(page, ".ewe-play")))
+        # ew1 to ew7 passed (seeded in the local store), then ew8 played to the end
         page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
             const all = JSON.parse(localStorage.getItem('cgg.progress')) || {}; const p = all[me.id] || {};
-            for (const id of ['ew1', 'ew2', 'ew3', 'ew4', 'ew5', 'ew6']) p[id] = { best_score: 1, attempts: 1, total_xp: 0, passed: true, paid_replays: 0, last_played_at: Date.now(), last_correct: 1, last_total: 1 };
+            for (const id of ['ew1', 'ew2', 'ew3', 'ew4', 'ew5', 'ew6', 'ew7']) p[id] = { best_score: 1, attempts: 1, total_xp: 0, passed: true, paid_replays: 0, last_played_at: Date.now(), last_correct: 1, last_total: 1 };
             all[me.id] = p; localStorage.setItem('cgg.progress', JSON.stringify(all)); }""")
         page.goto(url()); page.wait_for_selector(".home-head"); page.wait_for_timeout(300)
         close_popups(page)
         page.evaluate("window.__APP__.go('ewes')")
         page.wait_for_selector(".round-card")
         m1 = page.evaluate(MAP_JS)
-        checkl(f"Gr12, no flag, ew1 to ew6 passed: ew7 is open, still seven cards ({' '.join(c['n'] + ('✓' if c['done'] else '🔒' if c['locked'] else '▶') for c in m1)})",
-               len(m1) == 7 and all(c["done"] for c in m1[:6]) and not m1[6]["locked"] and not m1[6]["done"])
-        q7 = page.evaluate("""async () => { const m = await import('./js/rounds/index.js'); const r = m.EWE.find(x => x.id === 'ew7');
-            return r.eweQuestions.map(q => q.steps.map(s => s.answer)); }""")
-        page.evaluate("window.__APP__.go('ewe', { roundId: 'ew7' })")
+        checkl(f"Gr12, no flag, ew1 to ew7 passed: ew8 is open, still eight cards ({' '.join(c['n'] + ('✓' if c['done'] else '🔒' if c['locked'] else '▶') for c in m1)})",
+               len(m1) == 8 and all(c["done"] for c in m1[:7]) and not m1[7]["locked"] and not m1[7]["done"])
+        # ew8 is one tap per question: its right option
+        q8r = page.evaluate("""async () => { const m = await import('./js/rounds/index.js'); const r = m.EWE.find(x => x.id === 'ew8');
+            return r.eweQuestions.map(q => q.steps.map(s => s.options.find(o => o.correct).text)); }""")
+        page.evaluate("window.__APP__.go('ewe', { roundId: 'ew8' })")
         page.wait_for_selector(".ewe-play")
-        for qsteps in q7:
-            for ans in qsteps:
-                for c in ans: click_chip(page, c)
-                click_btn(page, ".ewe-step:last-child .ewkey-sub")
+        for qsteps in q8r:
+            for txt in qsteps:
+                click_btn(page, ".ewe-step:last-child .ewe-opt", txt)
                 page.wait_for_timeout(120)
             click_btn(page, ".ewe-next")
             page.wait_for_timeout(250)
         page.wait_for_selector(".ewe-end", timeout=8000)
         btns = page.evaluate("() => [...document.querySelectorAll('.ewe-end .btn')].map(b => b.textContent.trim())")
-        checkl(f"Gr12, no flag: ew7's end screen offers NO next round ({' | '.join(btns)})",
+        checkl(f"Gr12, no flag: ew8's end screen offers NO next round ({' | '.join(btns)})",
                not any("Volgende rondte" in b for b in btns) and any("Eweredigheid-kaart" in b for b in btns))
-        shot(page, "live-ew7-end.png")
+        shot(page, "live-ew8-end.png")
         click_btn(page, ".ewe-end .btn", "📏 Eweredigheid-kaart")
         page.wait_for_selector(".round-card")
         m2 = page.evaluate(MAP_JS)
-        checkl(f"Gr12, no flag: after ew7 the map shows seven ✓ and no eighth card ({len(m2)} cards)", len(m2) == 7 and all(c["done"] for c in m2))
+        checkl(f"Gr12, no flag: after ew8 the map shows eight ✓ and no ninth card ({len(m2)} cards)", len(m2) == 8 and all(c["done"] for c in m2))
         page.evaluate("window.__APP__.go('home')")
         page.wait_for_selector(".ewe-banner")
         t2 = page.inner_text(".ewe-banner")
-        checkl(f"Gr12, no flag: the home card now reads '7 van 7 klaar'", "7 van 7 klaar" in t2)
+        checkl(f"Gr12, no flag: the home card now reads '8 van 8 klaar'", "8 van 8 klaar" in t2)
         ctx.close()
         live_errs = console_errors[errs0:]
         checkl(f"Gr12, no flag: {len(live_errs)} console errors in this walk", not live_errs)
@@ -668,32 +668,32 @@ try:
             ctx.close()
 
         # the teacher sees the card either way since the release; ?ewe=1 adds
-        # the held round (eight cards), without it the map is the learners' seven
-        for label, flags, want, nmap in [("Teacher preview, ?ewe=1", {"preview": "1", "ewe": "1"}, True, 8),
-                                         ("Teacher preview, no flag", {"preview": "1"}, True, 7)]:
+        # the held round (nine cards), without it the map is the learners' eight
+        for label, flags, want, nmap in [("Teacher preview, ?ewe=1", {"preview": "1", "ewe": "1"}, True, 9),
+                                         ("Teacher preview, no flag", {"preview": "1"}, True, 8)]:
             ctx, page = new_page(browser)
             page.goto(url(**flags)); page.wait_for_selector(".home-head"); page.wait_for_timeout(300)
             card = has(page, ".ewe-banner")
             page.evaluate("window.__APP__.go('ewes')")
             page.wait_for_timeout(200)
             titles = [c["title"] for c in page.evaluate(MAP_JS)]
-            want_titles = LIVE_TITLES + (HELD_TITLES if nmap == 8 else [])
+            want_titles = LIVE_TITLES + (HELD_TITLES if nmap == 9 else [])
             vis.append((label, card, titles == want_titles))
             checkl(f"{label}: card shown {card}, map {len(titles)} rounds ({' | '.join(titles)})", card == want and titles == want_titles)
             ctx.close()
 
-        # Gr12 WITH ?ewe=1: the held round is back, Driehoeke of sye? eighth,
-        # locked until the one before it is passed (the full walk below then
-        # plays all eight)
+        # Gr12 WITH ?ewe=1: the held round is back, Lees dit af ninth, locked
+        # until the one before it is passed (the full walk below then plays
+        # all nine)
         ctx, page = new_page(browser)
         login(page, "Demo Matric", "gr12", ewe="1")
         t0 = page.inner_text(".ewe-banner") if has(page, ".ewe-banner") else ""
         page.evaluate("window.__APP__.go('ewes')")
         page.wait_for_selector(".round-card")
         mf = page.evaluate(MAP_JS)
-        checkl(f"Gr12, ?ewe=1: the card reads '0 van 8 klaar' and the map lists eight, Driehoeke of sye? eighth and locked ({' | '.join(c['n'] + '. ' + c['title'] for c in mf)})",
-               "0 van 8 klaar" in t0 and [c["title"] for c in mf] == LIVE_TITLES + HELD_TITLES and [c["n"] for c in mf] == [str(i) for i in range(1, 9)]
-               and mf[7]["locked"])
+        checkl(f"Gr12, ?ewe=1: the card reads '0 van 9 klaar' and the map lists nine, Lees dit af ninth and locked ({' | '.join(c['n'] + '. ' + c['title'] for c in mf)})",
+               "0 van 9 klaar" in t0 and [c["title"] for c in mf] == LIVE_TITLES + HELD_TITLES and [c["n"] for c in mf] == [str(i) for i in range(1, 10)]
+               and mf[8]["locked"])
         ctx.close()
 
         # ---------------- the walk ----------------
@@ -2709,7 +2709,7 @@ print("\nVISIBILITY")
 print(f"  {'who':46} card  reaches route/map")
 for who, card, reach in vis: print(f"  {who:46} {'yes' if card else 'no ':4}  {'yes' if reach else 'no'}")
 print(f"\nMAIN QUEST MAP on the Gr12 home screen: {home_cards} round cards")
-print("\nRELEASE CHECKS (eweLive true, ew1 to ew7 released, ew8 held back)")
+print("\nRELEASE CHECKS (eweLive true, ew1 to ew8 released, ew9 held back)")
 for name, ok in live_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 print(f"  {sum(1 for _, ok in live_checks if ok)} of {len(live_checks)} release checks pass")
 
