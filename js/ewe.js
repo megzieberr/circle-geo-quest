@@ -228,6 +228,17 @@ export function renderEweRound(app, host, params) {
     const fig = el("div", "q-diagram");
     fig.innerHTML = sketchSvg(q.sketch);
     box.appendChild(fig);
+    /* ew10, opt-in (q.stick): the sketch STAYS on screen under the top bar
+       while the steps scroll beneath it (position: sticky), because every
+       step of the proof is read off the turned sketch and finished steps
+       pile up under it. Its top is the bar's own height. Released for the
+       card (below). Without q.stick nothing changes. */
+    if (q.stick) {
+      box.classList.add("ewe-stick");
+      fig.classList.add("is-stick");
+      const tb = document.querySelector(".topbar");
+      fig.style.top = (tb ? Math.round(tb.getBoundingClientRect().height) : 0) + "px";
+    }
     /* ew9, opt-in: the question's GIVEN fractions, right under the sketch
        for the whole question (lit and named step by step, js/ewe-kit.js
        namesLineHtml), so the sketch and the fractions are read together.
@@ -293,7 +304,9 @@ export function renderEweRound(app, host, params) {
         else mountPick(stepBox, step, done);
         return;
       }
-      /* every step done: the card, then the way on */
+      /* every step done: the card, then the way on. ew10: the sticky sketch
+         lets go first, so the card (with its own sketch) has the screen. */
+      if (q.stick) fig.classList.remove("is-stick");
       const card = writeCard(q, lastFill);
       steps.appendChild(card);
       bringIn(card);
@@ -413,6 +426,19 @@ function foldIntro(intro) {
    timeout as bringIn, same fallback when smooth is refused. */
 const EDGE = 8;   // px of air above the sketch and below the frame
 function bringBuild(node, fig) {
+  /* ew10, opt-in (a sticky sketch, q.stick): the step's top goes just under
+     the stuck sketch, so the sketch, the prompt and the boxes share the
+     screen; anything taller is a scroll away with the sketch still on top */
+  if (fig.classList.contains("is-stick")) {
+    setTimeout(() => {
+      const bar = document.querySelector(".topbar");
+      const head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+      const y = Math.max(0, Math.round(window.scrollY + node.getBoundingClientRect().top - head - fig.getBoundingClientRect().height - EDGE));
+      try { window.scrollTo({ top: y, behavior: calm() ? "instant" : "smooth" }); }
+      catch { window.scrollTo(0, y); }
+    }, 80);
+    return;
+  }
   setTimeout(() => {
     const bar = document.querySelector(".topbar");
     const head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;

@@ -1318,3 +1318,11 @@ svg.diag .is-fresh{animation:eweFadeIn .8s ease-out .3s both;}
 /* a sketch state set when a step opens fades in (js/ewe.js, opacity only) */
 .q-diagram svg.ewe-swap{animation:eweFadeIn .4s ease-out both;}
 @media (prefers-reduced-motion: reduce){.q-diagram svg.ewe-swap{animation:none;}}
+/* ew10, opt-in (q.stick): the sketch stays under the top bar while the
+   steps scroll beneath it; an opaque band like the bar, a thin rule under
+   it, so nothing shows through. Let go for the card (js/ewe.js). Its boxes
+   are a little narrower (the chips are two letters), so the area frame
+   "Opp Δ PST / Opp Δ QST = ½ · ☐ · ☐ / ½ · ☐ · ☐" fits one row at 375 px. */
+.ewe-q.ewe-stick > .q-diagram.is-stick{position:sticky; z-index:5; background:rgba(255,253,248,.97); border-bottom:2px solid rgba(43,47,74,.14);
+  margin:0 -4px 8px; padding:2px 4px 4px;}
+.ewe-q.ewe-stick .ewslot{min-width:2.3em; padding:0 4px;}
