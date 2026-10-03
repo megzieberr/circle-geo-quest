@@ -1440,6 +1440,23 @@ try:
                     okFracs: Array.isArray(s.okLine) ? s.okLine.filter(p => typeof p === 'object').length : 0,
                     hints: Object.fromEntries(Object.entries(s.hints || {}).map(([k, v]) => [k, pl(v)])), fills,
                     options: (s.options || []).map(o => ({ text: o.text, correct: !!o.correct, hint: pl(o.hint || ''), is: o.is || '' })) }; }) }; }); }""")
+        # Fix 5 (foreman review 2026-10-03): every sum or difference in an ew6
+        # string ("3 + 2 = 5", "25k − 9k") is glued with no-break spaces, and
+        # every tip, takeaway, blurb and string okLine ends on two glued words
+        glue6 = page.evaluate(r"""async () => { const m = await import('./js/rounds/ewe6-die-trapesium.js'); const r = m.round;
+            const all = [], tails = [];
+            const add = (s, tail) => { if (typeof s !== 'string') return; all.push(s); if (tail) tails.push(s); };
+            add(r.blurb.af, true); add(r.takeaway.text, true);
+            r.eweQuestions.forEach(q => { add(q.intro); add(q.write.tip, true);
+              q.steps.forEach(s => { add(s.prompt); Object.values(s.hints || {}).forEach(h => add(h));
+                if (Array.isArray(s.okLine)) s.okLine.forEach(p => add(p)); else add(s.okLine, true);
+                (s.options || []).forEach(o => { add(o.text); add(o.hint); }); }); });
+            const loose = all.filter(s => /[\dk] [+−=] \d|[\dk] [+−=] |[\dk] [+−=] /.test(s));
+            const orphan = tails.filter(s => !/ \S+$/.test(s));
+            return { n: all.length, tails: tails.length, loose, orphan }; }""")
+        check6(f"ew6 text: {glue6['n']} strings, no sum or difference with a breakable space ({len(glue6['loose'])} loose), the last two words of {glue6['tails']} tips/takeaways/okLines glued ({len(glue6['orphan'])} loose)",
+               not glue6["loose"] and not glue6["orphan"])
+        for s in glue6["loose"] + glue6["orphan"]: print("   loose:", s)
         # her side arcs and their labels, the tints as polygons (four corners
         # for the trapezium), every label outside the whole Δ
         ARCS6_JS = r"""(big) => {
@@ -1538,7 +1555,11 @@ try:
                    eqs, so: so.textContent.replace(/\s+/g, ''), soFracs: so.querySelectorAll('.ewf').length,
                    tints: [...t.querySelectorAll('.ewl-trap-sub .ewtint, .ewl-trap-so .ewtint')].map(x => x.className.match(/ewtint-\d/)[0].slice(7) + ':' + x.textContent.replace(/\s+/g, ' ')),
                    lefts: blocks.map(b => Math.round(b.getBoundingClientRect().left * 10) / 10), right: Math.max(...blocks.map(b => b.getBoundingClientRect().right)), vw, wrapped,
-                   tip: (c.querySelector('.ewe-write-tip') || {}).textContent || '' }; }"""
+                   tip: (c.querySelector('.ewe-write-tip') || {}).textContent || '',
+                   /* Fix 5b: the pink "Opp DBCE" stands on the baseline of its own "=" line: the
+                      bottoms of the two glyph boxes (text ranges, same font) within 1 px */
+                   headDy: (() => { const tb = n => { const g = document.createRange(); g.selectNodeContents(n); const r = [...g.getClientRects()]; return r.length ? r[0].bottom : NaN; };
+                     const h = sub.querySelector('.ewl-ts-l .ewtint'), e = sub.querySelector('.ewl-ts-r .ewq-eq'); return h && e ? Math.round((tb(h) - tb(e)) * 10) / 10 : null; })() }; }"""
         def nbsp(s): return s.replace(" ", " ")
         BANK_ROW6 = lambda: page.evaluate("""() => [...document.querySelectorAll('.ewe-step:last-child .ewchip')].filter(b => !b.matches('.ewkey-del, .ewkey-sub')).map(b => b.textContent).sort()""")
         def hint_text():
@@ -1649,11 +1670,11 @@ try:
             ok = bool(card) and card["trap"] and card["lines"] == (2 if q["full"] else 0) and card["soFracs"] == 2 and card["wrapped"] == 0 \
                  and len(card["eqs"]) == 3 and max(card["eqs"]) - min(card["eqs"]) <= 0.5 and max(card["lefts"]) - min(card["lefts"]) <= 0.5 and card["right"] <= card["vw"] + 0.5 \
                  and card["rows"][0] == want_rows[0] and card["head"] == f"Opp{TRAP}" and card["so"].startswith("∴") and nbsp(card["tip"]) == q["tip"] \
-                 and set(card["tints"]) == {f"1:Opp Δ {SMALL}", f"2:Opp {TRAP}"}
+                 and set(card["tints"]) == {f"1:Opp Δ {SMALL}", f"2:Opp {TRAP}"} and card["headDy"] is not None and abs(card["headDy"]) <= 1
             if q["full"]:
                 ok = ok and card["fracs"] == [3, 5] and card["strikes"] == 4 and card["strikesInMid"] and card["reasons"][1]["text"] == "(gemene hoekpunt)" \
                      and card["reasons"][0]["text"].startswith("(lyn ∥ een sy v. Δ,") and all(r["lines"] == 1 for r in card["reasons"])
-            check6(f"{P}: card = " + ("the 3/5 line, ew4's chain to the numbers (½ and sin struck), " if q["full"] else "") + f"part (c) with its three '=' under each other ({card and card.get('eqs')}), the ∴ line; left-aligned, inside 375 px; tip", ok)
+            check6(f"{P}: card = " + ("the 3/5 line, ew4's chain to the numbers (½ and sin struck), " if q["full"] else "") + f"part (c) with its three '=' under each other ({card and card.get('eqs')}), 'Opp {TRAP}' on its '=' line (baseline off by {card and card.get('headDy')}px), the ∴ line; left-aligned, inside 375 px; tip", ok)
             if not ok: print("   card:", card)
             measure(page, f"{P}: Só skryf jy dit card")
             hats(page, f"{P}: Só skryf jy dit card")

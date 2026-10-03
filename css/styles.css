@@ -1193,7 +1193,7 @@ svg.diag .pl.ewe-al-2{fill:#1971c2;}
 .ewl-trap{display:flex; flex-direction:column; align-items:flex-start; width:max-content; max-width:100%; margin:0 auto; gap:12px; text-align:left;}
 .ewl-trap .ewl,.ewl-trap .ewq{justify-content:flex-start;}
 .ewl-trap-ln{max-width:100%;}
-.ewl-trap-sub{display:grid; grid-template-columns:max-content minmax(0,max-content); row-gap:6px; align-items:center; max-width:100%; font-size:1.2rem; font-weight:700;}
+.ewl-trap-sub{display:grid; grid-template-columns:max-content minmax(0,max-content); row-gap:6px; align-items:baseline; max-width:100%; font-size:1.2rem; font-weight:700;}
 .ewl-ts-r{display:flex; flex-wrap:wrap; align-items:center; row-gap:4px; min-width:0;}
 .ewl-ts-u{display:inline-flex; align-items:center; white-space:nowrap;}
 .ewl-ts-op{padding:0 .3em;}

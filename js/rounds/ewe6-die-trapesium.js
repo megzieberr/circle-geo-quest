@@ -57,10 +57,14 @@ const NB = " ";
 /* Strings the player shows WITHOUT its no-break glue (hints, okLines,
    options, the card's tip, the end screen) carry their own: "Opp Δ ABC",
    "Opp DBCE", a product "AD · AE", "sin Â", a ratio "3 : 2", "25k − 9k",
-   "DE ∥ BC" and a short "= 5" never break over two lines. */
+   a sum "3 + 2 = 5", "DE ∥ BC" and a short "= 5" never break over two
+   lines. */
 const nb = s => s.replace(/Opp Δ /g, `Opp${NB}Δ${NB}`).replace(/Opp /g, `Opp${NB}`).replace(/Δ /g, `Δ${NB}`)
   .replace(/ · /g, `${NB}·${NB}`).replace(/\bsin /g, `sin${NB}`).replace(/ : /g, `${NB}:${NB}`)
-  .replace(/ − /g, `${NB}−${NB}`).replace(/ = /g, `${NB}=${NB}`).replace(/(\S) ∥ (\S)/g, `$1${NB}∥${NB}$2`);
+  .replace(/ − /g, `${NB}−${NB}`).replace(/ \+ /g, `${NB}+${NB}`).replace(/ = /g, `${NB}=${NB}`).replace(/(\S) ∥ (\S)/g, `$1${NB}∥${NB}$2`);
+/* foreman review 2026-10-03: a takeaway or tip line never ends on one short
+   word alone ("k's." on a line of its own): its last two words are glued */
+const tail = s => s.replace(/ (\S+)$/, `${NB}$1`);
 
 /* a piece of n parts on the sketch: "3k", and "k" for one part (never "1k") */
 const kLabel = n => (n === 1 ? "k" : `${n}k`);
@@ -152,7 +156,7 @@ function trapQ(id, { corner, ends, cuts, xy, given, ask, intro, askPrompt, tip }
         flipped: nb(`Δ ${SMALL} staan bo, dus kom sy sye bo.`),
         pattern: nb(`Bo kom ${n.AD} · ${n.AE}, onder ${n.AB} · ${n.AC}. Elke sy kry sy eie getal.`),
       },
-      okLine: nb(`${top} · ${top} = ${small} en ${whole} · ${whole} = ${big}. Die klein Δ is ${small} dele, die groot Δ is ${big} dele: ${small}k en ${big}k.`),
+      okLine: tail(nb(`${top} · ${top} = ${small} en ${whole} · ${whole} = ${big}. Die klein Δ is ${small} dele, die groot Δ is ${big} dele: ${small}k en ${big}k.`)),
     });
   }
   /* 3 · how do you get the trapezium? */
@@ -170,7 +174,7 @@ function trapQ(id, { corner, ends, cuts, xy, given, ask, intro, askPrompt, tip }
       { text: nb(`½ · ${n.DB} · ${n.EC} · sin ${hat(A)}`), is: "formula",
         hint: nb(`${n.DB} en ${n.EC} kom nie by 'n hoek bymekaar nie. 'n Trapesium het nie een formule soos 'n Δ nie: trek af.`) },
     ],
-    okLine: nb("Groot Δ minus klein Δ. Wat oorbly, is die trapesium."),
+    okLine: tail(nb("Groot Δ minus klein Δ. Wat oorbly, is die trapesium.")),
     sketchAfter: tinted,
   });
   /* 4 · the subtraction */
@@ -188,7 +192,7 @@ function trapQ(id, { corner, ends, cuts, xy, given, ask, intro, askPrompt, tip }
       sum: nb(`Jy trek af, jy tel nie bymekaar nie: ${big} − ${small}.`),
       pattern: nb(`Groot Δ is ${big}k, klein Δ is ${small}k. ${big}k − ${small}k = ?`),
     },
-    okLine: nb(`${big}k − ${small}k = ${trap}k. Die trapesium is ${trap} dele.`),
+    okLine: tail(nb(`${big}k − ${small}k = ${trap}k. Die trapesium is ${trap} dele.`)),
   });
   /* 5 · the ratio the question asks */
   const [a0, a1] = ask;
@@ -207,7 +211,7 @@ function trapQ(id, { corner, ends, cuts, xy, given, ask, intro, askPrompt, tip }
       flipped: "Kyk wat bo staan in die vraag. Daardie een se getal kom bo.",
       pattern: nb(`Klein Δ is ${small}k, groot Δ is ${big}k en die trapesium ${trap}k. Kies die twee wat die vraag noem.`),
     },
-    okLine: nb(`${cap(NAME[a0])} ${V[a0]} dele, ${NAME[a1]} ${V[a1]} dele.`),
+    okLine: tail(nb(`${cap(NAME[a0])} ${V[a0]} dele, ${NAME[a1]} ${V[a1]} dele.`)),
   });
 
   const trapCard = {
@@ -225,7 +229,7 @@ function trapQ(id, { corner, ends, cuts, xy, given, ask, intro, askPrompt, tip }
        coordinates, never the answers above) */
     given, ask,
     steps,
-    write: { trap: trapCard, tip: nb(tip) },
+    write: { trap: trapCard, tip: tail(nb(tip)) },
     /* for the phone check: the sketch after step 1 and after step 3 */
     sketches: { shown, tinted },
     /* for the checker: the figure by its corners, and its coordinates */
@@ -292,10 +296,10 @@ export const round = {
   kind: "ewe",
   accent: "#862e9c",
   title: { en: "Die trapesium", af: "Die trapesium" },
-  blurb: { en: nb("Die trapesium is die groot Δ minus die klein Δ. Skryf albei in k's en trek af."),
-           af: nb("Die trapesium is die groot Δ minus die klein Δ. Skryf albei in k's en trek af.") },
+  blurb: { en: tail(nb("Die trapesium is die groot Δ minus die klein Δ. Skryf albei in k's en trek af.")),
+           af: tail(nb("Die trapesium is die groot Δ minus die klein Δ. Skryf albei in k's en trek af.")) },
   takeaway: {
-    text: nb("Trapesium = groot Δ − klein Δ. Skryf albei in k's, en trek af."),
+    text: tail(nb("Trapesium = groot Δ − klein Δ. Skryf albei in k's, en trek af.")),
     /* Q1's part (c) */
     trap: { sub: Q1.write.trap.sub, ask: Q1.write.trap.ask },
   },
