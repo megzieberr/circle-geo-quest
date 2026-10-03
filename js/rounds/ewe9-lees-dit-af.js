@@ -61,7 +61,11 @@
      build     spec { mode: "name", first, map, chips }   markName
                spec { mode: "exact", expect, free, chips, why }   markExact
                frame cells { t, tone }   a name in its colour; BRK a break
-               point without a sign
+               point without a sign; { t: ",", tight: true } a comma right
+               after the filled box (fix round)
+               mid       the frame on one middle line (fix round)
+               doneNames { first, k2 }   the finished name build drawn like
+                         the card, "Δ ADE ||| Δ ABC" (fix round)
      pick      layout "row" (the three names in one row, shuffled),
                keepSketch (as ew5)
      write     { names: { line, sim }, tip }   the triangles card
@@ -81,6 +85,10 @@ const nb = s => s.replace(/(\S) ∥ (\S)/g, `$1${NB}∥${NB}$2`).replace(/Δ (\S
 /* as ew6 and ew8: the last two words of every hint, ✓ line, intro, tip and
    the takeaway are glued, so no word sits alone on the last line */
 const tail = s => s.replace(/ (\S+)$/, `${NB}$1`);
+/* fix round: in an intro a point letter never ends a line, it is glued to
+   the word after it ("S lê", "J op"), and an equation in the sentence never
+   breaks ("QR² = RS · RP": the "=" glued both sides, the "·" by nb) */
+const glueIntro = s => nb(s).replace(/(^|[ (])([A-Z]) (?=\S)/g, `$1$2${NB}`).replace(/ = /g, `${NB}=${NB}`);
 
 /* her arcs, as in ew8 (foreman review 2026-10-03, hand-drawn bows):
    PAR_SAG  an arc over a ∥ line bows well clear of its ∥ arrow
@@ -89,15 +97,19 @@ const tail = s => s.replace(/ (\S+)$/, `${NB}$1`);
             inner chord, `gap` clear outside it, the cut point's label `lab`
             clear of the outer bow; keepHidden: a colour 2 bow, hidden until
             step 1 is right, already stands where it will be drawn, so no
-            label moves when it appears */
-const PAR_SAG = 12, NEST = { end: 0.4, gap: 4.5, lab: 4.5, keepHidden: true };
+            label moves when it appears; same (fix round): the two bows over
+            ONE side (QR, TU) keep 7.5 apart in the middle, so they read as
+            two bows */
+const PAR_SAG = 12, NEST = { end: 0.4, gap: 4.5, lab: 4.5, keepHidden: true, same: 7.5 };
 
 const PAR_REASON = (big, de, bc) => `lyn ∥ een sy v. Δ ${big}, ${de} ∥ ${bc}`;
 const CARD_TIP = "Jy het nou die twee Δe. In die eksamen bewys jy eers dat hulle gelykvormig is (∠∠∠), dan skryf jy die breuke (uit |||).";
 
 /* the letter two sides share, and a Δ's three letters as words */
 const shareOf = (a, b) => [...a].find(c => b.includes(c));
-const three = ([x, y, z]) => `${x}, ${y} en ${z}`;
+/* fix round: the three letters never break apart, so no letter is left
+   alone at the end of a line ("letters: A, D" / "en E.") */
+const three = ([x, y, z]) => `${x},${NB}${y}${NB}en${NB}${z}`;
 
 /* ---------------- a TRIANGLES question ----------------
    fig      a cutTriangle (kind A) or a sharedAngleSide (kind B)
@@ -125,7 +137,9 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
 
   /* the sketch states. Every arc is there from the start (colour 2 hidden,
      so no label moves when it appears); the tints come after each pick. The
-     bigger Δ is tinted first, the smaller on top, so each keeps its colour. */
+     bigger Δ is tinted first, the smaller on top; fix round: the smaller Δ
+     is cut out of the bigger one's tint (`hole`), so it keeps ITS OWN
+     colour (two see-through tints, blue over orange, mixed to grey). */
   const outside = kind === "A" ? [fig.corner, ...fig.ends] : [fig.far, fig.apex, fig.shared];
   const area = t => { const [p, q, r] = [...t].map(k => fig.pts[k]); return Math.abs((q.x - p.x) * (r.y - p.y) - (r.x - p.x) * (q.y - p.y)) / 2; };
   const bigFirst = area(tri1) > area(tri2);
@@ -135,7 +149,7 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
   const start = { ...base, sideArcs: side(false) };
   const t1 = { pts: [...tri1], tint: "k1" }, t2 = { pts: [...tri2], tint: "k2" };
   const after1 = { ...base, sideArcs: side(true), tints: [t1] };
-  const after2 = { ...base, sideArcs: side(true), tints: bigFirst ? [t1, t2] : [t2, t1] };
+  const after2 = { ...base, sideArcs: side(true), tints: bigFirst ? [{ ...t1, hole: [...tri2] }, t2] : [{ ...t2, hole: [...tri1] }, t1] };
 
   /* the given fractions: lit, then named (pre: the exam line, card only) */
   const N1 = { t: tri1, k: 1 }, N2 = { t: tri2, k: 2 };
@@ -175,6 +189,8 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
       prompt: "Skryf die tweede naam in dieselfde volgorde.",
       frame: [[{ t: `Δ${NB}${tri1}`, tone: 1 }, "|||"], BRK, [{ t: "Δ", tone: 2 }, SLOT, SLOT, SLOT]],
       compact: true,
+      mid: true,
+      doneNames: { first: N1, k2: 2 },
       chips,
       spec: { mode: "name", first: tri1, map, chips },
       answer: [...tri1].map(k => map[k]),
@@ -188,7 +204,7 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
   ];
   const fin = line(true, true, true, true, true);
   return {
-    id, intro: tail(nb(intro)), sketch: start,
+    id, intro: tail(glueIntro(intro)), sketch: start,
     fracLine: line(true, false, false, false),
     steps,
     write: { names: { line: fin, sim: [N1, N2] }, tip: tail(nb(CARD_TIP)) },
@@ -208,12 +224,13 @@ function sidesQ(id, { T, fracs, intro, prompt }) {
   const chips = [BIG, SMALL, n.DE, n.BC, n.AB, n.AC];
   const sketch = { ...T.sketch, outside: [A, B, C], labBox: true, boxClear: true, labGap: 2 };
   return {
-    id, intro: tail(nb(intro)), sketch,
+    id, intro: tail(glueIntro(intro)), sketch,
     fracLine: { fracs: fracs.map(([p, q]) => ({ n: p, d: q })) },
     steps: [{
       type: "build", role: "reason",
       prompt,
-      frame: [["lyn ∥ een sy v. Δ", SLOT, ","], BRK, [SLOT, "∥", SLOT]],
+      frame: [["lyn ∥ een sy v. Δ", SLOT, { t: ",", tight: true }], BRK, [SLOT, "∥", SLOT]],
+      mid: true,
       chips,
       spec: { mode: "exact", expect: [BIG, n.DE, n.BC], free: [[1, 3]], chips,
               why: [{ why: "small", from: 0, to: 1, is: [SMALL] },
@@ -259,7 +276,7 @@ const T2 = cutTriangle({ corner: "K", ends: ["L", "M"], cuts: ["N", "T"], t: 0.4
 const Q2 = sidesQ("ew9q2", {
   T: T2, fracs: [["KN", "NL"], ["KT", "TM"]],
   intro: "In Δ KLM lê N op KL en T op KM, met NT ∥ LM.",
-  prompt: "KN en NL is stukke van een sy: sye in verhouding. Bou die rede wat jy langs die lyn skryf.",
+  prompt: "KN en NL is stukke van een sy: sye in verhouding. Bou die rede wat jy langs die breuke skryf.",
 });
 
 /* Q3 · kind B, her p.55 figure: Δ PQR, S on PR, QS joined; QR² = RS · RP */

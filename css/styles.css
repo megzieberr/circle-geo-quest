@@ -1248,3 +1248,12 @@ svg.diag .mk.ewe-eqa{stroke:#7048e8; stroke-width:2;}
 .ewe-opts.ewe-row{gap:8px;}
 .ewe-opts.ewe-row .opt{padding:8px 4px; font-size:1rem; line-height:1.2;}
 .ewpad-disp.is-compact{min-height:0; padding:10px 8px;}
+/* ew9 fix round (opt-in classes, written only by ew9's data). The frame
+   on ONE middle line: each run centres its words and boxes, so the "Δ"
+   before three EMPTY boxes sits level with "Δ ADE |||", not on the boxes'
+   bottom edge (.is-mid, the pad's `mid`). A comma right after a filled box
+   in the finished line, no gap (.ewpad-tight). The finished name build
+   read like the card, "Δ ADE ||| Δ ABC" (.ewn-done). */
+.ewpad-disp.is-mid .ewpad-run{display:inline-flex; align-items:center;}
+.ewpad-in + .ewpad-fx.ewpad-tight{padding-left:0; margin-left:-.06em;}
+.ewn-done{white-space:nowrap; font-weight:700;}

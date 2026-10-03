@@ -289,6 +289,9 @@ function chainHtml(units) {
    bar, see .ewf-hat), or (ew9, opt-in) { t, tone: 1 } for a triangle's
    name in its colour (the given name in Δ ADE ||| Δ ☐☐☐) */
 function fxCell(c) {
+  /* ew9 fix round, opt-in: { t: ",", tight: true } sits right after the
+     filled box before it in the finished line ("Δ KLM, NT ∥ LM"), no gap */
+  if (c && typeof c === "object" && c.tight) return `<span class="ewpad-fx ewpad-tight">${esc(c.t)}</span>`;
   if (c && typeof c === "object" && c.tone) return `<span class="ewpad-fx ewf-k${c.tone}">${esc(c.t)}</span>`;
   if (c && typeof c === "object" && c.hat) return `<span class="ewpad-fx ewf-hat">${esc(c.t)}</span>`;
   if (c && typeof c === "object") return `<span class="ewpad-fx ewtint ewtint-${c.tint}">${esc(c.t)}</span>`;
@@ -342,7 +345,9 @@ export function namesLineHtml(line) {
     const row = (cls, w, x) => `<span class="${cls}${x.show ? "" : " is-off"}"><span class="ewn-sd-w">${w}</span> ${nm(x)}</span>`;
     units[units.length - 1] += `<span class="ewn-sd">${row("ewn-sd-t", "bo:", line.side.top)}<span class="ewn-sd-gap" aria-hidden="true"></span>${row("ewn-sd-b", "onder:", line.side.bot)}</span>`;
   }
-  const pre = line.pre ? `<div class="ewn-pre">${eqHtml(sqHtml(esc(line.pre.sq)), prodHtml(line.pre.prod.map(esc)))}</div>` : "";
+  /* fix round: the product written as in her spec and in the intro,
+     "RS · RP", a space each side of the dot (no-break, never split) */
+  const pre = line.pre ? `<div class="ewn-pre">${eqHtml(sqHtml(esc(line.pre.sq)), line.pre.prod.map(esc).join(" · "))}</div>` : "";
   return `<div class="ewn${line.under ? " ewn-under" : ""}">${pre}<div class="ewn-ln">${chainHtml(units)}</div></div>`;
 }
 /* ew9, opt-in: the two similar triangles, each name in its colour:
@@ -350,6 +355,15 @@ export function namesLineHtml(line) {
 export function simNamesHtml(names) {
   const [a, b] = names.map(x => `<span class="ewf-k${x.k}">Δ ${esc(x.t)}</span>`);
   return `<div class="ewl ewl-sim ewn-sim"><span class="ewl-tx">${a} ||| ${b}</span></div>`;
+}
+/* ew9 fix round, opt-in: the finished line of the name build (its ✓ line
+   and "Wys my"), read like the card: "Δ ADE ||| Δ ABC", each name in its
+   colour, the letters of the filled boxes written together. One unit,
+   never broken. first = { t, k }, k2 = the second name's colour,
+   fill = the three letters */
+export function simDoneHtml(first, k2, fill) {
+  const nm = (t, k) => `<span class="ewf-k${k}">Δ ${esc(t)}</span>`;
+  return `<span class="ewq"><span class="ewq-u"><span class="ewn-done">${nm(first.t, first.k)} ||| ${nm(fill.join(""), k2)}</span></span></span>`;
 }
 /* ew9, opt-in: the card of a triangles question: the fractions with both
    names (namesLineHtml), then the two names in matching order */
@@ -390,9 +404,13 @@ export function frameHtml(frame, fill) {
    compact OPT-IN (ew9): a one-row frame (Δ ADE ||| Δ ☐☐☐) keeps less
            height (.ewpad-disp.is-compact), so the given fractions under
            the sketch and the frame share a small phone screen.
+   mid     OPT-IN (ew9 fix round): every run of the frame is centred on ONE
+           middle line (.ewpad-disp.is-mid), so a word before an EMPTY box
+           sits level with the rest, not on the box's bottom edge, and stays
+           there once the box is filled.
 
    returns { fill, clear, setFill, lock } */
-export function mountFillPad(host, { frame, chips, onSubmit, onEdit, fixed, compact }) {
+export function mountFillPad(host, { frame, chips, onSubmit, onEdit, fixed, compact, mid }) {
   if (new Set(chips).size !== chips.length) throw new Error("mountFillPad: two chips read the same");
   const nSlots = frame.reduce((k, u) => k + cellsOf(u).filter(c => c === SLOT).length, 0);
   const given = Array.isArray(fixed) ? fixed.slice() : [];
@@ -401,7 +419,7 @@ export function mountFillPad(host, { frame, chips, onSubmit, onEdit, fixed, comp
   let locked = false;
 
   const wrap = el("div", "ewpad");
-  const disp = el("div", "ewpad-disp" + (compact ? " is-compact" : ""));
+  const disp = el("div", "ewpad-disp" + (compact ? " is-compact" : "") + (mid ? " is-mid" : ""));
   wrap.appendChild(disp);
 
   function paint() {
@@ -529,9 +547,16 @@ export function shuffle(xs) {
              sketch with eqAngles an arc only ever means "equal"
      tints   an entry's `tint` may be "k1" / "k2": the tint in the colour of
              the lit sides (her p.49 and p.55: a colour per Δ)
+     tints   (fix round) an entry may carry `hole: ["A","D","E"]`, the Δ
+             inside it: that Δ is cut out of this tint, so the smaller Δ
+             tinted on top shows its own colour only (two see-through tints,
+             blue over orange, would mix to grey)
      arcNest `keepHidden: true` (with `lab`): a hidden whole-side bow is
              raised for the label under it as if it were drawn, so the
              sketch before and after it appears is the same, label for label
+     arcNest (fix round) `same: 7.5`: a whole side's bow over a piece arc
+             on the SAME chord (kind B's QR, lit in both colours) keeps that
+             much more sag than it, so the two read as two bows
      boxClear true: a point label keeps its BOX (not just its centre) clear
              of the lines, the ∥ arrows, the marks, the arcs and the other
              labels, and no corner of it may sit inside the `outside` Δ or a
@@ -714,13 +739,17 @@ function bowPts(g, h) {
 const NEST_END = 15, NEST_GAP = 5;
 function nestH(g, G, h0, opt) {
   const o = typeof opt === "object" ? opt : null;
-  const GAP = o ? o.gap : NEST_GAP;
+  let GAP = o ? o.gap : NEST_GAP;
   const T = { x: g.F.x + g.L * g.ux, y: g.F.y + g.L * g.uy };
   const same = (p, q) => Math.hypot(p.x - q.x, p.y - q.y) < 1e-6;
   const onSide = p => { const a = (p.x - g.F.x) * g.ux + (p.y - g.F.y) * g.uy, n = (p.x - g.F.x) * g.nx + (p.y - g.F.y) * g.ny; return Math.abs(n) < 1e-6 && a > -1e-6 && a < g.L + 1e-6; };
   const inner = G.filter(i => i !== g && i.level === 1 && i.nx * g.nx + i.ny * g.ny > 0.999
     && onSide(i.F) && onSide({ x: i.F.x + i.L * i.ux, y: i.F.y + i.L * i.uy }));
   if (!inner.length) return h0;
+  /* ew9 fix round, opt-in (arcNest `same`): over a piece arc on the SAME
+     chord (both ends shared) the whole side's bow keeps `same` more sag,
+     so the two bows read as two */
+  if (o && o.same != null && inner.some(i => Math.abs(i.L - g.L) < 1e-6)) GAP = Math.max(GAP, o.same);
   /* distances to the other arc as a polyline (point to segment), not point
      to point: two sampled bows close together would otherwise read wider
      than they are */
@@ -799,6 +828,15 @@ export function sketchSvg(spec) {
   const tintPts = t => (Array.isArray(t) ? t : t.pts);
   (spec.tints || []).forEach((t, i) => {
     const k = Array.isArray(t) ? i + 1 : t.tint;
+    /* ew9, opt-in (`hole`): the Δ inside is cut out of this tint (even-odd
+       fill, the outline closed back to its first corner before the hole's),
+       so the smaller Δ drawn on top keeps ITS OWN colour, not a blend of
+       the two. data-outer: how many of the points are the outline. */
+    if (!Array.isArray(t) && t.hole) {
+      const ring = ks => [...ks, ks[0]].map(k => `${N(P[k].x)},${N(P[k].y)}`).join(" ");
+      out += `<polygon class="ewe-tint ewe-tint-${k}" fill-rule="evenodd" data-outer="${t.pts.length}" points="${ring(t.pts)} ${ring(t.hole)}"/>`;
+      return;
+    }
     out += `<polygon class="ewe-tint ewe-tint-${k}" points="${tintPts(t).map(k => `${N(P[k].x)},${N(P[k].y)}`).join(" ")}"/>`;
   });
   const segs = spec.lines.map(([a, b]) => [P[a], P[b]]);

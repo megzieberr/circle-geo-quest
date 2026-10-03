@@ -40,7 +40,7 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, fracsLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle, namesLineHtml, namesCardHtml } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, fracsLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle, namesLineHtml, namesCardHtml, simDoneHtml } from "./ewe-kit.js";
 
 /* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
    "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts).
@@ -454,7 +454,11 @@ function mountBuild(host, step, onDone) {
      boxes, and the finished line is drawn from that frame. Without
      step.frame: the four boxes and ratioHtml, exactly as before. */
   const frame = step.frame || [{ n: [SLOT], d: [SLOT] }, "=", { n: [SLOT], d: [SLOT] }];
-  const lineOf = f => (step.frame ? frameHtml(step.frame, f) : ratioHtml(f));
+  /* ew9 fix round, opt-in: `doneNames` ({ first: { t, k }, k2 }) draws the
+     finished name build like the card, "Δ ADE ||| Δ ABC", each name in
+     its colour and the filled letters together (kit simDoneHtml) */
+  const lineOf = f => (step.doneNames ? simDoneHtml(step.doneNames.first, step.doneNames.k2, f)
+    : step.frame ? frameHtml(step.frame, f) : ratioHtml(f));
   /* ew7, opt-in: a build step with an okLine says its takeaway under the
      finished line (a "²" in it drawn by sqText). Without the key the ✓ line
      is the finished line alone, as before. */
@@ -465,6 +469,7 @@ function mountBuild(host, step, onDone) {
     frame, chips: step.chips,
     fixed: step.fixed,          // ew2: a chip already in the first box (opt-in)
     compact: step.compact,      // ew9: a one-row frame keeps less height (opt-in)
+    mid: step.mid,              // ew9 fix round: the frame on one middle line (opt-in)
     /* foreman review 2026-09-29: "Nog nie" is about the fill that was
        checked. Once they change a box it no longer describes what is on
        the screen, so it goes. The hint stays: it is still the help. */
