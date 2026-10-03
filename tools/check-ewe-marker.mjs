@@ -85,6 +85,7 @@ import { round as round6, SKETCHES as SKETCHES6 } from "../js/rounds/ewe6-die-tr
 import { round as round7, SKETCHES as SKETCHES7 } from "../js/rounds/ewe7-vreemde-formaat.js";
 import { round as round8, FIGS as FIGS8 } from "../js/rounds/ewe8-driehoeke-of-sye.js";
 import { round as round9, FIGS as FIGS9 } from "../js/rounds/ewe9-lees-dit-af.js";
+import { round as round10, FIGS as FIGS10 } from "../js/rounds/ewe10-die-bewys.js";
 
 const REL = 1e-9;             // "equal" for lengths that are equal by construction
 const GAP = 1e-3;             // anything closer than this that is NOT forced is an accident
@@ -1296,5 +1297,204 @@ for (const r of rows9) {
 }
 console.log(`TOTAL     ${rows9.length} questions, ${rows9.reduce((s, r) => s + r.tried, 0)} fills, ${D9} disagreements, largest error in an equality that must hold ${MAXREL9.toExponential(1)}`);
 
+/* ---------------- ew10: "Die bewys" ----------------
+   The ew10 ORACLE, from the coordinates (FIGS10: the points, the heights
+   with their feet and the line each stands on, the triangles by role, the
+   drawn lines and the joins), never from the marker:
+     the figure  ST ∥ QR; each height PERPENDICULAR to the side it stands on
+                 (dot product, relative 1e-9) with its foot strictly inside
+                 its piece of the small Δ (PS, PT); X on QT and on RS
+     the areas   every area line true by shoelace: ½ · base · height = the
+                 named Δ's area, both of them, so the ratio is the bases';
+                 Δ QST = Δ STR; for proof 2 Δ PQT = Δ PSR; the statement
+                 true by lengths
+     the height  in each area step, the step's height (spec.H) is the one
+                 perpendicular to the step's flat line, the other one not;
+                 the turned sketch lays THAT line flat; its ✓ line, its
+                 struck letter, its hint and the card use that letter (her
+                 exam page names them the other way round in Q3)
+     every fill  Verbind ☐ en ☐: right when both are NEW lines (not on a
+                 drawn line) that cross inside the figure; ½ · ☐ · ☐ over
+                 ½ · ☐ · ☐: right when ½ · top = the first Δ's area and
+                 ½ · bottom = the second's; Opp Δ ☐ = Opp Δ ☐: right when the
+                 two are different triangles of equal area; ∴ ☐/☐ = ☐/☐:
+                 right when it states exactly the statement asked (either
+                 fraction first), and a fill that is TRUE by lengths but not
+                 the one asked must get "form". Against markRatio, 0
+                 disagreements; every reason has its hint, every hint fires
+     her ruling  3 Oct 15:58: no text shown before a build (intro, the
+                 Bewys line, a shown line, a prompt, a ✓ line, an option)
+                 carries that build's answer: not the joins before step 1
+                 (Q3's exam konstruksie only up to the heights), not a
+                 "basis · height" product before its area step, not the
+                 equal-areas line before step 4. The statement itself is
+                 exempt: the question must show what to prove. */
+const rows10 = [];
+let D10 = 0, MAXREL10 = 0;
+const pl10 = s => String(s).replace(/ /g, " ");
+for (const q of round10.eweQuestions) {
+  const F = FIGS10[q.id], P = F.pts, R = q.roles, err = [];
+  const L = (a, b) => dist(P[a], P[b]);
+  const lenOf = c => (F.heights[c] ? dist(P[F.heights[c].from], F.heights[c].foot) : F.seg[c] ? L(F.seg[c].from, F.seg[c].to) : NaN);
+  const rel = (x, y) => Math.abs(x - y) / Math.max(Math.abs(x), Math.abs(y), 1e-300);
+  const area = t => shoelace([...t].map(k => P[k]));
+  let worst = 0;
+  const must = (ok, what, r) => { if (r != null) worst = Math.max(worst, r); if (!ok) err.push(what); };
+  /* 1 · the figure */
+  const par = Math.abs(cross(vec(P[R.S], P[R.T]), vec(P[R.Q], P[R.R]))) / (L(R.S, R.T) * L(R.Q, R.R));
+  must(par < REL, `ST is not ∥ QR (${par})`, par);
+  const hRows = [];
+  for (const [k, h] of Object.entries(F.heights)) {
+    const v = vec(P[h.from], h.foot), w = vec(P[h.onto[0]], P[h.onto[1]]);
+    const dot = Math.abs(v.x * w.x + v.y * w.y) / (Math.hypot(v.x, v.y) * Math.hypot(w.x, w.y));
+    const [a, b] = h.piece, ab = vec(P[a], P[b]), af = vec(P[a], h.foot);
+    const u = (af.x * ab.x + af.y * ab.y) / (ab.x * ab.x + ab.y * ab.y), off = Math.abs(cross(ab, af)) / Math.hypot(ab.x, ab.y);
+    must(dot < REL, `height ${k} is not perpendicular to ${h.onto.join("")} (cos ${dot})`, dot);
+    must(u > 1e-6 && u < 1 - 1e-6 && off < 1e-9, `the foot of ${k} is not strictly inside ${a}${b} (u ${u})`);
+    hRows.push(`${k} from ${h.from} ⊥ ${h.onto.join("")} (cos ${dot.toExponential(1)}), foot at ${u.toFixed(3)} of ${a}${b}`);
+  }
+  const onLine = (A, B, X) => lineDist(P[A], P[B], X) < 1e-9;
+  must(onLine(F.joins[0][0], F.joins[0][1], F.X) && onLine(F.joins[1][0], F.joins[1][1], F.X), "X is not where the two joins meet");
+  /* 2 · the areas */
+  const tri = F.tri;
+  const eqLR = rel(area(tri.left), area(tri.right));
+  must(eqLR < REL, `Δ ${tri.left} and Δ ${tri.right} differ in area (${eqLR})`, eqLR);
+  let eqW = null;
+  if (q.proof === 2) { eqW = rel(area(tri.wholeL), area(tri.wholeR)); must(eqW < REL, `Δ ${tri.wholeL} and Δ ${tri.wholeR} differ in area (${eqW})`, eqW); }
+  const [a0, b0, c0, d0] = R.bewys, st = rel(lenOf(a0) / lenOf(b0), lenOf(c0) / lenOf(d0));
+  must(st < REL, `the statement ${a0}/${b0} = ${c0}/${d0} is not true (${st})`, st);
+  /* 3 · every fill of every build, against the oracle */
+  let tried = 0, accepted = 0, rejected = 0, disagree = 0, accidental = 0, mixedH = 0, coincide = 0;
+  const why = {};
+  const fills = (chips, k) => { let fs = [[]]; for (let i = 0; i < k; i++) fs = fs.flatMap(f => chips.map(x => [...f, x])); return fs; };
+  const drawn = F.lines;
+  const isNew = c => { const s = F.seg[c]; return !!s && !drawn.some(([a, b]) => onLine(a, b, P[s.from]) && onLine(a, b, P[s.to])); };
+  const crossInside = (c1, c2) => { const s = F.seg[c1], t = F.seg[c2];
+    const p = P[s.from], r = vec(P[s.from], P[s.to]), q0 = P[t.from], sv = vec(P[t.from], P[t.to]), den = cross(r, sv);
+    if (Math.abs(den) < 1e-12) return false;
+    const u = cross(vec(p, q0), sv) / den, v = cross(vec(p, q0), r) / den;
+    return u > 1e-9 && u < 1 - 1e-9 && v > 1e-9 && v < 1 - 1e-9; };
+  const heightSteps = [];
+  const perpTo = (k, line) => { const h = F.heights[k], v = vec(P[h.from], h.foot), w = vec(P[line[0]], P[line[1]]);
+    return Math.abs(v.x * w.x + v.y * w.y) / (Math.hypot(v.x, v.y) * Math.hypot(w.x, w.y)) < REL; };
+  q.steps.forEach((s, si) => {
+    if (s.type !== "build") return;
+    const mode = s.spec.mode, sw = {};
+    let oracle, form = null;
+    if (s.role === "kon") oracle = f => f[0] !== f[1] && isNew(f[0]) && isNew(f[1]) && crossInside(f[0], f[1]);
+    else if (mode === "height") {
+      /* a product is THE AREA FORMULA of its named Δ when one chip is a side
+         of that Δ (both ends corners of it) and the other a height drawn
+         from the Δ's third corner, perpendicular to that side's line, and
+         then ½ · side · height IS its shoelace area (measured, 1e-9). The
+         step is right when both products are their Δ's formula with the
+         SAME height (her method: one height for both, so it cancels). A
+         product that only equals the area by a coincidence of the figure
+         (½ · TR · k is Opp Δ STR, which equals Opp Δ QST) is no formula. */
+      const [T1, T2] = s.spec.tris;
+      const formula = (pr, T) => { const hc = pr.filter(c => F.heights[c]), sc = pr.filter(c => F.seg[c]);
+        if (hc.length !== 1 || sc.length !== 1) return false;
+        const h = F.heights[hc[0]], g = F.seg[sc[0]], cs = [...T];
+        if (!(cs.includes(g.from) && cs.includes(g.to) && g.from !== g.to)) return false;
+        if (h.from !== cs.find(c => c !== g.from && c !== g.to)) return false;
+        if (!perpTo(hc[0], [g.from, g.to]) || !onLine(g.from, g.to, h.foot)) return false;
+        const r = rel(lenOf(sc[0]) * lenOf(hc[0]) / 2, area(T));
+        worst = Math.max(worst, r);
+        if (!(r < REL)) err.push(`½ · ${sc[0]} · ${hc[0]} is built like Δ ${T}'s area formula but does not equal its area (rel ${r})`);
+        return r < REL; };
+      oracle = f => { const t = f.slice(0, 2), b = f.slice(2);
+        const top = lenOf(f[0]) * lenOf(f[1]) / 2, bot = lenOf(f[2]) * lenOf(f[3]) / 2;
+        const r1 = rel(top, area(T1)), r2 = rel(bot, area(T2));
+        if ((r1 < 1e-3 && r1 >= REL) || (r2 < 1e-3 && r2 >= REL)) accidental++;
+        const sameH = t.find(c => F.heights[c]) === b.find(c => F.heights[c]);
+        const ok = formula(t, T1) && formula(b, T2);
+        /* reported, not marked right: true lines this step does not ask for */
+        if (ok && !sameH) mixedH++;
+        else if (!ok && r1 < REL && r2 < REL) coincide++;
+        return ok && sameH; };
+      heightSteps.push({ si, s });
+    } else if (s.role === "eq") oracle = f => f[0] !== f[1] && F.tri && Object.values(tri).includes(f[0]) && Object.values(tri).includes(f[1]) && rel(area(f[0]), area(f[1])) < REL;
+    else if (mode === "state") {
+      const [A, B, C, D] = s.spec.expect;
+      oracle = f => (f[0] === A && f[1] === B && f[2] === C && f[3] === D) || (f[0] === C && f[1] === D && f[2] === A && f[3] === B);
+      form = f => new Set(f).size === 4 && rel(lenOf(f[0]) / lenOf(f[1]), lenOf(f[2]) / lenOf(f[3])) < REL;
+    } else { err.push(`step ${si + 1}: no oracle for this build`); return; }
+    for (const fill of fills(s.chips, s.answer.length)) {
+      tried++;
+      const o = oracle(fill), v = markRatio(fill, s.spec);
+      why[v.why] = (why[v.why] || 0) + 1; sw[v.why] = (sw[v.why] || 0) + 1;
+      if (v.ok) accepted++; else rejected++;
+      let bad = v.ok !== o;
+      if (form && !o && form(fill) !== (v.why === "form")) bad = true;     // true but not asked ⟺ "form"
+      if (bad) { disagree++; if (disagree <= 5) err.push(`step ${si + 1} fill ${fill.join(" ")}: marker ${v.ok} (${v.why}), oracle ${o}${form ? `, true by lengths ${form(fill)}` : ""}`); }
+      if (!v.ok && v.why !== "pattern" && !(s.hints && s.hints[v.why])) err.push(`step ${si + 1}: the marker says "${v.why}" and the step has no hint for it`);
+    }
+    if (!markRatio(s.answer, s.spec).ok) err.push(`step ${si + 1}: its own shown answer is marked wrong`);
+    const silent = Object.keys(s.hints || {}).filter(k => k !== "pattern" && !sw[k]);
+    if (silent.length) err.push(`step ${si + 1}: hints ${silent} never fire`);
+  });
+  if (accidental) err.push(`${accidental} area fills come within 0.1% of a named Δ's area without being it (not generic)`);
+  /* 4 · the right height per step (the Q3 pitfall) */
+  const perp = (k, line) => { const h = F.heights[k], v = vec(P[h.from], h.foot), w = vec(P[line[0]], P[line[1]]);
+    return Math.abs(v.x * w.x + v.y * w.y) / (Math.hypot(v.x, v.y) * Math.hypot(w.x, w.y)) < REL; };
+  const hs = [];
+  heightSteps.forEach(({ si, s }, i) => {
+    const H = s.spec.H, other = Object.keys(F.heights).find(k => k !== H), fl = s.spec.flat, flN = fl.join("");
+    const otherLine = F.heights[other].onto.join("");
+    const tf = s.sketchOpen && s.sketchOpen.turn ? s.sketchOpen.turn.flat.join("") : "-";
+    const card = q.write.proof.areas[i];
+    const checks = {
+      "H ⊥ the flat line": perp(H, fl), "the other height not ⊥ it": !perp(other, fl),
+      "the sketch lays that line flat": tf === flN || tf === [...fl].reverse().join(""),
+      "✓ line says hoogte H": pl10(s.okLine) === `Dieselfde hoogte ${H}, dus bly net die basisse oor.`,
+      "the struck letter is H": s.done.strike.includes(H) && !s.done.strike.includes(other),
+      "the height hint": pl10(s.hints.height) === `${other} staan loodreg op ${otherLine}. Hierdie twee Δe se basisse lê op ${flN}. Hulle hoogte is ${H}.`,
+      "the shown answer uses H": s.answer[1] === H && s.answer[3] === H,
+      "the card's line uses H": card && card.h === H,
+    };
+    Object.entries(checks).forEach(([k, ok]) => { if (!ok) err.push(`step ${si + 1} (${flN} flat): ${k} FAILS`); });
+    hs.push(`step ${si + 1}: ${flN} flat → ${H} (${Object.values(checks).every(Boolean) ? "all 8 agree" : "NOT"})`);
+  });
+  /* 5 · the picks */
+  const nameOf = (a, b) => Object.keys(F.seg).find(k => F.seg[k].from === a && F.seg[k].to === b);
+  q.steps.filter(s => s.type === "pick").forEach(s => {
+    const right = s.options.filter(o => o.correct);
+    if (right.length !== 1 || s.options.some(o => !o.correct && !o.hint)) err.push(`pick "${pl10(s.prompt)}": not exactly one right option, or a wrong one without a hint`);
+    if (s.role === "reason" && pl10(right[0].text) !== `dies. basis en dies. ⊥h, ${nameOf(R.S, R.T)} ∥ ${nameOf(R.Q, R.R)}`)
+      err.push(`the reason is "${pl10(right[0].text)}", not the exam page's "dies. basis en dies. ⊥h, …"`);
+    if (s.role === "sum") s.options.forEach(o => { const m = pl10(o.text).match(/^Opp Δ (\w+) = Opp Δ (\w+)$/); const eq = m && rel(area(m[1]), area(m[2])) < REL;
+      if (!!o.correct !== !!eq) err.push(`sum pick "${pl10(o.text)}": marked ${!!o.correct}, equal areas ${!!eq}`); });
+  });
+  /* 6 · her ruling 3 Oct 15:58: no answer shown before its build */
+  const textsOf = s => [s.prompt, s.okLine, s.given && s.given.text, ...(s.given && s.given.line ? s.given.line.flatMap(u => (u === "=" ? [] : [...(u.n || []), ...(u.d || [])]).map(c => (typeof c === "object" ? c.t : c))) : []),
+    ...(s.options || []).map(o => o.text), ...(s.frame || []).flatMap(u => (u === "=" ? [] : Array.isArray(u) ? u : [...u.n, ...u.d])).filter(c => c !== "☐").map(c => (typeof c === "object" ? c.t : c))]
+    .filter(Boolean).map(pl10);
+  const tok = (t, w) => new RegExp(`(^|[^A-Za-z])(${w}|${[...w].reverse().join("")})([^A-Za-z]|$)`).test(t);
+  const shownBefore = [pl10(q.intro), q.lead.given || "", q.lead.pre || ""];
+  const leaks = [];
+  q.steps.forEach((s, si) => {
+    const before = [...shownBefore, ...q.steps.slice(0, si).flatMap(textsOf), ...[s.prompt, s.given && s.given.text].filter(Boolean).map(pl10)];
+    if (s.role === "kon") s.answer.forEach(c => before.forEach(t => { if (tok(t, c)) leaks.push(`step ${si + 1}: the join ${c} shows before the build ("${t.slice(0, 60)}")`); }));
+    if (s.spec && s.spec.mode === "height") { const H = s.spec.H; [s.answer[0], s.answer[2]].forEach(b => before.forEach(t => { if (t.includes(`${b} · ${H}`) || t.includes(`${H} · ${b}`)) leaks.push(`step ${si + 1}: "${b} · ${H}" shows before the build`); })); }
+    if (s.role === "eq") { const [x, y] = s.answer; before.forEach(t => { if (t.includes(`Opp Δ ${x} = Opp Δ ${y}`) || t.includes(`Opp Δ ${y} = Opp Δ ${x}`)) leaks.push(`step ${si + 1}: the equal-areas line shows before the build`); }); }
+  });
+  leaks.forEach(l => err.push(l));
+  MAXREL10 = Math.max(MAXREL10, worst);
+  D10 += disagree;
+  problems += err.length;
+  err.forEach(e => console.error(`✗ ${q.id}: ${e}`));
+  rows10.push({ q: q.id, proof: q.proof, st: `${a0}/${b0} = ${c0}/${d0}`, hRows, eqLR, eqW, hs, leaks: leaks.length, tried, accepted, rejected, disagree, why, mixedH, coincide, tl: tri.left, tr: tri.right });
+}
+console.log("\new10 (the proof: from the coordinates; the heights, the areas by shoelace, the right height per step, every fill of every build)");
+for (const r of rows10) {
+  console.log(`${r.q.padEnd(9)} proof ${r.proof}  ${r.st.padEnd(18)}  Δ left = Δ right (rel ${r.eqLR.toExponential(1)})${r.eqW != null ? `, Δ wholeL = Δ wholeR (rel ${r.eqW.toExponential(1)})` : ""}`);
+  r.hRows.forEach(h => console.log(`          ${h}`));
+  console.log(`          the height per step: ${r.hs.join("; ")}`);
+  console.log(`          answers shown before their build: ${r.leaks} (the statement itself exempt)`);
+  console.log(`          true area lines the steps do NOT ask for (rejected on purpose, reported): ${r.mixedH} with two different heights (each product a real area formula), ${r.coincide} true only because Δ ${r.tl} = Δ ${r.tr} in area`);
+  console.log(`          fills ${r.tried}, accepted ${r.accepted}, rejected ${r.rejected}, disagreements ${r.disagree}; rejected because: ${Object.entries(r.why).filter(([k]) => k !== "ok").map(([k, v]) => `${k} ${v}`).join(", ")}`);
+}
+console.log(`TOTAL     ${rows10.length} questions, ${rows10.reduce((s, r) => s + r.tried, 0)} fills, ${D10} disagreements, largest error in an equality that must hold ${MAXREL10.toExponential(1)}`);
+
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, every ew7 line is true in its own generic figure, every ew6 fill agrees with the shoelace areas, every ew8 question's marked button is the kind its figure gives, every shown equality true, and every ew9 name and reason line agrees with the figure.");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, every ew7 line is true in its own generic figure, every ew6 fill agrees with the shoelace areas, every ew8 question's marked button is the kind its figure gives, every shown equality true, every ew9 name and reason line agrees with the figure, and every ew10 fill agrees with the figure's areas and lengths, each area step with the height that stands on its flat line.");

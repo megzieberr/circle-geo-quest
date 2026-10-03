@@ -191,6 +191,26 @@ What it does (all against a LOCAL copy, never the live class):
     of the product dot (intro and card); the name build's ✓ line written
     like the card, "Δ ADE ||| Δ ABC"; no gap before the reason line's
     comma.
+  * ew10 ("Die bewys", the proof): locked until ew9 is passed; ew9's way
+    on leads to it. Then its own walk at 375 x 667 (pop-ups closed with
+    their ✕, ew1 to ew9 seeded as passed), every step of every question:
+    the sketch state set when the step OPENS, measured on screen: turned so
+    the named line is flat (within 0.5°) with its apex above, THE height of
+    the step upright (90° ± 0.05° to it, h orange and k blue, dashed, each
+    with its right-angle box), P at the bottom when the ∥ lines lie flat,
+    the letters upright, every point label outside the Δ, every label clear
+    of the lines, outlines, arcs, marks and each other, nothing off the
+    sketch; the tints, outlines and arcs each step asks for; the figure the
+    same size in every view; the sticky sketch on the screen at every step;
+    the overlap of the pink and the yellow Δ striped, never a muddy mix
+    (pixels off the screen); the Bewys line; every hint the marker can give
+    (the rich "form" hint with its two fractions stacked); the right fill in
+    a second order; the ✓ lines (the ½ and the height struck, = the bases);
+    the joins upright before the sketch turns; the picks; the card (her page
+    ① to ⑤, the upright sketch once: the room beside ② to ④ is measured);
+    the end screen; no line of any ew10 text ending on a single letter or
+    "="; the XP. PNGs start "ew10-", listed with what each should show in
+    tools/_out/ewe/ew10-png-index.md (written by this script).
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -1071,6 +1091,8 @@ try:
         if not ew8_locked_before: fail("ew8 should be locked before ew7 is passed")
         ew9_locked_before = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 9 && c[8].classList.contains('locked') && !c[8].querySelector('.btn'); }""")
         if not ew9_locked_before: fail("ew9 should be locked before ew8 is passed")
+        ew10_locked_before = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 10 && c[9].classList.contains('locked') && !c[9].querySelector('.btn'); }""")
+        if not ew10_locked_before: fail("ew10 should be locked before ew9 is passed")
 
         # ---------------- the ew4 walk ----------------
         page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[3].querySelector('.btn').click(); }")
@@ -1476,7 +1498,7 @@ try:
         page.evaluate("window.__APP__.go('ewes')")
         page.wait_for_selector(".round-card")
         check6("the map unlocks ew6 once ew5 is passed (ew5 ✓), and ew7 is still locked", page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')];
-            return c.length === 9 && c[4].classList.contains('done') && !c[5].classList.contains('locked') && !!c[5].querySelector('.btn')
+            return c.length === 10 && c[4].classList.contains('done') && !c[5].classList.contains('locked') && !!c[5].querySelector('.btn')
                    && c[6].classList.contains('locked') && !c[6].querySelector('.btn'); }"""))
         measure(page, "ew6 on the map", ".view")
 
@@ -1960,8 +1982,8 @@ try:
         page.evaluate("window.__APP__.go('ewes')")
         page.wait_for_selector(".round-card")
         m8 = page.evaluate(MAP_JS)
-        check8(f"the map unlocks ew8 once ew7 is passed (ew7 ✓), nine cards (ew9 held back but shown with ?ewe=1), its blurb in her words ({len(m8)} cards)",
-               len(m8) == 9 and m8[6]["done"] and not m8[7]["locked"] and m8[7]["title"] == "Driehoeke of sye?"
+        check8(f"the map unlocks ew8 once ew7 is passed (ew7 ✓), ten cards (ew10 held back but shown with ?ewe=1), its blurb in her words ({len(m8)} cards)",
+               len(m8) == 10 and m8[6]["done"] and not m8[7]["locked"] and m8[7]["title"] == "Driehoeke of sye?"
                and "Die breuke is klaar gebou. Kyk waar die sye in die skets lê: is dit twee driehoeke, of sye in verhouding?" in page.inner_text(".view"))
         measure(page, "ew8 on the map", ".view")
 
@@ -2235,8 +2257,8 @@ try:
         page.wait_for_selector(".round-card")
         m9 = page.evaluate(MAP_JS)
         blurb9 = page.evaluate("async () => (await import('./js/rounds/ewe9-lees-dit-af.js')).round.blurb.af.replace(/\\u00A0/g, ' ')")
-        check9(f"the map unlocks ew9 once ew8 is passed (ew8 ✓), nine cards, its blurb ({len(m9)} cards)",
-               len(m9) == 9 and m9[7]["done"] and not m9[8]["locked"] and m9[8]["title"] == "Lees dit af" and blurb9 in nbsp(page.inner_text(".view")))
+        check9(f"the map unlocks ew9 once ew8 is passed (ew8 ✓), ten cards (ew10 held back but shown with ?ewe=1), its blurb ({len(m9)} cards)",
+               len(m9) == 10 and m9[7]["done"] and not m9[8]["locked"] and m9[8]["title"] == "Lees dit af" and blurb9 in nbsp(page.inner_text(".view")))
         measure(page, "ew9 on the map", ".view")
 
         # ---------------- the ew9 walk: read the triangles (or the reason) off the fractions ----------------
@@ -2788,7 +2810,470 @@ try:
         saved9 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
             const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew9');
             return { progress: p.ew9 || null, xpEvents: ev.map(e => e.xp) }; }""")
+        # ---------------- ew9 -> ew10: the way on, and the map ----------------
+        ew10_checks = []
+        def check10(name, ok):
+            ew10_checks.append((name, ok))
+            if not ok: fail(name)
+        check10("ew9's end screen offers the next round", page.evaluate("""() => [...document.querySelectorAll('.ewe-end .btn')].some(b => b.textContent.includes('Volgende rondte'))"""))
+        click_btn(page, ".ewe-end .btn", "▶ Volgende rondte")
+        page.wait_for_selector(".ewe-play")
+        check10("the way on from ew9 opens ew10 'Die bewys'", "Die bewys" in page.inner_text(".play-title"))
+        page.evaluate("window.__APP__.go('ewes')")
+        page.wait_for_selector(".round-card")
+        m10 = page.evaluate(MAP_JS)
+        blurb10 = page.evaluate("async () => (await import('./js/rounds/ewe10-die-bewys.js')).round.blurb.af.replace(/\\u00A0/g, ' ')")
+        check10(f"the map unlocks ew10 once ew9 is passed (ew9 ✓), ten cards, ew10 last, its blurb ({len(m10)} cards)",
+                len(m10) == 10 and m10[8]["done"] and not m10[9]["locked"] and m10[9]["title"] == "Die bewys" and blurb10 in nbsp(page.inner_text(".view")))
+        measure(page, "ew10 on the map", ".view")
         ctx.close()
+
+        # ---------------- the ew10 walk at 375 x 667: the proof, her way ----------------
+        # Its own fresh context at the smallest phone in the class. The login
+        # pop-ups (install sheet, Weekend Rally) are closed with their ✕ first.
+        # ew1 to ew9 are seeded as passed, so the map opens ew10 the way a
+        # learner reaches it. Every step of every question: the sketch state
+        # set when the step opens (turned, lit), measured on screen; the
+        # frame, the chips, every hint the marker can give, the right fill in
+        # a second order, the ✓ line; the picks; the card; the end screen.
+        ew10_sk = []        # per sketch state: the measures (turn, flat, height, clearances)
+        ew10_vis = []       # per step: px of the sketch on screen, the boxes / options, the bank
+        ew10_px = []        # the overlap of the pink and the yellow Δ, pixels off the screen
+        ew10_cards = []
+        ew10_ends = []
+        ew10_pngs = []      # (file, what it shows) for ew10-png-index.md
+        def vshot10(name, what, full=False, sel=None):
+            page.evaluate("document.fonts.ready")
+            path = os.path.join(OUT, name)
+            if sel: page.locator(sel).screenshot(path=path)
+            else: page.screenshot(path=path, full_page=full)
+            ew10_pngs.append((name, what))
+        def ends10(sel, P, what):
+            e = page.evaluate(ENDS9_JS, sel)
+            ew10_ends.append((P, what, e))
+            check10(f"{P}: no line of the {what} ends on a bare single letter or on '=' ({e and e['rows']} line(s), ending: {' | '.join(e['ends']) if e else '?'})", bool(e) and not e["bad"])
+            o = page.evaluate(LAST2_JS, sel)
+            check10(f"{P}: the {what}'s last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
+        SK10_JS = r"""(arg) => {
+  /* ew10: the sketch as a learner sees it (screen px). arg = { flat, up,
+     bottom, H, big } */
+  const svg = document.querySelector('.ewe-q .q-diagram svg');
+  if (!svg) return null;
+  const vb = svg.viewBox.baseVal, sr = svg.getBoundingClientRect();
+  const sc = Math.min(sr.width / vb.width, sr.height / vb.height);
+  const r1 = v => Math.round(v * 10) / 10, r3 = v => Math.round(v * 1000) / 1000;
+  const dots = [...svg.querySelectorAll('circle')];
+  const all = [...svg.querySelectorAll('text.pl')];
+  const plabs = all.filter(t => !t.classList.contains('ewe-al') && !t.classList.contains('ewe-hl'));
+  const hlabs = all.filter(t => t.classList.contains('ewe-hl'));
+  const at = {}; dots.forEach((c, i) => { at[plabs[i].textContent] = { x: +c.getAttribute('cx'), y: +c.getAttribute('cy') }; });
+  const scr = k => { const r = dots[plabs.findIndex(t => t.textContent === k)].getBoundingClientRect(); return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 }; };
+  const deg = (p, q) => Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
+  const dev0 = a => { const d = ((a % 180) + 180) % 180; return Math.min(d, 180 - d); };
+  const out = { turn: svg.getAttribute('data-turn'), labels: plabs.map(t => t.textContent), collisions: [], scale: r3(sc) };
+  const [A, B] = arg.big;
+  out.size = r1(Math.hypot(scr(A).x - scr(B).x, scr(A).y - scr(B).y));
+  if (arg.flat) {
+    const p = scr(arg.flat[0]), q = scr(arg.flat[1]);
+    out.flatDev = r3(dev0(deg(p, q)));
+    out.upAbove = scr(arg.up).y < Math.min(p.y, q.y) - 1;
+    if (arg.bottom) out.bottomBelow = scr(arg.bottom).y > Math.max(p.y, q.y) + 1;
+  }
+  const hts = [...svg.querySelectorAll('line.ewe-ht')].map(l => { const m = l.getScreenCTM();
+    const T = (x, y) => ({ x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f });
+    const p = T(+l.getAttribute('x1'), +l.getAttribute('y1')), q = T(+l.getAttribute('x2'), +l.getAttribute('y2'));
+    return { k: (l.getAttribute('class').match(/ewe-ht-(\w)/) || [])[1], ang: deg(p, q), stroke: getComputedStyle(l).stroke, dash: getComputedStyle(l).strokeDasharray }; });
+  out.heights = hts.map(h => h.k).sort();
+  out.htStroke = Object.fromEntries(hts.map(h => [h.k, h.stroke]));
+  out.htDashed = hts.every(h => h.dash && h.dash !== 'none');
+  out.hlFill = Object.fromEntries(hlabs.map(t => [t.textContent, getComputedStyle(t).fill]));
+  out.boxes = [...svg.querySelectorAll('path.ewe-rt')].map(p => (p.getAttribute('class').match(/ewe-rt-(\w)/) || [])[1]).sort();
+  if (arg.flat && arg.H) {
+    const h = hts.find(x => x.k === arg.H), fa = deg(scr(arg.flat[0]), scr(arg.flat[1]));
+    if (h) { out.hAngle = r3(Math.abs(((h.ang - fa) % 180 + 180) % 180)); out.hUpright = r3(dev0(h.ang - 90)); }
+  }
+  out.upright = all.every(t => { const m = t.getScreenCTM(); return Math.abs(m.b) < 1e-9 && Math.abs(m.c) < 1e-9 && !t.getAttribute('transform'); });
+  const lines = [...svg.querySelectorAll('line')].map(l => ({ s: ['x1','y1','x2','y2'].map(k => +l.getAttribute(k)), cls: l.getAttribute('class') }));
+  out.lines = lines.filter(l => l.cls === 'ln').length;
+  const box = t => { const b = t.getBBox(); return { x0: b.x, y0: b.y, x1: b.x + b.width, y1: b.y + b.height }; };
+  const segBox = ([x1, y1, x2, y2], r) => { let m = Infinity; for (let i = 0; i <= 60; i++) { const x = x1 + (x2 - x1) * i / 60, y = y1 + (y2 - y1) * i / 60;
+      m = Math.min(m, Math.hypot(Math.max(0, r.x0 - x, x - r.x1), Math.max(0, r.y0 - y, y - r.y1))); } return m; };
+  const ptBox = (q, r) => Math.hypot(Math.max(0, r.x0 - q.x, q.x - r.x1), Math.max(0, r.y0 - q.y, q.y - r.y1));
+  const boxGap = (a, b) => Math.hypot(Math.max(0, a.x0 - b.x1, b.x0 - a.x1), Math.max(0, a.y0 - b.y1, b.y0 - a.y1));
+  const sample = (p, n) => { const L = p.getTotalLength(); return Array.from({ length: n + 1 }, (_, i) => p.getPointAtLength(L * i / n)); };
+  const arcEls = [...svg.querySelectorAll('path.ewe-sarc')];
+  const arcs = arcEls.map(p => sample(p, 120));
+  out.arcs = arcEls.map(p => (p.getAttribute('class').match(/ewe-sarc-k(\w)/) || [])[1] + (p.classList.contains('ewe-sarc-2') ? '2' : '1')).sort();
+  const marks = [...svg.querySelectorAll('path.mk:not(.ewe-sarc)')].map(p => ({ pts: sample(p, 40), cls: p.getAttribute('class') }));
+  const polyPts = p => p.getAttribute('points').trim().split(/\s+/).map(s => { const [x, y] = s.split(',').map(Number); return { x, y }; });
+  const outl = [...svg.querySelectorAll('polygon.ewe-tol')].map(p => { const v = polyPts(p); return v.map((q, i) => [q.x, q.y, v[(i + 1) % v.length].x, v[(i + 1) % v.length].y]); }).flat();
+  out.tints = [...svg.querySelectorAll('polygon.ewe-tint')].map(p => p.classList.contains('ewe-tint-stripe') ? 'stripe:' + p.dataset.stripe : p.getAttribute('class').replace('ewe-tint ewe-tint-', '') + (p.dataset.outer ? '+hole' : '')).sort();
+  out.outlines = [...svg.querySelectorAll('polygon.ewe-tol')].map(p => p.getAttribute('class').replace('ewe-tol ewe-tol-', '') + ':' + p.dataset.tri).sort();
+  out.stripeFill = [...svg.querySelectorAll('pattern rect')].map(r => getComputedStyle(r).fill);
+  const inTri = (x, y, [a, b, c]) => { const s1 = (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x), s2 = (c.x - b.x) * (y - b.y) - (c.y - b.y) * (x - b.x), s3 = (a.x - c.x) * (y - c.y) - (a.y - c.y) * (x - c.x);
+    return (s1 > 0 && s2 > 0 && s3 > 0) || (s1 < 0 && s2 < 0 && s3 < 0); };
+  const big = arg.big.map(k => at[k]);
+  const corners = r => [[r.x0, r.y0], [r.x1, r.y0], [r.x0, r.y1], [r.x1, r.y1], [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2]];
+  const tight = {};
+  const note = (key, d, what) => { if (!tight[key] || d * sc < tight[key].d) tight[key] = { d: r1(d * sc), what }; };
+  const placed = [];
+  all.forEach(t => {
+    const r = box(t), name = t.textContent, isH = t.classList.contains('ewe-hl');
+    if (r.x0 < 0 || r.y0 < 0 || r.x1 > vb.width || r.y1 > vb.height) out.collisions.push(`${name} leaves the sketch`);
+    if (!isH && corners(r).some(([x, y]) => inTri(x, y, big))) out.collisions.push(`${name} sits inside the Δ`);
+    lines.forEach(l => note(isH ? 'hk-line' : 'label-line', segBox(l.s, r), `${name} to ${l.cls}`));
+    outl.forEach(s => note(isH ? 'hk-outline' : 'label-outline', segBox(s, r), `${name} to an outline`));
+    arcs.forEach(a => note('label-arc', Math.min(...a.map(q => ptBox(q, r))), `${name} to an arc`));
+    marks.forEach(m => note(isH ? 'hk-mark' : 'label-mark', Math.min(...m.pts.map(q => ptBox(q, r))), `${name} to ${m.cls.replace('mk ', '')}`));
+    placed.forEach(o => note('label-label', boxGap(o.r, r), `${name} to ${o.name}`));
+    placed.push({ r, name });
+  });
+  out.tight = tight;
+  const lim = { 'label-line': 2, 'hk-line': 2, 'label-outline': 2, 'hk-outline': 2, 'label-arc': 3, 'label-mark': 2, 'hk-mark': 2, 'label-label': 3 };
+  for (const [k, v] of Object.entries(tight)) if (v.d < lim[k]) out.collisions.push(`${k} ${v.d}px < ${lim[k]} (${v.what})`);
+  arcs.forEach(a => { if (a.some(q => q.x < 0 || q.y < 0 || q.x > vb.width || q.y > vb.height)) out.collisions.push('an arc leaves the sketch'); });
+  /* the sketch on the screen: the bar's bottom, the svg's edges */
+  const bar = document.querySelector('.topbar'), head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0, vh = window.innerHeight, vw = document.documentElement.clientWidth;
+  out.head = Math.round(head); out.vh = vh;
+  out.svgTop = r1(sr.top); out.svgBottom = r1(sr.bottom);
+  out.seen = Math.round(Math.max(0, Math.min(sr.bottom, vh) - Math.max(sr.top, head))); out.sh = Math.round(sr.height);
+  out.onScreen = sr.top >= head - 0.5 && sr.bottom <= vh + 0.5 && sr.left >= -0.5 && sr.right <= vw + 0.5;
+  const fig = svg.parentElement; out.sticky = fig.classList.contains('is-stick') && getComputedStyle(fig).position === 'sticky';
+  return out; }"""
+        STEP10_JS = r"""(k) => {
+  /* ew10: one step on the screen: its boxes or options, the bank, the frame */
+  const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
+  const bar = document.querySelector('.topbar'), head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0, vh = window.innerHeight, vw = document.documentElement.clientWidth;
+  const on = r => r.top >= head - 0.5 && r.bottom <= vh + 0.5;
+  const slots = [...st.querySelectorAll('.ewpad-disp .ewslot')].map(e => e.getBoundingClientRect());
+  const os = [...st.querySelectorAll('.ewe-opt')].filter(e => e.getBoundingClientRect().height > 0).map(e => e.getBoundingClientRect());
+  const grid = st.querySelector('.ewpad-grid'), sub = st.querySelector('.ewkey-sub');
+  const d = st.querySelector('.ewpad-disp');
+  const cells = d ? [...d.querySelectorAll('.ewpad-fx, .ewslot')].map(e => e.classList.contains('ewslot') ? '☐' : e.textContent.replace(/ /g, ' ') + ((e.className.match(/ewtint-(\w+)/) || [])[1] ? ':' + e.className.match(/ewtint-(\w+)/)[1] : '')) : [];
+  const g = st.querySelector('.ewe-given');
+  return { y: Math.round(scrollY), slots: slots.length, slotsOn: slots.length > 0 && slots.every(on), opts: os.length, optsOn: os.length > 0 && os.every(on),
+           subOn: sub ? on(sub.getBoundingClientRect()) : null, subBelow: sub ? Math.max(0, Math.round(sub.getBoundingClientRect().bottom - vh)) : null,
+           optsBelow: os.length ? Math.max(0, Math.round(Math.max(...os.map(r => r.bottom)) - vh)) : null,
+           frameRight: d ? Math.round(Math.max(...[...d.querySelectorAll('*')].map(e => e.getBoundingClientRect().right))) : null, vw, cells,
+           given: g ? g.textContent.replace(/ /g, ' ').trim() : null, givenFr: g ? g.querySelectorAll('.ewf').length : 0,
+           givenTints: g ? [...g.querySelectorAll('.ewtint')].map(e => (e.className.match(/ewtint-(\w+)/) || [])[1] + ':' + getComputedStyle(e).backgroundImage.slice(0, 15) + getComputedStyle(e).backgroundColor) : [],
+           prompt: (st.querySelector('.ewe-prompt') || {}).textContent ? st.querySelector('.ewe-prompt').textContent.replace(/ /g, ' ') : '' }; }"""
+        DONE10_JS = r"""(k) => {
+  /* ew10: a finished build step's ✓ line: its text, the struck pieces, the fractions */
+  const f = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-fb`); if (!f) return null;
+  const ok = f.querySelector('.ewe-okline');
+  const fr = [...f.querySelectorAll('.ewf')].filter(e => !e.closest('.ewe-okline')).map(e => [e.querySelector('.ewf-n').textContent.replace(/ /g, ' '), e.querySelector('.ewf-d').textContent.replace(/ /g, ' ')]);
+  const struck = [...f.querySelectorAll('.ewf-x')].map(e => e.textContent.trim());
+  const ht = [...f.querySelectorAll('.ewf-ht')].map(e => e.textContent + ':' + getComputedStyle(e).color);
+  return { text: f.textContent.replace(/ /g, ' '), ok: ok ? ok.textContent.replace(/ /g, ' ') : '', fr, struck, ht, good: f.classList.contains('good'),
+           right: Math.round(Math.max(...[...f.querySelectorAll('*')].map(e => e.getBoundingClientRect().right))), vw: document.documentElement.clientWidth }; }"""
+        CARD10_JS = r"""() => {
+  /* ew10: the "Só skryf jy dit" card, her boekie page */
+  const c = document.querySelector('.ewe-write'); if (!c) return null;
+  const vw = document.documentElement.clientWidth, pl = s => s.replace(/ /g, ' ');
+  const lns = [...c.querySelectorAll('.ewp-ln')].map(l => { const bd = l.querySelector('.ewp-bd');
+    return { no: l.querySelector('.ewp-no').textContent, text: pl(bd.textContent), struck: [...bd.querySelectorAll('.ewf-x')].map(e => e.textContent.trim()),
+             names: [...bd.querySelectorAll('.ewtint')].map(e => pl(e.textContent) + ':' + (e.className.match(/ewtint-(\w+)/) || [])[1]),
+             ht: [...bd.querySelectorAll('.ewf-ht')].map(e => e.textContent), rs: [...bd.querySelectorAll('.ewl-rs')].map(e => pl(e.textContent)),
+             fr: [...bd.querySelectorAll('.ewf')].map(e => [pl(e.querySelector('.ewf-n').textContent), pl(e.querySelector('.ewf-d').textContent)]),
+             bdW: Math.round(bd.getBoundingClientRect().width), chainW: Math.max(0, ...[...bd.querySelectorAll('.ewq')].map(q => Math.round(q.getBoundingClientRect().width))),
+             h: Math.round(l.getBoundingClientRect().height) }; });
+  const gb = c.querySelector('.ewp-gb');
+  const fig = c.querySelector('.ewe-write-fig svg');
+  const main = document.querySelector('.ewe-q .q-diagram');
+  return { lns, gb: gb ? pl(gb.textContent) : null, gbFr: gb ? [...gb.querySelectorAll('.ewf')].map(e => [pl(e.querySelector('.ewf-n').textContent), pl(e.querySelector('.ewf-d').textContent)]) : [],
+           fig: !!fig, figTurn: fig ? fig.getAttribute('data-turn') : null, figTints: fig ? [...fig.querySelectorAll('polygon.ewe-tint')].length : 0, figW: fig ? Math.round(fig.getBoundingClientRect().width) : 0,
+           tip: (c.querySelector('.ewe-write-tip') || {}).textContent ? pl(c.querySelector('.ewe-write-tip').textContent) : '',
+           mainStuck: main.classList.contains('is-stick'), right: Math.round(Math.max(...[...c.querySelectorAll('*')].map(e => e.getBoundingClientRect().right))), vw,
+           h: Math.round(c.getBoundingClientRect().height) }; }"""
+        PX10_JS = r"""(arg) => {
+  /* ew10: three spots in screen px from the svg's top left: inside the
+     stripes (the centre of S, T, X), the pink-only part of the left Δ (Q, S,
+     X), the yellow-only part of the right Δ (R, T, X); X where the two joins
+     cross. And each spot's clearance from every line and outline (px). */
+  const svg = document.querySelector('.ewe-q .q-diagram svg');
+  const dots = [...svg.querySelectorAll('circle')], labs = [...svg.querySelectorAll('text.pl')].filter(t => !t.classList.contains('ewe-hl'));
+  const at = {}; dots.forEach((c, i) => { at[labs[i].textContent] = { x: +c.getAttribute('cx'), y: +c.getAttribute('cy') }; });
+  const [Q, R, S, T] = arg.map(k => at[k]);
+  const meet = (p, p2, q, q2) => { const r = { x: p2.x - p.x, y: p2.y - p.y }, s = { x: q2.x - q.x, y: q2.y - q.y }, den = r.x * s.y - r.y * s.x;
+    const u = ((q.x - p.x) * s.y - (q.y - p.y) * s.x) / den; return { x: p.x + u * r.x, y: p.y + u * r.y }; };
+  const X = meet(Q, T, R, S);
+  const cen = (...ps) => ({ x: ps.reduce((a, p) => a + p.x, 0) / ps.length, y: ps.reduce((a, p) => a + p.y, 0) / ps.length });
+  const m = svg.getScreenCTM(), r = svg.getBoundingClientRect();
+  const lines = [...svg.querySelectorAll('line')].map(l => ['x1','y1','x2','y2'].map(k => +l.getAttribute(k)));
+  const polyPts = p => p.getAttribute('points').trim().split(/\s+/).map(s => { const [x, y] = s.split(',').map(Number); return { x, y }; });
+  [...svg.querySelectorAll('polygon.ewe-tol')].forEach(p => { const v = polyPts(p); v.forEach((q, i) => lines.push([q.x, q.y, v[(i + 1) % v.length].x, v[(i + 1) % v.length].y])); });
+  const segD = (q, [x1, y1, x2, y2]) => { const dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy; let t = ((q.x - x1) * dx + (q.y - y1) * dy) / L2; t = Math.max(0, Math.min(1, t)); return Math.hypot(q.x - x1 - t * dx, q.y - y1 - t * dy); };
+  const scr = p => ({ x: m.a * p.x + m.c * p.y + m.e - r.left, y: m.b * p.x + m.d * p.y + m.f - r.top, clear: Math.round(Math.min(...lines.map(l => segD(p, l))) * m.a * 10) / 10 });
+  return { stripe: scr(cen(S, T, X)), pink: scr(cen(Q, S, X)), yellow: scr(cen(R, T, X)) }; }"""
+        def px10(P, where, roles):
+            # the screen's own pixels (an element screenshot of the sketch)
+            p = page.evaluate(PX10_JS, [roles["Q"], roles["R"], roles["S"], roles["T"]])
+            img = Image.open(io.BytesIO(page.locator(".ewe-q .q-diagram svg").screenshot())).convert("RGB")
+            def patch(c, rad):
+                x, y = int(round(c["x"])), int(round(c["y"]))
+                return [img.getpixel((x + dx, y + dy)) for dx in range(-rad, rad + 1) for dy in range(-rad, rad + 1)]
+            med = lambda px: tuple(sorted(v[i] for v in px)[len(px) // 2] for i in range(3))
+            near = lambda a, b, tol=22: all(abs(a[i] - b[i]) <= tol for i in range(3))
+            pink, yellow = med(patch(p["pink"], 1)), med(patch(p["yellow"], 1))
+            st = patch(p["stripe"], 4)
+            mixed = (255, 195, 156)       # pink at .3 over the yellow tint: the muddy colour that must not appear
+            n_p = sum(1 for v in st if near(v, pink)); n_y = sum(1 for v in st if near(v, yellow)); n_m = sum(1 for v in st if near(v, mixed, 10) and not near(v, yellow, 10))
+            row = {"where": where, "pink": pink, "yellow": yellow, "stripe": (n_p, n_y, n_m, len(st)), "clear": (p["pink"]["clear"], p["yellow"]["clear"], p["stripe"]["clear"])}
+            ew10_px.append((P, row))
+            check10(f"{P} {where}: the overlap of Δ {roles['T2l']} and Δ {roles['T3r']} is STRIPED, {n_p} pink and {n_y} yellow pixels of {len(st)} (each at least 15%), {n_m} of the muddy pink-over-yellow mix (at most 5%); the pink-only part {pink} is pink (G-B {pink[2] - pink[1]} > 0), the yellow-only part {yellow} is yellow (B {yellow[2]} < 200); spots {row['clear']} px clear of every line",
+                    n_p >= 0.15 * len(st) and n_y >= 0.15 * len(st) and n_m <= 0.05 * len(st) and pink[2] > pink[1] + 5 and yellow[2] < 200 and yellow[1] > pink[1] + 15 and min(row["clear"][:2]) >= 3)
+
+        ctx, page = new_page(browser, height=667)
+        login(page, "Demo Matric", "gr12", ewe="1")
+        closed10 = close_popups(page)
+        page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
+            const all = JSON.parse(localStorage.getItem('cgg.progress')) || {}; const p = all[me.id] || {};
+            for (const id of ['ew1', 'ew2', 'ew3', 'ew4', 'ew5', 'ew6', 'ew7', 'ew8', 'ew9']) p[id] = { best_score: 1, attempts: 1, total_xp: 0, passed: true, paid_replays: 0, last_played_at: Date.now(), last_correct: 1, last_total: 1 };
+            all[me.id] = p; localStorage.setItem('cgg.progress', JSON.stringify(all)); }""")
+        for attempt in range(3):      # a slow first load once timed out here (3 Oct): the same page again
+            try:
+                page.goto(url(ewe="1")); page.wait_for_selector(".home-head", timeout=20000); break
+            except Exception as e:
+                if attempt == 2: raise
+        page.wait_for_timeout(300)
+        closed10 += close_popups(page)
+        p10 = popups(page)
+        check10(f"ew10 walk at 375 x 667: the pop-ups closed with their ✕ ({'; '.join(closed10) or 'none opened'}), none open, the page not scroll-locked", not p10["open"] and not p10["locked"])
+        page.evaluate("window.__APP__.go('ewes')")
+        page.wait_for_selector(".round-card")
+        page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[9].querySelector('.btn').click(); }")
+        page.wait_for_selector(".ewe-play")
+        data10 = page.evaluate("""async () => { const m = await import('./js/rounds/ewe10-die-bewys.js'); const core = await import('./js/ewe-core.js');
+            const pl = s => String(s).replace(/\\u00A0/g, ' ');
+            const cellT = c => (typeof c === 'object' ? pl(c.t) + (c.tint ? ':' + c.tint : '') : pl(c));
+            const hint = v => Array.isArray(v) ? v.map(p => typeof p === 'string' ? pl(p) : p.n.join('') + '/' + p.d.join('')).join('') : pl(v);
+            return { takeaway: pl(m.round.takeaway.text), qs: m.round.eweQuestions.map(q => ({ id: q.id, proof: q.proof, roles: { ...q.roles, T2l: q.fig.tri.left, T3r: q.fig.tri.right }, intro: pl(q.intro), lead: q.lead, tri: q.fig.tri,
+              card: { tip: pl(q.write.tip), kon: pl(q.write.proof.kon), reason: pl(q.write.proof.eq.reason), sum: q.write.proof.sum ? pl(q.write.proof.sum.reason) : null, given: pl(q.write.proof.given),
+                      areas: q.write.proof.areas.map(a => ({ tris: a.tris.map(t => t.t + ':' + t.tint), bases: a.bases, h: a.h })) },
+              steps: q.steps.map(s => {
+                const fills = {};
+                if (s.type === 'build') { let all = [[]]; for (let k = 0; k < s.answer.length; k++) all = all.flatMap(f => s.chips.map(c => [...f, c]));
+                  for (const f of all) { const v = core.markRatio(f, s.spec); if (!v.ok && !fills[v.why]) fills[v.why] = { f, chip: v.chip || '' }; } }
+                return { type: s.type, role: s.role || '', prompt: pl(s.prompt), given: s.given ? { text: s.given.text ? pl(s.given.text) : null, line: !!s.given.line } : null,
+                  chips: s.chips || [], answer: s.answer || [], cells: (s.frame || []).flatMap(u => u === '=' ? [] : Array.isArray(u) ? u.map(cellT) : [...u.n.map(cellT), ...u.d.map(cellT)]),
+                  okLine: pl(s.okLine || ''), hints: Object.fromEntries(Object.entries(s.hints || {}).map(([k, v]) => [k, hint(v)])), rich: Object.keys(s.hints || {}).filter(k => Array.isArray(s.hints[k])),
+                  fills, H: (s.spec && s.spec.H) || null, flat: (s.spec && s.spec.flat) || null, expect: (s.spec && s.spec.expect) || null, openAfter: s.openAfter || 0,
+                  sk: s.sketchOpen ? { turn: s.sketchOpen.turn || null,
+                    tints: (s.sketchOpen.tints || []).map(t => t.stripe ? 'stripe:' + t.stripe.join('') : t.tint + (t.hole ? '+hole' : '')).sort(),
+                    outlines: (s.sketchOpen.outlines || []).map(o => o.tone + ':' + o.pts.join('')).sort(),
+                    arcs: (s.sketchOpen.sideArcs || []).map(a => a.tone + (a.level || 1)).sort(), lines: s.sketchOpen.lines.length } : null,
+                  after: s.sketchAfter ? { lines: s.sketchAfter.lines.length } : null,
+                  options: (s.options || []).map(o => ({ text: o.text, correct: !!o.correct, hint: pl(o.hint || '') })) }; }) })) }; }""")
+        size10 = {}         # per question: the figure's size on screen in every view (one scale)
+        for qi, q in enumerate(data10["qs"]):
+            n = qi + 1
+            P = f"ew10 Q{n}"
+            Rr = q["roles"]
+            BIG = [Rr["P"], Rr["Q"], Rr["R"]]
+            page.wait_for_selector(f".ewe-q[data-q='{q['id']}']")
+            page.wait_for_timeout(1300)            # the heights fade in (the construction draws itself)
+            check10(f"{P}: the intro '{q['intro'][:60]}…'", q["intro"] == nbsp(page.inner_text(".ewe-intro")).strip())
+            ends10(".ewe-intro", P, "intro")
+            bw = page.evaluate("""() => { const b = document.querySelector('.ewe-q .ewe-bewys'); if (!b) return null; const vw = document.documentElement.clientWidth;
+                return { text: b.textContent.replace(/\\u00A0/g, ' '), fr: [...b.querySelectorAll('.ewf')].map(e => [e.querySelector('.ewf-n').textContent, e.querySelector('.ewf-d').textContent]),
+                         right: Math.round(Math.max(...[...b.querySelectorAll('*')].map(e => e.getBoundingClientRect().right))), vw,
+                         aboveSketch: b.getBoundingClientRect().bottom <= document.querySelector('.ewe-q .q-diagram').getBoundingClientRect().top + 0.5 }; }""")
+            want_bw = [q["lead"]["bewys"][:2], q["lead"]["bewys"][2:]]
+            check10(f"{P}: the Bewys line above the sketch, the statement stacked ({' = '.join(a + '/' + b for a, b in (bw['fr'] if bw else []))}), " + (f"'Gegee: {q['lead']['given']}'" if q["lead"].get("given") else f"the exam's sentence '{q['lead'].get('pre')}'") + ", inside 375 px",
+                    bool(bw) and bw["fr"] == want_bw and bw["right"] <= bw["vw"] and bw["aboveSketch"]
+                    and ((f"Gegee: {q['lead']['given']}" in bw["text"] and "Bewys:" in bw["text"]) if q["lead"].get("given") else q["lead"]["pre"] in bw["text"]))
+            measure(page, f"{P}: start")
+            prev_size = None
+            for si, st in enumerate(q["steps"]):
+                k = si + 1
+                tag = f"{P} step {k} ({st['type']} {st['role']})"
+                if k > 1: page.wait_for_timeout(max(600, st["openAfter"] + 500))
+                sk = st["sk"]
+                if sk: cur_sk, cur_st = sk, st
+                if not sk:
+                    tr0 = cur_sk["turn"]
+                    s0 = page.evaluate(SK10_JS, {"flat": tr0["flat"] if tr0 else None, "up": tr0["up"] if tr0 else None, "bottom": None, "H": None, "big": BIG})
+                    for c in s0["collisions"]: fail(f"{tag} sketch: {c}")
+                    check10(f"{tag}: the sketch keeps the state of step {k - 1} ({s0['turn'] or 'upright'}) and stays on the screen ({s0['seen']} of {s0['sh']} px), no collisions",
+                            (s0["turn"] is not None) == bool(tr0) and (not tr0 or s0["flatDev"] <= 0.5) and s0["onScreen"] and not s0["collisions"])
+                if sk:
+                    tr = sk["turn"]
+                    arg = {"flat": tr["flat"] if tr else None, "up": tr["up"] if tr else None, "bottom": Rr["P"] if tr and st["role"] == "eq" else None,
+                           "H": st["H"], "big": BIG}
+                    s0 = page.evaluate(SK10_JS, arg)
+                    state = {"kon": "upright, the heights drawn", "area1": "turned, the first area step", "area2": "turned, the second area step", "eq": "turned, the parallel lines flat",
+                             "sum": "upright, both wholes outlined", "fin": "upright, every triangle lit"}.get(st["role"], st["role"])
+                    ew10_sk.append((P, f"s{k} {st['role']}", s0))
+                    for c in s0["collisions"]: fail(f"{tag} sketch: {c}")
+                    size10.setdefault(P, []).append(s0["size"])
+                    want_hts = sorted([Rr["H1"], Rr["H2"]])
+                    common = (s0["upright"] and not s0["collisions"] and s0["heights"] == want_hts and s0["boxes"] == want_hts and s0["htDashed"]
+                              and s0["htStroke"].get("h") == "rgb(247, 103, 7)" and s0["htStroke"].get("k") == "rgb(28, 126, 214)"
+                              and s0["hlFill"].get("h") == "rgb(232, 89, 12)" and s0["hlFill"].get("k") == "rgb(28, 126, 214)"
+                              and s0["tints"] == sorted(x.replace("stripe:", "stripe:") for x in sk["tints"]) and s0["outlines"] == sk["outlines"] and s0["arcs"] == sk["arcs"]
+                              and s0["lines"] == sk["lines"])
+                    if tr:
+                        flatN = "".join(tr["flat"])
+                        extra = (f", {st['H']} upright ({s0.get('hAngle')}° to {flatN}, {s0.get('hUpright')}° off vertical)" if st["H"] else "") + (f", {Rr['P']} at the bottom" if arg["bottom"] else "")
+                        ok_t = (s0["turn"] is not None and s0["flatDev"] <= 0.5 and s0["upAbove"] and (not st["H"] or (abs(s0["hAngle"] - 90) <= 0.05 and s0["hUpright"] <= 0.05))
+                                and (not arg["bottom"] or s0["bottomBelow"]))
+                        check10(f"{tag}: the sketch TURNS when the step opens ({s0['turn']}°): {flatN} flat ({s0['flatDev']}° off), {tr['up']} above{extra}; tints {' '.join(s0['tints'])}, outlines {' '.join(s0['outlines'])}, arcs {' '.join(s0['arcs']) or 'none'}; the letters upright; every label clear (no collisions)",
+                                ok_t and common)
+                    else:
+                        check10(f"{tag}: the sketch {state} (no turn), tints {' '.join(s0['tints']) or 'none'}, outlines {' '.join(s0['outlines']) or 'none'}, h orange and k blue, dashed, each with its box; {s0['lines']} lines; the letters upright; every label outside the Δ and clear",
+                                s0["turn"] is None and common)
+                    check10(f"{tag}: the sketch stays on the screen under the top bar (sticky; {s0['seen']} of {s0['sh']} px seen, top {s0['svgTop']} px, bar {s0['head']} px)" if k > 1 else f"{tag}: at the question's start the whole sketch is on the screen ({s0['seen']} of {s0['sh']} px)",
+                            s0["onScreen"] and s0["sticky"] and (k == 1 or abs(s0["svgTop"] - s0["head"]) <= 8))
+                    shot_name = f"ew10-q{n}-s{k}-{st['role']}.png"
+                    vshot10(shot_name, f"Q{n} step {k} ({st['role']}): the sketch {state}" + (f", {''.join(tr['flat'])} flat, {tr['up']} on top" if tr else "")
+                            + (f"; height {st['H']} upright from the flat line with its right-angle box" if st["H"] else "") + f"; tints {', '.join(sk['tints']) or 'none'}; outlines {', '.join(sk['outlines']) or 'none'}" + (f"; arcs {', '.join(sk['arcs'])}" if sk["arcs"] else "")
+                            + "; letters upright, outside the triangle; the step's prompt and boxes or options under the sketch")
+                    if st["role"] in ("eq", "fin"): px10(P, f"step {k} ({st['role']})", Rr)
+                sv = page.evaluate(STEP10_JS, k)
+                ew10_vis.append({"where": f"{P} s{k}", "role": st["role"], "y": sv["y"], "seen": s0["seen"], "sh": s0["sh"],
+                                 "inputsOn": sv["slotsOn"] if st["type"] == "build" else sv["optsOn"], "subBelow": sv["subBelow"], "optsBelow": sv["optsBelow"]})
+                if st["given"] and st["given"]["text"]:
+                    check10(f"{tag}: the shown line '{sv['given']}' (the heights only, never the joins)", sv["given"] == st["given"]["text"])
+                    ends10(f".ewe-steps > .ewe-step:nth-child({k}) .ewe-given-tx", P, f"step {k} shown line")
+                if st["given"] and st["given"]["line"]:
+                    check10(f"{tag}: the shown line above it, two stacked fractions with the triangle names on their colours ({len(sv['givenTints'])} coloured names: {', '.join(t.split(':')[0] for t in sv['givenTints'])})",
+                            sv["givenFr"] == 2 and len(sv["givenTints"]) == 4)
+                check10(f"{tag}: the prompt '{st['prompt'][:70]}'", sv["prompt"] == st["prompt"])
+                ends10(f".ewe-steps > .ewe-step:nth-child({k}) .ewe-prompt", P, f"step {k} prompt")
+                if st["type"] == "build":
+                    bank = BANK_ROW6()
+                    check10(f"{tag}: the frame {' '.join(sv['cells'])} inside 375 px ({sv['frameRight']} px), {sv['slots']} boxes, the chips {', '.join(bank)}",
+                            sv["cells"] == [c.replace("Opp Δ", "Opp Δ") for c in st["cells"]] and sv["frameRight"] <= sv["vw"] and sv["slots"] == len(st["answer"]) and bank == sorted(st["chips"]))
+                    if k > 1: check10(f"{tag}: after its auto-scroll every box is on the screen with the sketch above it (Kontroleer {('on' if sv['subOn'] else str(sv['subBelow']) + ' px below the screen, one small swipe; the sketch stays')})", sv["slotsOn"])
+                    measure(page, f"{tag}: boxes empty")
+                    reasons = [r for r in st["hints"] if r != "pattern"] + (["pattern"] if "pattern" in st["fills"] else [])
+                    for wi, r in enumerate(reasons):
+                        fz = st["fills"].get(r)
+                        if fz is None:
+                            check10(f"{tag}: a fill that gets the '{r}' hint exists", False)
+                            continue
+                        clear_pad()
+                        for c in fz["f"]: click_chip(page, c)
+                        measure(page, f"{tag}: boxes full ({r})")
+                        click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                        measure(page, f"{tag}: {r} + hint")
+                        got = hint_text()
+                        want = st["hints"][r].replace("{chip}", fz["chip"])
+                        if r in st["rich"]:
+                            hf = page.evaluate("() => [...document.querySelectorAll('.ewe-step:last-child .ewe-hint .ewf')].map(e => [e.querySelector('.ewf-n').textContent, e.querySelector('.ewf-d').textContent])")
+                            check10(f"{tag}: {' '.join(fz['f'])} gets the '{r}' hint, its two fractions STACKED ({' = '.join(a + '/' + b for a, b in hf)})",
+                                    hf == [st["expect"][:2], st["expect"][2:]] and "Dit is waar, maar die vraag vra" in got and has(page, ".ewe-step:last-child .ewe-fb.bad"))
+                        else:
+                            check10(f"{tag}: {' '.join(fz['f'])} gets the '{r}' hint ('{want[:80]}')", want in got and has(page, ".ewe-step:last-child .ewe-fb.bad"))
+                        if wi == 0 or r in ("height", "form", "drawn", "top"): ends10(".ewe-step:last-child .ewe-hint", P, f"step {k} '{r}' hint")
+                        if (n in (1, 3) and r in ("height", "drawn", "top", "form")) or (n == 2 and r == "wrongbase"):
+                            vshot10(f"ew10-q{n}-s{k}-hint-{r}.png", f"Q{n} step {k}: the wrong fill {' '.join(fz['f'])} and its '{r}' hint: \"{want[:110]}\"")
+                    clear_pad()
+                    # the right fill in a second order: the joins swapped, a product turned round, the fractions swapped
+                    a = st["answer"]
+                    fill = [a[1], a[0]] if len(a) == 2 else ([a[1], a[0], a[3], a[2]] if st["role"].startswith("area") else [a[2], a[3], a[0], a[1]])
+                    for c in fill: click_chip(page, c)
+                    measure(page, f"{tag}: boxes full (right)")
+                    click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                    page.wait_for_timeout(150)
+                    measure(page, f"{tag}: marked right")
+                    d = page.evaluate(DONE10_JS, k)
+                    accepted = has(page, f".ewe-steps > .ewe-step:nth-child({k}) .ewpad.is-locked") and bool(d) and d["good"]
+                    check10(f"{tag}: {' '.join(fill)} accepted (a second order: {'the joins swapped' if len(a) == 2 and st['role'] == 'kon' else 'the two Δe swapped' if len(a) == 2 else 'each product turned round' if st['role'].startswith('area') else 'the two fractions swapped'})", accepted)
+                    if st["role"].startswith("area"):
+                        H = st["H"]
+                        check10(f"{tag}: the ✓ line as on her page: ½ and {H} struck ({' '.join(d['struck']) if d else '?'}), {H} in its colour, then = {a[0]}/{a[2]}, and '{st['okLine']}'",
+                                bool(d) and sorted(d["struck"]) == sorted(["½", "½", H, H]) and d["fr"][-1] == [a[0], a[2]] and d["ok"] == st["okLine"] and d["right"] <= d["vw"]
+                                and all(x.startswith(H + ":") for x in d["ht"]) and len(d["ht"]) == 2)
+                    elif st["role"] == "kon":
+                        flat_t = "".join(d["text"].split()) if d else ""
+                        check10(f"{tag}: the ✓ line 'Verbind {fill[0]} en {fill[1]}' and '{st['okLine']}'", bool(d) and f"Verbind{fill[0]}en{fill[1]}" in flat_t and d["ok"] == st["okLine"])
+                    elif st["role"] == "eq":
+                        flat_t = "".join(d["text"].split()) if d else ""
+                        check10(f"{tag}: the ✓ line 'Opp Δ {fill[0]} = Opp Δ {fill[1]}'", bool(d) and f"OppΔ{fill[0]}=OppΔ{fill[1]}" in flat_t)
+                    else:
+                        check10(f"{tag}: the ✓ line ∴ {fill[0]}/{fill[1]} = {fill[2]}/{fill[3]} and '{st['okLine']}'", bool(d) and d["fr"] == [fill[:2], fill[2:]] and "∴" in d["text"] and d["ok"] == st["okLine"])
+                    if st["okLine"]: ends10(f".ewe-steps > .ewe-step:nth-child({k}) .ewe-okline", P, f"step {k} ✓ line")
+                    fzz = finished(page, k)
+                    check10(f"{tag}: Fold 3, its {fzz['slots']} boxes and Kontroleer hidden, the prompt and the ✓ line on screen", frame_gone(fzz, "✓"))
+                    if st["after"]:
+                        page.wait_for_timeout(250)
+                        s1 = page.evaluate(SK10_JS, {"flat": None, "up": None, "bottom": None, "H": None, "big": BIG})
+                        ew10_sk.append((P, f"s{k} joins", s1))
+                        for c in s1["collisions"]: fail(f"{tag} sketch after: {c}")
+                        check10(f"{tag}: once it is right the joins appear UPRIGHT ({s1['lines']} lines, was {sk['lines']}), before the sketch turns for step 2; no collisions",
+                                s1["lines"] == st["after"]["lines"] and s1["turn"] is None and not s1["collisions"])
+                        vshot10(f"ew10-q{n}-s{k}-joins.png", f"Q{n} step {k} right: the joins {' and '.join(a)} drawn, the sketch still upright (before it turns for step 2); the ✓ line under it")
+                    if k == 1:
+                        vshot10(f"ew10-q{n}-fold-intro.png", f"Q{n} after step 1: the intro folded to one line with ▸, the Bewys line and the sticky sketch, the ✓ line of step 1")
+                else:
+                    opts = sorted(o["text"] for o in st["options"])
+                    right = next(o for o in st["options"] if o["correct"])
+                    r0 = page.evaluate("(k) => [...document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-opt`)].map(e => e.textContent.trim())", k)
+                    check10(f"{tag}: '{st['prompt']}' with its {len(opts)} options ({' · '.join(r0)}), all on the screen under the sketch", sorted(r0) == opts and sv["optsOn"])
+                    measure(page, f"{tag}: options")
+                    for wi, o in enumerate(x for x in st["options"] if not x["correct"]):
+                        click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
+                        measure(page, f"{tag}: wrong pick {wi + 1}")
+                        check10(f"{tag}: the wrong pick '{nbsp(o['text'])}' gets '{o['hint'][:70]}'", o["hint"] in hint_text())
+                        if wi == 0:
+                            ends10(".ewe-step:last-child .ewe-hint", P, f"step {k} hint")
+                            if n in (1, 2): vshot10(f"ew10-q{n}-s{k}-hint-pick.png", f"Q{n} step {k} ({st['role']}): the wrong option '{nbsp(o['text'])}' red and its hint")
+                    click_btn(page, ".ewe-step:last-child .ewe-opt", right["text"])
+                    measure(page, f"{tag}: right pick")
+                    vis10 = page.evaluate("(k) => [...document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-opt`)].filter(e => getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0).map(e => e.textContent.trim())", k)
+                    fbt = nbsp(page.inner_text(f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb"))
+                    check10(f"{tag}: Fold 2, only '{nbsp(right['text'])}' stays, with '{st['okLine'][:70]}'", vis10 == [right["text"]] and st["okLine"] in fbt)
+                    ends10(f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb", P, f"step {k} ✓ line")
+            # the card
+            page.wait_for_timeout(300)
+            cd = page.evaluate(CARD10_JS)
+            ew10_cards.append((P, cd))
+            ln = {x["no"]: x for x in (cd["lns"] if cd else [])}
+            A1, A2 = q["card"]["areas"]
+            want_names2 = [f"Opp Δ {t.split(':')[0]}:{t.split(':')[1]}" for t in A1["tris"]]
+            ok_card = (bool(cd) and not cd["mainStuck"] and cd["fig"] and cd["figTurn"] is None and cd["figTints"] == 4 and cd["right"] <= cd["vw"]
+                       and set(ln) == {"①", "②", "③", "④", "⑤"} and q["card"]["kon"] in ln["①"]["text"] and ln["①"]["text"].startswith("Konstruksie:")
+                       and sorted(ln["②"]["struck"]) == sorted(["½", "½", A1["h"], A1["h"]]) and sorted(ln["③"]["struck"]) == sorted(["½", "½", A2["h"], A2["h"]])
+                       and ln["②"]["names"] == want_names2 and ln["②"]["fr"][-1] == A1["bases"] and ln["③"]["fr"][-1] == A2["bases"]
+                       and set(ln["②"]["ht"]) == {A1["h"]} and set(ln["③"]["ht"]) == {A2["h"]}
+                       and ln["④"]["rs"][0] == f"({q['card']['reason']})" and (q["card"]["sum"] is None or (len(ln["④"]["rs"]) == 2 and ln["④"]["rs"][1] == f"({q['card']['sum']})"))
+                       and ln["⑤"]["fr"][-2:] == [q["lead"]["bewys"][:2], q["lead"]["bewys"][2:]] and "∴" in ln["⑤"]["text"]
+                       and cd["gbFr"] == [q["lead"]["bewys"][:2], q["lead"]["bewys"][2:]] and f"Gegee: {q['card']['given']}" in cd["gb"])
+            room = min((x["bdW"] - x["chainW"]) for k_, x in ln.items() if k_ in ("②", "③", "④")) if cd else None
+            check10(f"{P}: card = the sketch once (upright, every Δ lit; the sticky sketch let go), then her page: Gegee / Bewys, ① '{q['card']['kon'][:40]}…', ② and ③ with ½ and {A1['h']} / {A2['h']} struck, ④ with its reason" + (" and the sum line" if q["card"]["sum"] else "") + ", ⑤ ∴ the statement; inside 375 px", ok_card)
+            if not ok_card: print("   card:", json.dumps(cd, ensure_ascii=False)[:1500])
+            check10(f"{P}: three small turned sketches beside ②, ③ and ④ do NOT fit at 375 px (the room beside the widest of those lines is {room} px; a turned sketch needs at least 120 to be read), so the card shows the upright sketch once, as the spec allows",
+                    room is not None and room < 120 and cd["fig"])
+            measure(page, f"{P}: Só skryf jy dit card")
+            ends10(".ewe-write-tip", P, "card tip")
+            ends10(".ewe-write .ewp-tx", P, "card konstruksie")
+            page.evaluate("document.querySelector('.ewe-write').scrollIntoView()")
+            vshot10(f"ew10-q{n}-card.png", f"Q{n} card: the upright sketch once with every triangle lit, then her boekie page ① to ⑤, names on their colours, ½ and the heights struck, reasons in brackets", sel=".ewe-write")
+            check10(f"{P}: the figure keeps its size in every view (one scale): {sorted(set(size10.get(P, [])))} px", bool(size10.get(P)) and max(size10[P]) - min(size10[P]) <= 1)
+            click_btn(page, ".ewe-next")
+            page.wait_for_timeout(300)
+        page.wait_for_selector(".ewe-end", timeout=8000)
+        measure(page, "ew10 end of round")
+        tk10 = page.evaluate("() => { const t = document.querySelector('.ewe-end .ewe-takeaway'); return t ? { text: t.querySelector('.ewe-write-text').textContent.replace(/\\u00A0/g, ' '), all: t.textContent, lines: t.querySelectorAll('.ewp-ln').length, fr: t.querySelectorAll('.ewf').length } : null; }")
+        check10(f"ew10 end screen: the takeaway, then Q1's page ① to ⑤, no generic well-done line ({tk10 and tk10['lines']} lines, {tk10 and tk10['fr']} fractions)",
+                bool(tk10) and tk10["text"] == data10["takeaway"] and tk10["lines"] == 5 and "Goed gedaan" not in tk10["all"])
+        ends10(".ewe-end .ewe-takeaway .ewe-write-text", "ew10 end", "takeaway")
+        btn10 = page.evaluate("() => [...document.querySelectorAll('.ewe-end .btn')].map(b => b.textContent.trim())")
+        check10(f"ew10 end screen: the last round, no next round ({' | '.join(btn10)})", not any("Volgende rondte" in b for b in btn10))
+        vshot10("ew10-end-of-round.png", "the end of the round: Rondte klaar, the XP, the takeaway and Q1's boekie page", full=True)
+        saved10 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
+            const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew10');
+            return { progress: p.ew10 || null, xpEvents: ev.map(e => e.xp) }; }""")
+        ctx.close()
+        # the index of the PNGs, for the throwaway checker who LOOKS at them
+        with open(os.path.join(OUT, "ew10-png-index.md"), "w", encoding="utf-8") as fh:
+            fh.write("# ew10 \"Die bewys\": the phone screenshots (375 x 667)\n\n")
+            fh.write("Written by tools/ewe-phone-check.py. The builder never opened these. Each line: the file, then what it should show.\n")
+            fh.write("The generic fold walk also saves `fold-ew10-q*-s*-build.png`, `fold-ew10-q*-s*-pick.png`, `fold3-ew10-q*-s*-done.png` and `fold-ew10-q1-intro-*.png` in this folder (the same steps, as the fold walk leaves them).\n\n")
+            for name, what in ew10_pngs:
+                fh.write(f"- `{os.path.join(OUT, name)}`: {what}\n")
 
         # ---------------- the other hint kinds, "show me", and the toggle ----------------
         extra = []
@@ -3471,6 +3956,30 @@ print("  ew9 cards at 375 px")
 for P, c in ew9_cards:
     if c: print(f"    {P:7} {(c['sim'] + ' | ') if c['sim'] else ''}{' = '.join(a + '/' + b for a, b in c['fr']) if c['fr'] else '(names line)'} {c['rs'] or ''}   right {c['right']}px of {c['vw']}")
 
+print("\new10 CHECKS")
+print(f"  {'ok  ' if ew10_locked_before else 'FAIL'} ew10 locked on the map before ew9 is passed")
+for name, ok in ew10_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
+print(f"  {sum(1 for _, ok in ew10_checks if ok) + (1 if ew10_locked_before else 0)} of {len(ew10_checks) + 1} ew10 checks pass")
+print("  ew10 sketch states at 375 x 667 (screen px): the turn, the flat line's angle off level, the height's angle to it, the figure's size, and the tightest clearances")
+mins10 = {}
+for P, stage, a in ew10_sk:
+    t = a["tight"]
+    for key, v in t.items():
+        if key not in mins10 or v["d"] < mins10[key][0]: mins10[key] = (v["d"], f"{P} {stage}: {v['what']}")
+    print(f"    {P:8} {stage:12} turn {str(a['turn']):>7}  " + (f"flat {a.get('flatDev')}°  " if a.get('flatDev') is not None else "upright  ") + (f"height {a.get('hAngle')}° to it  " if a.get('hAngle') is not None else "") + f"size {a['size']} px  "
+          + "; ".join(f"{k} {v['d']}" for k, v in sorted(t.items())))
+for key, (d, what) in sorted(mins10.items()): print(f"  SMALLEST {key} clearance {d} px ({what})")
+print("  ew10 at 375 x 667, every step: px of the sketch on screen with the step (the sketch is sticky), its boxes or options on screen, Kontroleer below the screen by")
+for r in ew10_vis:
+    print(f"    {r['where']:10} {r['role']:6} scrollY {r['y']:5}  sketch {r['seen']} of {r['sh']} px  inputs {'on' if r['inputsOn'] else 'NOT on'}" + (f"  Kontroleer {r['subBelow']} px below" if r["subBelow"] else "") + (f"  options {r['optsBelow']} px below" if r["optsBelow"] else ""))
+print("  ew10 overlap pixels (RGB off the screen): pink-only part, yellow-only part, stripes (pink / yellow / muddy of all)")
+for P, r in ew10_px: print(f"    {P:8} {r['where']:16} pink {r['pink']}  yellow {r['yellow']}  stripes {r['stripe'][0]} / {r['stripe'][1]} / {r['stripe'][2]} of {r['stripe'][3]}  (spots {r['clear']} px clear)")
+print("  ew10 cards at 375 px (height, the room beside lines ② to ④)")
+for P, c in ew10_cards:
+    if c: print(f"    {P:8} {c['h']} px high, right {c['right']} of {c['vw']}; " + ", ".join(f"{x['no']} {x['bdW'] - x['chainW']} px spare" for x in c["lns"] if x["no"] in "②③④"))
+print(f"  ew10 line ends: {len(ew10_ends)} texts, {sum(1 for _, _, e in ew10_ends if e and not e['bad'])} with no line ending on a bare single letter or '='")
+print(f"  ew10 PNGs: {len(ew10_pngs)}, index {os.path.join(OUT, 'ew10-png-index.md')}")
+
 print("\nRAISED 2s (sup.ewf-sq: lift = the middle of its letter minus the middle of the 2, px)")
 with_sq = [r for r in sq_rows if r[1]]
 print(f"  {len(sq_rows)} states checked, {sum(r[1] for r in sq_rows)} raised 2s measured, every one inside the screen and raised; no plain ² or ^2 in any text")
@@ -3580,6 +4089,9 @@ if saved8["xpEvents"] != [80]: fail(f"ew8 XP should be 8 questions x 10 = 80, go
 print(f"SAVING (local backend): ew9 progress {json.dumps(saved9['progress'])}, XP events {saved9['xpEvents']}")
 if not (saved9["progress"] and saved9["progress"].get("passed")): fail("ew9 not saved as passed")
 if saved9["xpEvents"] != [60]: fail(f"ew9 XP should be 6 questions x 10 = 60, got {saved9['xpEvents']}")
+print(f"SAVING (local backend): ew10 progress {json.dumps(saved10['progress'])}, XP events {saved10['xpEvents']}")
+if not (saved10["progress"] and saved10["progress"].get("passed")): fail("ew10 not saved as passed")
+if saved10["xpEvents"] != [40]: fail(f"ew10 XP should be 4 questions x 10 = 40, got {saved10['xpEvents']}")
 print(f"\nNETWORK: {len(blocked)} request(s) to other hosts blocked" + (": " + ", ".join(sorted({urlparse(u).hostname for u in blocked})) if blocked else ""))
 print(f"CONSOLE ERRORS: {len(console_errors)}")
 for e in console_errors[:10]: print("  ", e[:200])
