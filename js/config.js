@@ -81,7 +81,7 @@ export const CONFIG = {
   // admin dashboard leaves them out too. `?ewe=1` (her preview and the
   // tools) still shows them. Empty the list to release them.
   // Read once, in js/rounds/index.js (the filter on ROUNDS).
-  eweHeld: ["ew7"],
+  eweHeld: ["ew6", "ew7"],
   // ---- IS DYNAMIC GEOMETRY RELEASED TO LEARNERS? ----
   // Same one-flag hiding as stationsLive below: false = no 🧲 card on the home
   // screen, and the `dynamics` / `dynamic` routes bounce back home, so a
