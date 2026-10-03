@@ -79,9 +79,11 @@ import { cutTriangle, sharedAngleSide, hat, SLOT, BRK } from "../ewe-core.js";
 const NB = "\u00A0";
 /* Strings the player shows WITHOUT its no-break glue (hints, okLines, the
    card's tip, the end screen) carry their own: "DE ∥ BC", "Δ ADE",
-   "Δ ADE ||| Δ ABC", a product "RS · RP" and "'n SY" never break. */
+   "Δ ADE ||| Δ ABC", a product "RS · RP", "'n SY" and a letter match
+   "A pas by A" / "D by B" never break (so no line ends on one letter). */
 const nb = s => s.replace(/(\S) ∥ (\S)/g, `$1${NB}∥${NB}$2`).replace(/Δ (\S)/g, `Δ${NB}$1`).replace(/ \|\|\| /g, `${NB}|||${NB}`)
-  .replace(/ · /g, `${NB}·${NB}`).replace(/'n (\S)/g, `'n${NB}$1`);
+  .replace(/ · /g, `${NB}·${NB}`).replace(/'n (\S)/g, `'n${NB}$1`)
+  .replace(/\b([A-Z]) (pas )?by ([A-Z])\b/g, (m, x, p, y) => [x, ...(p ? ["pas"] : []), "by", y].join(NB));
 /* as ew6 and ew8: the last two words of every hint, ✓ line, intro, tip and
    the takeaway are glued, so no word sits alone on the last line */
 const tail = s => s.replace(/ (\S+)$/, `${NB}$1`);
