@@ -87,7 +87,7 @@ export const CONFIG = {
   // The next round built (ew9) goes in here first.
   // HELD 2026-10-03: ew9 "Lees dit af", built, waiting for her play-through
   // and her ship-yes.
-  eweHeld: ["ew9"],
+  eweHeld: [],
   // ---- IS DYNAMIC GEOMETRY RELEASED TO LEARNERS? ----
   // Same one-flag hiding as stationsLive below: false = no 🧲 card on the home
   // screen, and the `dynamics` / `dynamic` routes bounce back home, so a
