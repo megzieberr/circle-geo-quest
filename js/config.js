@@ -86,9 +86,10 @@ export const CONFIG = {
   // RELEASED 2026-10-03: ew8 "Driehoeke of sye?" (her ship-yes, 3 Oct 12:40).
   // The next round built (ew9) goes in here first.
   // RELEASED 2026-10-03: ew9 "Lees dit af" (her ship-yes, 3 Oct 16:07).
-  // HELD 2026-10-03: ew10 "Die bewys", the last round, built, waiting for
-  // her play-through and her ship-yes.
-  eweHeld: ["ew10"],
+  // RELEASED 2026-10-03: ew10 "Die bewys", the last round (her ship-yes,
+  // 3 Oct 19:39). All ten Eweredigheid rounds are out; a new round built
+  // later goes in here first.
+  eweHeld: [],
   // ---- IS DYNAMIC GEOMETRY RELEASED TO LEARNERS? ----
   // Same one-flag hiding as stationsLive below: false = no 🧲 card on the home
   // screen, and the `dynamics` / `dynamic` routes bounce back home, so a
