@@ -72,7 +72,7 @@
    ============================================================ */
 import { cutTriangle, sharedAngleSide, hat, SLOT, BRK } from "../ewe-core.js";
 
-const NB = " ";
+const NB = "\u00A0";
 /* Strings the player shows WITHOUT its no-break glue (hints, okLines, the
    card's tip, the end screen) carry their own: "DE ∥ BC", "Δ ADE",
    "Δ ADE ||| Δ ABC", a product "RS · RP" and "'n SY" never break. */
@@ -180,7 +180,7 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
       answer: [...tri1].map(k => map[k]),
       hints: {
         order: tail(nb(order)),
-        repeat: "Elke hoekpunt kom een keer in die naam.",
+        repeat: tail("Elke hoekpunt kom een keer in die naam."),
         pattern: tail(nb(order)),
       },
       okLine: tail(nb(pairsOk)),
