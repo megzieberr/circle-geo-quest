@@ -81,7 +81,9 @@ export const CONFIG = {
   // admin dashboard leaves them out too. `?ewe=1` (her preview and the
   // tools) still shows them. Empty the list to release them.
   // Read once, in js/rounds/index.js (the filter on ROUNDS).
-  eweHeld: ["ew6", "ew7"],
+  // RELEASED 2026-10-03: ew6 "Die trapesium" and ew7 "Vreemde formaat" (her
+  // ship-yes, 3 Oct 09:56). The next round built (ew8) goes in here first.
+  eweHeld: [],
   // ---- IS DYNAMIC GEOMETRY RELEASED TO LEARNERS? ----
   // Same one-flag hiding as stationsLive below: false = no 🧲 card on the home
   // screen, and the `dynamics` / `dynamic` routes bounce back home, so a
