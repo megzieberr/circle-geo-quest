@@ -250,63 +250,25 @@ export function renderEweRound(app, host, params) {
     box.appendChild(steps);
     qHost.appendChild(box);
 
-    let si = 0, lastFill = null, gen = 0;
+    let si = 0, lastFill = null, gen = 0, prevBox = null;
     const nextStep = () => {
       if (si < q.steps.length) {
         const step = q.steps[si++];
-        const first = si === 1;
-        /* ew10, opt-in: the sketch state of a step is set when the step
-           OPENS (her page turned for this step, these triangles lit), before
-           the step is brought in, so its scroll is measured on it.
-           `sketchAfter` stays the after-answer version. Without the key the
-           sketch is never touched here. */
-        /* `openAfter` (ms) waits first, so what the step before just added
-           (ew10: the joins) is seen before the sketch turns; a later step
-           that opens in the meantime wins (gen). The new sketch fades in
-           (opacity, .ewe-swap); the svg's size never changes, so nothing
-           below it moves. */
-        if (step.sketchOpen) {
-          const my = ++gen, state = step.sketchOpen;
-          const swap = () => { if (my !== gen || !fig.isConnected) return; fig.innerHTML = sketchSvg(state); if (fig.firstElementChild) fig.firstElementChild.classList.add("ewe-swap"); };
-          if (step.openAfter) setTimeout(swap, step.openAfter); else swap();
-        }
-        const stepBox = el("div", "ewe-step");
-        steps.appendChild(stepBox);
-        /* phone folds (her ruling 2026-10-02): a build step is filled while
-           looking at the sketch, so it keeps the sketch on screen; a pick
-           step is still centred as before. ew5, opt-in (foreman review
-           2026-10-02): a pick step with `keepSketch` is read off the sketch
-           too, so it is brought in like a build step, its options in the
-           place of the frame. */
-        if (!first) { if (step.type === "build" || step.keepSketch) bringBuild(stepBox, fig); else bringIn(stepBox); }
-        const done = (res) => {
-          run.gated++;
-          if (res.firstTry) run.firstTry++;
-          if (res.fill) lastFill = res.fill;
-          /* phone folds: a finished step is history now; its spacing
-             tightens (CSS .ewe-step.is-done), no words change */
-          stepBox.classList.add("is-done");
-          /* ew4, opt-in: a step that brings `sketchAfter` redraws the
-             question's sketch once it is answered right (her star at the
-             shared angle), and it stays for the rest of the question.
-             Without the key the sketch is never touched. */
-          if (step.sketchAfter) fig.innerHTML = sketchSvg(step.sketchAfter);
-          /* ew9, opt-in: the given fractions light up / get their names */
-          if (step.fracLineAfter && fracLine) fracLine.innerHTML = namesLineHtml(step.fracLineAfter);
-          /* phone folds: step 1 is right, so the intro folds to one line,
-             BEFORE the next step is brought in (its scroll is measured on
-             the folded page). A one-step question never folds: nothing
-             follows it. */
-          if (first && q.steps.length > 1) foldIntro(intro);
-          nextStep();
-        };
-        if (step.type === "build") mountBuild(stepBox, step, done);
-        else mountPick(stepBox, step, done);
+        /* ew10 fix round, opt-in (`openAfter`, ms): the WHOLE step waits, its
+           prompt and frame appear together with its sketch, so the learner
+           first sees what the step before just added (ew10: the joins,
+           upright) and its ✓ line, brought under the sticky sketch. No tap:
+           the step opens by itself. Without the key: at once, as before. */
+        if (step.openAfter) {
+          const my = ++gen;
+          if (prevBox) stickReveal(prevBox, [prevBox.querySelector(":scope > .ewe-fb")]);
+          setTimeout(() => { if (my === gen && fig.isConnected) openStep(step); }, step.openAfter);
+        } else openStep(step);
         return;
       }
       /* every step done: the card, then the way on. ew10: the sticky sketch
          lets go first, so the card (with its own sketch) has the screen. */
-      if (q.stick) fig.classList.remove("is-stick");
+      if (q.stick) { fig.classList.remove("is-stick"); steps.style.paddingBottom = ""; }
       const card = writeCard(q, lastFill);
       steps.appendChild(card);
       bringIn(card);
@@ -326,6 +288,53 @@ export function renderEweRound(app, host, params) {
         if (isLast) { go.textContent = UI.saving; finish(); }
         else { run.qi++; window.scrollTo(0, 0); showQuestion(); }
       });
+    };
+    const openStep = (step) => {
+      const first = si === 1;
+      /* ew10, opt-in: the sketch state of a step is set when the step
+         OPENS (her page turned for this step, these triangles lit), before
+         the step is brought in, so its scroll is measured on it.
+         `sketchAfter` stays the after-answer version. Without the key the
+         sketch is never touched here. The new sketch fades in (opacity,
+         .ewe-swap); the svg's size never changes, so nothing below it
+         moves. */
+      if (step.sketchOpen) {
+        fig.innerHTML = sketchSvg(step.sketchOpen);
+        if (fig.firstElementChild) fig.firstElementChild.classList.add("ewe-swap");
+      }
+      const stepBox = el("div", "ewe-step");
+      steps.appendChild(stepBox);
+      prevBox = stepBox;
+      /* phone folds (her ruling 2026-10-02): a build step is filled while
+         looking at the sketch, so it keeps the sketch on screen; a pick
+         step is still centred as before. ew5, opt-in (foreman review
+         2026-10-02): a pick step with `keepSketch` is read off the sketch
+         too, so it is brought in like a build step, its options in the
+         place of the frame. */
+      if (!first) { if (step.type === "build" || step.keepSketch) bringBuild(stepBox, fig); else bringIn(stepBox); }
+      const done = (res) => {
+        run.gated++;
+        if (res.firstTry) run.firstTry++;
+        if (res.fill) lastFill = res.fill;
+        /* phone folds: a finished step is history now; its spacing
+           tightens (CSS .ewe-step.is-done), no words change */
+        stepBox.classList.add("is-done");
+        /* ew4, opt-in: a step that brings `sketchAfter` redraws the
+           question's sketch once it is answered right (her star at the
+           shared angle), and it stays for the rest of the question.
+           Without the key the sketch is never touched. */
+        if (step.sketchAfter) fig.innerHTML = sketchSvg(step.sketchAfter);
+        /* ew9, opt-in: the given fractions light up / get their names */
+        if (step.fracLineAfter && fracLine) fracLine.innerHTML = namesLineHtml(step.fracLineAfter);
+        /* phone folds: step 1 is right, so the intro folds to one line,
+           BEFORE the next step is brought in (its scroll is measured on
+           the folded page). A one-step question never folds: nothing
+           follows it. */
+        if (first && q.steps.length > 1) foldIntro(intro);
+        nextStep();
+      };
+      if (step.type === "build") mountBuild(stepBox, step, done);
+      else mountPick(stepBox, step, done);
     };
     nextStep();
   }
@@ -426,16 +435,28 @@ function foldIntro(intro) {
    timeout as bringIn, same fallback when smooth is refused. */
 const EDGE = 8;   // px of air above the sketch and below the frame
 function bringBuild(node, fig) {
-  /* ew10, opt-in (a sticky sketch, q.stick): the step's top goes just under
-     the stuck sketch, so the sketch, the prompt and the boxes share the
-     screen; anything taller is a scroll away with the sketch still on top */
+  /* ew10, opt-in (a sticky sketch, q.stick): the step lands in the band
+     under the stuck sketch, so the sketch, the prompt and the boxes share
+     the screen; anything taller is a scroll away with the sketch still on
+     top. Fix round (3 Oct): the ✓ line of the step before stays in view
+     too, just under the sketch, whenever the new step's boxes (or options)
+     still fit on the screen under it; else the new step's top goes just
+     under the sketch, and that ✓ line sits wholly behind the sketch, never
+     cut in half (stickTo makes the page long enough). */
   if (fig.classList.contains("is-stick")) {
     setTimeout(() => {
-      const bar = document.querySelector(".topbar");
-      const head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
-      const y = Math.max(0, Math.round(window.scrollY + node.getBoundingClientRect().top - head - fig.getBoundingClientRect().height - EDGE));
-      try { window.scrollTo({ top: y, behavior: calm() ? "instant" : "smooth" }); }
-      catch { window.scrollTo(0, y); }
+      const g = stickGeom(fig), y0 = window.scrollY;
+      const prev = node.previousElementSibling, ok = prev && prev.querySelector(":scope > .ewe-fb");
+      const inp = node.querySelector(".ewpad-disp") || node.querySelector(".ewe-opts") || node;
+      let y = y0 + node.getBoundingClientRect().top - g.top;
+      if (ok && !ok.hidden) {
+        const r = ok.getBoundingClientRect(), yOk = y0 + r.top - g.top;
+        if (inp.getBoundingClientRect().bottom - (yOk - y0) <= g.bottom) y = yOk;
+        /* else wholly behind the sketch: its bottom (its box's own edge too)
+           at or above the sketch's bottom edge */
+        else y = Math.max(y, y0 + r.bottom - (g.top - EDGE));
+      }
+      stickTo(fig, Math.ceil(y));
     }, 80);
     return;
   }
@@ -456,6 +477,48 @@ function bringBuild(node, fig) {
     try { window.scrollTo({ top: y, behavior: calm() ? "instant" : "smooth" }); }
     catch { window.scrollTo(0, y); }
   }, 80);
+}
+
+/* ew10 fix round, opt-in (a sticky sketch, q.stick). The band a scrolled-to
+   target must land in: from just under the stuck sketch (its top is the
+   bar's height, js showQuestion) to just above the screen's bottom edge.
+   Measured for the STUCK sketch; above its own place in the page the sketch
+   is not stuck yet and sits lower, and every target is a step below it, so
+   the same limit holds there too. */
+function stickGeom(fig) {
+  const bar = document.querySelector(".topbar");
+  const head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+  const top = Math.max(head, parseFloat(fig.style.top) || 0);
+  return { top: top + fig.getBoundingClientRect().height + EDGE, bottom: window.innerHeight - EDGE };
+}
+/* the page goes to y; when it is too short to get there (a short last step),
+   the steps get just enough room under them first, so a target never stays
+   half behind the sketch. The room goes when the sketch lets go. */
+function stickTo(fig, y) {
+  const steps = fig.parentElement && fig.parentElement.querySelector(":scope > .ewe-steps");
+  y = Math.max(0, Math.floor(y));
+  if (steps) {
+    const pad = parseFloat(steps.style.paddingBottom) || 0;
+    const maxY = document.documentElement.scrollHeight - window.innerHeight - pad;
+    const need = Math.max(0, Math.ceil(y - maxY));
+    steps.style.paddingBottom = need ? need + "px" : "";
+  }
+  try { window.scrollTo({ top: y, behavior: calm() ? "instant" : "smooth" }); }
+  catch { window.scrollTo(0, y); }
+}
+/* these elements (a hint with its "Nog nie" line, a finished ✓ line) wholly
+   in the band: the least scroll that shows their bottom, never so far that
+   their top goes behind the sketch; already in view, nothing moves. Outside
+   a sticky question it does nothing at all. */
+function stickReveal(host, els) {
+  const box = host.closest(".ewe-q.ewe-stick"), fig = box && box.querySelector(":scope > .q-diagram.is-stick");
+  if (!fig) return;
+  const rs = els.filter(e => e && !e.hidden && e.getClientRects().length).map(e => e.getBoundingClientRect());
+  if (!rs.length) return;
+  const g = stickGeom(fig), y0 = window.scrollY;
+  const hi = y0 + Math.min(...rs.map(r => r.top)) - g.top, lo = y0 + Math.max(...rs.map(r => r.bottom)) - g.bottom;
+  const y = y0 > hi ? hi : y0 < lo ? Math.min(lo, hi) : y0;
+  if (Math.abs(y - y0) >= 1) stickTo(fig, y);
 }
 
 /* ew6, opt-in: a GIVEN line that belongs to a step, drawn like a frame with
@@ -546,6 +609,9 @@ function mountBuild(host, step, onDone) {
       hint.hidden = false;
       hint.innerHTML = `<span class="dp-hint-tag">💡 ${UI.hintTag}</span> ${hintHtml(step, r.why, r)}`;
       if (wrong >= SHOW_ME_AFTER) showMe.hidden = false;
+      /* ew10 fix round, opt-in (a sticky sketch): the "Nog nie" line and the
+         hint are brought on screen under the sketch, no swipe needed */
+      stickReveal(host, [fb, hint, showMe]);
     },
   });
   showMe.addEventListener("click", () => {
@@ -688,6 +754,8 @@ function mountPick(host, step, onDone) {
       fb.textContent = UI.notYet;
       hint.hidden = false;
       hint.innerHTML = `<span class="dp-hint-tag">💡 ${UI.hintTag}</span> ${esc(o.hint || "")}`;
+      /* ew10 fix round, opt-in (a sticky sketch): as a build step's hint */
+      stickReveal(host, [fb, hint]);
     });
     opts.appendChild(b);
   });
