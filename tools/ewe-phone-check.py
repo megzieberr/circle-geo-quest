@@ -150,7 +150,14 @@ What it does (all against a LOCAL copy, never the live class):
     Q2, the matching half of the rule from Q3 on; the sketch unchanged), the
     right tap (Fold 2; the two tints or the two thick cut sides; the arcs
     stay; no label moves), every card (ew2's or ew1's, the question's own
-    letters, the rule's half), the end screen, the saving (80 XP). In the
+    letters, the rule's half), the end screen, the saving (80 XP).
+    Foreman review 2026-10-03: every arc at least 4 px clear of every ∥
+    arrow; a nested pair (whole side over its piece) measured outside the
+    piece's corner zone (the round's arcNest.end of the piece's chord);
+    from Q3 the wrong-tap hint ends on the rule's half, without its own
+    last sentence; the card names first the Δ whose sides are the tops;
+    no hint, ✓ line, intro, card tip or takeaway ends on one word alone on
+    its last line; the sag on screen of every arc kind is printed. In the
     375 x 667 fold walk it REPORTS for each question the px of the sketch
     on screen with the fractions and both buttons, at the start, no scroll.
     PNGs start "ew8-".
@@ -1964,7 +1971,7 @@ try:
             a.pts.forEach(q => { const s = (q.x - P0.x) * ux + (q.y - P0.y) * uy, n = (q.x - P0.x) * nx + (q.y - P0.y) * ny;
               past = Math.max(past, -s * sc, (s - len) * sc); inward = Math.max(inward, -n * sc); sag = Math.max(sag, n); });
             Object.assign(a, { len, ux, uy, nx, ny, sag });
-            out.bow.push({ arc: a.name, tone: a.tone, lvl: a.lvl, past: r2(past), inward: r2(inward), sag: r1(sag * sc), away: pi >= 0 ? 'the other ∥ line' : 'the Δ' });
+            out.bow.push({ arc: a.name, tone: a.tone, lvl: a.lvl, past: r2(past), inward: r2(inward), sag: r1(sag * sc), len: r1(len * sc), par: pi >= 0, away: pi >= 0 ? 'the other ∥ line' : 'the Δ' });
             if (past > 0.5) out.collisions.push(`arc ${a.name} runs ${past.toFixed(2)}px past an end of its side`);
             if (inward > 0.5) out.collisions.push(`arc ${a.name} bulges ${inward.toFixed(2)}px towards ${pi >= 0 ? 'the other ∥ line' : 'the inside of the Δ'}`);
             if (a.pts.some(q => q.x < 0 || q.y < 0 || q.x > vb.width || q.y > vb.height)) out.collisions.push(`arc ${a.name} leaves the sketch`);
@@ -1978,16 +1985,14 @@ try:
           out.labTight = lt ? { d: r1(lt.d), what: lt.what } : null;
           if (lt && lt.d < 4) out.collisions.push(`label clearance ${lt.d.toFixed(1)}px < 4 (${lt.what})`);
           /* every two arcs at least 4 px (screen) apart, outside the corner zone
-             (15 sketch units) around a point they both start from */
+             around a point they both start from: 15 sketch units, or for a
+             whole side's arc over its piece's arc (nested) arg.nestEnd of the
+             piece's chord (the zone js/ewe-kit.js nestH lets them converge in,
+             foreman review 2026-10-03) */
           const toPoly = (q, P) => { let m = Infinity; for (let i = 1; i < P.length; i++) m = Math.min(m, segD(q.x, q.y, [P[i - 1].x, P[i - 1].y, P[i].x, P[i].y])); return m; };
           let aa = null;
           arcs.forEach((a, i) => arcs.forEach((b, j) => { if (j <= i) return;
             const shared = a.ends.filter(e => b.ends.some(f => hyp(e, f) < 0.6));
-            const far = q => shared.every(s => hyp(q, s) >= 15);
-            const pa = a.pts.filter(far), pb = b.pts.filter(far);
-            if (!pa.length || !pb.length) return;
-            const d = Math.min(Math.min(...pa.map(q => toPoly(q, b.pts))), Math.min(...pb.map(q => toPoly(q, a.pts)))) * sc;
-            if (!aa || d < aa.d) aa = { d, what: `${a.name} and ${b.name}${shared.length ? ' (from ' + shared.map(nameAt).join('') + ')' : ''}` };
             /* nested: on one line, the same side, from one point, the shorter
                chord inside the longer (two pieces side by side are not nested) */
             const [lo_, sh_] = a.len > b.len ? [a, b] : [b, a];
@@ -1995,10 +2000,24 @@ try:
             const coll = Math.abs(a.ux * b.uy - a.uy * b.ux) < 1e-3 && a.nx * b.nx + a.ny * b.ny > 0.99 && shared.length === 1
               && Math.abs((b.ends[0].x - a.ends[0].x) * a.nx + (b.ends[0].y - a.ends[0].y) * a.ny) < 0.6
               && sh_.ends.every(q => along(q) > -0.6 && along(q) < lo_.len + 0.6);
+            const zone = coll ? Math.max(15, arg.nestEnd * sh_.len) : 15;
+            const far = q => shared.every(s => hyp(q, s) >= zone);
+            const pa = a.pts.filter(far), pb = b.pts.filter(far);
+            if (!pa.length || !pb.length) return;
+            const d = Math.min(Math.min(...pa.map(q => toPoly(q, b.pts))), Math.min(...pb.map(q => toPoly(q, a.pts)))) * sc;
+            if (!aa || d < aa.d) aa = { d, what: `${a.name} and ${b.name}${shared.length ? ' (from ' + shared.map(nameAt).join('') + (coll ? `, zone ${r1(zone * sc)}px` : '') + ')' : ''}` };
             if (coll) { const [o, n] = [lo_, sh_]; out.nested.push({ outer: o.name, inner: n.name, at: shared.map(nameAt).join(''), outerSag: r1(o.sag * sc), innerSag: r1(n.sag * sc), gap: r1(d) });
               if (!(o.sag > n.sag + 3)) out.collisions.push(`nested arcs ${o.name} over ${n.name} not at different heights`); }
             if (d < 4) out.collisions.push(`arcs ${a.name} and ${b.name} ${d.toFixed(1)}px apart (< 4)`); }));
           out.arcTight = aa ? { d: r1(aa.d), what: aa.what } : null;
+          /* foreman review 2026-10-03: every arc at least 4 px (screen) clear of
+             every ∥ arrow (the arc's line to the arrow's lines) */
+          const chev = [...svg.querySelectorAll('path.ewe-par')].map(p => p.getAttribute('d').trim().split(/\s*[ML]\s*/).filter(Boolean).map(t => { const [x, y] = t.trim().split(/\s+/).map(Number); return { x, y }; }));
+          let aw = null;
+          arcs.forEach(a => chev.forEach(c => { const d = Math.min(Math.min(...a.pts.map(q => toPoly(q, c))), Math.min(...c.map(q => toPoly(q, a.pts)))) * sc;
+            if (!aw || d < aw.d) aw = { d, what: `arc ${a.name}` }; }));
+          out.arrowTight = aw ? { d: r1(aw.d), what: aw.what } : null;
+          if (aw && aw.d < 4) out.collisions.push(`arc-arrow clearance ${aw.d.toFixed(1)}px < 4 (${aw.what})`);
           /* every point label outside the whole Δ (so never inside a tint) */
           const inside = (x, y) => { const s1 = (B.x - A.x) * (y - A.y) - (B.y - A.y) * (x - A.x), s2 = (C.x - B.x) * (y - B.y) - (C.y - B.y) * (x - B.x), s3 = (A.x - C.x) * (y - C.y) - (A.y - C.y) * (x - C.x);
             return (s1 > 0 && s2 > 0 && s3 > 0) || (s1 < 0 && s2 < 0 && s3 < 0); };
@@ -2042,13 +2061,24 @@ try:
                    right: Math.round(Math.max(...[...c.querySelectorAll('.ewl, .ewe-write-tip')].map(e => e.getBoundingClientRect().right))), vw,
                    tip: (c.querySelector('.ewe-write-tip') || {}).textContent ? c.querySelector('.ewe-write-tip').textContent.replace(/ /g, ' ') : '' }; }"""
         RULE_ON_JS = "() => document.querySelector('.ewe-play').innerText.includes('Staan daar')"
+        NEST_END8 = page.evaluate("async () => (await import('./js/rounds/ewe8-driehoeke-of-sye.js')).round.eweQuestions[1].sketch.arcNest.end")
+        # foreman review 2026-10-03: a text never ends on one word alone on its
+        # last line (the last two words on one line), measured on the screen
+        LAST2_JS = r"""(sel) => { const el = document.querySelector(sel); if (!el || !el.getClientRects().length) return null;
+          const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); const words = []; let t;
+          while ((t = w.nextNode())) { const re = /[^\s\u00A0]+/g; let m; while ((m = re.exec(t.textContent))) words.push([t, m.index, m.index + m[0].length, m[0]]); }
+          if (words.length < 2) return { ok: true, last: words.map(x => x[3]).join(' ') };
+          const top = ([n, a, b]) => { const r = document.createRange(); r.setStart(n, a); r.setEnd(n, b); const rs = [...r.getClientRects()].filter(q => q.width > 0); return rs.length ? rs[rs.length - 1].top : NaN; };
+          const [p, q] = words.slice(-2);
+          return { ok: Math.abs(top(p) - top(q)) < 2, last: p[3] + ' ' + q[3] }; }"""
+        ew8_orphans = []
         for qi, q in enumerate(data8["qs"]):
             n = qi + 1
             P = f"ew8 Q{n}"
             T = q["tri"]
             BIG, SMALL = "".join(T["big"]), "".join(T["small"])
             tri = q["kind"] == "driehoeke"
-            arg = {"big": T["big"], "par": T["par"]}
+            arg = {"big": T["big"], "par": T["par"], "nestEnd": NEST_END8}
             page.wait_for_selector(f".ewe-q[data-q='{q['id']}']")
             lab = page.evaluate(LABELS_JS)
             label_rows.append((q["id"], lab))
@@ -2081,13 +2111,22 @@ try:
             got_h = hint_text()
             half = RULE_SIDES if tri is False else RULE_TRI
             rule_ok = (half in wrong["hint"]) if n >= 3 else ("Staan daar" not in wrong["hint"])
-            kind_ok = ("Dit is sye in verhouding." in wrong["hint"] and "STUKKE" in wrong["hint"]) if not tri else ("Dit is twee gelykvormige driehoeke." in wrong["hint"] and "∥ lyne" in wrong["hint"])
-            check8(f"{P}: the wrong tap '{wrong['text']}' turns red, both buttons stay, and its hint shows" + (" with the matching half of the rule" if n >= 3 else ", no rule yet (Q1 and Q2)") + f" ('{wrong['hint'][:70]}…')",
+            # foreman review 2026-10-03: Q1 and Q2 end on the hint's own last
+            # sentence; from Q3 the rule half carries the conclusion and the
+            # hint's own sentence is gone (it said the answer twice)
+            own = "Dit is twee gelykvormige driehoeke." if tri else "Dit is sye in verhouding."
+            ends = ("Dan is dit twee gelykvormige driehoeke." if tri else "Dan is dit sye in verhouding.") if n >= 3 else own
+            kind_ok = ("∥ lyne" in wrong["hint"] if tri else "STUKKE" in wrong["hint"]) and wrong["hint"].endswith(ends) and ((own in wrong["hint"]) == (n <= 2))
+            check8(f"{P}: the wrong tap '{wrong['text']}' turns red, both buttons stay, and its hint shows" + (" with the matching half of the rule, which carries the conclusion (no '" + own + "' of its own)" if n >= 3 else ", no rule yet (Q1 and Q2), ending on '" + own + "'") + f" ('{wrong['hint'][:70]}…')",
                    b1["red"] == [wrong["text"]] and b1["vis"] == b0["texts"] and wrong["hint"] in got_h and rule_ok and kind_ok and has(page, ".ewe-step:last-child .ewe-fb.bad"))
             a1 = page.evaluate(ARCS8_JS, arg)
             check8(f"{P}: after the wrong tap the sketch is unchanged (no tints, no thick side, the same arcs, no label moved)",
                    not a1["tints"] and not a1["thick"] and sorted(a1["arcs"]) == sorted(a0["arcs"]) and a1["at"] == a0["at"])
             if n <= 2: check8(f"{P}: still no rule text on the screen after the wrong tap (Q1 and Q2)", not page.evaluate(RULE_ON_JS))
+            o = page.evaluate(LAST2_JS, ".ewe-step:last-child .ewe-hint"); ew8_orphans.append((P, "hint", o))
+            check8(f"{P}: the hint's last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
+            o = page.evaluate(LAST2_JS, ".ewe-intro"); ew8_orphans.append((P, "intro", o))
+            check8(f"{P}: the intro's last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
             shot(page, f"ew8-q{n}-b-wrong.png")
             # the right tap
             click_btn(page, ".ewe-step:last-child .ewe-opt", right["text"])
@@ -2095,6 +2134,8 @@ try:
             b2 = page.evaluate(BTN8_JS)
             check8(f"{P}: Fold 2, only '{right['text']}' stays, green, with its ✓ line '{q['okLine']}'",
                    b2["vis"] == [right["text"]] and b2["green"] == [right["text"]] and not b2["red"] and q["okLine"] in b2["fb"] and b2["fb"].startswith("✓"))
+            o = page.evaluate(LAST2_JS, ".ewe-steps > .ewe-step:nth-child(1) .ewe-fb"); ew8_orphans.append((P, "✓ line", o))
+            check8(f"{P}: the ✓ line's last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
             a2 = page.evaluate(ARCS8_JS, arg)
             l2 = page.evaluate(LABELS_JS)
             label_rows.append((q["id"] + " after the tap", l2))
@@ -2112,12 +2153,17 @@ try:
             # the card
             card = page.evaluate(CARD8_JS)
             ew8_cards.append((P, card))
+            # foreman review 2026-10-03: the Δ whose sides are the TOPS is named first
+            big_top = set(q["fracs"][0][0]) <= set(T["big"]) and not set(q["fracs"][0][0]) <= set(T["small"])
+            FIRST_SIM = f"Δ {BIG} ||| Δ {SMALL}" if big_top else f"Δ {SMALL} ||| Δ {BIG}"
+            o = page.evaluate(LAST2_JS, ".ewe-write-tip"); ew8_orphans.append((P, "card tip", o))
+            check8(f"{P}: the card tip's last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
             want_rule = RULE_TRI if tri else RULE_SIDES
             ok = (bool(card) and card["fr"] == q["fracs"] and card["toned"] == 0 and card["wrapped"] == 0 and card["right"] <= card["vw"]
                   and card["rs"] == f"({q['write']['reason']})" and card["rsRows"] == 1 and card["tip"] == q["write"]["tip"] and card["tip"].startswith(want_rule)
-                  and (card["sim"] == f"Δ {SMALL} ||| Δ {BIG}" and card["simRs"] == "(∠∠∠)" and card["rs"] == "(uit |||)" if tri
+                  and (card["sim"] == FIRST_SIM and card["simRs"] == "(∠∠∠)" and card["rs"] == "(uit |||)" if tri
                        else card["sim"] is None and card["rs"] == f"(lyn ∥ een sy v. Δ, {T['par'][0]} ∥ {T['par'][1]})"))
-            check8(f"{P}: card = " + (f"ew2's card, 'Δ {SMALL} ||| Δ {BIG} (∠∠∠)' then " if tri else "ew1's card, ") + f"{' = '.join(a + '/' + b for a, b in card['fr']) if card else '?'} {card and card['rs']} ({card and card['units']} row(s), the reason on one line), then the rule's half '{want_rule}…'; inside 375 px", ok)
+            check8(f"{P}: card = " + (f"ew2's card, '{FIRST_SIM} (∠∠∠)' (the tops' Δ first) then " if tri else "ew1's card, ") + f"{' = '.join(a + '/' + b for a, b in card['fr']) if card else '?'} {card and card['rs']} ({card and card['units']} row(s), the reason on one line), then the rule's half '{want_rule}…'; inside 375 px", ok)
             if not ok: print("   card:", card)
             measure(page, f"{P}: Só skryf jy dit card")
             page.evaluate("document.querySelector('.ewe-write').scrollIntoView()")
@@ -2129,6 +2175,8 @@ try:
         tk8 = page.evaluate("() => { const t = document.querySelector('.ewe-end .ewe-takeaway'); return t ? { text: t.textContent.replace(/\\u00A0/g, ' '), cards: t.querySelectorAll('.ewe-tk-card').length, sims: t.querySelectorAll('.ewl-sim').length, fr: t.querySelectorAll('.ewf').length } : null; }")
         check8(f"ew8 end screen: the whole rule, then Q2's card (Δ ADE ||| Δ ABC, three fractions, uit |||) and Q1's (two fractions, lyn ∥ een sy v. Δ), no generic well-done line ({tk8})",
                bool(tk8) and data8["takeaway"] in tk8["text"] and tk8["cards"] == 2 and tk8["sims"] == 1 and tk8["fr"] == 5 and "Goed gedaan" not in tk8["text"])
+        o = page.evaluate(LAST2_JS, ".ewe-end .ewe-takeaway .ewe-write-text"); ew8_orphans.append(("ew8 end", "takeaway", o))
+        check8(f"ew8 end screen: the takeaway's last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
         shot(page, "ew8-end-of-round.png")
         saved8 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
             const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew8');
@@ -2726,17 +2774,31 @@ print("\new8 CHECKS")
 print(f"  {'ok  ' if ew8_locked_before else 'FAIL'} ew8 locked on the map before ew7 is passed")
 for name, ok in ew8_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
 print(f"  {sum(1 for _, ok in ew8_checks if ok) + (1 if ew8_locked_before else 0)} of {len(ew8_checks) + 1} ew8 checks pass")
-print("  ew8 arcs (screen px): each bow (past an end / towards the wrong side / sag), nested pairs (outer sag over inner sag, gap), the tightest label-to-arc and arc-to-arc clearances (at least 4; arcs from one point measured outside 15 sketch units around it)")
-lab_min = arc_min = None
+print("  ew8 arcs (screen px): each bow (past an end / towards the wrong side / sag), nested pairs (outer sag over inner sag, gap), the tightest label-to-arc, arc-to-arc and arc-to-arrow clearances (at least 4; arcs from one point measured outside 15 sketch units around it, a nested pair outside the piece's corner zone)")
+lab_min = arc_min = arw_min = None
 for P, stage, a in ew8_arcs:
     lt, at_ = a["labTight"], a["arcTight"]
     if lt and (lab_min is None or lt["d"] < lab_min[0]): lab_min = (lt["d"], f"{P} {stage}: {lt['what']}")
     if at_ and (arc_min is None or at_["d"] < arc_min[0]): arc_min = (at_["d"], f"{P} {stage}: {at_['what']}")
-    print(f"    {P:7} {stage:15} label-arc {lt['d'] if lt else '-'}px ({lt['what'] if lt else ''}); arc-arc {at_['d'] if at_ else '-'}px ({at_['what'] if at_ else ''})")
+    aw_ = a.get("arrowTight")
+    if aw_ and (arw_min is None or aw_["d"] < arw_min[0]): arw_min = (aw_["d"], f"{P} {stage}: {aw_['what']}")
+    print(f"    {P:7} {stage:15} label-arc {lt['d'] if lt else '-'}px ({lt['what'] if lt else ''}); arc-arc {at_['d'] if at_ else '-'}px ({at_['what'] if at_ else ''}); arc-arrow {aw_['d'] if aw_ else '-'}px ({aw_['what'] if aw_ else ''})")
     print("            " + "; ".join(f"{b['arc']} k{b['tone']} L{b['lvl']} past {b['past']} wrong-side {b['inward']} sag {b['sag']} (away from {b['away']})" for b in a["bow"]))
     if a["nested"]: print("            nested: " + "; ".join(f"{x['outer']} over {x['inner']} from {x['at']}: sag {x['outerSag']} over {x['innerSag']}, gap {x['gap']}" for x in a["nested"]))
 if lab_min: print(f"  SMALLEST label-to-arc clearance {lab_min[0]}px ({lab_min[1]})")
 if arc_min: print(f"  SMALLEST arc-to-arc clearance {arc_min[0]}px ({arc_min[1]})")
+if arw_min: print(f"  SMALLEST arc-to-arrow clearance {arw_min[0]}px ({arw_min[1]})")
+print("  ew8 sag on screen by arc kind (px; piece / whole side / short ∥ line / long ∥ line)")
+for P, stage, a in ew8_arcs:
+    if stage != "before the tap": continue
+    bw = a["bow"]
+    par = sorted([b for b in bw if b["par"]], key=lambda b: b["len"])
+    kinds = {"piece": [b for b in bw if b["lvl"] == 1 and not b["par"]], "whole": [b for b in bw if b["lvl"] == 2],
+             "short ∥": par[:1] if len(par) == 2 else [], "long ∥": par[1:] if len(par) == 2 else []}
+    print(f"    {P:7} " + "; ".join(f"{k} " + (", ".join(f"{b['arc']} {b['sag']}" for b in v) or "-") for k, v in kinds.items()))
+print("  ew8 last lines (the last two words on one line)")
+for P, what, o in ew8_orphans:
+    print(f"    {'ok  ' if o and o['ok'] else 'FAIL'} {P:7} {what:9} ends '{o and o['last']}'")
 print("  ew8 cards at 375 px")
 for P, c in ew8_cards:
     if c: print(f"    {P:7} {(c['sim'] + ' ' + c['simRs'] + ' | ') if c['sim'] else ''}{' = '.join(a + '/' + b for a, b in c['fr'])} {c['rs']}   rows {c['units']}, right {c['right']}px of {c['vw']}")

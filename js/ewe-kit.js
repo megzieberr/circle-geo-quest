@@ -452,7 +452,12 @@ export function shuffle(xs) {
              its place in the fractions, top or bottom) and `away` (["B",
              "C"]: bulge away from those points, for an arc over a ∥ line)
      arcNest true: a whole side's arc is nested outside the piece arc it
-             shares a point with (nestH above)
+             shares a point with (nestH above). As an object { end, gap,
+             lab } (foreman review 2026-10-03): the smallest such bow, with
+             the corner zone `end` of the piece's chord, then raised only as
+             far as the cut point's label under it needs (`lab` clear)
+     sideArcs entries may also carry `sag` (a level-1 arc's own sag)
+     labOut  { Q: 3 }   that point's label set a little further out
      thick   [["A","B"], …]   those sides drawn thick
      edge    extra margin (sketch units) on every side of the fit with arcs
      labGap  extra room (sketch units) every point label keeps from the
@@ -468,6 +473,9 @@ const N = v => Math.round(v * 10) / 10;
    centre) plus the dot plus a small gap must clear the point along the
    chosen direction; never closer than the old 14. */
 const BOX_HW = 5.5 + 2.6 + 2, BOX_UP = 10 + 2.6 + 2, BOX_DN = 8 + 2.6 + 2;
+/* ew8: a point label's own box around its centre (half-width, up, down),
+   and the most steps (sketch units) a whole side's bow is raised for it */
+const LAB_HW = 5.5, LAB_UP = 10, LAB_DN = 8, LIFT_MAX = 30;
 function boxRadius(c, s) {
   let t = Infinity;
   if (Math.abs(c) > 1e-6) t = Math.min(t, BOX_HW / Math.abs(c));
@@ -519,7 +527,10 @@ function arcGeo(spec, P) {
     const [rx, ry] = a.away ? [a.away.reduce((s, k) => s + P[k].x, 0) / a.away.length, a.away.reduce((s, k) => s + P[k].y, 0) / a.away.length] : [cx, cy];
     if (((F.x + T.x) / 2 - rx) * nx + ((F.y + T.y) / 2 - ry) * ny < 0) { nx = -nx; ny = -ny; }
     const w = AL_CW * String(a.label || "").length;
-    return { a, F, L, ux, uy, nx, ny, w, ext: Math.abs(nx) * w / 2 + Math.abs(ny) * AL_HH, level: a.level === 2 ? 2 : 1, h: SARC_H1 };
+    /* ew8, opt-in: `sag` sets a level-1 arc's own sag (sketch units), so an
+       arc over a ∥ line bows well clear of its ∥ arrow; without it SARC_H1 */
+    const level = a.level === 2 ? 2 : 1;
+    return { a, F, L, ux, uy, nx, ny, w, ext: Math.abs(nx) * w / 2 + Math.abs(ny) * AL_HH, level, h: level === 1 && a.sag ? a.sag : SARC_H1 };
   });
   const at = (g, u, n) => ({ x: g.F.x + u * g.L * g.ux + n * g.nx, y: g.F.y + u * g.L * g.uy + n * g.ny });
   /* the bow's circle, in the side's own frame: along (0 at F, L at T), out */
@@ -535,13 +546,15 @@ function arcGeo(spec, P) {
       if (c.n > 0 && c.a > 0 && c.a < g.L) under.push(c);
     }));
     const clear = h => { const C = circ(g, h); return Math.min(Infinity, ...under.map(c => C.R - Math.hypot(c.a - C.ca, c.n - C.cn))); };
-    let lo = 2 * SARC_H1 + 8, hi = SARC_MAX * g.L;
+    /* ew8, opt-in (spec.arcNest as an object): no floor of its own, the
+       nesting below finds the smallest bow that clears its piece arc */
+    let lo = typeof spec.arcNest === "object" ? SARC_H1 : 2 * SARC_H1 + 8, hi = SARC_MAX * g.L;
     if (hi < lo) hi = lo;
     if (clear(lo) >= SARC_GAP) hi = lo;
     else if (clear(hi) < SARC_GAP) lo = hi;
     for (let it = 0; it < 40 && hi - lo > 0.05; it++) { const m = (lo + hi) / 2; if (clear(m) >= SARC_GAP) hi = m; else lo = m; }
     g.h = hi;
-    if (spec.arcNest) g.h = nestH(g, G, g.h);
+    if (spec.arcNest) g.h = nestH(g, G, g.h, spec.arcNest);
     /* its label, outside the bow on the bow's own radius at `u` */
     const C = circ(g, g.h);
     const labAt = u => {
@@ -571,6 +584,10 @@ function arcGeo(spec, P) {
     }
     g.lab = { x: best.x, y: best.y };
   });
+  /* ew8, opt-in (spec._lift, set only by sketchSvg's label pass below): a
+     whole side's bow raised by that much, so the label of the cut point
+     under it fits */
+  if (spec._lift) G.forEach((g, i) => { if (g.level === 2 && spec._lift[i]) g.h = Math.min(g.h + spec._lift[i], Math.max(g.h, SARC_MAX * g.L)); });
   G.forEach(g => { g.pts = bowPts(g, g.h); });
   return G;
 }
@@ -591,9 +608,17 @@ function bowPts(g, h) {
    shared point, where two arcs from one point must meet). Two arcs from
    the same point so get different heights, the smaller inside. The search
    only ever raises h (a higher bow on the same chord lies above the lower
-   one everywhere), never past SARC_MAX of the chord. */
+   one everywhere), never past SARC_MAX of the chord.
+   Foreman review 2026-10-03, opt-in (arcNest as an object { end, gap }):
+   the corner zone grows with the piece, `end` of the piece's chord (never
+   under NEST_END), and the bow need only be `gap` clear of the piece arc
+   outside it. The search then starts at the piece's own sag plus `gap`, so
+   the whole side gets the SMALLEST bow that clears its piece along the
+   middle stretch, instead of a big one forced by the meeting point. */
 const NEST_END = 15, NEST_GAP = 5;
-function nestH(g, G, h0) {
+function nestH(g, G, h0, opt) {
+  const o = typeof opt === "object" ? opt : null;
+  const GAP = o ? o.gap : NEST_GAP;
   const T = { x: g.F.x + g.L * g.ux, y: g.F.y + g.L * g.uy };
   const same = (p, q) => Math.hypot(p.x - q.x, p.y - q.y) < 1e-6;
   const onSide = p => { const a = (p.x - g.F.x) * g.ux + (p.y - g.F.y) * g.uy, n = (p.x - g.F.x) * g.nx + (p.y - g.F.y) * g.ny; return Math.abs(n) < 1e-6 && a > -1e-6 && a < g.L + 1e-6; };
@@ -607,7 +632,8 @@ function nestH(g, G, h0) {
   const parts = inner.map(i => {
     const iT = { x: i.F.x + i.L * i.ux, y: i.F.y + i.L * i.uy };
     const shared = [g.F, T].filter(p => same(p, i.F) || same(p, iT));
-    const far = q => shared.every(s => Math.hypot(q.x - s.x, q.y - s.y) >= NEST_END);
+    const end = o ? Math.max(NEST_END, o.end * i.L) : NEST_END;
+    const far = q => shared.every(s => Math.hypot(q.x - s.x, q.y - s.y) >= end);
     const all = bowPts(i, i.h);
     return { all, pts: all.filter(far), far };
   });
@@ -620,10 +646,11 @@ function nestH(g, G, h0) {
     });
     return m;
   };
+  if (o) h0 = Math.max(h0, ...inner.map(i => i.h + GAP));
   let lo = h0, hi = Math.max(h0, SARC_MAX * g.L);
-  if (gap(lo) >= NEST_GAP) return lo;
-  if (gap(hi) < NEST_GAP) return hi;
-  for (let it = 0; it < 40 && hi - lo > 0.05; it++) { const m = (lo + hi) / 2; if (gap(m) >= NEST_GAP) hi = m; else lo = m; }
+  if (gap(lo) >= GAP) return lo;
+  if (gap(hi) < GAP) return hi;
+  for (let it = 0; it < 40 && hi - lo > 0.05; it++) { const m = (lo + hi) / 2; if (gap(m) >= GAP) hi = m; else lo = m; }
   return hi;
 }
 /* the fit with room for the arcs: start from the usual margins and widen
@@ -810,7 +837,9 @@ export function sketchSvg(spec) {
     const out0 = Math.atan2(p.y - cy, p.x - cx);
     for (let i = 0; i < 36; i++) {
       const ang = i * Math.PI / 18;
-      const r = spec.labBox ? boxRadius(Math.cos(ang), Math.sin(ang)) : LAB_R;
+      /* ew8, opt-in: `labOut: { Q: 3 }` sets that point's label a little further
+         out (sketch units), for a label in the notch where two arcs meet */
+      const r = (spec.labBox ? boxRadius(Math.cos(ang), Math.sin(ang)) : LAB_R) + ((spec.labOut && spec.labOut[k]) || 0);
       const lx = p.x + r * Math.cos(ang), ly = p.y + r * Math.sin(ang);
       let score = Infinity;
       obst.forEach(([a, b]) => { score = Math.min(score, segDist(lx, ly, a, b) - lg); });
@@ -827,6 +856,35 @@ export function sketchSvg(spec) {
     placed.push(best);
     labels.push({ k, ...best });
   });
+  /* ew8, opt-in (spec.arcNest as an object with `lab`): the whole side's bow
+     is the smallest that clears its piece arc, which can leave too little
+     room for the label of the cut point under it. Then that bow alone is
+     raised a step and the sketch laid out again, until every point label's
+     box is `lab` clear of every whole-side bow. Pure: the same spec always
+     gives the same lifts, so the sketch after the tap matches. */
+  if (arcs && spec.arcNest && typeof spec.arcNest === "object" && spec.arcNest.lab) {
+    const need = spec.arcNest.lab, lift = { ...(spec._lift || {}) };
+    let more = false;
+    arcs.forEach((g, i) => {
+      if (g.level !== 2 || g.a.hidden) return;
+      /* only the labels of the points strictly inside this side (its cut point) */
+      const inside = l => { const p = P[l.k], a = (p.x - g.F.x) * g.ux + (p.y - g.F.y) * g.uy, n = (p.x - g.F.x) * g.nx + (p.y - g.F.y) * g.ny;
+        return Math.abs(n) < 1e-6 && a > 1 && a < g.L - 1; };
+      let d = Infinity;
+      labels.filter(inside).forEach(l => {
+        const b = { x0: l.x - LAB_HW, x1: l.x + LAB_HW, y0: l.y - LAB_UP, y1: l.y + LAB_DN };
+        const box = q => Math.hypot(Math.max(0, b.x0 - q.x, q.x - b.x1), Math.max(0, b.y0 - q.y, q.y - b.y1));
+        g.pts.forEach(q => { d = Math.min(d, box(q)); });
+        /* `line`: as clear of the side itself (less its own `line` short),
+           when that side is drawn thick after the tap ("sye in verhouding");
+           a higher bow lets the label sit higher */
+        if (spec.arcNest.line) for (let k = 0; k <= 80; k++) d = Math.min(d, box({ x: g.F.x + g.L * g.ux * k / 80, y: g.F.y + g.L * g.uy * k / 80 }) + need - spec.arcNest.line);
+      });
+      /* a step of the shortfall (at least half a unit), so it settles in a few passes */
+      if (d < need && (lift[i] || 0) < LIFT_MAX) { lift[i] = (lift[i] || 0) + Math.max(0.5, Math.ceil((need - d) * 2) / 2); more = true; }
+    });
+    if (more) return sketchSvg({ ...spec, _lift: lift });
+  }
 
   /* ew3: the "⊥h" label beside the dotted height. It is two glyphs wide, so
      its score is taken at its centre AND at both ends; it tries both sides

@@ -1058,6 +1058,30 @@ for (const q of round8.eweQuestions) {
     });
     match = sameTop && matching ? `tops ${tops[0]}, bottoms ${bots[0]}, matching` : "NOT matching";
     if (!(sameTop && matching)) err.push("a top is not a side of one Δ with the matching side of the other below it");
+    /* Foreman review 2026-10-03: the card's similarity line names FIRST the
+       Δ whose sides are the tops. Read "Δ XYZ ||| Δ UVW" off the card: X↔U,
+       Y↔V, Z↔W must be the homothety's pairs (corners in matching order),
+       every top a side of the first Δ and the bottom under it the side its
+       corners map to in the second */
+    const sim = String((q.write && q.write.sim) || "").replace(/ /g, " ").match(/^Δ (\S+) \|\|\| Δ (\S+)$/);
+    let order = "NO CARD LINE";
+    if (sim) {
+      const [first, second] = [[...sim[1]], [...sim[2]]];
+      const firstSet = first.every(k => small.has(k)) ? "small" : first.every(k => big.has(k)) ? "big" : "none";
+      const secondOk = second.every(k => (firstSet === "small" ? big : small).has(k));
+      /* the homothety pairs the corners: small X -> big U, place by place */
+      const paired = first.length === 3 && second.length === 3 && first.every((k, i) => {
+        const [s, g] = firstSet === "small" ? [k, second[i]] : [second[i], k];
+        return near(image(s), P[g]);
+      });
+      const map = Object.fromEntries(first.map((k, i) => [k, second[i]]));
+      const topsFirst = F.fracs.every(([a, b]) => first.includes(a[0]) && first.includes(a[1])
+        && ((map[a[0]] === b[0] && map[a[1]] === b[1]) || (map[a[0]] === b[1] && map[a[1]] === b[0])));
+      const ok = firstSet === tops[0] && secondOk && paired && topsFirst;
+      order = `${ok ? "" : "NOT "}first Δ ${sim[1]} (${firstSet}) = the tops' Δ, corners paired`;
+      if (!ok) err.push(`the card names Δ ${sim[1]} first, but the tops are sides of the ${tops[0]} Δ (or the corners do not pair up)`);
+    } else err.push("a triangles question without its similarity line on the card");
+    match += `; ${order}`;
   }
   /* only now: the round's own answer */
   const step = q.steps[0];
