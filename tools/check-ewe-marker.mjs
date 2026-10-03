@@ -56,6 +56,14 @@
    tries EVERY fill of every build step against "the numbers are the
    lowest-terms parts, in the asked order".
 
+   ew8 (the fractions are built: two triangles, or sides in ratio?) at the
+   very end: no fills. From each figure's coordinates and drawn lines alone
+   the oracle names every segment of the shown fractions (a ∥ line, a whole
+   side, a piece at the corner or a bottom piece), decides the kind, proves
+   every shown equality true and, for two triangles, that every top and its
+   bottom are matching sides of the two Δs; then compares with the button
+   the round marks right.
+
    Run: node tools/check-ewe-marker.mjs        (exit 1 on any disagreement) */
 import { markRatio, segLength, dist } from "../js/ewe-core.js";
 import { round, TRIANGLES } from "../js/rounds/ewe1-watter-sye.js";
@@ -65,6 +73,7 @@ import { round as round4, SKETCHES as SKETCHES4 } from "../js/rounds/ewe4-deel-n
 import { round as round5, SKETCHES as SKETCHES5 } from "../js/rounds/ewe5-watter-een.js";
 import { round as round6, SKETCHES as SKETCHES6 } from "../js/rounds/ewe6-die-trapesium.js";
 import { round as round7, SKETCHES as SKETCHES7 } from "../js/rounds/ewe7-vreemde-formaat.js";
+import { round as round8, FIGS as FIGS8 } from "../js/rounds/ewe8-driehoeke-of-sye.js";
 
 const REL = 1e-9;             // "equal" for lengths that are equal by construction
 const GAP = 1e-3;             // anything closer than this that is NOT forced is an accident
@@ -971,5 +980,106 @@ for (const r of rows6) {
 }
 console.log(`TOTAL                   ${String(T6).padStart(11)}  ${String(A6).padStart(8)}  ${String(R6).padStart(8)}  ${String(D6).padStart(13)}`);
 
+/* ---------------- ew8: "Driehoeke of sye?" ----------------
+   No fills: one tap per question. The ew8 ORACLE, written from her rule
+   and the figure, never from the round's answers. It reads only FIGS8 (the
+   coordinates, the lines drawn and the fractions shown, by their letters):
+     the figure  from the coordinates and the drawn lines alone: the two
+                 drawn lines that carry a point strictly inside them are the
+                 cut sides; their common end is the corner; the other two
+                 drawn lines are the ∥ lines, measured parallel
+     a segment   named in a fraction is a ∥ LINE (a drawn line with no point
+                 inside it, parallel to another drawn line), a PIECE (part of
+                 a cut side) at the corner or away from it (a BOTTOM piece),
+                 or a WHOLE cut side
+     the kind    a ∥ line and no bottom piece: "driehoeke"; a bottom piece
+                 and no ∥ line: "sye"; BOTH or NEITHER: a BUILD ERROR
+                 (neither is the both-ways form she ruled out)
+     true        every shown equality from the coordinates (rel 1e-9)
+     driehoeke   every top a side of one Δ, every bottom the MATCHING side
+                 of the other (the homothety at the corner maps one onto the
+                 other, measured), all tops from the same Δ
+   Then, and only then, the oracle's kind is compared with the option the
+   round marks right: 0 disagreements. */
+const rows8 = [];
+let D8 = 0;
+for (const q of round8.eweQuestions) {
+  const F = FIGS8[q.id], P = F.pts, names = Object.keys(P);
+  const near = (X, Y) => dist(X, Y) < 1e-9;
+  const between = (X, Y, Z) => lineDist(X, Y, Z) < 1e-9 && onSegment(X, Y, Z) && !near(Z, X) && !near(Z, Y);
+  const drawn = F.lines.map(([a, b]) => ({ a, b, inner: names.filter(k => k !== a && k !== b && between(P[a], P[b], P[k])) }));
+  const cutSides = drawn.filter(l => l.inner.length);
+  const parLines = drawn.filter(l => !l.inner.length);
+  const sinOf = (l, m) => { const u = vec(P[l.a], P[l.b]), v = vec(P[m.a], P[m.b]); return Math.abs(cross(u, v)) / (Math.hypot(u.x, u.y) * Math.hypot(v.x, v.y)); };
+  let err = [];
+  if (cutSides.length !== 2 || parLines.length !== 2) err.push(`${cutSides.length} cut sides, ${parLines.length} other lines`);
+  const corner = cutSides.length === 2 ? [cutSides[0].a, cutSides[0].b].find(k => k === cutSides[1].a || k === cutSides[1].b) : null;
+  if (!corner) err.push("no corner");
+  if (parLines.length === 2 && !(sinOf(parLines[0], parLines[1]) < 1e-9)) err.push("the two other lines are not ∥");
+  /* what each named segment is */
+  const sameSeg = (s, l) => (s[0] === l.a && s[1] === l.b) || (s[0] === l.b && s[1] === l.a);
+  const what = s => {
+    if (parLines.some(l => sameSeg(s, l))) return "par";
+    const side = cutSides.find(l => [l.a, l.b, ...l.inner].includes(s[0]) && [l.a, l.b, ...l.inner].includes(s[1]));
+    if (!side) return "unknown";
+    if (sameSeg(s, side)) return "whole";
+    return s.includes(corner) ? "corner-piece" : "bottom";
+  };
+  const segs = F.fracs.flat();
+  const kinds = segs.map(s => what(s));
+  const hasPar = kinds.includes("par"), hasBottom = kinds.includes("bottom");
+  if (kinds.includes("unknown")) err.push(`a segment not in the figure (${segs.filter((s, i) => kinds[i] === "unknown")})`);
+  const oracle = hasPar && !hasBottom ? "driehoeke" : hasBottom && !hasPar ? "sye" : "BUILD ERROR";
+  if (oracle === "BUILD ERROR") err.push(hasPar ? "a ∥ line AND a bottom piece" : "neither a ∥ line nor a bottom piece (the both-ways form)");
+  /* every shown equality true, from the coordinates */
+  const len = s => dist(P[s[0]], P[s[1]]);
+  const vals = F.fracs.map(([a, b]) => len(a) / len(b));
+  const rel = Math.max(...vals.map(v => Math.abs(v - vals[0]) / vals[0]));
+  if (!(rel < REL)) err.push(`the fractions are not equal (rel ${rel})`);
+  /* driehoeke: tops from one Δ, bottoms the matching sides of the other */
+  let match = "-";
+  if (oracle === "driehoeke" && corner) {
+    const cuts = cutSides.map(l => l.inner[0]), ends = cutSides.map(l => (l.a === corner ? l.b : l.a));
+    const small = new Set([corner, ...cuts]), big = new Set([corner, ...ends]);
+    const k = dist(P[corner], P[cuts[0]]) / dist(P[corner], P[ends[0]]);
+    const k2 = dist(P[corner], P[cuts[1]]) / dist(P[corner], P[ends[1]]);
+    if (!(Math.abs(k - k2) / k < REL)) err.push("the cut points are not at the same fraction of their sides");
+    /* the homothety at the corner, ratio k: small point -> big point */
+    const up = X => ({ x: P[corner].x + (P[X].x - P[corner].x) / k, y: P[corner].y + (P[X].y - P[corner].y) / k });
+    const image = X => (X === corner ? P[corner] : up(X));
+    const inTri = (s, set) => set.has(s[0]) && set.has(s[1]);
+    const triOf = s => (inTri(s, small) ? "small" : inTri(s, big) ? "big" : "none");
+    const tops = F.fracs.map(f => triOf(f[0])), bots = F.fracs.map(f => triOf(f[1]));
+    const sameTop = new Set(tops).size === 1 && !tops.includes("none") && new Set(bots).size === 1 && tops[0] !== bots[0];
+    const matching = F.fracs.every(([a, b]) => {
+      const [s, g] = triOf(a) === "small" ? [a, b] : [b, a];
+      const i0 = image(s[0]), i1 = image(s[1]);
+      return (near(i0, P[g[0]]) && near(i1, P[g[1]])) || (near(i0, P[g[1]]) && near(i1, P[g[0]]));
+    });
+    match = sameTop && matching ? `tops ${tops[0]}, bottoms ${bots[0]}, matching` : "NOT matching";
+    if (!(sameTop && matching)) err.push("a top is not a side of one Δ with the matching side of the other below it");
+  }
+  /* only now: the round's own answer */
+  const step = q.steps[0];
+  const marked = step.options.filter(o => o.correct).map(o => o.text);
+  const markedKind = marked.length === 1 ? (marked[0] === "gelykvormige driehoeke" ? "driehoeke" : marked[0] === "sye in verhouding" ? "sye" : "?") : "?";
+  const disagree = markedKind !== oracle ? 1 : 0;
+  if (disagree) err.push(`the round marks "${marked}", the figure says ${oracle}`);
+  /* every wrong option carries a hint, and both buttons are her two words */
+  if (step.options.map(o => o.text).join("|") !== "gelykvormige driehoeke|sye in verhouding") err.push("the buttons are not her two words in her order");
+  if (step.options.some(o => !o.correct && !o.hint)) err.push("a wrong option without a hint");
+  D8 += disagree;
+  problems += err.length;
+  err.forEach(e => console.error(`✗ ${q.id}: ${e}`));
+  rows8.push({ q: q.id, fr: F.fracs.map(([a, b]) => `${a}/${b}`).join(" = "), kinds: segs.map((s, i) => `${s}:${kinds[i]}`).join(" "), oracle, marked: markedKind, rel, match, disagree });
+}
+console.log("\new8 (no fills: the kind of each fraction set decided from the figure alone, then compared with the marked button)");
+console.log("question  fractions shown               oracle      marked      disagree  equal (rel)  triangles");
+for (const r of rows8) {
+  console.log(`${r.q.padEnd(9)} ${r.fr.padEnd(28)}  ${r.oracle.padEnd(10)}  ${r.marked.padEnd(10)}  ${String(r.disagree).padStart(8)}  ${r.rel.toExponential(1).padStart(11)}  ${r.match}`);
+  console.log(`          segments: ${r.kinds}`);
+}
+console.log(`TOTAL     ${rows8.length} questions, ${D8} disagreements, ${rows8.filter(r => r.oracle === "BUILD ERROR").length} build errors`);
+
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, every ew7 line is true in its own generic figure, and every ew6 fill agrees with the shoelace areas.");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, every ew7 line is true in its own generic figure, every ew6 fill agrees with the shoelace areas, and every ew8 question's marked button is the kind its figure gives, every shown equality true.");
