@@ -161,6 +161,26 @@ What it does (all against a LOCAL copy, never the live class):
     375 x 667 fold walk it REPORTS for each question the px of the sketch
     on screen with the fractions and both buttons, at the start, no scroll.
     PNGs start "ew8-".
+  * ew9 ("Lees dit af"): locked on the map until ew8 is passed; then ew8's
+    end screen leads on to it and the map unlocks it. The walk, every step
+    of every question at 375 px: the sketch at each state (colour 1 arcs
+    over the first Δ's two sides from the start, colour 2 after the first
+    pick; the Δ tinted in its colour after its pick; no label moves; her
+    p.55 kind: two equal-angle marks and her star, no other arc; every point
+    label outside the Δ and at least 4 px clear of every arc, every two
+    arcs 4 px apart outside a shared corner's zone (the two arcs over QR
+    too), every arc 4 px clear of the ∥ arrows, the marks and the star 4 px
+    clear of every label and the star of every arc); the given fractions
+    under the sketch (lit cells in the arcs' colours, then each Δ's name:
+    under its fraction in the within form, "bo:" / "onder:" beside the tops
+    and the bottoms in the across form, level with them); the picks (three
+    shapes in one row, each wrong one with its hint, Fold 2); the name build
+    (Δ ADE ||| Δ ☐☐☐, the chips the second Δ's letters, every wrong reason
+    with its hint, Fold 3) and the reason line (lyn ∥ een sy v. Δ ☐, ☐ ∥ ☐,
+    every wrong reason, the two ∥ lines accepted either way round); every
+    card measured; the end screen; the saving (60 XP). In the 375 x 667 fold
+    walk it REPORTS per step the px of the sketch on screen with the given
+    fractions and the step's options or boxes. PNGs start "ew9-".
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -1033,6 +1053,8 @@ try:
         if not ew7_locked_before: fail("ew7 should be locked before ew6 is passed")
         ew8_locked_before = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 8 && c[7].classList.contains('locked') && !c[7].querySelector('.btn'); }""")
         if not ew8_locked_before: fail("ew8 should be locked before ew7 is passed")
+        ew9_locked_before = page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')]; return c.length >= 9 && c[8].classList.contains('locked') && !c[8].querySelector('.btn'); }""")
+        if not ew9_locked_before: fail("ew9 should be locked before ew8 is passed")
 
         # ---------------- the ew4 walk ----------------
         page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[3].querySelector('.btn').click(); }")
@@ -1438,7 +1460,7 @@ try:
         page.evaluate("window.__APP__.go('ewes')")
         page.wait_for_selector(".round-card")
         check6("the map unlocks ew6 once ew5 is passed (ew5 ✓), and ew7 is still locked", page.evaluate("""() => { const c = [...document.querySelectorAll('.round-card')];
-            return c.length === 8 && c[4].classList.contains('done') && !c[5].classList.contains('locked') && !!c[5].querySelector('.btn')
+            return c.length === 9 && c[4].classList.contains('done') && !c[5].classList.contains('locked') && !!c[5].querySelector('.btn')
                    && c[6].classList.contains('locked') && !c[6].querySelector('.btn'); }"""))
         measure(page, "ew6 on the map", ".view")
 
@@ -1922,8 +1944,8 @@ try:
         page.evaluate("window.__APP__.go('ewes')")
         page.wait_for_selector(".round-card")
         m8 = page.evaluate(MAP_JS)
-        check8(f"the map unlocks ew8 once ew7 is passed (ew7 ✓), eight cards, its blurb in her words ({len(m8)} cards)",
-               len(m8) == 8 and m8[6]["done"] and not m8[7]["locked"] and m8[7]["title"] == "Driehoeke of sye?"
+        check8(f"the map unlocks ew8 once ew7 is passed (ew7 ✓), nine cards (ew9 held back but shown with ?ewe=1), its blurb in her words ({len(m8)} cards)",
+               len(m8) == 9 and m8[6]["done"] and not m8[7]["locked"] and m8[7]["title"] == "Driehoeke of sye?"
                and "Die breuke is klaar gebou. Kyk waar die sye in die skets lê: is dit twee driehoeke, of sye in verhouding?" in page.inner_text(".view"))
         measure(page, "ew8 on the map", ".view")
 
@@ -2181,6 +2203,413 @@ try:
         saved8 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
             const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew8');
             return { progress: p.ew8 || null, xpEvents: ev.map(e => e.xp) }; }""")
+        # ---------------- ew8 -> ew9: the way on, and the map ----------------
+        ew9_checks = []
+        ew9_cards = []
+        ew9_arcs = []       # per sketch state: the tightest label-arc, arc-arc, arc-arrow, mark-label, mark-arc clearances
+        ew9_orphans = []
+        def check9(name, ok):
+            ew9_checks.append((name, ok))
+            if not ok: fail(name)
+        check9("ew8's end screen offers the next round", page.evaluate("""() => [...document.querySelectorAll('.ewe-end .btn')].some(b => b.textContent.includes('Volgende rondte'))"""))
+        click_btn(page, ".ewe-end .btn", "▶ Volgende rondte")
+        page.wait_for_selector(".ewe-play")
+        check9("the way on from ew8 opens ew9 'Lees dit af'", "Lees dit af" in page.inner_text(".play-title"))
+        page.evaluate("window.__APP__.go('ewes')")
+        page.wait_for_selector(".round-card")
+        m9 = page.evaluate(MAP_JS)
+        blurb9 = page.evaluate("async () => (await import('./js/rounds/ewe9-lees-dit-af.js')).round.blurb.af.replace(/\\u00A0/g, ' ')")
+        check9(f"the map unlocks ew9 once ew8 is passed (ew8 ✓), nine cards, its blurb ({len(m9)} cards)",
+               len(m9) == 9 and m9[7]["done"] and not m9[8]["locked"] and m9[8]["title"] == "Lees dit af" and blurb9 in nbsp(page.inner_text(".view")))
+        measure(page, "ew9 on the map", ".view")
+
+        # ---------------- the ew9 walk: read the triangles (or the reason) off the fractions ----------------
+        page.evaluate("() => { const c = [...document.querySelectorAll('.round-card')]; c[8].querySelector('.btn').click(); }")
+        page.wait_for_selector(".ewe-play")
+        data9 = page.evaluate("""async () => { const m = await import('./js/rounds/ewe9-lees-dit-af.js'); const core = await import('./js/ewe-core.js');
+            const pl = s => String(s).replace(/\\u00A0/g, ' ');
+            const cells = f => (f || []).flatMap(u => (Array.isArray(u) ? u : [])).map(c => (typeof c === 'object' ? pl(c.t) + ':k' + c.tone : c));
+            return { takeaway: pl(m.round.takeaway.text), qs: m.round.eweQuestions.map(q => ({
+              id: q.id, kind: q.kind, form: q.form || 'sides', sk: q.sketchKind || 'A', intro: pl(q.intro), fracs: q.fig.fracs, exam: q.fig.exam || null,
+              tris: q.tris || null, tri: q.tri || null, outside: q.sketch.outside, par: (q.sketch.par || []).map(([a, b]) => a + b),
+              nestEnd: q.sketch.arcNest ? q.sketch.arcNest.end : 0.4,
+              write: { tip: pl(q.write.tip), reason: q.write.reason || null, sim: q.write.names ? q.write.names.sim.map(x => x.t) : null },
+              steps: q.steps.map(s => {
+                const fills = {};
+                if (s.type === 'build') { let all = [[]]; for (let k = 0; k < s.answer.length; k++) all = all.flatMap(f => s.chips.map(c => [...f, c]));
+                  for (const f of all) { const v = core.markRatio(f, s.spec); if (!v.ok && !fills[v.why]) fills[v.why] = f; } }
+                return { type: s.type, role: s.role || '', prompt: pl(s.prompt), chips: s.chips || [], answer: s.answer || [], cells: cells(s.frame), compact: !!s.compact,
+                  okLine: pl(s.okLine || ''), hints: Object.fromEntries(Object.entries(s.hints || {}).map(([k, v]) => [k, pl(v)])), fills, free: !!(s.spec && s.spec.free),
+                  options: (s.options || []).map(o => ({ text: o.text, correct: !!o.correct, hint: pl(o.hint || '') })) }; }) })) }; }""")
+        ARCS9_JS = r"""(arg) => {
+  /* ew9: the sketch measured as a learner sees it (screen px). As ew8's
+     ARCS8_JS, plus: two arcs over the SAME side (kind B's QR, lit in both
+     colours) count as a nested pair, measured outside the corner zone at
+     BOTH ends; the equal-angle marks and her star clear of every label and
+     every side arc; the colour tints by name (ewe-tint-k1 / -k2). */
+  const svg = document.querySelector(arg.sel || 'svg.ewe-sketch');
+  const vb = svg.viewBox.baseVal, sr = svg.getBoundingClientRect();
+  const sc = Math.min(sr.width / vb.width, sr.height / vb.height);
+  const dots = [...svg.querySelectorAll('circle')];
+  const plabs = [...svg.querySelectorAll('text.pl')].filter(t => !t.classList.contains('ewe-al'));
+  const at = {}; dots.forEach((c, i) => { at[plabs[i].textContent] = { x: +c.getAttribute('cx'), y: +c.getAttribute('cy') }; });
+  const nameAt = q => Object.keys(at).find(k => Math.hypot(at[k].x - q.x, at[k].y - q.y) < 0.6) || '?';
+  const box = t => { const b = t.getBBox(); return { x0: b.x, y0: b.y, x1: b.x + b.width, y1: b.y + b.height }; };
+  const lines = [...svg.querySelectorAll('line.ln')].map(l => ['x1','y1','x2','y2'].map(k => +l.getAttribute(k)));
+  const segD = (x, y, [x1, y1, x2, y2]) => { const dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy; let t = ((x - x1) * dx + (y - y1) * dy) / L2; t = Math.max(0, Math.min(1, t)); return Math.hypot(x - x1 - t * dx, y - y1 - t * dy); };
+  const hyp = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
+  const r1 = v => Math.round(v * 10) / 10, r2 = v => Math.round(v * 100) / 100;
+  const sample = (p, n) => { const L = p.getTotalLength(); return Array.from({ length: n + 1 }, (_, i) => p.getPointAtLength(L * i / n)); };
+  const arcs = [...svg.querySelectorAll('path.ewe-sarc')].map(p => { const pts = sample(p, 160);
+    const ends = [pts[0], pts[pts.length - 1]];
+    return { pts, ends, name: nameAt(ends[0]) + nameAt(ends[1]), tone: (p.getAttribute('class').match(/ewe-sarc-k(\d)/) || [])[1] || '',
+             lvl: p.classList.contains('ewe-sarc-2') ? 2 : 1, stroke: getComputedStyle(p).stroke }; });
+  const same = (n, m) => n === m || n === m[1] + m[0];
+  const out = { arcs: arcs.map(a => `${a.name}:k${a.tone}`), strokes: {}, collisions: [], labels: plabs.length, alabels: svg.querySelectorAll('text.ewe-al').length,
+                at: plabs.map(t => { const b = box(t); return [t.textContent, r1(b.x0), r1(b.y0)]; }), bow: [], nested: [] };
+  arcs.forEach(a => { out.strokes['k' + a.tone] = a.stroke; });
+  const [A, B, C] = arg.big.map(k => at[k]);
+  const G0 = { x: (A.x + B.x + C.x) / 3, y: (A.y + B.y + C.y) / 3 };
+  arcs.forEach(a => {
+    const P0 = a.ends[0], Q0 = a.ends[1], len = hyp(P0, Q0), ux = (Q0.x - P0.x) / len, uy = (Q0.y - P0.y) / len;
+    let ref = G0; const pi = arg.par.findIndex(p => same(a.name, p));
+    if (pi >= 0) { const o = arg.par[1 - pi]; ref = { x: (at[o[0]].x + at[o[1]].x) / 2, y: (at[o[0]].y + at[o[1]].y) / 2 }; }
+    let nx = -uy, ny = ux; if ((ref.x - P0.x) * nx + (ref.y - P0.y) * ny > 0) { nx = -nx; ny = -ny; }
+    let past = 0, inward = 0, sag = 0;
+    a.pts.forEach(q => { const s = (q.x - P0.x) * ux + (q.y - P0.y) * uy, n = (q.x - P0.x) * nx + (q.y - P0.y) * ny;
+      past = Math.max(past, -s * sc, (s - len) * sc); inward = Math.max(inward, -n * sc); sag = Math.max(sag, n); });
+    Object.assign(a, { len, ux, uy, nx, ny, sag });
+    out.bow.push({ arc: a.name, tone: a.tone, lvl: a.lvl, past: r2(past), inward: r2(inward), sag: r1(sag * sc), len: r1(len * sc), par: pi >= 0 });
+    if (past > 0.5) out.collisions.push(`arc ${a.name} runs ${past.toFixed(2)}px past an end of its side`);
+    if (inward > 0.5) out.collisions.push(`arc ${a.name} bulges ${inward.toFixed(2)}px towards ${pi >= 0 ? 'the other ∥ line' : 'the inside of the Δ'}`);
+    if (a.pts.some(q => q.x < 0 || q.y < 0 || q.x > vb.width || q.y > vb.height)) out.collisions.push(`arc ${a.name} leaves the sketch`);
+    const others = lines.filter(l => !(segD(P0.x, P0.y, l) < 1 && segD(Q0.x, Q0.y, l) < 1));
+    if (a.pts.some(q => !a.ends.some(e => hyp(q, e) < 6) && others.some(l => segD(q.x, q.y, l) < 1.5))) out.collisions.push(`arc ${a.name} touches a line`);
+  });
+  const pdist = (q, r) => Math.hypot(Math.max(0, r.x0 - q.x, q.x - r.x1), Math.max(0, r.y0 - q.y, q.y - r.y1));
+  /* every point label at least 4 px clear of every side arc */
+  let lt = null;
+  plabs.forEach(t => { const r = box(t); arcs.forEach(a => { const d = Math.min(...a.pts.map(q => pdist(q, r))) * sc; if (!lt || d < lt.d) lt = { d, what: `${t.textContent} to arc ${a.name}` }; }); });
+  out.labTight = lt ? { d: r1(lt.d), what: lt.what } : null;
+  if (lt && lt.d < 4) out.collisions.push(`label clearance ${lt.d.toFixed(1)}px < 4 (${lt.what})`);
+  /* every two arcs at least 4 px apart outside the corner zones */
+  const toPoly = (q, P) => { let m = Infinity; for (let i = 1; i < P.length; i++) m = Math.min(m, segD(q.x, q.y, [P[i - 1].x, P[i - 1].y, P[i].x, P[i].y])); return m; };
+  let aa = null;
+  arcs.forEach((a, i) => arcs.forEach((b, j) => { if (j <= i) return;
+    const shared = a.ends.filter(e => b.ends.some(f => hyp(e, f) < 0.6));
+    const [lo_, sh_] = a.len >= b.len ? [a, b] : [b, a];
+    const along = q => (q.x - lo_.ends[0].x) * lo_.ux + (q.y - lo_.ends[0].y) * lo_.uy;
+    const onLine = Math.abs(a.ux * b.uy - a.uy * b.ux) < 1e-3 && a.nx * b.nx + a.ny * b.ny > 0.99
+      && Math.abs((b.ends[0].x - a.ends[0].x) * a.nx + (b.ends[0].y - a.ends[0].y) * a.ny) < 0.6
+      && sh_.ends.every(q => along(q) > -0.6 && along(q) < lo_.len + 0.6);
+    /* nested: from one point (a whole side over its piece) or over the SAME side (kind B's QR twice) */
+    const coll = onLine && shared.length >= 1;
+    const zone = coll ? Math.max(15, arg.nestEnd * sh_.len) : 15;
+    const far = q => shared.every(s => hyp(q, s) >= zone);
+    const pa = a.pts.filter(far), pb = b.pts.filter(far);
+    if (!pa.length || !pb.length) return;
+    const d = Math.min(Math.min(...pa.map(q => toPoly(q, b.pts))), Math.min(...pb.map(q => toPoly(q, a.pts)))) * sc;
+    if (!aa || d < aa.d) aa = { d, what: `${a.name} and ${b.name}${shared.length ? ' (from ' + shared.map(nameAt).join('') + (coll ? `, zone ${r1(zone * sc)}px` : '') + ')' : ''}` };
+    if (coll) { const [o, n] = a.sag >= b.sag ? [a, b] : [b, a]; out.nested.push({ outer: `${o.name}:k${o.tone}`, inner: `${n.name}:k${n.tone}`, at: shared.map(nameAt).join(''), outerSag: r1(o.sag * sc), innerSag: r1(n.sag * sc), gap: r1(d) });
+      if (!(o.sag > n.sag + 3)) out.collisions.push(`nested arcs ${o.name} over ${n.name} not at different heights`); }
+    if (d < 4) out.collisions.push(`arcs ${a.name} and ${b.name} ${d.toFixed(1)}px apart (< 4)`); }));
+  out.arcTight = aa ? { d: r1(aa.d), what: aa.what } : null;
+  /* every arc at least 4 px clear of every ∥ arrow */
+  const chev = [...svg.querySelectorAll('path.ewe-par')].map(p => p.getAttribute('d').trim().split(/\s*[ML]\s*/).filter(Boolean).map(t => { const [x, y] = t.trim().split(/\s+/).map(Number); return { x, y }; }));
+  let aw = null;
+  arcs.forEach(a => chev.forEach(c => { const d = Math.min(Math.min(...a.pts.map(q => toPoly(q, c))), Math.min(...c.map(q => toPoly(q, a.pts)))) * sc;
+    if (!aw || d < aw.d) aw = { d, what: `arc ${a.name}` }; }));
+  out.arrowTight = aw ? { d: r1(aw.d), what: aw.what } : null;
+  if (aw && aw.d < 4) out.collisions.push(`arc-arrow clearance ${aw.d.toFixed(1)}px < 4 (${aw.what})`);
+  /* kind B: the equal-angle marks and the star, clear of every label (4 px)
+     and of every side arc (4 px); each mark inside its angle */
+  const eqa = [...svg.querySelectorAll('path.ewe-eqa')].map(p => sample(p, 40));
+  const star = [...svg.querySelectorAll('polygon.ewe-star')].map(p => p.getAttribute('points').split(' ').map(s => { const [x, y] = s.split(',').map(Number); return { x, y }; }));
+  out.eqa = eqa.length; out.stars = star.length; out.angleArcs = svg.querySelectorAll('path.ewe-arc').length;
+  /* the corner each angle mark belongs to: the point both its ends are
+     the same distance from (its radius) */
+  const vertexOf = pts => Object.keys(at).find(k => Math.abs(hyp(at[k], pts[0]) - hyp(at[k], pts[pts.length - 1])) < 0.3 && Math.abs(hyp(at[k], pts[20]) - hyp(at[k], pts[0])) < 0.3) || '?';
+  let mk = null, ma = null, mo = null;
+  const marks = [...eqa.map((pts, i) => ({ pts, what: `angle mark at ${vertexOf(pts)}`, v: vertexOf(pts) })), ...star.map(pts => ({ pts: [...pts, pts[0]], what: 'the star', v: null }))];
+  out.eqaAt = marks.filter(m => m.v).map(m => m.v);
+  marks.forEach(m => {
+    plabs.forEach(t => { const r = box(t); const d = Math.min(...m.pts.map(q => pdist(q, r))) * sc; if (!mk || d < mk.d) mk = { d, what: `${t.textContent} to ${m.what}` }; });
+    arcs.forEach(a => { const d = Math.min(Math.min(...m.pts.map(q => toPoly(q, a.pts))), Math.min(...a.pts.map(q => toPoly(q, m.pts)))) * sc;
+      /* an angle mark and a side arc that leaves the SAME corner both touch
+         that corner's side, on its two sides: reported, not a collision */
+      const own = m.v && a.ends.some(e => nameAt(e) === m.v);
+      if (own) { if (!mo || d < mo.d) mo = { d, what: `${m.what} to arc ${a.name} (the same corner, across its side)` }; }
+      else if (!ma || d < ma.d) ma = { d, what: `${m.what} to arc ${a.name}` }; });
+  });
+  out.markTight = mk ? { d: r1(mk.d), what: mk.what } : null;
+  out.markArcTight = ma ? { d: r1(ma.d), what: ma.what } : null;
+  out.markOwnArc = mo ? { d: r1(mo.d), what: mo.what } : null;
+  if (mk && mk.d < 4) out.collisions.push(`mark-label clearance ${mk.d.toFixed(1)}px < 4 (${mk.what})`);
+  if (ma && ma.d < 4) out.collisions.push(`mark-arc clearance ${ma.d.toFixed(1)}px < 4 (${ma.what})`);
+  /* the star sits OUTSIDE the whole Δ, every angle mark inside it */
+  const inside = (x, y) => { const s1 = (B.x - A.x) * (y - A.y) - (B.y - A.y) * (x - A.x), s2 = (C.x - B.x) * (y - B.y) - (C.y - B.y) * (x - B.x), s3 = (A.x - C.x) * (y - C.y) - (A.y - C.y) * (x - C.x);
+    return (s1 > 0 && s2 > 0 && s3 > 0) || (s1 < 0 && s2 < 0 && s3 < 0); };
+  star.forEach(pts => { const cx = pts.reduce((s, q) => s + q.x, 0) / pts.length, cy = pts.reduce((s, q) => s + q.y, 0) / pts.length; if (inside(cx, cy)) out.collisions.push('the star sits inside the Δ'); });
+  eqa.forEach((pts, i) => { const q = pts[20]; if (!inside(q.x, q.y)) out.collisions.push(`angle mark ${i + 1} is not inside the Δ`); });
+  /* every point label outside the whole Δ (so never inside a tint) */
+  plabs.forEach(t => { const r = box(t); if ([[r.x0, r.y0], [r.x1, r.y0], [r.x0, r.y1], [r.x1, r.y1], [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2]].some(([x, y]) => inside(x, y))) out.collisions.push(`${t.textContent} sits inside the Δ`); });
+  out.tints = [...svg.querySelectorAll('polygon.ewe-tint')].map(p => p.getAttribute('class').match(/ewe-tint-(k?\d)/)[1] + ':' + p.getAttribute('points').split(' ').map(s => { const [x, y] = s.split(',').map(Number); return nameAt({ x, y }); }).join(''));
+  out.tintFill = [...svg.querySelectorAll('polygon.ewe-tint')].map(p => getComputedStyle(p).fill);
+  return out; }"""
+        NAMES9_JS = r"""(sel) => {
+  /* ew9: the given fractions with their names, as a learner sees them.
+     sel = the line's container (.ewe-qline, or a card's .ewn) */
+  const root = document.querySelector(sel); if (!root) return null;
+  const vw = document.documentElement.clientWidth;
+  const seenEl = e => { if (!e) return false; const c = getComputedStyle(e), r = e.getBoundingClientRect(); return c.display !== 'none' && c.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
+  const R = e => e.getBoundingClientRect();
+  const r1 = v => Math.round(v * 10) / 10;
+  const ln = root.querySelector('.ewn-ln');
+  const fr = [...ln.querySelectorAll('.ewf')].map(f => {
+    const n = f.querySelector(':scope > .ewf-n'), d = f.querySelector(':scope > .ewf-d'), bar = f.querySelector(':scope > .ewf-bar');
+    const nm = f.parentElement.classList.contains('ewf-nm') ? f.parentElement.querySelector(':scope > .ewf-under') : null;
+    const fr_ = R(f), nmr = nm && R(nm);
+    return { n: n.textContent, d: d.textContent, nk: (n.className.match(/ewf-k(\d)/) || [])[1] || '', dk: (d.className.match(/ewf-k(\d)/) || [])[1] || '',
+             nc: getComputedStyle(n).color, dc: getComputedStyle(d).color, bar: getComputedStyle(bar).backgroundColor,
+             under: nm && seenEl(nm) ? nm.textContent.replace(/ /g, ' ') : '', underK: nm ? ((nm.querySelector('[class*=ewf-k]') || {}).className || '').replace('ewf-k', '') : '',
+             underColor: nm && nm.firstElementChild ? getComputedStyle(nm.firstElementChild).color : '',
+             /* the name sits under its fraction, centred, clear of its bottom, inside the screen */
+             underBelow: nmr ? r1(nmr.top - fr_.bottom) : null, underCentre: nmr ? r1(Math.abs((nmr.left + nmr.right) / 2 - (fr_.left + fr_.right) / 2)) : null,
+             underIn: nmr ? nmr.left >= -0.5 && nmr.right <= vw + 0.5 : true, underBottom: nmr ? r1(nmr.bottom) : null,
+             top: r1(fr_.top), bottom: r1(fr_.bottom), nTop: r1(R(n).top), dTop: r1(R(d).top), barTop: r1(R(bar).top) };
+  });
+  const sd = root.querySelector('.ewn-sd');
+  const side = sd ? ['.ewn-sd-t', '.ewn-sd-b'].map(s => { const e = sd.querySelector(s); const nm = e.querySelector('[class*=ewf-k]');
+    return { text: e.textContent.replace(/ /g, ' '), seen: seenEl(e), k: nm.className.replace('ewf-k', ''), color: getComputedStyle(nm).color, top: r1(R(e).top), bottom: r1(R(e).bottom), right: r1(R(e).right) }; }) : null;
+  const pre = root.querySelector('.ewn-pre');
+  const lr = R(root), lnr = R(ln);
+  const units = new Set([...ln.querySelectorAll('.ewq-u')].map(u => Math.round(u.getBoundingClientRect().top))).size;
+  /* every name inside the line's own box (nothing hangs over what follows) */
+  const lowest = Math.max(...fr.map(f => f.underBottom || 0), lnr.bottom);
+  return { fr, side, pre: pre ? pre.textContent.replace(/ /g, ' ') : null, preSup: pre ? pre.querySelectorAll('sup.ewf-sq').length : 0, rows: units,
+           lineBottom: r1(lr.bottom), lowest: r1(lowest), inside: lr.left >= -0.5 && lr.right <= vw + 0.5 && (!side || side.every(s => s.right <= vw + 0.5)), h: Math.round(lr.height) };
+}"""
+        ROW9_JS = r"""(k) => { const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`); const vw = document.documentElement.clientWidth;
+          const seenEl = e => { const c = getComputedStyle(e), r = e.getBoundingClientRect(); return c.display !== 'none' && c.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
+          const bs = [...st.querySelectorAll('.ewe-opt')], rs = bs.map(b => b.getBoundingClientRect());
+          const fb = st.querySelector('.ewe-fb');
+          return { texts: bs.map(b => b.textContent.trim()), vis: bs.filter(seenEl).map(b => b.textContent.trim()), row: !!st.querySelector('.ewe-opts.ewe-row'),
+                   oneRow: rs.length === 3 && rs.every(r => Math.abs(r.top - rs[0].top) < 1), inside: rs.every(r => r.left >= -0.5 && r.right <= vw + 0.5),
+                   clipped: bs.filter(b => b.scrollWidth > b.clientWidth + 1).length, w: rs.map(r => Math.round(r.width)), h: rs.map(r => Math.round(r.height)),
+                   red: bs.filter(b => seenEl(b) && b.classList.contains('is-wrong')).map(b => b.textContent.trim()), green: bs.filter(b => seenEl(b) && b.classList.contains('is-correct')).map(b => b.textContent.trim()),
+                   prompt: st.querySelector('.ewe-prompt').textContent.replace(/ /g, ' '), fb: fb && seenEl(fb) ? fb.textContent.replace(/ /g, ' ') : '' }; }"""
+        FRAME9_JS = r"""() => { const st = document.querySelector('.ewe-step:last-child'); const d = st.querySelector('.ewpad-disp'); if (!d) return null; const vw = document.documentElement.clientWidth;
+          const cells = [...d.querySelectorAll('.ewpad-fx, .ewslot')].map(e => e.classList.contains('ewslot') ? '☐' : e.textContent.replace(/ /g, ' ') + (e.className.match(/ewf-k(\d)/) ? ':k' + e.className.match(/ewf-k(\d)/)[1] : ''));
+          const r = d.getBoundingClientRect(), rows = new Set([...d.querySelectorAll('.ewq-u')].map(u => Math.round(u.getBoundingClientRect().top))).size;
+          return { cells, rows, h: Math.round(r.height), compact: d.classList.contains('is-compact'), inside: [...d.querySelectorAll('*')].every(e => { const q = e.getBoundingClientRect(); return q.left >= -0.5 && q.right <= vw + 0.5; }) }; }"""
+        CARD9_JS = r"""() => { const c = document.querySelector('.ewe-write'); if (!c) return null; const vw = document.documentElement.clientWidth;
+          const sim = c.querySelector('.ewn-sim'), simTx = sim ? sim.querySelector('.ewl-tx') : null;
+          const ln = c.querySelector('.ewl:not(.ewl-sim)'), rs = ln && ln.querySelector('.ewl-rs');
+          const rows = e => { const g = document.createRange(); g.selectNodeContents(e); return new Set([...g.getClientRects()].filter(q => q.width > 0).map(q => Math.round(q.top))).size; };
+          return { sim: simTx ? simTx.textContent.replace(/ /g, ' ') : null, simK: simTx ? [...simTx.querySelectorAll('[class*=ewf-k]')].map(e => e.className.replace('ewf-k', '')) : [],
+                   simRows: simTx ? rows(simTx) : 0, fr: ln ? [...ln.querySelectorAll('.ewf')].map(f => [f.querySelector('.ewf-n').textContent, f.querySelector('.ewf-d').textContent]) : [],
+                   rs: rs ? rs.textContent.replace(/ /g, ' ') : null, rsRows: rs ? rows(rs) : 0,
+                   right: Math.round(Math.max(...[...c.querySelectorAll('*')].map(e => e.getBoundingClientRect().right))), vw,
+                   tip: (c.querySelector('.ewe-write-tip') || {}).textContent ? c.querySelector('.ewe-write-tip').textContent.replace(/ /g, ' ') : '' }; }"""
+        def tok9(fr, k):
+            # the sides lit in colour k, sorted letter pairs, from a NAMES9_JS line
+            out = []
+            for f in fr["fr"]:
+                if f["nk"] == str(k): out.append("".join(sorted(f["n"])))
+                if f["dk"] == str(k): out.append("".join(sorted(f["d"])))
+            return sorted(out)
+        def names9(fr):
+            # the names a learner can see in the line: under the fractions, or beside them
+            got = [f["under"] + ":k" + f["underK"] for f in fr["fr"] if f["under"]]
+            if fr["side"]: got += [s["text"].split(": ", 1)[1] + ":k" + s["k"] for s in fr["side"] if s["seen"]]
+            return got
+        for qi, q in enumerate(data9["qs"]):
+            n = qi + 1
+            P = f"ew9 Q{n}"
+            tri = q["kind"] == "driehoeke"
+            BIG = q["outside"]
+            arg = {"big": BIG, "par": [[p[0], p[1]] for p in q["par"]], "nestEnd": q["nestEnd"]}
+            page.wait_for_selector(f".ewe-q[data-q='{q['id']}']")
+            lab = page.evaluate(LABELS_JS)
+            label_rows.append((q["id"], lab))
+            a0 = page.evaluate(ARCS9_JS, arg)
+            for c in lab["collisions"] + a0["collisions"]: fail(f"{P} sketch: {c}")
+            ew9_arcs.append((P, "start", a0))
+            [[fa, fb_], [fc, fd]] = q["fracs"]
+            if tri:
+                p1 = sorted("".join(sorted(s)) for s in q["tris"]["pair1"])
+                p2 = sorted("".join(sorted(s)) for s in q["tris"]["pair2"])
+                got1 = sorted("".join(sorted(x.split(":")[0])) for x in a0["arcs"])
+                kB = q["sk"] == "B"
+                check9(f"{P} sketch at the start: {lab['lines']} lines, " + ("2 equal-angle marks at " + "".join(a0["eqaAt"]) + ", her star, no other arc" if kB else "2 ∥ arrows") + f", no tints, colour 1 lit over {' '.join(got1)} (the first Δ's sides {' '.join(p1)}), colour 2 not yet drawn, every label outside Δ {''.join(BIG)}, {len(lab['collisions']) + len(a0['collisions'])} collisions",
+                       lab["lines"] == 4 and (a0["eqa"] == 2 and a0["stars"] == 1 and a0["angleArcs"] == 0 and lab["arrows"] == 0 if kB else lab["arrows"] == 2 and a0["eqa"] == 0 and a0["stars"] == 0)
+                       and not a0["tints"] and got1 == p1 and all(x.endswith(":k1") for x in a0["arcs"]) and not lab["collisions"] and not a0["collisions"])
+            else:
+                check9(f"{P} sketch at the start: {lab['lines']} lines, 2 ∥ arrows, no arcs, no tints, no marks, every label outside Δ {''.join(BIG)}, {len(lab['collisions']) + len(a0['collisions'])} collisions",
+                       lab["lines"] == 4 and lab["arrows"] == 2 and not a0["arcs"] and not a0["tints"] and a0["eqa"] == 0 and a0["stars"] == 0 and not lab["collisions"] and not a0["collisions"])
+            g0 = page.evaluate(NAMES9_JS, ".ewe-qline")
+            gf = [[f["n"], f["d"]] for f in g0["fr"]] if g0 else []
+            if tri:
+                check9(f"{P}: the given fractions under the sketch, stacked ({' = '.join(a + '/' + b for a, b in gf)}), on one row, inside 375 px, colour 1 on {' '.join(tok9(g0, 1))} (the arcs' colour), the rest in ink, no name yet, no exam line in it",
+                       gf == q["fracs"] and g0["rows"] == 1 and g0["inside"] and tok9(g0, 1) == p1 and tok9(g0, 2) == [] and names9(g0) == [] and g0["pre"] is None
+                       and all(f["bar"] not in (a0["strokes"].get("k1"), a0["strokes"].get("k2")) for f in g0["fr"])
+                       and all(f["nc"] == a0["strokes"].get("k1") for f in g0["fr"] if f["nk"] == "1"))
+            else:
+                check9(f"{P}: the given fractions under the sketch, stacked ({' = '.join(a + '/' + b for a, b in gf)}), in ink, on one row, inside 375 px",
+                       gf == q["fracs"] and g0["rows"] == 1 and g0["inside"] and tok9(g0, 1) == [] and tok9(g0, 2) == [] and names9(g0) == [])
+            # (a "²" is drawn as a raised 2: its text on the page is "2")
+            check9(f"{P}: the intro '{q['intro'][:50]}…'", q["intro"].replace("²", "2") == nbsp(page.inner_text(".ewe-intro")).strip())
+            if q["exam"]:
+                sq9 = squares(page, f"{P}: the intro's exam line")
+                check9(f"{P}: the intro says the exam line {q['exam'][0]}² = {q['exam'][1]} · {q['exam'][2]} first, the 2 raised ({sq9['sups']} raised, {sq9['plain']} plain ²)", sq9["sups"] >= 1 and sq9["plain"] == 0)
+            o = page.evaluate(LAST2_JS, ".ewe-intro"); ew9_orphans.append((P, "intro", o))
+            check9(f"{P}: the intro's last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
+            measure(page, f"{P}: start")
+            shot(page, f"ew9-q{n}-a-start.png")
+            prev = a0
+            for si, st in enumerate(q["steps"]):
+                k = si + 1
+                tag = f"{P} step {k} ({st['type']}{' ' + st['role'] if st['role'] else ''})"
+                if st["type"] == "pick":
+                    r0 = page.evaluate(ROW9_JS, k)
+                    shapes = sorted(o["text"] for o in st["options"])
+                    right = next(o for o in st["options"] if o["correct"])
+                    check9(f"{tag}: '{r0['prompt']}', the three shapes in ONE row ({' · '.join(r0['texts'])}; {r0['w']} px wide, {r0['h']} px high), nothing clipped",
+                           sorted(r0["texts"]) == shapes and r0["vis"] == r0["texts"] and r0["row"] and r0["oneRow"] and r0["inside"] and r0["clipped"] == 0 and r0["prompt"] == st["prompt"])
+                    want_right = f"Δ {q['tris']['first'] if k == 1 else q['tris']['second']}"
+                    check9(f"{tag}: the right option is '{want_right}'", right["text"] == want_right)
+                    measure(page, f"{tag}: options")
+                    for wi, o in enumerate(x for x in st["options"] if not x["correct"]):
+                        click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
+                        measure(page, f"{tag}: wrong pick {wi + 1}")
+                        r1 = page.evaluate(ROW9_JS, k)
+                        letters = list(q["tris"]["first"] if k == 1 else q["tris"]["second"])
+                        check9(f"{tag}: the wrong pick '{o['text']}' turns red, the others stay, and the hint names the letters {', '.join(letters)}",
+                               o["text"] in r1["red"] and len(r1["vis"]) == 3 and o["hint"] in hint_text() and o["hint"] == f"Soek die Δ met AL DRIE letters: {letters[0]}, {letters[1]} en {letters[2]}.")
+                        a1 = page.evaluate(ARCS9_JS, arg)
+                        check9(f"{tag}: after the wrong pick the sketch is unchanged (the same tints, arcs and labels)", a1["tints"] == prev["tints"] and sorted(a1["arcs"]) == sorted(prev["arcs"]) and a1["at"] == prev["at"])
+                        o2 = page.evaluate(LAST2_JS, ".ewe-step:last-child .ewe-hint"); ew9_orphans.append((P, f"hint s{k}", o2))
+                        check9(f"{tag}: the hint's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+                        if wi == 0: shot(page, f"ew9-q{n}-s{k}-a-wrong.png")
+                    click_btn(page, ".ewe-step:last-child .ewe-opt", right["text"])
+                    measure(page, f"{tag}: right pick")
+                    r2 = page.evaluate(ROW9_JS, k)
+                    check9(f"{tag}: Fold 2, only '{right['text']}' stays, green, with its ✓ line '{st['okLine']}'",
+                           r2["vis"] == [right["text"]] and r2["green"] == [right["text"]] and not r2["red"] and st["okLine"] in r2["fb"] and r2["fb"].startswith("✓"))
+                    o2 = page.evaluate(LAST2_JS, f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb"); ew9_orphans.append((P, f"✓ line s{k}", o2))
+                    check9(f"{tag}: the ✓ line's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+                    a2 = page.evaluate(ARCS9_JS, arg)
+                    l2 = page.evaluate(LABELS_JS)
+                    label_rows.append((q["id"] + f" after step {k}", l2))
+                    for c in l2["collisions"] + a2["collisions"]: fail(f"{P} sketch after step {k}: {c}")
+                    ew9_arcs.append((P, f"after step {k}", a2))
+                    moved = sum(1 for x, y in zip(a0["at"], a2["at"]) if x != y)
+                    T1, T2 = q["tris"]["first"], q["tris"]["second"]
+                    want_t = sorted(["k1:" + "".join(sorted(T1))] + (["k2:" + "".join(sorted(T2))] if k == 2 else []))
+                    got_t = sorted(t.split(":")[0] + ":" + "".join(sorted(t.split(":")[1])) for t in a2["tints"])
+                    got_arcs = sorted("".join(sorted(x.split(":")[0])) + ":" + x.split(":")[1] for x in a2["arcs"])
+                    want_arcs = sorted([s + ":k1" for s in p1] + [s + ":k2" for s in p2])
+                    check9(f"{tag}: Δ {T1 if k == 1 else T2} tints in its colour ({' '.join(got_t)}), the colour 2 arcs " + ("light up" if k == 1 else "stay") + f" ({' '.join(got_arcs)}), no label moves ({moved} of {len(a2['at'])}), {len(l2['collisions']) + len(a2['collisions'])} collisions",
+                           got_t == want_t and got_arcs == want_arcs and moved == 0 and not l2["collisions"] and not a2["collisions"]
+                           and all(f.startswith("rgb") for f in a2["tintFill"]))
+                    g2 = page.evaluate(NAMES9_JS, ".ewe-qline")
+                    want_n = ([f"Δ {T1}:k1"] + ([f"Δ {T2}:k2"] if k == 2 else []))
+                    where = "under its fraction" if q["form"] == "within" else "beside the tops ('bo:')" if k == 1 else "beside the tops and the bottoms ('bo:', 'onder:')"
+                    under_ok = all(f["underIn"] and (f["underCentre"] is None or f["underCentre"] <= 1) for f in g2["fr"])
+                    check9(f"{tag}: the given line now names Δ {T1 if k == 1 else T2} {where} ({', '.join(names9(g2))}); colour 2 on {' '.join(tok9(g2, 2))}; still one row, inside 375 px, nothing hanging below the line",
+                           sorted(names9(g2)) == sorted(want_n) and tok9(g2, 1) == p1 and tok9(g2, 2) == p2 and g2["rows"] == 1 and g2["inside"] and under_ok and g2["lowest"] <= g2["lineBottom"] + 0.5
+                           and (q["form"] != "within" or all((f["under"] == "") or (f["underColor"] == (a2["strokes"].get("k1") if f["underK"] == "1" else a2["strokes"].get("k2"))) for f in g2["fr"]))
+                           and (q["form"] != "across" or all(abs(s["top"] - (g2["fr"][0]["nTop"] if s["k"] == "1" else g2["fr"][0]["dTop"])) < 1.5 for s in g2["side"])))
+                    shot(page, f"ew9-q{n}-s{k}-b-right.png")
+                    prev = a2
+                else:
+                    f9 = page.evaluate(FRAME9_JS)
+                    bank = BANK_ROW6()
+                    if tri:
+                        T1 = q["tris"]["first"]
+                        want_cells = [f"Δ {T1}:k1", "|||", "Δ:k2", "☐", "☐", "☐"]
+                        check9(f"{tag}: '{st['prompt']}', the frame {' '.join(f9['cells']) if f9 else '?'} on {f9 and f9['rows']} row(s), compact ({f9 and f9['h']} px), inside 375 px; the chips {', '.join(bank)} (the letters of Δ {q['tris']['second']})",
+                               bool(f9) and f9["cells"] == want_cells and f9["inside"] and f9["compact"] and bank == sorted(q["tris"]["second"]))
+                    else:
+                        want_cells = ["lyn ∥ een sy v. Δ", "☐", ",", "☐", "∥", "☐"]
+                        check9(f"{tag}: '{st['prompt']}', the frame {' '.join(f9['cells']) if f9 else '?'} on {f9 and f9['rows']} row(s), inside 375 px; the chips {', '.join(bank)}",
+                               bool(f9) and f9["cells"] == want_cells and f9["inside"] and bank == sorted(st["chips"]))
+                    ps = pad_state()
+                    check9(f"{tag}: {len(ps['texts'])} boxes, the glow on the first", len(ps["texts"]) == len(st["answer"]) and ps["next"] == 0)
+                    measure(page, f"{tag}: boxes empty")
+                    shot(page, f"ew9-q{n}-s{k}-a-empty.png")
+                    reasons = [r for r in st["hints"] if r != "pattern"] + (["pattern"] if "pattern" in st["fills"] else [])
+                    for wi, r in enumerate(reasons):
+                        fill = st["fills"].get(r)
+                        if fill is None:
+                            check9(f"{tag}: a fill that gets the '{r}' hint exists", False)
+                            continue
+                        clear_pad()
+                        for c in fill: click_chip(page, c)
+                        measure(page, f"{tag}: boxes full ({r})")
+                        click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                        measure(page, f"{tag}: {r} + hint")
+                        hats(page, f"{tag}: {r} + hint")
+                        got = hint_text()
+                        check9(f"{tag}: {' '.join(fill)} gets the '{r}' hint ('{st['hints'][r][:70]}')", st["hints"][r] in got and has(page, ".ewe-step:last-child .ewe-fb.bad"))
+                        o2 = page.evaluate(LAST2_JS, ".ewe-step:last-child .ewe-hint"); ew9_orphans.append((P, f"hint {r}", o2))
+                        check9(f"{tag}: the '{r}' hint's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+                        shot(page, f"ew9-q{n}-s{k}-b{wi + 1}-{r}.png")
+                    clear_pad()
+                    # a reason line with the two ∥ lines the OTHER way round is right too (Q6)
+                    fill = st["answer"] if not (st["free"] and n == 6) else [st["answer"][0], st["answer"][2], st["answer"][1]]
+                    for c in fill: click_chip(page, c)
+                    measure(page, f"{tag}: boxes full (right)")
+                    shot(page, f"ew9-q{n}-s{k}-c-full.png")
+                    click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                    measure(page, f"{tag}: marked right")
+                    check9(f"{tag}: {' '.join(fill)} accepted" + (" (the two ∥ lines swapped: either order)" if fill != st["answer"] else ""), has(page, f".ewe-steps > .ewe-step:nth-child({k}) .ewpad.is-locked"))
+                    okl = page.evaluate("""(k) => { const f = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-fb`); const o = f && f.querySelector('.ewe-okline');
+                        return { text: f ? f.textContent.replace(/\\u00A0/g, ' ') : '', ok: o ? o.textContent.replace(/\\u00A0/g, ' ') : '' }; }""", k)
+                    check9(f"{tag}: the ✓ line, the finished line and '{st['okLine']}'", okl["text"].startswith("✓") and okl["ok"] == st["okLine"] and all(c in okl["text"] for c in fill))
+                    o2 = page.evaluate(LAST2_JS, f".ewe-steps > .ewe-step:nth-child({k}) .ewe-okline"); ew9_orphans.append((P, "✓ line", o2))
+                    check9(f"{tag}: the ✓ line's takeaway ends on more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+                    fz = finished(page, k)
+                    check9(f"{tag}: Fold 3, its {fz['slots']} boxes and Kontroleer hidden, the prompt and the ✓ line on screen", frame_gone(fz, "✓"))
+                    hats(page, f"{tag}: right")
+                    shot(page, f"ew9-q{n}-s{k}-d-right.png")
+            # the card
+            card = page.evaluate(CARD9_JS)
+            ew9_cards.append((P, card))
+            o2 = page.evaluate(LAST2_JS, ".ewe-write-tip"); ew9_orphans.append((P, "card tip", o2))
+            check9(f"{P}: the card tip's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+            if tri:
+                gc = page.evaluate(NAMES9_JS, ".ewe-write .ewn")
+                T1, T2 = q["tris"]["first"], q["tris"]["second"]
+                ok = (bool(card) and bool(gc) and card["sim"] == f"Δ {T1} ||| Δ {T2}" and card["simK"] == ["1", "2"] and card["simRows"] == 1
+                      and [[f["n"], f["d"]] for f in gc["fr"]] == q["fracs"] and sorted(names9(gc)) == sorted([f"Δ {T1}:k1", f"Δ {T2}:k2"]) and gc["rows"] == 1 and gc["inside"]
+                      and gc["lowest"] <= gc["lineBottom"] + 0.5 and (gc["pre"] == (f"{q['exam'][0]}2={q['exam'][1]}·{q['exam'][2]}" if q["exam"] else None)) and (gc["preSup"] == (1 if q["exam"] else 0))
+                      and card["right"] <= card["vw"] and card["tip"].startswith("Jy het nou die twee Δe") and "(∠∠∠)" in card["tip"] and "(uit |||)" in card["tip"])
+                check9(f"{P}: card = " + (f"the exam line {q['exam'][0]}² = {q['exam'][1]} · {q['exam'][2]}, " if q["exam"] else "") + f"the fractions with " + ("each Δ's name under its fraction" if q["form"] == "within" else "'bo: Δ " + T1 + "' and 'onder: Δ " + T2 + "' beside them") + f", then '{card and card['sim']}' in the two colours on one line, then where the proof comes; inside 375 px", ok)
+                if not ok: print("   card:", card, gc)
+            else:
+                ok = (bool(card) and card["fr"] == q["fracs"] and card["sim"] is None and card["rs"] == f"({q['write']['reason']})" and card["rsRows"] == 1
+                      and card["right"] <= card["vw"] and card["tip"] == q["write"]["tip"])
+                check9(f"{P}: card = ew1's card, {' = '.join(a + '/' + b for a, b in card['fr']) if card else '?'} {card and card['rs']} (the reason on one line), the tip; inside 375 px", ok)
+                if not ok: print("   card:", card)
+            measure(page, f"{P}: Só skryf jy dit card")
+            hats(page, f"{P}: card")
+            squares(page, f"{P}: card")
+            page.evaluate("document.querySelector('.ewe-write').scrollIntoView()")
+            shot(page, f"ew9-q{n}-e-card.png")
+            click_btn(page, ".ewe-next")
+            page.wait_for_timeout(250)
+        page.wait_for_selector(".ewe-end", timeout=8000)
+        measure(page, "ew9 end of round")
+        tk9 = page.evaluate("() => { const t = document.querySelector('.ewe-end .ewe-takeaway'); return t ? { text: t.querySelector('.ewe-write-text').textContent.replace(/\\u00A0/g, ' '), all: t.textContent, cards: t.querySelectorAll('.ewe-tk-card').length, sims: t.querySelectorAll('.ewn-sim').length, rs: t.querySelectorAll('.ewl-rs').length, fr: t.querySelectorAll('.ewf').length } : null; }")
+        check9(f"ew9 end screen: the takeaway, then Q1's names card and Q2's reason card, no generic well-done line ({tk9})",
+               bool(tk9) and tk9["text"] == data9["takeaway"] and tk9["cards"] == 2 and tk9["sims"] == 1 and tk9["rs"] == 1 and tk9["fr"] == 4 and "Goed gedaan" not in tk9["all"])
+        o2 = page.evaluate(LAST2_JS, ".ewe-end .ewe-takeaway .ewe-write-text"); ew9_orphans.append(("ew9 end", "takeaway", o2))
+        check9(f"ew9 end screen: the takeaway's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+        shot(page, "ew9-end-of-round.png")
+        saved9 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
+            const p = (JSON.parse(localStorage.getItem('cgg.progress')) || {})[me.id] || {}; const ev = (JSON.parse(localStorage.getItem('cgg.events')) || []).filter(e => e.studentId === me.id && e.roundId === 'ew9');
+            return { progress: p.ew9 || null, xpEvents: ev.map(e => e.xp) }; }""")
         ctx.close()
 
         # ---------------- the other hint kinds, "show me", and the toggle ----------------
@@ -2414,6 +2843,31 @@ try:
         ew6_vis = []        # ew6, the same per build step (step 4, the subtraction, is the number the foreman asked for)
         ew6_fallback = []   # ew6 build steps the player had to centre: where, sketch bottom px above the bar, sketch -> Kontroleer px
         ew8_vis = []        # ew8, per question at 375 x 667: the sketch, the fractions and both buttons on the screen at the start
+        ew9_vis = []        # ew9, per step at 375 x 667: the sketch, the given fractions and the step's options or boxes
+        SCREEN9_JS = r"""(k) => {
+          const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
+          const bar = document.querySelector('.topbar'); const head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+          const vh = window.innerHeight;
+          const s = document.querySelector('.ewe-q .q-diagram svg').getBoundingClientRect();
+          const l = document.querySelector('.ewe-qline').getBoundingClientRect();
+          const os = [...st.querySelectorAll('.ewe-opt')].filter(e => e.getBoundingClientRect().height > 0).map(e => e.getBoundingClientRect());
+          const slots = [...st.querySelectorAll('.ewpad-disp .ewslot')].map(e => e.getBoundingClientRect());
+          const on = r => r.top >= head - 0.5 && r.bottom <= vh + 0.5;
+          const inputs = os.length ? os : slots;
+          return { y: Math.round(window.scrollY), head: Math.round(head), vh, sh: Math.round(s.height), seen: Math.round(Math.max(0, Math.min(s.bottom, vh) - Math.max(s.top, head))),
+                   sketchBottomOn: s.bottom >= head - 0.5 && s.bottom <= vh + 0.5, sketchAllOn: on(s), lineOn: on(l), lineH: Math.round(l.height),
+                   inputsOn: inputs.length > 0 && inputs.every(on), inputsBelow: inputs.length ? Math.max(0, Math.round(Math.max(...inputs.map(r => r.bottom)) - vh)) : null }; }"""
+        def fold9(k, n, kind):
+            # the sketch, the given fractions and the step's input on the small phone
+            v = page.evaluate(SCREEN9_JS, k)
+            ew9_vis.append({"where": f"ew9 Q{n} s{k}", "kind": kind, **v})
+            vshot(page, f"ew9-fold-q{n}-s{k}.png")
+            if k == 1:
+                checkf(f"fold ew9 Q{n} step 1 ({kind}): at the question's start (scrollY {v['y']}) the whole sketch and the given fractions are on the screen; its {'options' if kind == 'pick' else 'boxes'} " + ("too" if v["inputsOn"] else f"end {v['inputsBelow']} px below it (REPORTED)"),
+                       v["y"] == 0 and v["sketchAllOn"] and v["lineOn"])
+            else:
+                checkf(f"fold ew9 Q{n} step {k} ({kind}): after its auto-scroll the given fractions and every {'option' if kind == 'pick' else 'box'} are on the screen with the sketch's bottom edge ({v['seen']} of {v['sh']} px of the sketch)",
+                       v["sketchBottomOn"] and v["lineOn"] and v["inputsOn"])
         SCREEN8_JS = r"""(k) => {
           const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`);
           const bar = document.querySelector('.topbar');
@@ -2568,6 +3022,7 @@ try:
                                 page.evaluate("(k) => { const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k})`); const g = st.querySelector('.ewpad-grid').getBoundingClientRect(); window.scrollTo({ top: Math.max(0, window.scrollY + g.bottom + 8 - window.innerHeight), behavior: 'instant' }); }", k)
                                 vshot(page, f"fold-ew7-q{n}-s{k}-bank-best.png")
                                 page.evaluate("(y) => window.scrollTo({ top: y, behavior: 'instant' })", y_keep)
+                        if R["id"] == "ew9": fold9(k, n, "build")
                         if R["id"] == "ew6":
                             v6 = page.evaluate(BANKVIS_JS, k)
                             ew6_vis.append({"where": f"ew6 Q{n} s{k}", "role": st["role"], "auto": auto, **v6})
@@ -2607,6 +3062,7 @@ try:
                             vshot(page, f"ew8-fold-q{n}-start.png")
                             checkf(f"{tag}: ew8, at the question's start (scrollY {v8['y']}) the whole sketch ({v8['seen']} of {v8['sh']} px), the fractions and both buttons are on the screen together ({v8['room']} px to spare under the buttons)",
                                    v8["y"] == 0 and v8["sketchOn"] and v8["givenOn"] and v8["btnsOn"])
+                        if R["id"] == "ew9": fold9(k, n, "pick")
                         if R["id"] == "ew5":
                             v = page.evaluate(SKVIS_JS, k)
                             ew5_vis.append({"where": f"ew5 Q{n} s{k}", "kind": "HEIGHT" if q["id"] in ("ew5q1", "ew5q3", "ew5q6") else "ANGLE", **v})
@@ -2803,6 +3259,29 @@ print("  ew8 cards at 375 px")
 for P, c in ew8_cards:
     if c: print(f"    {P:7} {(c['sim'] + ' ' + c['simRs'] + ' | ') if c['sim'] else ''}{' = '.join(a + '/' + b for a, b in c['fr'])} {c['rs']}   rows {c['units']}, right {c['right']}px of {c['vw']}")
 
+print("\new9 CHECKS")
+print(f"  {'ok  ' if ew9_locked_before else 'FAIL'} ew9 locked on the map before ew8 is passed")
+for name, ok in ew9_checks: print(f"  {'ok  ' if ok else 'FAIL'} {name}")
+print(f"  {sum(1 for _, ok in ew9_checks if ok) + (1 if ew9_locked_before else 0)} of {len(ew9_checks) + 1} ew9 checks pass")
+print("  ew9 sketches (screen px): the tightest label-to-arc, arc-to-arc, arc-to-arrow, mark-to-label and mark/star-to-arc clearances (at least 4), and an angle mark to the side arc leaving its OWN corner (across that side, reported)")
+mins9 = {}
+for P, stage, a in ew9_arcs:
+    parts = []
+    for key, name in [("labTight", "label-arc"), ("arcTight", "arc-arc"), ("arrowTight", "arc-arrow"), ("markTight", "mark-label"), ("markArcTight", "mark-arc"), ("markOwnArc", "mark-own-corner-arc")]:
+        t = a.get(key)
+        if t:
+            parts.append(f"{name} {t['d']}px ({t['what']})")
+            if name not in mins9 or t["d"] < mins9[name][0]: mins9[name] = (t["d"], f"{P} {stage}: {t['what']}")
+    print(f"    {P:7} {stage:13} " + ("; ".join(parts) or "no arcs or marks"))
+    if a["nested"]: print("            nested: " + "; ".join(f"{x['outer']} over {x['inner']} from {x['at']}: sag {x['outerSag']} over {x['innerSag']}, gap {x['gap']}" for x in a["nested"]))
+for name, (d, what) in mins9.items(): print(f"  SMALLEST {name} clearance {d}px ({what})")
+print("  ew9 last lines (the last two words on one line)")
+for P, what, o in ew9_orphans:
+    print(f"    {'ok  ' if o and o['ok'] else 'FAIL'} {P:7} {what:12} ends '{o and o['last']}'")
+print("  ew9 cards at 375 px")
+for P, c in ew9_cards:
+    if c: print(f"    {P:7} {(c['sim'] + ' | ') if c['sim'] else ''}{' = '.join(a + '/' + b for a, b in c['fr']) if c['fr'] else '(names line)'} {c['rs'] or ''}   right {c['right']}px of {c['vw']}")
+
 print("\nRAISED 2s (sup.ewf-sq: lift = the middle of its letter minus the middle of the 2, px)")
 with_sq = [r for r in sq_rows if r[1]]
 print(f"  {len(sq_rows)} states checked, {sum(r[1] for r in sq_rows)} raised 2s measured, every one inside the screen and raised; no plain ² or ^2 in any text")
@@ -2868,6 +3347,11 @@ print(f"  {'question':9} {'scrollY':>7} {'sketch':>14}  {'fractions':16} {'butto
 for r in ew8_vis:
     print(f"  {r['where']:9} {r['y']:7} {str(r['seen']) + ' of ' + str(r['sh']) + ' px':>14}  {'on, ' + str(r['givenH']) + ' px high':16} {('on, ' if r['btnsOn'] else 'NOT on, ') + str(r['btnTop']) + '..' + str(r['btnBottom']):16} {r['room']:>20} px")
 
+print("\n  ew9 at 375 x 667, every step: px of the sketch on screen together with the given fractions and the step's options or boxes")
+print(f"  {'step':10} {'kind':5} {'scrollY':>7} {'sketch':>14}  {'fractions':16} {'options / boxes':26}")
+for r in ew9_vis:
+    print(f"  {r['where']:10} {r['kind']:5} {r['y']:7} {str(r['seen']) + ' of ' + str(r['sh']) + ' px':>14}  {('on, ' if r['lineOn'] else 'NOT on, ') + str(r['lineH']) + ' px high':16} {'on' if r['inputsOn'] else 'end ' + str(r['inputsBelow']) + ' px below the screen'}")
+
 print("\n  ew7 sketches: the right angle measured on screen (dot centres, getBoundingClientRect)")
 for P, v, an in ew7_angles: print(f"  {P}: angle at {v} = {an['ang']}°, svg scale x {an['sx']} y {an['sy']}")
 print("  ew7 pattern templates (square-free and square cross steps)")
@@ -2904,6 +3388,9 @@ if saved7["xpEvents"] != [60]: fail(f"ew7 XP should be 6 questions x 10 = 60, go
 print(f"SAVING (local backend): ew8 progress {json.dumps(saved8['progress'])}, XP events {saved8['xpEvents']}")
 if not (saved8["progress"] and saved8["progress"].get("passed")): fail("ew8 not saved as passed")
 if saved8["xpEvents"] != [80]: fail(f"ew8 XP should be 8 questions x 10 = 80, got {saved8['xpEvents']}")
+print(f"SAVING (local backend): ew9 progress {json.dumps(saved9['progress'])}, XP events {saved9['xpEvents']}")
+if not (saved9["progress"] and saved9["progress"].get("passed")): fail("ew9 not saved as passed")
+if saved9["xpEvents"] != [60]: fail(f"ew9 XP should be 6 questions x 10 = 60, got {saved9['xpEvents']}")
 print(f"\nNETWORK: {len(blocked)} request(s) to other hosts blocked" + (": " + ", ".join(sorted({urlparse(u).hostname for u in blocked})) if blocked else ""))
 print(f"CONSOLE ERRORS: {len(console_errors)}")
 for e in console_errors[:10]: print("  ", e[:200])

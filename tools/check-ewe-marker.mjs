@@ -64,6 +64,16 @@
    bottom are matching sides of the two Δs; then compares with the button
    the round marks right.
 
+   ew9 (read the two triangles, or the reason, off the fractions) at the
+   very end: from each figure's coordinates and drawn lines alone the
+   oracle proves the given fractions (and, for her p.55 kind, the exam
+   line) true, decides the form (each fraction one Δ, or the tops one Δ
+   and the bottoms the other, or neither: sides in ratio), which Δ is named
+   FIRST and the corner correspondence; proves the two written names
+   similar IN THEIR ORDER (three side ratios equal); checks every lit pair
+   is two sides of the Δ it is marked as; then tries every fill of every
+   build (27 per name build, 216 per reason line) against it.
+
    Run: node tools/check-ewe-marker.mjs        (exit 1 on any disagreement) */
 import { markRatio, segLength, dist } from "../js/ewe-core.js";
 import { round, TRIANGLES } from "../js/rounds/ewe1-watter-sye.js";
@@ -74,6 +84,7 @@ import { round as round5, SKETCHES as SKETCHES5 } from "../js/rounds/ewe5-watter
 import { round as round6, SKETCHES as SKETCHES6 } from "../js/rounds/ewe6-die-trapesium.js";
 import { round as round7, SKETCHES as SKETCHES7 } from "../js/rounds/ewe7-vreemde-formaat.js";
 import { round as round8, FIGS as FIGS8 } from "../js/rounds/ewe8-driehoeke-of-sye.js";
+import { round as round9, FIGS as FIGS9 } from "../js/rounds/ewe9-lees-dit-af.js";
 
 const REL = 1e-9;             // "equal" for lengths that are equal by construction
 const GAP = 1e-3;             // anything closer than this that is NOT forced is an accident
@@ -1105,5 +1116,179 @@ for (const r of rows8) {
 }
 console.log(`TOTAL     ${rows8.length} questions, ${D8} disagreements, ${rows8.filter(r => r.oracle === "BUILD ERROR").length} build errors`);
 
+/* ---------------- ew9: "Lees dit af" ----------------
+   The ew9 ORACLE, written from her rules and the figure, never from the
+   round's answers. It reads FIGS9 (the coordinates, the drawn lines, the
+   given fractions by their letters and, for her p.55 kind, the exam line):
+     a triangle  three different points, not on one line, each of its three
+                 sides lying on a drawn line
+     true        every given equality from the coordinates (rel 1e-9); for
+                 her p.55 kind also the exam line QR² = RS · RP
+     the form    WITHIN when each fraction's two sides make a triangle (her
+                 rule 24: QR/RS = RP/QR, JK/FK = GH/FH); else ACROSS when the
+                 two tops make one and the two bottoms the other (AD/AB =
+                 DE/BC); else NEITHER, sides in ratio (the round must then
+                 ask for the reason line)
+     first       within: the LEFT fraction's Δ; across: the TOPS' Δ (ew8's
+                 foreman rule)
+     the pairing within a/b = c/d pairs a with c and b with d; across, a with
+                 b and c with d. The corner the two sides of one Δ share
+                 goes to the corner the other two share; the other ends
+                 follow; the third corner goes to the third
+     similar     the two names AS WRITTEN (the given first name and the right
+                 fill of the name build): the three side ratios equal (rel
+                 1e-9), corner i with corner i
+     lit pairs   the sides lit in colour 1 (arcs on the sketch and the
+                 coloured cells of the given line) are exactly the first Δ's
+                 two sides of the fractions, both of them sides of the Δ the
+                 first pick marks right; colour 2 the same for the second
+     every fill  of every name build (its 3 letters in 3 boxes, 27): right
+                 when the written order is similar by the side ratios, a
+                 repeated corner never; of every reason line (6 chips in 3
+                 boxes, 216): right when box 1 is a triangle whose two sides
+                 the ∥ line cuts strictly inside, and boxes 2 and 3 are that
+                 line and the third side of that triangle, measured ∥, in
+                 either order. Against markRatio (mode "name" → markName,
+                 mode "exact" with `free` → markExact), 0 disagreements;
+                 every reason the marker gives has its hint, every hint
+                 fires, the shown answer is right. */
+const rows9 = [];
+let D9 = 0, MAXREL9 = 0;
+const dist9 = (P, Q) => Math.hypot(P.x - Q.x, P.y - Q.y);
+for (const q of round9.eweQuestions) {
+  const F = FIGS9[q.id], P = F.pts;
+  const err = [];
+  const near = (X, Y) => dist9(X, Y) < 1e-9;
+  const len = s => dist9(P[s[0]], P[s[1]]);
+  const rel = (x, y) => Math.abs(x - y) / Math.max(Math.abs(x), Math.abs(y));
+  const onDrawn = (X, Y) => F.lines.some(([a, b]) => [X, Y].every(k => lineDist(P[a], P[b], P[k]) < 1e-9 && onSegment(P[a], P[b], P[k])));
+  const isTri = L => L.length === 3 && new Set(L).size === 3 && L.every(k => P[k])
+    && Math.abs(cross(vec(P[L[0]], P[L[1]]), vec(P[L[0]], P[L[2]]))) > 1e-6
+    && onDrawn(L[0], L[1]) && onDrawn(L[1], L[2]) && onDrawn(L[0], L[2]);
+  const letters = (s, t) => [...new Set([...s, ...t])];
+  const shared = (s, t) => [...s].find(c => t.includes(c));
+  /* 1 · the given fractions, and the exam line, true */
+  const [[a, b], [c, d]] = F.fracs;
+  const fr = rel(len(a) / len(b), len(c) / len(d));
+  let worst = fr;
+  if (!(fr < REL)) err.push(`the given fractions are not equal (rel ${fr})`);
+  let exam = "-";
+  if (F.exam) {
+    const [sq, p1, p2] = F.exam, er = rel(len(sq) ** 2, len(p1) * len(p2));
+    worst = Math.max(worst, er);
+    exam = `${sq}² = ${p1} · ${p2} (rel ${er.toExponential(1)})`;
+    if (!(er < REL)) err.push(`the exam line ${sq}² = ${p1} · ${p2} is not true (rel ${er})`);
+  }
+  /* 2 · the form, from the figure */
+  const within = isTri(letters(a, b)) && isTri(letters(c, d)) && letters(a, b).sort().join() !== letters(c, d).sort().join();
+  const across = !within && isTri(letters(a, c)) && isTri(letters(b, d)) && letters(a, c).sort().join() !== letters(b, d).sort().join();
+  const form = within ? "within" : across ? "across" : "sides";
+  const want = form === "sides" ? "sye" : "driehoeke";
+  if (q.kind !== want) err.push(`the figure says ${form}, the round has a "${q.kind}" question`);
+  let tried = 0, accepted = 0, rejected = 0, disagree = 0, sim = "-", lit = "-", first = "-", order = "-";
+  const why = {};
+  const fills = (chips, k) => { let fs = [[]]; for (let i = 0; i < k; i++) fs = fs.flatMap(f => chips.map(x => [...f, x])); return fs; };
+  const runFills = (step, oracle) => {
+    for (const fill of fills(step.chips, step.answer.length)) {
+      tried++;
+      const o = oracle(fill), v = markRatio(fill, step.spec);
+      why[v.why] = (why[v.why] || 0) + 1;
+      if (v.ok) accepted++; else rejected++;
+      if (v.ok !== o) { disagree++; if (disagree <= 5) err.push(`fill ${fill.join(" ")}: marker ${v.ok} (${v.why}), oracle ${o}`); }
+      if (!v.ok && v.why !== "pattern" && !(step.hints && step.hints[v.why])) err.push(`the marker says "${v.why}" and the step has no hint for it`);
+    }
+    if (!markRatio(step.answer, step.spec).ok) err.push("its own shown answer is marked wrong");
+    const extra = Object.keys(step.hints || {}).filter(k => k !== "pattern" && !why[k]);
+    if (extra.length) err.push(`hints ${extra} never fire`);
+    if (!(step.hints && step.hints.pattern) && why.pattern) err.push("no pattern hint");
+  };
+  if (form !== "sides") {
+    /* 3 · which Δ first, and the pairing, from the fractions */
+    const [s1, s2] = within ? [[a, b], [c, d]] : [[a, c], [b, d]];     // the first Δ's two sides, the second's
+    const pairs = within ? [[a, c], [b, d]] : [[a, b], [c, d]];         // side of the first ↔ side of the second
+    const T1 = letters(...s1), T2 = letters(...s2);
+    const map = {};
+    const v1 = shared(...s1), v2 = shared(...s2);
+    map[v1] = v2;
+    for (const [x, y] of pairs) { const xo = [...x].find(k => k !== v1), yo = [...y].find(k => k !== v2); if (xo && yo && !(xo in map)) map[xo] = yo; }
+    const third1 = T1.find(k => !(k in map)), third2 = T2.find(k => !Object.values(map).includes(k));
+    if (third1) map[third1] = third2;
+    const written1 = q.tris.first, step3 = q.steps.find(st => st.type === "build");
+    const written2 = step3 ? step3.answer.join("") : "";
+    first = `${written1} (${form === "within" ? "the left fraction's Δ" : "the tops' Δ"} is ${T1.join("")})`;
+    if ([...written1].sort().join() !== [...T1].sort().join()) err.push(`the first name ${written1} is not the ${form === "within" ? "left fraction's" : "tops'"} Δ ${T1.join("")}`);
+    const paired = [...written1].every((k, i) => map[k] === written2[i]);
+    order = `${written1} → ${written2}: ${paired ? "" : "NOT "}corner by corner as the fractions pair them`;
+    if (!paired) err.push(`Δ ${written1} ||| Δ ${written2} does not pair the corners as the fractions do (${JSON.stringify(map)})`);
+    /* 4 · similar in the WRITTEN order, from the coordinates */
+    const simOf = (X, Y) => {
+      if (new Set(Y).size < 3 || !isTri([...Y])) return null;
+      const r = [[0, 1], [1, 2], [0, 2]].map(([i, j]) => len(X[i] + X[j]) / len(Y[i] + Y[j]));
+      return Math.max(rel(r[0], r[1]), rel(r[1], r[2]), rel(r[0], r[2]));
+    };
+    const sr = simOf(written1, written2);
+    worst = Math.max(worst, sr ?? 1);
+    sim = `${sr != null ? sr.toExponential(1) : "not a Δ"}`;
+    if (!(sr != null && sr < REL)) err.push(`Δ ${written1} and Δ ${written2} are not similar in the written order (rel ${sr})`);
+    /* 5 · the lit pairs: arcs and coloured cells, against the Δ each pick marks right */
+    const picks = q.steps.filter(st => st.type === "pick");
+    const right = picks.map(st => { const r = st.options.filter(o => o.correct); return r.length === 1 ? r[0].text.replace(/^Δ\s/, "") : null; });
+    const sideOf = (s, tri) => [...s].every(k => tri.includes(k));
+    const key = s => [...s].sort().join("");
+    const arcsLit = (sk, k) => (sk.sideArcs || []).filter(x => x.tone === k && !x.hidden).map(x => key(x.from + x.to)).sort();
+    const cellsLit = (line, k) => line.fracs.flatMap(f => [[f.n, (f.tone || [])[0]], [f.d, (f.tone || [])[1]]]).filter(([, t]) => t === k).map(([s]) => key(s)).sort();
+    const lit1 = { arcs: arcsLit(q.sketch, 1), cells: cellsLit(q.fracLine, 1) };
+    const lit2 = { arcs: arcsLit(picks[0].sketchAfter, 2), cells: cellsLit(picks[0].fracLineAfter, 2) };
+    const w1 = s1.map(key).sort(), w2 = s2.map(key).sort();
+    const ok1 = lit1.arcs.join() === w1.join() && lit1.cells.join() === w1.join() && right[0] && s1.every(s => sideOf(s, right[0])) && key(right[0]) === key(T1.join(""));
+    const ok2 = lit2.arcs.join() === w2.join() && lit2.cells.join() === w2.join() && right[1] && s2.every(s => sideOf(s, right[1])) && key(right[1]) === key(T2.join(""));
+    lit = `colour 1 ${w1.join(", ")} → Δ ${right[0]} ${ok1 ? "ok" : "NOT"}; colour 2 ${w2.join(", ")} → Δ ${right[1]} ${ok2 ? "ok" : "NOT"}`;
+    if (!ok1) err.push(`colour 1 lights ${JSON.stringify(lit1)}, want ${w1} (sides of Δ ${T1.join("")}), pick 1 marks ${right[0]}`);
+    if (!ok2) err.push(`colour 2 lights ${JSON.stringify(lit2)}, want ${w2} (sides of Δ ${T2.join("")}), pick 2 marks ${right[1]}`);
+    /* every wrong pick option carries a hint, and only one is right */
+    picks.forEach((st, i) => { if (st.options.filter(o => o.correct).length !== 1 || st.options.some(o => !o.correct && !o.hint)) err.push(`pick ${i + 1}: not exactly one right option, or a wrong one without a hint`); });
+    /* 6 · every fill of the name build */
+    if (!step3 || step3.spec.mode !== "name") err.push("no name build");
+    else {
+      if ([...step3.chips].sort().join() !== [...T2].sort().join()) err.push(`the name build's chips ${step3.chips} are not the letters of Δ ${T2.join("")}`);
+      runFills(step3, fill => { const r = simOf(written1, fill.join("")); return r != null && r < REL; });
+    }
+  } else {
+    /* 6 · every fill of the reason line: lyn ∥ een sy v. Δ ☐, ☐ ∥ ☐ */
+    const step = q.steps.find(st => st.type === "build");
+    const strictlyIn = (X, Y, Z) => lineDist(P[X], P[Y], P[Z]) < 1e-9 && onSegment(P[X], P[Y], P[Z]) && !near(P[Z], P[X]) && !near(P[Z], P[Y]);
+    const par = (s, t) => Math.abs(cross(vec(P[s[0]], P[s[1]]), vec(P[t[0]], P[t[1]]))) / (len(s) * len(t)) < 1e-9;
+    const reasonOk = ([T, l1, l2]) => {
+      if (T.length !== 3 || l1.length !== 2 || l2.length !== 2 || !isTri([...T]) || key2(l1) === key2(l2)) return false;
+      if (!onDrawn(l1[0], l1[1]) || !onDrawn(l2[0], l2[1]) || !par(l1, l2)) return false;
+      const sides = [[T[0], T[1]], [T[1], T[2]], [T[0], T[2]]];
+      /* the cutting line: each end strictly inside a DIFFERENT side of the Δ */
+      const cuts = l => { const hit = [...l].map(e => sides.findIndex(([x, y]) => strictlyIn(x, y, e))); return hit.every(h => h >= 0) && hit[0] !== hit[1] ? hit : null; };
+      const third = (l, hit) => sides.some(([x, y], i) => !hit.includes(i) && key2(x + y) === key2(l));
+      const h1 = cuts(l1), h2 = cuts(l2);
+      return (!!h1 && third(l2, h1)) || (!!h2 && third(l1, h2));
+    };
+    function key2(s) { return [...s].sort().join(""); }
+    if (!step || step.spec.mode !== "exact" || !step.spec.free) err.push("no reason-line build (exact, with an order-free pair)");
+    else runFills(step, reasonOk);
+    /* the given fractions: pieces on two lines (her ew8 rule): every segment lies on a drawn line */
+    if (![a, b, c, d].every(s => onDrawn(s[0], s[1]))) err.push("a given segment is not drawn");
+  }
+  MAXREL9 = Math.max(MAXREL9, worst);
+  D9 += disagree;
+  problems += err.length;
+  err.forEach(e => console.error(`✗ ${q.id}: ${e}`));
+  rows9.push({ q: q.id, form, fr: `${a}/${b} = ${c}/${d}`, rel: fr, exam, first, order, sim, lit, tried, accepted, rejected, disagree, why });
+}
+console.log("\new9 (the triangles read off the fractions, or the reason line; from the coordinates; every fill of every build)");
+console.log("question  form     given           equal (rel)  first named / pairing / similar in the written order (rel)");
+for (const r of rows9) {
+  console.log(`${r.q.padEnd(9)} ${r.form.padEnd(8)} ${r.fr.padEnd(15)} ${r.rel.toExponential(1).padStart(11)}  ${r.form === "sides" ? "sides in ratio: the reason line" : `${r.first}; ${r.order}; similar ${r.sim}`}`);
+  if (r.exam !== "-") console.log(`          exam line ${r.exam}`);
+  if (r.lit !== "-") console.log(`          lit ${r.lit}`);
+  console.log(`          fills ${r.tried}, accepted ${r.accepted}, rejected ${r.rejected}, disagreements ${r.disagree}; rejected because: ${Object.entries(r.why).filter(([k]) => k !== "ok").map(([k, v]) => `${k} ${v}`).join(", ")}`);
+}
+console.log(`TOTAL     ${rows9.length} questions, ${rows9.reduce((s, r) => s + r.tried, 0)} fills, ${D9} disagreements, largest error in an equality that must hold ${MAXREL9.toExponential(1)}`);
+
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, every ew7 line is true in its own generic figure, every ew6 fill agrees with the shoelace areas, and every ew8 question's marked button is the kind its figure gives, every shown equality true.");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, every ew7 line is true in its own generic figure, every ew6 fill agrees with the shoelace areas, every ew8 question's marked button is the kind its figure gives, every shown equality true, and every ew9 name and reason line agrees with the figure.");
