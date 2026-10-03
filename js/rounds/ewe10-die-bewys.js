@@ -91,8 +91,10 @@ const CARD_TIP = "Die konstruksie kry ook punte: skryf dit altyd eerste.";
    intro    the question's first sentence
    lead     the Gegee / Bewys line ({ given } or Q3's { pre })
    konShown step 1's shown line: the heights only, never the joins
-   konCard  the card's konstruksie (everything, the joins too) */
-function proofQ(id, { F, proof, intro, lead, konShown, konCard }) {
+   konCard  the card's konstruksie (everything, the joins too)
+   edge     the room every view keeps for the arcs (sketch units), so all
+            views share one scale: the phone walk measures the size */
+function proofQ(id, { F, proof, intro, lead, konShown, konCard, edge = 10 }) {
   const P = F.corner, [Q, R] = F.ends, [S, T] = F.cuts, n = F.names, tri = F.tri;
   const [H1, H2] = [F.hSpec[0].label, F.hSpec[1].label];   // the height of the PQ step, of the PR step
   const two = proof === 2;
@@ -103,7 +105,9 @@ function proofQ(id, { F, proof, intro, lead, konShown, konCard }) {
   const cellOf = t => ({ t: `Opp${NB}Δ${NB}${t}`, tint: tone[t] });
 
   /* ---- the sketch states ---- */
-  const base = { ...F.sketch, labBox: true, boxClear: true, labGap: 2, edge: 10,
+  /* edge: room for the arcs under the flat line, in the scale every view
+     shares (a whole-side bow that runs deep needs more: Q2) */
+  const base = { ...F.sketch, labBox: true, boxClear: true, labGap: 2, edge,
     fitAll: [null, F.turns.flatL, F.turns.flatR, F.turns.par] };
   const lines1 = [...F.sketch.lines, ...F.joins];
   const fill = (t, k, hole) => ({ pts: [...t], tint: k, ...(hole ? { hole } : {}) });
@@ -187,9 +191,9 @@ function proofQ(id, { F, proof, intro, lead, konShown, konCard }) {
     };
   };
   const s2 = areaStep(2, { flat: [P, Q], line: [P, S, Q], tris: [tri.small, T2], bases: [n.AD, two ? n.AB : n.DB], H: H1, Ho: H2, oLine: n.AC, sketch: flatL,
-    prompt: `Die skets is gedraai: ${n.AB} lê plat. Skryf albei oppervlaktes voluit as ½ · basis · hoogte.` });
+    prompt: `Die skets is gedraai: ${n.AB} lê plat. Skryf albei voluit as ½ · basis · hoogte, met EEN hoogte vir albei.` });
   const s3 = areaStep(3, { flat: [P, R], line: [P, T, R], tris: [tri.small, T3], bases: [n.AE, two ? n.AC : n.EC], H: H2, Ho: H1, oLine: n.AB, sketch: flatR,
-    prompt: `Nou is die skets anderkant toe gedraai: ${n.AC} lê plat. Skryf weer albei oppervlaktes voluit.` });
+    prompt: `Nou is die skets anderkant toe gedraai: ${n.AC} lê plat. Skryf weer albei voluit, met EEN hoogte vir albei.` });
 
   /* ---- step 4: the equal areas, then the reason ---- */
   const eqChips = [tri.left, tri.right, tri.small, tri.big];
@@ -259,7 +263,7 @@ function proofQ(id, { F, proof, intro, lead, konShown, konCard }) {
 
   const steps = [s1, s2, s3, s4, s4r, ...(s4s ? [s4s] : []), s5];
   const proofCard = {
-    given: lead.given || `${n.DE} ∥ ${n.BC}`, bewys, kon: konCard,
+    given: lead.given || `${n.DE} ∥ ${n.BC}`, bewys, kon: tx(konCard),
     areas: [{ tris: [{ t: tri.small, tint: "g" }, { t: T2, tint: tone[T2] }], bases: s2.answer.filter(c => c !== H1), h: H1 },
             { tris: [{ t: tri.small, tint: "g" }, { t: T3, tint: tone[T3] }], bases: s3.answer.filter(c => c !== H2), h: H2 }],
     eq: { tris: [{ t: tri.left, tint: "p" }, { t: tri.right, tint: "y" }], reason },
@@ -305,6 +309,7 @@ const Q2 = proofQ("ew10q2", {
   lead: { given: "ST ∥ QR", bewys: ["PS", "PQ", "PT", "PR"] },
   konShown: "Konstruksie: Trek hoogtelyn h en k in Δ PST.",
   konCard: "Trek hoogtelyn h en k in Δ PST. Verbind RS en QT.",
+  edge: 14,
 });
 
 /* Q3 · her exam figure (DBE 9.1): Δ ABC, M on AB, N on AC, MN ∥ BC;
@@ -325,7 +330,7 @@ const Q3 = proofQ("ew10q3", {
    again. No H or K as a point: those read like the heights h and k */
 const F4 = proofFigure({ corner: "D", ends: ["E", "F"], cuts: ["G", "J"], t: 0.56,
   tris: { left: "EGJ", right: "GJF", wholeL: "DEJ", wholeR: "DGF" },
-  xy: { D: { x: 20, y: 118 }, E: { x: 282, y: 12 }, F: { x: 298, y: 226 } } });
+  xy: { D: { x: 40, y: 119 }, E: { x: 272, y: 8 }, F: { x: 292, y: 230 } } });
 const Q4 = proofQ("ew10q4", {
   F: F4, proof: 2,
   intro: "'n Nuwe Δ, op sy sy: D wys na links. G lê op DE en J op DF, met GJ ∥ EF. Weer 'n stuk oor die hele sy.",
