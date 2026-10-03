@@ -75,6 +75,7 @@ import { round as inv5 } from "./invest05-turn-around.js";       // g6 · Invest
 import { round as inv6 } from "./invest06-explain-it.js";        // g6 · Investigation Station
 import { round as dailyExtra } from "./daily-extra.js";          // bonus daily bank (not in play order)
 import { round as dailyRiders } from "./daily-riders.js";       // harder exam-style Daily bank (typed answers)
+import { CONFIG } from "../config.js";
 
 /* ordered play sequence (Group 1 discoveries for centre=2× and semicircle
    are added in the next build step) */
@@ -163,11 +164,28 @@ const GROUP = {
   ew1: "g9", ew2: "g9", ew3: "g9", ew4: "g9", ew5: "g9", ew7: "g9",
 };
 
+/* HELD-BACK ROUNDS (CONFIG.eweHeld, added 2026-10-03). A round listed there
+   is built and approved but not released: in a browser WITHOUT `?ewe=1` it
+   is taken out of ROUNDS here, the one list everything else is built from,
+   so it is gone from EWE (the Eweredigheid map, the home card's count, the
+   next-round chain, the `ewe` route's lookup), from ROUND_BY_ID and from the
+   admin dashboard, all at once. With `?ewe=1` nothing is taken out. Node
+   tools have no `location` and see every round, so their checks keep
+   covering the held ones. `n` is counted over the FULL order before the
+   filter, so no round's displayed number ever depends on the flag. */
+const SHOW_HELD = (() => {
+  try {
+    if (typeof location === "undefined") return true;
+    return new URLSearchParams(location.search).get("ewe") === "1";
+  } catch { return false; }
+})();
+const HELD = new Set(SHOW_HELD ? [] : (CONFIG.eweHeld || []));
+
 export const ROUNDS = ORDER.map((r, i) => {
   r.n = i + 1;
   if (!r.group) r.group = GROUP[r.id] || "intro";
   return r;
-});
+}).filter(r => !HELD.has(r.id));
 export const ROUND_BY_ID = Object.fromEntries(ROUNDS.map(r => [r.id, r]));
 
 /* ------------------------------------------------------------
