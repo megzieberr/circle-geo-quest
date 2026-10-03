@@ -181,13 +181,24 @@ What it does (all against a LOCAL copy, never the live class):
     card measured; the end screen; the saving (60 XP). In the 375 x 667 fold
     walk it REPORTS per step the px of the sketch on screen with the given
     fractions and the step's options or boxes. PNGs start "ew9-".
+    Fix round (3 Oct): the pixel colour inside the smaller Δ after step 2
+    is its OWN colour (the same pixel as after step 1, blue, never the
+    grey of two tints mixed), the rest of the bigger Δ orange; the "Δ"
+    glyphs and the boxes of every build frame on ONE middle line, boxes
+    empty and full; no line of any ew9 text (intro, prompt, hint, ✓ line,
+    tip, takeaway) ends on a bare single letter or on "="; the two bows over
+    one side (kind B) at least 6 px clear in the middle; a space each side
+    of the product dot (intro and card); the name build's ✓ line written
+    like the card, "Δ ADE ||| Δ ABC"; no gap before the reason line's
+    comma.
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
 """
-import json, os, secrets, socket, subprocess, sys, time
+import io, json, os, secrets, socket, subprocess, sys, time
 from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
+from PIL import Image       # ew9 fix round: a tint's colour read off the screen's own pixels
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -2232,6 +2243,8 @@ try:
             return { takeaway: pl(m.round.takeaway.text), qs: m.round.eweQuestions.map(q => ({
               id: q.id, kind: q.kind, form: q.form || 'sides', sk: q.sketchKind || 'A', intro: pl(q.intro), fracs: q.fig.fracs, exam: q.fig.exam || null,
               tris: q.tris || null, tri: q.tri || null, outside: q.sketch.outside, par: (q.sketch.par || []).map(([a, b]) => a + b),
+              hole: q.sketches && q.sketches.after2 ? ((q.sketches.after2.tints || []).find(t => t.hole) || {}).hole || null : null,
+              rest: q.tris ? q.tris.decoy.split(' ').pop() : null,
               nestEnd: q.sketch.arcNest ? q.sketch.arcNest.end : 0.4,
               write: { tip: pl(q.write.tip), reason: q.write.reason || null, sim: q.write.names ? q.write.names.sim.map(x => x.t) : null },
               steps: q.steps.map(s => {
@@ -2263,7 +2276,7 @@ try:
   const arcs = [...svg.querySelectorAll('path.ewe-sarc')].map(p => { const pts = sample(p, 160);
     const ends = [pts[0], pts[pts.length - 1]];
     return { pts, ends, name: nameAt(ends[0]) + nameAt(ends[1]), tone: (p.getAttribute('class').match(/ewe-sarc-k(\d)/) || [])[1] || '',
-             lvl: p.classList.contains('ewe-sarc-2') ? 2 : 1, stroke: getComputedStyle(p).stroke }; });
+             lvl: p.classList.contains('ewe-sarc-2') ? 2 : 1, stroke: getComputedStyle(p).stroke, sw: parseFloat(getComputedStyle(p).strokeWidth) || 2 }; });
   const same = (n, m) => n === m || n === m[1] + m[0];
   const out = { arcs: arcs.map(a => `${a.name}:k${a.tone}`), strokes: {}, collisions: [], labels: plabs.length, alabels: svg.querySelectorAll('text.ewe-al').length,
                 at: plabs.map(t => { const b = box(t); return [t.textContent, r1(b.x0), r1(b.y0)]; }), bow: [], nested: [] };
@@ -2310,7 +2323,10 @@ try:
     if (!pa.length || !pb.length) return;
     const d = Math.min(Math.min(...pa.map(q => toPoly(q, b.pts))), Math.min(...pb.map(q => toPoly(q, a.pts)))) * sc;
     if (!aa || d < aa.d) aa = { d, what: `${a.name} and ${b.name}${shared.length ? ' (from ' + shared.map(nameAt).join('') + (coll ? `, zone ${r1(zone * sc)}px` : '') + ')' : ''}` };
-    if (coll) { const [o, n] = a.sag >= b.sag ? [a, b] : [b, a]; out.nested.push({ outer: `${o.name}:k${o.tone}`, inner: `${n.name}:k${n.tone}`, at: shared.map(nameAt).join(''), outerSag: r1(o.sag * sc), innerSag: r1(n.sag * sc), gap: r1(d) });
+    /* fix round: two bows over the SAME side (twin): the gap in the middle,
+       centre line to centre line, and clear of both strokes */
+    if (coll) { const [o, n] = a.sag >= b.sag ? [a, b] : [b, a]; out.nested.push({ outer: `${o.name}:k${o.tone}`, inner: `${n.name}:k${n.tone}`, at: shared.map(nameAt).join(''), outerSag: r1(o.sag * sc), innerSag: r1(n.sag * sc), gap: r1(d),
+        twin: shared.length === 2, mid: r1((o.sag - n.sag) * sc), midClear: r1((o.sag - n.sag - (o.sw + n.sw) / 2) * sc) });
       if (!(o.sag > n.sag + 3)) out.collisions.push(`nested arcs ${o.name} over ${n.name} not at different heights`); }
     if (d < 4) out.collisions.push(`arcs ${a.name} and ${b.name} ${d.toFixed(1)}px apart (< 4)`); }));
   out.arcTight = aa ? { d: r1(aa.d), what: aa.what } : null;
@@ -2353,7 +2369,14 @@ try:
   eqa.forEach((pts, i) => { const q = pts[20]; if (!inside(q.x, q.y)) out.collisions.push(`angle mark ${i + 1} is not inside the Δ`); });
   /* every point label outside the whole Δ (so never inside a tint) */
   plabs.forEach(t => { const r = box(t); if ([[r.x0, r.y0], [r.x1, r.y0], [r.x0, r.y1], [r.x1, r.y1], [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2]].some(([x, y]) => inside(x, y))) out.collisions.push(`${t.textContent} sits inside the Δ`); });
-  out.tints = [...svg.querySelectorAll('polygon.ewe-tint')].map(p => p.getAttribute('class').match(/ewe-tint-(k?\d)/)[1] + ':' + p.getAttribute('points').split(' ').map(s => { const [x, y] = s.split(',').map(Number); return nameAt({ x, y }); }).join(''));
+  /* fix round: a tint with a hole (data-outer: its outline's corners, then
+     the outline closed, then the hole's corners): the outline by name, and
+     the hole apart (out.holes) */
+  const tintNames = p => p.getAttribute('points').split(' ').map(s => { const [x, y] = s.split(',').map(Number); return nameAt({ x, y }); });
+  out.tints = [...svg.querySelectorAll('polygon.ewe-tint')].map(p => { const k = +(p.dataset.outer || 0), nm = tintNames(p);
+    return p.getAttribute('class').match(/ewe-tint-(k?\d)/)[1] + ':' + (k ? nm.slice(0, k) : nm).join(''); });
+  out.holes = [...svg.querySelectorAll('polygon.ewe-tint[data-outer]')].map(p => { const k = +p.dataset.outer, nm = tintNames(p);
+    return { k: p.getAttribute('class').match(/ewe-tint-(k?\d)/)[1], outer: nm.slice(0, k).join(''), hole: nm.slice(k + 1, k + 4).join(''), rule: p.getAttribute('fill-rule') }; });
   out.tintFill = [...svg.querySelectorAll('polygon.ewe-tint')].map(p => getComputedStyle(p).fill);
   return out; }"""
         NAMES9_JS = r"""(sel) => {
@@ -2411,6 +2434,100 @@ try:
                    rs: rs ? rs.textContent.replace(/ /g, ' ') : null, rsRows: rs ? rows(rs) : 0,
                    right: Math.round(Math.max(...[...c.querySelectorAll('*')].map(e => e.getBoundingClientRect().right))), vw,
                    tip: (c.querySelector('.ewe-write-tip') || {}).textContent ? c.querySelector('.ewe-write-tip').textContent.replace(/ /g, ' ') : '' }; }"""
+        # ---- fix round (3 Oct): the measurements behind items 1 to 9 ----
+        PT9_JS = r"""(arg) => {
+          /* the centre of the smaller Δ and of the rest of the bigger one (the
+             decoy shape), in px from the sketch's top left, and how far each
+             is from the nearest line, mark or label (so 3 x 3 px there are fill) */
+          const svg = document.querySelector(`.ewe-q[data-q='${arg.q}'] .q-diagram svg`);
+          const dots = [...svg.querySelectorAll('circle')], labs = [...svg.querySelectorAll('text.pl')].filter(t => !t.classList.contains('ewe-al'));
+          const at = {}; dots.forEach((c, i) => { at[labs[i].textContent] = { x: +c.getAttribute('cx'), y: +c.getAttribute('cy') }; });
+          const m = svg.getScreenCTM(), r = svg.getBoundingClientRect();
+          const cen = ks => { const p = [...ks].map(k => at[k]); return { x: p.reduce((s, q) => s + q.x, 0) / p.length, y: p.reduce((s, q) => s + q.y, 0) / p.length }; };
+          const segD = (q, [x1, y1, x2, y2]) => { const dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy; let t = ((q.x - x1) * dx + (q.y - y1) * dy) / L2; t = Math.max(0, Math.min(1, t)); return Math.hypot(q.x - x1 - t * dx, q.y - y1 - t * dy); };
+          const lines = [...svg.querySelectorAll('line.ln')].map(l => ['x1','y1','x2','y2'].map(k => +l.getAttribute(k)));
+          const marks = [...svg.querySelectorAll('path.mk')].flatMap(p => { const L = p.getTotalLength(); return Array.from({ length: 41 }, (_, i) => p.getPointAtLength(L * i / 40)); });
+          const boxes = labs.map(t => t.getBBox());
+          const sc = m.a;
+          const clear = q => Math.min(...lines.map(l => segD(q, l)), ...marks.map(p => Math.hypot(p.x - q.x, p.y - q.y)),
+            ...boxes.map(b => Math.hypot(Math.max(0, b.x - q.x, q.x - b.x - b.width), Math.max(0, b.y - q.y, q.y - b.y - b.height)))) * sc;
+          const scr = p => ({ x: m.a * p.x + m.c * p.y + m.e - r.left, y: m.b * p.x + m.d * p.y + m.f - r.top, clear: Math.round(clear(p) * 10) / 10 });
+          return { small: scr(cen(arg.small)), rest: scr(cen(arg.rest)) }; }"""
+        def tint_px9(qid, small, rest):
+            # the screen's own pixels (an element screenshot), the per-channel
+            # median of 3 x 3 px at each centre
+            p = page.evaluate(PT9_JS, {"q": qid, "small": small, "rest": rest})
+            img = Image.open(io.BytesIO(page.locator(f".ewe-q[data-q='{qid}'] .q-diagram svg").screenshot())).convert("RGB")
+            def at(c):
+                x, y = int(c["x"]), int(c["y"])
+                px = [img.getpixel((x + dx, y + dy)) for dx in (-1, 0, 1) for dy in (-1, 0, 1)]
+                return tuple(sorted(v[i] for v in px)[4] for i in range(3))
+            return {"small": at(p["small"]), "rest": at(p["rest"]), "clear": min(p["small"]["clear"], p["rest"]["clear"])}
+        ENDS9_JS = r"""(sel) => {
+          /* the visual lines of a text: its words (runs of glyphs between
+             spaces, a raised 2 part of its word), each line's LAST word */
+          const all = document.querySelectorAll(sel); const el = all[all.length - 1]; if (!el || !el.getClientRects().length) return null;
+          const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); const ch = []; let t;
+          while ((t = w.nextNode())) for (let i = 0; i < t.textContent.length; i++) ch.push([t, i, t.textContent[i]]);
+          const toks = []; let cur = null;
+          ch.forEach(c => { if (/[\s\u00A0]/.test(c[2])) { cur = null; return; } if (!cur) { cur = { first: c, text: '' }; toks.push(cur); } cur.text += c[2]; });
+          const box = ([n, i]) => { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); const q = [...r.getClientRects()].filter(x => x.width > 0); return q.length ? q[0] : null; };
+          const rows = []; let row = null;
+          toks.forEach(k => { const q = box(k.first); if (!q) return; if (!row || q.top >= row.bottom - 2) { row = { bottom: q.bottom, words: [] }; rows.push(row); } else row.bottom = Math.max(row.bottom, q.bottom); row.words.push(k.text); });
+          const ends = rows.map(r => r.words[r.words.length - 1]);
+          /* lone: a BARE single letter (it belongs with the words after it, "S" /
+             "lê op PR"), or an "=" or "·" (an equation split); a letter that
+             closes its clause ("die letter D.", "by A,") reads with its line */
+          const lone = x => /^[A-Za-zΔ]$/.test(x) || x === '=' || x === '·';
+          return { rows: rows.length, ends, bad: ends.slice(0, -1).filter(lone) }; }"""
+        ew9_ends = []
+        def ends9(sel, P, what):
+            e = page.evaluate(ENDS9_JS, sel)
+            ew9_ends.append((P, what, e))
+            check9(f"{P}: no line of the {what} ends on a bare single letter or on '=' ({e and e['rows']} line(s), ending: {' | '.join(e['ends']) if e else '?'})", bool(e) and not e["bad"])
+        DOT9_JS = r"""(sel) => {
+          /* the room each side of a product dot: px from the glyph before it to
+             the dot, and from the dot to the glyph after it */
+          const el = document.querySelector(sel); if (!el) return null;
+          const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); const ch = []; let t;
+          while ((t = w.nextNode())) for (let i = 0; i < t.textContent.length; i++) ch.push([t, i, t.textContent[i]]);
+          const rect = ([n, i]) => { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); return r.getBoundingClientRect(); };
+          const out = [];
+          ch.forEach((c, k) => { if (c[2] !== '·') return;
+            let a = k - 1; while (a >= 0 && /[\s\u00A0]/.test(ch[a][2])) a--;
+            let b = k + 1; while (b < ch.length && /[\s\u00A0]/.test(ch[b][2])) b++;
+            const me = rect(c);
+            out.push({ before: a >= 0 ? Math.round((me.left - rect(ch[a]).right) * 10) / 10 : null, after: b < ch.length ? Math.round((rect(ch[b]).left - me.right) * 10) / 10 : null }); });
+          return out; }"""
+        MID9_JS = r"""() => {
+          /* the frame's middle line: the vertical centre of every "Δ" glyph in
+             its words and of every box */
+          const d = document.querySelector('.ewe-step:last-child .ewpad-disp'); if (!d) return null;
+          const r1 = v => Math.round(v * 10) / 10;
+          const glyph = e => { const t = [...e.childNodes].find(n => n.nodeType === 3 && n.textContent.includes('Δ')); if (!t) return null;
+            const i = t.textContent.indexOf('Δ'), r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + 1); const q = r.getBoundingClientRect(); return r1((q.top + q.bottom) / 2); };
+          const deltas = [...d.querySelectorAll('.ewpad-fx')].map(glyph).filter(v => v != null);
+          const boxes = [...d.querySelectorAll('.ewslot')].map(e => { const q = e.getBoundingClientRect(); return r1((q.top + q.bottom) / 2); });
+          const all = [...deltas, ...boxes];
+          return { deltas, boxes, spread: r1(Math.max(...all) - Math.min(...all)), mid: d.classList.contains('is-mid') }; }"""
+        DONE9_JS = r"""(k) => {
+          /* the finished name build in its ✓ line */
+          const f = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-fb`); if (!f) return null;
+          const d = f.querySelector('.ewn-done');
+          const g = d ? document.createRange() : null; if (g) g.selectNodeContents(d);
+          return { text: d ? d.textContent.replace(/\u00A0/g, ' ') : null, names: d ? [...d.querySelectorAll('[class*=ewf-k]')].map(e => [e.textContent.replace(/\u00A0/g, ' '), e.className.replace('ewf-k', ''), getComputedStyle(e).color]) : [],
+                   rows: g ? new Set([...g.getClientRects()].filter(q => q.width > 0).map(q => Math.round(q.top))).size : 0, boxed: f.querySelectorAll('.ewpad-in').length }; }"""
+        COMMA9_JS = r"""(k) => {
+          /* the reason line's comma in its ✓ line: px from the last letter of
+             the filled box before it to the comma (plain text "KLM," is 0) */
+          const f = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-fb`); if (!f) return null;
+          const c = f.querySelector('.ewpad-tight'); if (!c) return { tight: false };
+          const p = c.previousElementSibling, a = p.firstChild, b = c.firstChild;
+          const r = (n, i) => { const g = document.createRange(); g.setStart(n, i); g.setEnd(n, i + 1); return g.getBoundingClientRect(); };
+          return { tight: true, box: p.textContent, gap: Math.round((r(b, 0).left - r(a, a.textContent.length - 1).right) * 10) / 10 }; }"""
+        ew9_tint = []       # (where, step, the smaller Δ's pixel, the rest's pixel)
+        ew9_mid = []        # (where, state, the frame's centres)
+        ew9_dots = []       # (where, what, the room each side of the dot)
         def tok9(fr, k):
             # the sides lit in colour k, sorted letter pairs, from a NAMES9_JS line
             out = []
@@ -2464,6 +2581,10 @@ try:
                 check9(f"{P}: the intro says the exam line {q['exam'][0]}² = {q['exam'][1]} · {q['exam'][2]} first, the 2 raised ({sq9['sups']} raised, {sq9['plain']} plain ²)", sq9["sups"] >= 1 and sq9["plain"] == 0)
             o = page.evaluate(LAST2_JS, ".ewe-intro"); ew9_orphans.append((P, "intro", o))
             check9(f"{P}: the intro's last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
+            ends9(".ewe-intro", P, "intro")
+            if q["exam"]:
+                dz = page.evaluate(DOT9_JS, ".ewe-intro"); ew9_dots.append((P, "intro", dz))
+                check9(f"{P}: the intro's product {q['exam'][1]} · {q['exam'][2]} has room each side of the dot ({dz})", bool(dz) and all(x["before"] >= 2 and x["after"] >= 2 for x in dz))
             measure(page, f"{P}: start")
             shot(page, f"ew9-q{n}-a-start.png")
             prev = a0
@@ -2478,6 +2599,7 @@ try:
                            sorted(r0["texts"]) == shapes and r0["vis"] == r0["texts"] and r0["row"] and r0["oneRow"] and r0["inside"] and r0["clipped"] == 0 and r0["prompt"] == st["prompt"])
                     want_right = f"Δ {q['tris']['first'] if k == 1 else q['tris']['second']}"
                     check9(f"{tag}: the right option is '{want_right}'", right["text"] == want_right)
+                    ends9(".ewe-step:last-child .ewe-prompt", P, f"step {k} prompt")
                     measure(page, f"{tag}: options")
                     for wi, o in enumerate(x for x in st["options"] if not x["correct"]):
                         click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
@@ -2490,6 +2612,7 @@ try:
                         check9(f"{tag}: after the wrong pick the sketch is unchanged (the same tints, arcs and labels)", a1["tints"] == prev["tints"] and sorted(a1["arcs"]) == sorted(prev["arcs"]) and a1["at"] == prev["at"])
                         o2 = page.evaluate(LAST2_JS, ".ewe-step:last-child .ewe-hint"); ew9_orphans.append((P, f"hint s{k}", o2))
                         check9(f"{tag}: the hint's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+                        if wi == 0: ends9(".ewe-step:last-child .ewe-hint", P, f"step {k} hint")
                         if wi == 0: shot(page, f"ew9-q{n}-s{k}-a-wrong.png")
                     click_btn(page, ".ewe-step:last-child .ewe-opt", right["text"])
                     measure(page, f"{tag}: right pick")
@@ -2498,6 +2621,7 @@ try:
                            r2["vis"] == [right["text"]] and r2["green"] == [right["text"]] and not r2["red"] and st["okLine"] in r2["fb"] and r2["fb"].startswith("✓"))
                     o2 = page.evaluate(LAST2_JS, f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb"); ew9_orphans.append((P, f"✓ line s{k}", o2))
                     check9(f"{tag}: the ✓ line's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+                    ends9(f".ewe-steps > .ewe-step:nth-child({k}) .ewe-fb", P, f"step {k} ✓ line")
                     a2 = page.evaluate(ARCS9_JS, arg)
                     l2 = page.evaluate(LABELS_JS)
                     label_rows.append((q["id"] + f" after step {k}", l2))
@@ -2520,6 +2644,27 @@ try:
                            sorted(names9(g2)) == sorted(want_n) and tok9(g2, 1) == p1 and tok9(g2, 2) == p2 and g2["rows"] == 1 and g2["inside"] and under_ok and g2["lowest"] <= g2["lineBottom"] + 0.5
                            and (q["form"] != "within" or all((f["under"] == "") or (f["underColor"] == (a2["strokes"].get("k1") if f["underK"] == "1" else a2["strokes"].get("k2"))) for f in g2["fr"]))
                            and (q["form"] != "across" or all(abs(s["top"] - (g2["fr"][0]["nTop"] if s["k"] == "1" else g2["fr"][0]["dTop"])) < 1.5 for s in g2["side"])))
+                    # fix round, item 1: the smaller Δ keeps ITS OWN colour (its pixel
+                    # after step 2 = its pixel after step 1, blue), the rest of the
+                    # bigger Δ orange; the bigger tint has the smaller cut out
+                    if q["hole"]:
+                        tp = tint_px9(q["id"], q["hole"], q["rest"])
+                        ew9_tint.append((P, k, tp))
+                        sp, rp = tp["small"], tp["rest"]
+                        if k == 1:
+                            px1 = sp
+                            check9(f"{tag}: inside Δ {''.join(q['hole'])} the pixel is blue {sp} (B - R {sp[2] - sp[0]}), the rest of Δ {T2} still untinted {rp}; the sampled spots {tp['clear']} px clear of every line, mark and label",
+                                   sp[2] - sp[0] >= 15 and min(rp) >= 245 and tp["clear"] >= 3)
+                        else:
+                            hz = a2["holes"]
+                            check9(f"{tag}: inside Δ {''.join(q['hole'])} the pixel stays its OWN blue {sp} (after step 1 {px1}; B - R {sp[2] - sp[0]}), not a blend; the rest of Δ {T2} orange {rp} (R - B {rp[0] - rp[2]}); the {hz[0]['k'] if hz else '?'} tint of Δ {hz[0]['outer'] if hz else '?'} has Δ {hz[0]['hole'] if hz else '?'} cut out ({hz[0]['rule'] if hz else '?'})",
+                                   len(hz) == 1 and sorted(hz[0]["hole"]) == sorted(q["hole"]) and sorted(hz[0]["outer"]) == sorted(T2) and hz[0]["rule"] == "evenodd"
+                                   and all(abs(a - b) <= 2 for a, b in zip(sp, px1)) and sp[2] - sp[0] >= 15 and rp[0] - rp[2] >= 20 and tp["clear"] >= 3)
+                    # fix round, item 5: two bows over ONE side (kind B) read as two
+                    if q["sk"] == "B":
+                        tw = [x for x in a2["nested"] if x["twin"]]
+                        check9(f"{tag}: the two bows over {tw[0]['at'] if tw else '?'} are {tw[0]['mid'] if tw else '?'} px apart in the middle, {tw[0]['midClear'] if tw else '?'} px clear of both strokes (at least 6)",
+                               len(tw) == 1 and tw[0]["midClear"] >= 6)
                     shot(page, f"ew9-q{n}-s{k}-b-right.png")
                     prev = a2
                 else:
@@ -2536,6 +2681,11 @@ try:
                                bool(f9) and f9["cells"] == want_cells and f9["inside"] and bank == sorted(st["chips"]))
                     ps = pad_state()
                     check9(f"{tag}: {len(ps['texts'])} boxes, the glow on the first", len(ps["texts"]) == len(st["answer"]) and ps["next"] == 0)
+                    ends9(".ewe-step:last-child .ewe-prompt", P, f"step {k} prompt")
+                    # fix round, item 2: the "Δ" before EMPTY boxes on the frame's one middle line
+                    mz = page.evaluate(MID9_JS); ew9_mid.append((P, "boxes empty", mz))
+                    check9(f"{tag}: boxes EMPTY, the frame on one middle line: the Δ glyphs' centres {mz and mz['deltas']}, the boxes' {mz and sorted(set(mz['boxes']))} (spread {mz and mz['spread']} px, at most 1.5)",
+                           bool(mz) and mz["mid"] and len(mz["deltas"]) == (2 if tri else 1) and mz["spread"] <= 1.5)
                     measure(page, f"{tag}: boxes empty")
                     shot(page, f"ew9-q{n}-s{k}-a-empty.png")
                     reasons = [r for r in st["hints"] if r != "pattern"] + (["pattern"] if "pattern" in st["fills"] else [])
@@ -2554,12 +2704,16 @@ try:
                         check9(f"{tag}: {' '.join(fill)} gets the '{r}' hint ('{st['hints'][r][:70]}')", st["hints"][r] in got and has(page, ".ewe-step:last-child .ewe-fb.bad"))
                         o2 = page.evaluate(LAST2_JS, ".ewe-step:last-child .ewe-hint"); ew9_orphans.append((P, f"hint {r}", o2))
                         check9(f"{tag}: the '{r}' hint's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+                        ends9(".ewe-step:last-child .ewe-hint", P, f"'{r}' hint")
                         shot(page, f"ew9-q{n}-s{k}-b{wi + 1}-{r}.png")
                     clear_pad()
                     # a reason line with the two ∥ lines the OTHER way round is right too (Q6)
                     fill = st["answer"] if not (st["free"] and n == 6) else [st["answer"][0], st["answer"][2], st["answer"][1]]
                     for c in fill: click_chip(page, c)
                     measure(page, f"{tag}: boxes full (right)")
+                    mz = page.evaluate(MID9_JS); ew9_mid.append((P, "boxes full", mz))
+                    check9(f"{tag}: boxes FULL, still one middle line: the Δ glyphs' centres {mz and mz['deltas']}, the boxes' {mz and sorted(set(mz['boxes']))} (spread {mz and mz['spread']} px, at most 1.5)",
+                           bool(mz) and mz["mid"] and len(mz["deltas"]) == (2 if tri else 1) and mz["spread"] <= 1.5)
                     shot(page, f"ew9-q{n}-s{k}-c-full.png")
                     click_btn(page, ".ewe-step:last-child .ewkey-sub")
                     measure(page, f"{tag}: marked right")
@@ -2569,6 +2723,19 @@ try:
                     check9(f"{tag}: the ✓ line, the finished line and '{st['okLine']}'", okl["text"].startswith("✓") and okl["ok"] == st["okLine"] and all(c in okl["text"] for c in fill))
                     o2 = page.evaluate(LAST2_JS, f".ewe-steps > .ewe-step:nth-child({k}) .ewe-okline"); ew9_orphans.append((P, "✓ line", o2))
                     check9(f"{tag}: the ✓ line's takeaway ends on more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+                    ends9(f".ewe-steps > .ewe-step:nth-child({k}) .ewe-okline", P, "✓ line takeaway")
+                    if tri:
+                        # fix round, item 8: the finished names read like the card
+                        T1, T2 = q["tris"]["first"], q["tris"]["second"]
+                        dn = page.evaluate(DONE9_JS, k)
+                        check9(f"{tag}: the ✓ line reads like the card, '{dn and dn['text']}': " + ", ".join(f"'{t}' colour {c}" for t, c, _ in (dn['names'] if dn else [])) + f", the letters together (no boxed letters: {dn and dn['boxed']}), one row",
+                               bool(dn) and dn["text"] == f"Δ {T1} ||| Δ {T2}" and [(t, c) for t, c, _ in dn["names"]] == [(f"Δ {T1}", "1"), (f"Δ {T2}", "2")]
+                               and dn["names"][0][2] == prev["strokes"].get("k1") and dn["names"][1][2] == prev["strokes"].get("k2") and dn["boxed"] == 0 and dn["rows"] == 1)
+                    else:
+                        # fix round, item 9: no gap before the reason line's comma
+                        cz = page.evaluate(COMMA9_JS, k)
+                        check9(f"{tag}: the ✓ line's comma sits right after '{cz and cz.get('box')}' ({cz and cz.get('gap')} px, at most 0.5; plain text 'KLM,' is 0)",
+                               bool(cz) and cz["tight"] and cz["gap"] <= 0.5)
                     fz = finished(page, k)
                     check9(f"{tag}: Fold 3, its {fz['slots']} boxes and Kontroleer hidden, the prompt and the ✓ line on screen", frame_gone(fz, "✓"))
                     hats(page, f"{tag}: right")
@@ -2578,12 +2745,16 @@ try:
             ew9_cards.append((P, card))
             o2 = page.evaluate(LAST2_JS, ".ewe-write-tip"); ew9_orphans.append((P, "card tip", o2))
             check9(f"{P}: the card tip's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
+            ends9(".ewe-write-tip", P, "card tip")
+            if q["exam"]:
+                dz = page.evaluate(DOT9_JS, ".ewe-write .ewn-pre"); ew9_dots.append((P, "card", dz))
+                check9(f"{P}: the card's exam line writes {q['exam'][1]} · {q['exam'][2]} with room each side of the dot ({dz})", bool(dz) and len(dz) == 1 and all(x["before"] >= 2 and x["after"] >= 2 for x in dz))
             if tri:
                 gc = page.evaluate(NAMES9_JS, ".ewe-write .ewn")
                 T1, T2 = q["tris"]["first"], q["tris"]["second"]
                 ok = (bool(card) and bool(gc) and card["sim"] == f"Δ {T1} ||| Δ {T2}" and card["simK"] == ["1", "2"] and card["simRows"] == 1
                       and [[f["n"], f["d"]] for f in gc["fr"]] == q["fracs"] and sorted(names9(gc)) == sorted([f"Δ {T1}:k1", f"Δ {T2}:k2"]) and gc["rows"] == 1 and gc["inside"]
-                      and gc["lowest"] <= gc["lineBottom"] + 0.5 and (gc["pre"] == (f"{q['exam'][0]}2={q['exam'][1]}·{q['exam'][2]}" if q["exam"] else None)) and (gc["preSup"] == (1 if q["exam"] else 0))
+                      and gc["lowest"] <= gc["lineBottom"] + 0.5 and (gc["pre"] == (f"{q['exam'][0]}2={q['exam'][1]} · {q['exam'][2]}" if q["exam"] else None)) and (gc["preSup"] == (1 if q["exam"] else 0))
                       and card["right"] <= card["vw"] and card["tip"].startswith("Jy het nou die twee Δe") and "(∠∠∠)" in card["tip"] and "(uit |||)" in card["tip"])
                 check9(f"{P}: card = " + (f"the exam line {q['exam'][0]}² = {q['exam'][1]} · {q['exam'][2]}, " if q["exam"] else "") + f"the fractions with " + ("each Δ's name under its fraction" if q["form"] == "within" else "'bo: Δ " + T1 + "' and 'onder: Δ " + T2 + "' beside them") + f", then '{card and card['sim']}' in the two colours on one line, then where the proof comes; inside 375 px", ok)
                 if not ok: print("   card:", card, gc)
@@ -2605,6 +2776,7 @@ try:
         check9(f"ew9 end screen: the takeaway, then Q1's names card and Q2's reason card, no generic well-done line ({tk9})",
                bool(tk9) and tk9["text"] == data9["takeaway"] and tk9["cards"] == 2 and tk9["sims"] == 1 and tk9["rs"] == 1 and tk9["fr"] == 4 and "Goed gedaan" not in tk9["all"])
         o2 = page.evaluate(LAST2_JS, ".ewe-end .ewe-takeaway .ewe-write-text"); ew9_orphans.append(("ew9 end", "takeaway", o2))
+        ends9(".ewe-end .ewe-takeaway .ewe-write-text", "ew9 end", "takeaway")
         check9(f"ew9 end screen: the takeaway's last line holds more than one word ('{o2 and o2['last']}')", bool(o2) and o2["ok"])
         shot(page, "ew9-end-of-round.png")
         saved9 = page.evaluate("""() => { const s = JSON.parse(localStorage.getItem('cgg.students')); const me = Object.values(s).find(x => x.display_name === 'Demo Matric');
@@ -3273,8 +3445,19 @@ for P, stage, a in ew9_arcs:
             parts.append(f"{name} {t['d']}px ({t['what']})")
             if name not in mins9 or t["d"] < mins9[name][0]: mins9[name] = (t["d"], f"{P} {stage}: {t['what']}")
     print(f"    {P:7} {stage:13} " + ("; ".join(parts) or "no arcs or marks"))
-    if a["nested"]: print("            nested: " + "; ".join(f"{x['outer']} over {x['inner']} from {x['at']}: sag {x['outerSag']} over {x['innerSag']}, gap {x['gap']}" for x in a["nested"]))
+    if a["nested"]: print("            nested: " + "; ".join(f"{x['outer']} over {x['inner']} from {x['at']}: sag {x['outerSag']} over {x['innerSag']}, gap {x['gap']}" + (f", middle {x['mid']} px, {x['midClear']} px clear of both strokes" if x.get("twin") else "") for x in a["nested"]))
 for name, (d, what) in mins9.items(): print(f"  SMALLEST {name} clearance {d}px ({what})")
+tw9 = [x for _, _, a in ew9_arcs for x in a["nested"] if x.get("twin")]
+if tw9: print(f"  SMALLEST twin-bow middle clearance {min(x['midClear'] for x in tw9)}px (the two bows over one side, clear of both strokes; centre to centre {min(x['mid'] for x in tw9)}px)")
+print("  ew9 tint pixels (fix round): inside the smaller Δ, and the rest of the bigger one, RGB off the screen")
+for P, k, tp in ew9_tint: print(f"    {P:7} after step {k}: smaller Δ {tp['small']}, rest {tp['rest']} (spots {tp['clear']} px clear)")
+print("  ew9 build frames (fix round): the vertical centres of the Δ glyphs and the boxes, px")
+for P, state, mz in ew9_mid: print(f"    {P:7} {state:11} Δ {mz and mz['deltas']}, boxes {mz and sorted(set(mz['boxes']))}, spread {mz and mz['spread']}")
+print("  ew9 product dots (fix round): px of room before / after the dot")
+for P, what, dz in ew9_dots: print(f"    {P:7} {what:6} " + ", ".join(f"{x['before']} / {x['after']}" for x in (dz or [])))
+print(f"  ew9 line ends (fix round): {len(ew9_ends)} texts, {sum(1 for _, _, e in ew9_ends if e and not e['bad'])} with no line ending on a bare single letter or '='")
+for P, what, e in ew9_ends:
+    if not e or e["bad"] or what == "intro": print(f"    {'ok  ' if e and not e['bad'] else 'FAIL'} {P:7} {what:18} {' | '.join(e['ends']) if e else '?'}")
 print("  ew9 last lines (the last two words on one line)")
 for P, what, o in ew9_orphans:
     print(f"    {'ok  ' if o and o['ok'] else 'FAIL'} {P:7} {what:12} ends '{o and o['last']}'")
