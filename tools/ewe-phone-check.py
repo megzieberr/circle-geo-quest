@@ -211,6 +211,21 @@ What it does (all against a LOCAL copy, never the live class):
     the end screen; no line of any ew10 text ending on a single letter or
     "="; the XP. PNGs start "ew10-", listed with what each should show in
     tools/_out/ewe/ew10-png-index.md (written by this script).
+    Fix round (3 Oct): the sticky sketch's band OPAQUE at every step (its
+    computed background alpha 1, the page's --papier, a z-index, a shadow);
+    every target the player scrolls to (a new step, the "Nog nie" line and
+    hint after every wrong build and wrong pick, step 1's ✓ line during the
+    pause) lands with its top at or below the sticky sketch's bottom edge,
+    and the ✓ line above a new step is wholly in view or wholly behind the
+    sketch, never cut; step 2 is NOT on the page during its pause and
+    appears in the same moment as the turn (a MutationObserver's clock);
+    the letters h and k in every sketch state: their INK at least 4 px from
+    every line, outline, mark, arc, label and each other, beside the middle
+    of their own height (at most 5% of it along), on the side away from the
+    other height, and in the same place relative to their own line in every
+    view (along and out within 0.5 px); card ④'s reasons keep their last two
+    words together. The index starts with "FOR CHECKER 2": the PNGs that
+    best prove the fixes. The fold walk waits for a step that opens late.
 
 Run:  python tools/ewe-phone-check.py        (exit 1 on any failure)
 Needs Python Playwright with its own bundled Chromium; downloads nothing.
@@ -511,8 +526,11 @@ def new_page(browser, height=812, reduced_motion="no-preference"):
 def login(page, name, cohort, **flags):
     """Local backend only: seed a throwaway test password onto a demo
     learner of the offline store, then open home with the given flags."""
-    page.goto(url(**{"class": cohort}))
-    page.wait_for_selector(".name-btn")
+    for attempt in range(3):      # the very first load of a run sometimes stalls (3 Oct, twice): the same page again
+        try:
+            page.goto(url(**{"class": cohort})); page.wait_for_selector(".name-btn", timeout=20000); break
+        except Exception:
+            if attempt == 2: raise
     pw = secrets.token_hex(8)
     page.evaluate("""([name, pw]) => {
         const s = JSON.parse(localStorage.getItem('cgg.students'));
@@ -2854,6 +2872,128 @@ try:
             check10(f"{P}: no line of the {what} ends on a bare single letter or on '=' ({e and e['rows']} line(s), ending: {' | '.join(e['ends']) if e else '?'})", bool(e) and not e["bad"])
             o = page.evaluate(LAST2_JS, sel)
             check10(f"{P}: the {what}'s last line holds more than one word ('{o and o['last']}')", bool(o) and o["ok"])
+        # ---- ew10 fix round (3 Oct): the measures of fixes 1, 2, 3 and 9 ----
+        ew10_stick = []     # fix 1: per step, the sticky band's computed background, z-index, shadow
+        ew10_land = []      # fix 2: every scrolled-to target: where, what, its top and bottom, the sticky band's bottom, the screen
+        ew10_open2 = []     # fix 3: per question, step 2 during the pause and at the turn
+        ew10_hk = []        # fix 9: per sketch state, the letters h and k measured (ink, screen px)
+        def settle10():
+            # the player waits 80 ms before it scrolls, then glides; done when scrollY stops changing
+            page.wait_for_timeout(130)
+            last, same = None, 0
+            for _ in range(100):
+                y = page.evaluate("window.scrollY")
+                same = same + 1 if y == last else 0
+                if same >= 4: break
+                last = y
+                page.wait_for_timeout(40)
+        LAND10_JS = r"""(sels) => {
+  /* fix 2: where the targets are against the sticky sketch: the union of
+     the visible elements of `sels`, the sticky band's bottom edge, the bar */
+  const els = sels.flatMap(s => [...document.querySelectorAll(s)]).filter(e => !e.hidden && e.getClientRects().length && getComputedStyle(e).display !== 'none');
+  const fig = document.querySelector('.ewe-q > .q-diagram');
+  const bar = document.querySelector('.topbar'), head = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+  const f = fig.getBoundingClientRect(), stuck = fig.classList.contains('is-stick') && getComputedStyle(fig).position === 'sticky';
+  if (!els.length) return { n: 0, stickBottom: Math.round(f.bottom * 10) / 10, head, vh: innerHeight, stuck };
+  const rs = els.map(e => e.getBoundingClientRect());
+  const r1 = v => Math.round(v * 10) / 10;
+  return { n: els.length, top: r1(Math.min(...rs.map(r => r.top))), bottom: r1(Math.max(...rs.map(r => r.bottom))), stickBottom: r1(f.bottom), stickTop: r1(f.top), head: r1(head), vh: innerHeight, stuck,
+           y: Math.round(scrollY), text: els.map(e => e.textContent.replace(/ /g, ' ').trim()).join(' | ').slice(0, 90) }; }"""
+        def land10(P, what, sels, need_bottom=True):
+            # the target wholly in the band under the sticky sketch: its top at or below
+            # the band's bottom edge, its bottom on the screen
+            v = page.evaluate(LAND10_JS, sels)
+            ok = v["n"] > 0 and v["top"] >= v["stickBottom"] - 0.5 and (not need_bottom or v["bottom"] <= v["vh"] + 0.5)
+            ew10_land.append((P, what, v, ok))
+            check10(f"{P}: {what} lands wholly below the sticky sketch (top {v.get('top')} px, the sketch's bottom edge {v['stickBottom']} px; bottom {v.get('bottom')} of {v['vh']} px)", ok)
+            return v
+        PREVOK10_JS = r"""(k) => {
+  /* fix 2: the ✓ line of step k-1, once step k is brought in: wholly in view
+     under the sticky sketch, or wholly behind it, never cut by its edge */
+  const st = document.querySelector(`.ewe-steps > .ewe-step:nth-child(${k - 1})`); if (!st) return null;
+  const f = st.querySelector(':scope > .ewe-fb'); if (!f || f.hidden) return null;
+  const r = f.getBoundingClientRect(), b = document.querySelector('.ewe-q > .q-diagram').getBoundingClientRect();
+  const r1 = v => Math.round(v * 10) / 10;
+  return { top: r1(r.top), bottom: r1(r.bottom), stickBottom: r1(b.bottom), vh: innerHeight,
+           state: r.top >= b.bottom - 0.5 && r.bottom <= innerHeight + 0.5 ? 'in view' : r.bottom <= b.bottom + 0.5 ? 'behind the sketch' : 'CUT' }; }"""
+        STICK10_JS = r"""() => {
+  /* fix 1: the sticky band: its computed background (alpha 1 = opaque), the
+     page's own paper colour, its z-index, its shadow and rule */
+  const fig = document.querySelector('.ewe-q > .q-diagram'), cs = getComputedStyle(fig);
+  const paper = getComputedStyle(document.documentElement).getPropertyValue('--papier').trim();
+  const probe = document.createElement('i'); probe.style.color = paper; document.body.appendChild(probe); const paperRgb = getComputedStyle(probe).color; probe.remove();
+  const m = cs.backgroundColor.match(/rgba?\(([^)]+)\)/), parts = m ? m[1].split(',').map(s => parseFloat(s)) : [];
+  return { bg: cs.backgroundColor, alpha: parts.length === 4 ? parts[3] : 1, paper, paperRgb, z: cs.zIndex, pos: cs.position, shadow: cs.boxShadow, rule: cs.borderBottomWidth + ' ' + cs.borderBottomStyle }; }"""
+        HK10_JS = r"""() => {
+  /* fix 9: the letters h and k, measured on the screen. Each letter's INK
+     (the glyph drawn 10x on a canvas, its pixels scanned, then set on the
+     svg text's own baseline: the font box, getBBox, is 16 px high and holds
+     the room of accents and descenders that h and k do not have) to its own
+     dashed line, to the other one, to every other line, outline, mark (the
+     ∥ arrows, the right-angle boxes), arc and point label (screen px); the
+     font box to its own line too. Its place relative to its own line:
+     along = from the line's middle, along it; across = out from it. */
+  const svg = document.querySelector('.ewe-q .q-diagram svg');
+  if (!svg) return null;
+  const vb = svg.viewBox.baseVal, sr = svg.getBoundingClientRect(), sc = Math.min(sr.width / vb.width, sr.height / vb.height);
+  const r1 = v => Math.round(v * 100) / 100;
+  window.__inkCache = window.__inkCache || {};
+  const inkOf = (ch, size, fam, wt) => {
+    const key = [ch, size, fam, wt].join('|');
+    if (window.__inkCache[key]) return window.__inkCache[key];
+    const cv = document.createElement('canvas'); cv.width = 400; cv.height = 300;
+    const c = cv.getContext('2d'); c.font = `${wt} ${size * 10}px ${fam}`; c.textBaseline = 'alphabetic'; c.fillStyle = '#000';
+    c.fillText(ch, 100, 200);
+    const d = c.getImageData(0, 0, 400, 300).data;
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (let y = 0; y < 300; y++) for (let x = 0; x < 400; x++) if (d[(y * 400 + x) * 4 + 3] > 0) { x0 = Math.min(x0, x); x1 = Math.max(x1, x + 1); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 1); }
+    const m = c.measureText(ch);
+    const r = { x0: (x0 - 100) / 10, x1: (x1 - 100) / 10, y0: (y0 - 200) / 10, y1: (y1 - 200) / 10, asc: m.fontBoundingBoxAscent / 10 };
+    window.__inkCache[key] = r; return r;
+  };
+  const inkBox = t => {
+    const cs = getComputedStyle(t), k = inkOf(t.textContent, parseFloat(cs.fontSize), cs.fontFamily, cs.fontWeight), b = t.getBBox();
+    const base = b.y + k.asc, start = b.x;
+    return { x0: start + k.x0, x1: start + k.x1, y0: base + k.y0, y1: base + k.y1 };
+  };
+  const fbox = t => { const b = t.getBBox(); return { x0: b.x, y0: b.y, x1: b.x + b.width, y1: b.y + b.height }; };
+  const ptBox = (x, y, r) => Math.hypot(Math.max(0, r.x0 - x, x - r.x1), Math.max(0, r.y0 - y, y - r.y1));
+  const segBox = ([x1, y1, x2, y2], r) => { let m = Infinity; for (let i = 0; i <= 120; i++) m = Math.min(m, ptBox(x1 + (x2 - x1) * i / 120, y1 + (y2 - y1) * i / 120, r)); return m; };
+  const boxGap = (a, b) => Math.hypot(Math.max(0, a.x0 - b.x1, b.x0 - a.x1), Math.max(0, a.y0 - b.y1, b.y0 - a.y1));
+  const sample = (p, n) => { const L = p.getTotalLength(); return Array.from({ length: n + 1 }, (_, i) => p.getPointAtLength(L * i / n)); };
+  const segD = (px, py, [a1, b1, a2, b2]) => { const dx = a2 - a1, dy = b2 - b1, L2 = dx * dx + dy * dy; let u = ((px - a1) * dx + (py - b1) * dy) / L2; u = Math.max(0, Math.min(1, u)); return Math.hypot(px - a1 - u * dx, py - b1 - u * dy); };
+  const hts = [...svg.querySelectorAll('line.ewe-ht')].map(l => ({ k: (l.getAttribute('class').match(/ewe-ht-(\w)/) || [])[1], s: ['x1', 'y1', 'x2', 'y2'].map(a => +l.getAttribute(a)) }));
+  const lines = [...svg.querySelectorAll('line')].filter(l => !l.classList.contains('ewe-ht')).map(l => ['x1', 'y1', 'x2', 'y2'].map(a => +l.getAttribute(a)));
+  const polyPts = p => p.getAttribute('points').trim().split(/\s+/).map(s => s.split(',').map(Number));
+  const outl = [...svg.querySelectorAll('polygon.ewe-tol')].flatMap(p => { const v = polyPts(p); return v.map((q, i) => [...q, ...v[(i + 1) % v.length]]); });
+  const marks = [...svg.querySelectorAll('path.mk:not(.ewe-sarc)')].map(p => sample(p, 60));
+  const arcs = [...svg.querySelectorAll('path.ewe-sarc')].map(p => sample(p, 120));
+  const labs = [...svg.querySelectorAll('text.pl')];
+  const hl = labs.filter(t => t.classList.contains('ewe-hl')), pl = labs.filter(t => !t.classList.contains('ewe-hl'));
+  const minOf = (arr, f) => (arr.length ? Math.min(...arr.map(f)) : null);
+  const out = { letters: {} };
+  hl.forEach(t => {
+    const k = t.textContent, b = inkBox(t), own = hts.find(h => h.k === k), oth = hts.find(h => h.k !== k);
+    const [x1, y1, x2, y2] = own.s, mx = (x1 + x2) / 2, my = (y1 + y2) / 2, L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L;
+    const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2, tx = +t.getAttribute('x'), ty = +t.getAttribute('y');
+    const ac = -(tx - mx) * uy + (ty - my) * ux;
+    const o = {
+      own: r1(segBox(own.s, b) * sc), other: oth ? r1(segBox(oth.s, b) * sc) : null,
+      lines: r1(minOf(lines, l => segBox(l, b)) * sc), outlines: outl.length ? r1(minOf(outl, l => segBox(l, b)) * sc) : null,
+      marks: marks.length ? r1(minOf(marks, s => Math.min(...s.map(q => ptBox(q.x, q.y, b)))) * sc) : null,
+      arcs: arcs.length ? r1(minOf(arcs, s => Math.min(...s.map(q => ptBox(q.x, q.y, b)))) * sc) : null,
+      labels: r1(minOf(pl, p => boxGap(inkBox(p), b)) * sc), fontOwn: r1(segBox(own.s, fbox(t)) * sc),
+      mid: r1(Math.hypot(cx - mx, cy - my) * sc), len: r1(L * sc),
+      along: r1(((tx - mx) * ux + (ty - my) * uy) * sc), across: r1(ac * sc),
+      /* on the side AWAY from the other height: further from the other
+         dashed line than its own mirror image across its own line */
+      away: oth ? segD(tx, ty, oth.s) > segD(tx + 2 * ac * uy, ty - 2 * ac * ux, oth.s) : null,
+    };
+    o.worst = Math.min(...[o.own, o.other, o.lines, o.outlines, o.marks, o.arcs, o.labels].filter(v => v != null));
+    out.letters[k] = o;
+  });
+  if (hl.length === 2) out.pair = r1(boxGap(inkBox(hl[0]), inkBox(hl[1])) * sc);
+  return out; }"""
         SK10_JS = r"""(arg) => {
   /* ew10: the sketch as a learner sees it (screen px). arg = { flat, up,
      bottom, H, big } */
@@ -3085,10 +3225,45 @@ try:
                     and ((f"Gegee: {q['lead']['given']}" in bw["text"] and "Bewys:" in bw["text"]) if q["lead"].get("given") else q["lead"]["pre"] in bw["text"]))
             measure(page, f"{P}: start")
             prev_size = None
+            hk_q = []           # fix 9: this question's letter places, per sketch state
+            def hk10(where):
+                # fix 9: the letters h and k in this sketch state (ink, screen px)
+                r = page.evaluate(HK10_JS)
+                ew10_hk.append((P, where, r))
+                hk_q.append((where, r))
+                L = r["letters"] if r else {}
+                bad = [f"{k_} {x}" for k_, v in L.items() for x in
+                       ([f"{v['worst']}px from something"] if v["worst"] < 4 else []) + ([] if v["away"] else ["on the side of the other height"])
+                       + ([f"{v['along']}px from its line's middle"] if abs(v["along"]) > 0.05 * v["len"] else [])]
+                if r and r.get("pair") is not None and r["pair"] < 4: bad.append(f"h and k {r['pair']}px apart")
+                check10(f"{P} {where}: the letters beside the middles of their own heights, on the side away from the other height, at least 4 px (ink) from every line, outline, mark, arc and label ("
+                        + "; ".join(f"{k_}: {v['worst']}px clear, {v['along']}px along from the middle, {abs(v['across'])}px out" for k_, v in L.items()) + (f"; {r['pair']}px apart" if r and r.get("pair") is not None else "") + ")",
+                        bool(r) and len(L) == 2 and not bad)
             for si, st in enumerate(q["steps"]):
                 k = si + 1
                 tag = f"{P} step {k} ({st['type']} {st['role']})"
-                if k > 1: page.wait_for_timeout(max(600, st["openAfter"] + 500))
+                if k > 1:
+                    page.wait_for_timeout(max(600, st["openAfter"] + 500))
+                    # fix 3: a step with openAfter appears only when its pause is over
+                    page.wait_for_selector(f".ewe-steps > .ewe-step:nth-child({k})", timeout=8000)
+                    if st["openAfter"]:
+                        o2 = page.evaluate("() => { const o = window.__open2; if (window.__open2mo) window.__open2mo.disconnect(); return o; }")
+                        rec = next((e for e in ew10_open2 if e["P"] == P), None)
+                        if rec is not None: rec["open"] = o2
+                        ok3 = bool(o2) and o2["step2"] is not None and o2["turn"] is not None and o2["step2"] - o2["click"] >= st["openAfter"] - 50 and abs(o2["turn"] - o2["step2"]) <= 50
+                        check10(f"{tag}: step 2's prompt and frame appear TOGETHER with the turn, after the pause ({o2 and o2['step2'] is not None and round(o2['step2'] - o2['click'])} ms after step 1's Kontroleer; the turn {o2 and o2['turn'] is not None and o2['step2'] is not None and round(o2['turn'] - o2['step2'])} ms from it), no tap", ok3)
+                    settle10()
+                    # fix 2: the new step lands below the sticky sketch, the ✓ line above it is never cut
+                    land10(P, f"step {k} ({st['role']}), brought in: its top", [f".ewe-steps > .ewe-step:nth-child({k})"], need_bottom=False)
+                    pv = page.evaluate(PREVOK10_JS, k)
+                    ew10_land.append((P, f"step {k - 1}'s ✓ line once step {k} is in", pv, bool(pv) and pv["state"] != "CUT"))
+                    check10(f"{P} step {k}: the ✓ line of step {k - 1} is {pv and pv['state']} (top {pv and pv['top']}, bottom {pv and pv['bottom']}, the sketch's bottom edge {pv and pv['stickBottom']} px), never cut by the sketch's edge",
+                            bool(pv) and pv["state"] != "CUT")
+                # fix 1: the sticky band is opaque, the page's own paper colour, over the steps
+                sb = page.evaluate(STICK10_JS)
+                ew10_stick.append((P, k, sb))
+                check10(f"{tag}: the sticky sketch's band is OPAQUE ({sb['bg']}, alpha {sb['alpha']}), the page's paper colour --papier {sb['paper']} = {sb['paperRgb']}, z-index {sb['z']} over the steps, a {sb['rule']} rule and a shadow under it",
+                        sb["alpha"] == 1 and sb["bg"] == sb["paperRgb"] and sb["pos"] == "sticky" and sb["z"] not in ("auto", "0") and sb["shadow"] != "none")
                 sk = st["sk"]
                 if sk: cur_sk, cur_st = sk, st
                 if not sk:
@@ -3105,6 +3280,7 @@ try:
                     state = {"kon": "upright, the heights drawn", "area1": "turned, the first area step", "area2": "turned, the second area step", "eq": "turned, the parallel lines flat",
                              "sum": "upright, both wholes outlined", "fin": "upright, every triangle lit"}.get(st["role"], st["role"])
                     ew10_sk.append((P, f"s{k} {st['role']}", s0))
+                    hk10(f"s{k} {st['role']}")
                     for c in s0["collisions"]: fail(f"{tag} sketch: {c}")
                     size10.setdefault(P, []).append(s0["size"])
                     want_hts = sorted([Rr["H1"], Rr["H2"]])
@@ -3157,6 +3333,9 @@ try:
                         for c in fz["f"]: click_chip(page, c)
                         measure(page, f"{tag}: boxes full ({r})")
                         click_btn(page, ".ewe-step:last-child .ewkey-sub")
+                        # fix 2: the player brings the "Nog nie" line and the hint on screen, under the sketch
+                        settle10()
+                        land10(P, f"step {k}: after the wrong build {' '.join(fz['f'])}, the 'Nog nie' line and the '{r}' hint", [".ewe-step:last-child > .ewe-fb", ".ewe-step:last-child > .ewe-hint"])
                         measure(page, f"{tag}: {r} + hint")
                         got = hint_text()
                         want = st["hints"][r].replace("{chip}", fz["chip"])
@@ -3175,8 +3354,38 @@ try:
                     fill = [a[1], a[0]] if len(a) == 2 else ([a[1], a[0], a[3], a[2]] if st["role"].startswith("area") else [a[2], a[3], a[0], a[1]])
                     for c in fill: click_chip(page, c)
                     measure(page, f"{tag}: boxes full (right)")
+                    pause = k < len(q["steps"]) and q["steps"][k]["openAfter"]
+                    if pause:
+                        # fix 3: watch WHEN the next step appears and when the sketch turns
+                        page.evaluate("""() => { const fig = document.querySelector('.ewe-q > .q-diagram'), steps = document.querySelector('.ewe-q .ewe-steps');
+                            window.__open2 = { click: performance.now(), turn: null, step2: null };
+                            const mo = new MutationObserver(() => { const now = performance.now();
+                              if (window.__open2.turn == null && fig.querySelector('svg[data-turn]')) window.__open2.turn = now;
+                              if (window.__open2.step2 == null && steps.children.length >= 2) window.__open2.step2 = now; });
+                            mo.observe(fig, { childList: true, subtree: true }); mo.observe(steps, { childList: true }); window.__open2mo = mo; }""")
                     click_btn(page, ".ewe-step:last-child .ewkey-sub")
                     page.wait_for_timeout(150)
+                    if pause:
+                        # fix 3, during the pause (the step opens after openAfter ms): the
+                        # sketch upright with the joins, NO step 2 yet, and the ✓ line of
+                        # step 1 brought fully on screen under the sticky sketch (fix 2)
+                        settle10()
+                        p3 = page.evaluate("() => ({ step2: !!document.querySelector('.ewe-steps > .ewe-step:nth-child(2)'), turned: !!document.querySelector('.ewe-q > .q-diagram svg[data-turn]'), t: Math.round(performance.now() - window.__open2.click) })")
+                        lv = land10(P, f"step 1's ✓ line during the {q['steps'][k]['openAfter']} ms pause", [f".ewe-steps > .ewe-step:nth-child({k}) > .ewe-fb"])
+                        ew10_open2.append({"P": P, "pause": p3})
+                        check10(f"{P} step 2: {p3['t']} ms after step 1 is right, step 2 is NOT on the screen yet (its prompt and frame wait), the sketch still upright with the joins", not p3["step2"] and not p3["turned"])
+                        s1 = page.evaluate(SK10_JS, {"flat": None, "up": None, "bottom": None, "H": None, "big": BIG})
+                        ew10_sk.append((P, f"s{k} joins", s1))
+                        hk10(f"s{k} joins")
+                        for c in s1["collisions"]: fail(f"{tag} sketch after: {c}")
+                        check10(f"{tag}: once it is right the joins appear UPRIGHT ({s1['lines']} lines, was {sk['lines']}), before the sketch turns for step 2; no collisions",
+                                s1["lines"] == st["after"]["lines"] and s1["turn"] is None and not s1["collisions"])
+                        vshot10(f"ew10-q{n}-s{k}-joins.png", f"Q{n} step {k} right, during the pause: the joins {' and '.join(a)} drawn, the sketch still UPRIGHT; under it the ✓ line 'Verbind … en …' and '{st['okLine'][:60]}' fully visible; NO step 2 prompt or frame yet")
+                        # the folded intro and the Bewys line sit above the sketch: the top of the page
+                        y_keep = page.evaluate("window.scrollY")
+                        page.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
+                        vshot10(f"ew10-q{n}-fold-intro.png", f"Q{n} after step 1, the top of the page: the intro folded to ONE line with ▸, the Bewys line, the sketch (upright, joins drawn), step 1's ✓ line")
+                        page.evaluate("(y) => window.scrollTo({ top: y, behavior: 'instant' })", y_keep)
                     measure(page, f"{tag}: marked right")
                     d = page.evaluate(DONE10_JS, k)
                     accepted = has(page, f".ewe-steps > .ewe-step:nth-child({k}) .ewpad.is-locked") and bool(d) and d["good"]
@@ -3197,17 +3406,10 @@ try:
                     if st["okLine"]: ends10(f".ewe-steps > .ewe-step:nth-child({k}) .ewe-okline", P, f"step {k} ✓ line")
                     fzz = finished(page, k)
                     check10(f"{tag}: Fold 3, its {fzz['slots']} boxes and Kontroleer hidden, the prompt and the ✓ line on screen", frame_gone(fzz, "✓"))
-                    if st["after"]:
-                        page.wait_for_timeout(250)
-                        s1 = page.evaluate(SK10_JS, {"flat": None, "up": None, "bottom": None, "H": None, "big": BIG})
-                        ew10_sk.append((P, f"s{k} joins", s1))
-                        for c in s1["collisions"]: fail(f"{tag} sketch after: {c}")
-                        check10(f"{tag}: once it is right the joins appear UPRIGHT ({s1['lines']} lines, was {sk['lines']}), before the sketch turns for step 2; no collisions",
-                                s1["lines"] == st["after"]["lines"] and s1["turn"] is None and not s1["collisions"])
-                        vshot10(f"ew10-q{n}-s{k}-joins.png", f"Q{n} step {k} right: the joins {' and '.join(a)} drawn, the sketch still upright (before it turns for step 2); the ✓ line under it")
-                    if k == 1:
-                        vshot10(f"ew10-q{n}-fold-intro.png", f"Q{n} after step 1: the intro folded to one line with ▸, the Bewys line and the sticky sketch, the ✓ line of step 1")
+                    if st["after"] and not pause: check10(f"{tag}: the joins step is followed by a pause (openAfter)", False)
                 else:
+                    # fix 11: every pick step as it opens (the reason pick names its line now)
+                    vshot10(f"ew10-q{n}-s{k}-{st['role']}-open.png", f"Q{n} step {k} ({st['role']}) as it opens: the prompt '{st['prompt'][:70]}', above it the ✓ line of step {k - 1} in view under the sketch, and the {len(st['options'])} options")
                     opts = sorted(o["text"] for o in st["options"])
                     right = next(o for o in st["options"] if o["correct"])
                     r0 = page.evaluate("(k) => [...document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-opt`)].map(e => e.textContent.trim())", k)
@@ -3215,11 +3417,14 @@ try:
                     measure(page, f"{tag}: options")
                     for wi, o in enumerate(x for x in st["options"] if not x["correct"]):
                         click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
+                        # fix 2: the hint of a wrong pick comes on screen by itself
+                        settle10()
+                        land10(P, f"step {k} ({st['role']}): after the wrong pick '{nbsp(o['text'])[:40]}', the 'Nog nie' line and its hint", [".ewe-step:last-child > .ewe-fb", ".ewe-step:last-child > .ewe-hint"])
                         measure(page, f"{tag}: wrong pick {wi + 1}")
                         check10(f"{tag}: the wrong pick '{nbsp(o['text'])}' gets '{o['hint'][:70]}'", o["hint"] in hint_text())
                         if wi == 0:
                             ends10(".ewe-step:last-child .ewe-hint", P, f"step {k} hint")
-                            if n in (1, 2): vshot10(f"ew10-q{n}-s{k}-hint-pick.png", f"Q{n} step {k} ({st['role']}): the wrong option '{nbsp(o['text'])}' red and its hint")
+                            vshot10(f"ew10-q{n}-s{k}-hint-pick.png", f"Q{n} step {k} ({st['role']}): the wrong option '{nbsp(o['text'])}' red, and under it, ON the screen below the sketch, 'Nog nie…' and the hint \"{o['hint'][:90]}\"")
                     click_btn(page, ".ewe-step:last-child .ewe-opt", right["text"])
                     measure(page, f"{tag}: right pick")
                     vis10 = page.evaluate("(k) => [...document.querySelectorAll(`.ewe-steps > .ewe-step:nth-child(${k}) .ewe-opt`)].filter(e => getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0).map(e => e.textContent.trim())", k)
@@ -3249,6 +3454,22 @@ try:
             measure(page, f"{P}: Só skryf jy dit card")
             ends10(".ewe-write-tip", P, "card tip")
             ends10(".ewe-write .ewp-tx", P, "card konstruksie")
+            # fix 6: every reason on the card: no word (or "Δe)") alone on its last line
+            rs10 = page.evaluate("""() => [...document.querySelectorAll('.ewe-write .ewl-rs')].map(el => {
+                const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); const words = []; let t;
+                while ((t = w.nextNode())) { const re = /[^\\s\\u00A0]+/g; let m; while ((m = re.exec(t.textContent))) words.push([t, m.index, m.index + m[0].length, m[0]]); }
+                const top = ([n, a, b]) => { const r = document.createRange(); r.setStart(n, a); r.setEnd(n, b); const rs = [...r.getClientRects()].filter(q => q.width > 0); return rs.length ? rs[rs.length - 1].top : NaN; };
+                const rows = new Set(words.map(x => Math.round(top(x))));
+                const [p, q] = words.slice(-2);
+                return { text: el.textContent.replace(/\\u00A0/g, ' '), rows: rows.size, last: p && q ? p[3] + ' ' + q[3] : '', ok: !p || !q || Math.abs(top(p) - top(q)) < 2 }; })""")
+            check10(f"{P}: card ④, every reason keeps its last two words together on its last line (" + "; ".join(f"'{x['text']}' {x['rows']} line(s), ends '{x['last']}'" for x in rs10) + ")",
+                    bool(rs10) and all(x["ok"] for x in rs10) and len(rs10) == (2 if q["card"]["sum"] else 1))
+            # fix 9: each letter in the SAME place relative to its own line in every view of the question
+            for L_ in ("h", "k"):
+                rows = [(w, r["letters"][L_]) for w, r in hk_q if r and L_ in r["letters"]]
+                al = [v["along"] for _, v in rows]; ac = [v["across"] for _, v in rows]
+                ok9 = len(rows) >= 6 and max(al) - min(al) <= 0.5 and max(ac) - min(ac) <= 0.5
+                check10(f"{P}: the letter {L_} keeps its place relative to its own line in all {len(rows)} views (along {min(al) if al else '?'} to {max(al) if al else '?'} px from the middle, out {min(map(abs, ac)) if ac else '?'} to {max(map(abs, ac)) if ac else '?'} px; no jump)", ok9)
             page.evaluate("document.querySelector('.ewe-write').scrollIntoView()")
             vshot10(f"ew10-q{n}-card.png", f"Q{n} card: the upright sketch once with every triangle lit, then her boekie page ① to ⑤, names on their colours, ½ and the heights struck, reasons in brackets", sel=".ewe-write")
             check10(f"{P}: the figure keeps its size in every view (one scale): {sorted(set(size10.get(P, [])))} px", bool(size10.get(P)) and max(size10[P]) - min(size10[P]) <= 1)
@@ -3268,9 +3489,52 @@ try:
             return { progress: p.ew10 || null, xpEvents: ev.map(e => e.xp) }; }""")
         ctx.close()
         # the index of the PNGs, for the throwaway checker who LOOKS at them
+        # the fix round's pick for the second checker (3 Oct): the PNGs that best prove fixes 1 to 10
+        r10 = {q["id"]: q for q in data10["qs"]}
+        def lit(qid, role):
+            q = r10[qid]; return next((i + 1 for i, s in enumerate(q["steps"]) if s["role"] == role), None)
+        def prm(qid, role):
+            q = r10[qid]; return next((s["prompt"] for s in q["steps"] if s["role"] == role), "")
+        def ok_(qid, role):
+            q = r10[qid]; return next((s["okLine"] for s in q["steps"] if s["role"] == role), "")
+        ALL = "every earlier step's text is hidden by the sketch's band: NO letters or lines show through it; its edge a thin rule with a soft shadow"
+        HK = "the orange h and the blue k each sit beside the MIDDLE of their own dashed line, on the side away from the other dashed line, clear of every line"
+        C2 = [
+            (f"ew10-q1-s1-kon.png", f"fixes 5 and 9: the new step-1 prompt '{prm('ew10q1', 'kon')}' (the frame still 'Verbind ☐ en ☐'); {HK}"),
+            (f"ew10-q1-s1-joins.png", f"fixes 3 and 2: DURING the pause after step 1, the sketch still upright with the two joins, step 1's ✓ line '{ok_('ew10q1', 'kon')}' fully on screen under the sketch, and NO step-2 prompt or frame yet"),
+            (f"ew10-q1-fold-intro.png", "fix 11: the top of the page after step 1: the intro folded to one line with ▸, the Gegee / Bewys line, the sketch"),
+            (f"ew10-q1-s2-area1.png", f"fixes 3, 1, 9: step 2 just after its turn: PQ flat, its prompt '{prm('ew10q1', 'area1')[:60]}…' and the fraction frame came WITH the turn; {ALL}; {HK}"),
+            (f"ew10-q1-s3-area2.png", f"fixes 1, 2, 9: PR flat; {ALL}; the ✓ line above the step either fully in view under the band or wholly behind it, never cut in half; {HK}"),
+            (f"ew10-q1-s4-eq.png", f"fixes 1, 2, 9: ST and QR flat, P at the bottom; {ALL}; {HK}"),
+            (f"ew10-q1-s{lit('ew10q1', 'reason')}-reason-open.png", f"fixes 4 and 2: the reason prompt names its line, '{prm('ew10q1', 'reason')}', \"Opp Δ QST\" never split; the line 'Opp Δ QST = Opp Δ STR' itself in view above it"),
+            (f"ew10-q1-s{lit('ew10q1', 'reason')}-hint-pick.png", "fix 2: after a WRONG pick, 'Nog nie…' and the hint are ON the screen below the sketch, no swipe"),
+            (f"ew10-q1-s2-hint-height.png", "fixes 2 and 10: after a WRONG build, 'Nog nie…' and the hint are on the screen below the sketch; the hint ends 'Albei se hoogte is h.'"),
+            (f"ew10-q2-s1-kon.png", f"fix 8: the new Q2 intro '{r10['ew10q2']['intro']}'"),
+            (f"ew10-q2-s{lit('ew10q2', 'sum')}-sum.png", f"fixes 2 and 1: the sum step; above it the reason pick's ✓ line fully in view or wholly behind the band, NOT cut at the band's edge (it was cut before); {HK}"),
+            (f"ew10-q2-card.png", "fix 6: card ④, the reason '(albei is Δ PST plus een van die gelyke Δe)': 'Δe)' never alone on its last line"),
+            (f"ew10-q3-s1-kon.png", f"fixes 7 and 9: the new Q3 intro '{r10['ew10q3']['intro']}'; h (⊥ AN, from M) beside the middle of ITS dashed line and k (⊥ AM, from N) beside the middle of its own, neither beside AM or AN"),
+            (f"ew10-q3-s2-area1.png", f"fixes 1 and 9: Q3 turned, AB flat (the height k upright); {ALL}; {HK}"),
+            (f"ew10-q3-s3-area2.png", f"fixes 1 and 9: Q3 turned, AC flat (the height h upright); {ALL}; {HK}"),
+            (f"ew10-q3-s4-eq.png", f"fixes 1 and 9: Q3 turned, MN and BC flat, A at the bottom; {ALL}; {HK}"),
+            (f"ew10-q3-s{lit('ew10q3', 'reason')}-reason-open.png", f"fix 4 with Q3's letters: '{prm('ew10q3', 'reason')}'"),
+            (f"ew10-q4-s1-kon.png", f"fixes 8 and 9: the new Q4 intro '{r10['ew10q4']['intro']}'; the letters h and k BEFORE the joins: beside the middles of their own heights"),
+            (f"ew10-q4-s1-joins.png", "fix 9: Q4 after the joins: h and k in the SAME places as before the joins (no jump)"),
+            (f"ew10-q4-s2-area1.png", f"fix 9 (and 1): Q4 turned, DE flat; {HK}"),
+            (f"ew10-q4-s3-area2.png", f"fix 9 (and 1): Q4 turned, DF flat; {HK}"),
+            (f"ew10-q4-s4-eq.png", f"fix 9 (and 1): Q4 turned, GJ and EF flat; {HK}"),
+            (f"ew10-q4-s{lit('ew10q4', 'sum')}-sum.png", f"fixes 9 and 2: Q4 upright, both wholes outlined; the ✓ line above the step not cut (it was cut before); {HK}"),
+            (f"ew10-q4-s{lit('ew10q4', 'fin')}-fin.png", f"fix 9: Q4 upright, every triangle lit; {HK}"),
+            (f"ew10-q4-card.png", "fix 6: card ④ in proof 2 with Q4's letters: '(albei is Δ DGJ plus een van die gelyke Δe)', no word alone on a line"),
+        ]
+        have = {name for name, _ in ew10_pngs}
         with open(os.path.join(OUT, "ew10-png-index.md"), "w", encoding="utf-8") as fh:
             fh.write("# ew10 \"Die bewys\": the phone screenshots (375 x 667)\n\n")
-            fh.write("Written by tools/ewe-phone-check.py. The builder never opened these. Each line: the file, then what it should show.\n")
+            fh.write("Written by tools/ewe-phone-check.py. The worker never opened these. Each line: the file, then what it should show.\n\n")
+            fh.write(f"## FOR CHECKER 2 (fix round 1, 3 Oct): {len(C2)} PNGs that best prove fixes 1 to 10\n\n")
+            fh.write("Fixes: 1 the sticky sketch is opaque; 2 every scroll lands BELOW the sketch (hints on screen, ✓ lines never cut); 3 step 2 opens with its turn; 4 the reason prompt names its line; 5 the step-1 prompt; 6 card ④ glued; 7 Q3 intro; 8 Q2 and Q4 intros; 9 the letters h and k beside the middles of their own lines, no jump; 10 'Albei se hoogte is h.'\n\n")
+            for name, what in C2:
+                fh.write(f"- `{os.path.join(OUT, name)}`: {what}" + ("" if name in have else "  **(NOT WRITTEN this run)**") + "\n")
+            fh.write("\n## Every ew10 PNG of this run\n\n")
             fh.write("The generic fold walk also saves `fold-ew10-q*-s*-build.png`, `fold-ew10-q*-s*-pick.png`, `fold3-ew10-q*-s*-done.png` and `fold-ew10-q1-intro-*.png` in this folder (the same steps, as the fold walk leaves them).\n\n")
             for name, what in ew10_pngs:
                 fh.write(f"- `{os.path.join(OUT, name)}`: {what}\n")
@@ -3643,6 +3907,9 @@ try:
                 for si, st in enumerate(q["steps"]):
                     k = si + 1
                     tag = f"fold {P} step {k} ({st['type']})"
+                    # ew10 fix round: a step with `openAfter` appears only after its pause
+                    # (every other step is on the page at once, so nothing waits there)
+                    page.wait_for_selector(f".ewe-steps > .ewe-step:nth-child({k})", timeout=8000)
                     if st["type"] == "build":
                         auto = si > 0
                         settle(page)       # also the glide back to the top between questions
@@ -3978,6 +4245,34 @@ print("  ew10 cards at 375 px (height, the room beside lines ② to ④)")
 for P, c in ew10_cards:
     if c: print(f"    {P:8} {c['h']} px high, right {c['right']} of {c['vw']}; " + ", ".join(f"{x['no']} {x['bdW'] - x['chainW']} px spare" for x in c["lns"] if x["no"] in "②③④"))
 print(f"  ew10 line ends: {len(ew10_ends)} texts, {sum(1 for _, _, e in ew10_ends if e and not e['bad'])} with no line ending on a bare single letter or '='")
+# ---- the fix round's measures (3 Oct) ----
+print("  FIX 1, the sticky band at every step: computed background, alpha, z-index, shadow")
+alphas = sorted({sb["alpha"] for _, _, sb in ew10_stick}); bgs = sorted({sb["bg"] for _, _, sb in ew10_stick})
+print(f"    {len(ew10_stick)} steps measured; backgrounds {bgs}; alpha {alphas}; --papier {ew10_stick[0][2]['paper'] if ew10_stick else '?'}; z-index {sorted({sb['z'] for _, _, sb in ew10_stick})}; shadow {ew10_stick[0][2]['shadow'] if ew10_stick else '?'}")
+print("  FIX 2, every scrolled-to target against the sticky sketch's bottom edge (px; top must be >= the edge, bottom <= the screen)")
+for P, what, v, ok in ew10_land:
+    if v and "top" in v and "stickBottom" in v and "state" not in v:
+        print(f"    {'ok  ' if ok else 'FAIL'} {P:8} {what[:96]:96} top {v['top']:6} edge {v['stickBottom']:6} (+{round(v['top'] - v['stickBottom'], 1)})  bottom {v['bottom']} of {v['vh']}")
+    elif v and "state" in v:
+        print(f"    {'ok  ' if ok else 'FAIL'} {P:8} {what[:96]:96} {v['state']} (top {v['top']}, bottom {v['bottom']}, edge {v['stickBottom']})")
+    else:
+        print(f"    {'ok  ' if ok else 'FAIL'} {P:8} {what[:96]:96} (nothing found on the page)")
+gaps2 = [v["top"] - v["stickBottom"] for _, _, v, _ in ew10_land if v and "state" not in v and "top" in v]
+print(f"    {len(ew10_land)} targets, {sum(1 for *_, ok in ew10_land if ok)} land right; the smallest room between the sketch's edge and a target's top: {round(min(gaps2), 1) if gaps2 else '?'} px; ✓ lines cut by the edge: {sum(1 for _, _, v, _ in ew10_land if v and v.get('state') == 'CUT')}")
+print("  FIX 3, step 2 of each question: during the pause, then at the turn")
+for e in ew10_open2:
+    o = e.get("open") or {}
+    print(f"    {e['P']:8} at {e['pause']['t']} ms: step 2 {'SHOWN' if e['pause']['step2'] else 'not shown'}, sketch {'turned' if e['pause']['turned'] else 'upright'};  step 2 appears {round(o['step2'] - o['click']) if o.get('step2') else '?'} ms after Kontroleer, the turn {round(o['turn'] - o['step2']) if o.get('turn') and o.get('step2') else '?'} ms from it")
+print("  FIX 9, the letters h and k in every sketch state (ink, screen px): worst clearance, own line, other height, other lines, outlines, marks, labels; along / out from the line's middle")
+hk_min = {}
+for P, where, r in ew10_hk:
+    for L_, v in (r["letters"] if r else {}).items():
+        for key in ("worst", "own", "other", "lines", "outlines", "marks", "arcs", "labels"):
+            if v.get(key) is not None and (key not in hk_min or v[key] < hk_min[key][0]): hk_min[key] = (v[key], f"{P} {where} {L_}")
+        print(f"    {P:8} {where:12} {L_}: worst {v['worst']:5}  own {v['own']:5}  other {v['other']}  lines {v['lines']}  outlines {v['outlines']}  marks {v['marks']}  labels {v['labels']}  | along {v['along']:5} out {abs(v['across']):5}  middle {v['mid']}  away {v['away']}  (font box to own line {v['fontOwn']})")
+    if r and r.get("pair") is not None:
+        if "pair" not in hk_min or r["pair"] < hk_min["pair"][0]: hk_min["pair"] = (r["pair"], f"{P} {where}")
+for key, (d, what) in sorted(hk_min.items()): print(f"  SMALLEST letter {key} {d} px ({what})")
 print(f"  ew10 PNGs: {len(ew10_pngs)}, index {os.path.join(OUT, 'ew10-png-index.md')}")
 
 print("\nRAISED 2s (sup.ewf-sq: lift = the middle of its letter minus the middle of the 2, px)")
