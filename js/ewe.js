@@ -40,7 +40,7 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, fracsLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle, namesLineHtml, namesCardHtml, simDoneHtml } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, fracsLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle, namesLineHtml, namesCardHtml, simDoneHtml, doneLineHtml, bewysHtml, proofCardHtml } from "./ewe-kit.js";
 
 /* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
    "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts).
@@ -221,6 +221,10 @@ export function renderEweRound(app, host, params) {
     box.dataset.q = q.id;
     const intro = el("p", "q-prompt ewe-intro", glue(q.intro));
     box.appendChild(intro);
+    /* ew10, opt-in: the "Gegee / Bewys" line under the intro, the statement
+       as stacked fractions (it never folds; the intro above it does).
+       Without q.lead nothing is added. */
+    if (q.lead) box.appendChild(el("div", "ewe-bewys", bewysHtml(q.lead)));
     const fig = el("div", "q-diagram");
     fig.innerHTML = sketchSvg(q.sketch);
     box.appendChild(fig);
@@ -235,11 +239,26 @@ export function renderEweRound(app, host, params) {
     box.appendChild(steps);
     qHost.appendChild(box);
 
-    let si = 0, lastFill = null;
+    let si = 0, lastFill = null, gen = 0;
     const nextStep = () => {
       if (si < q.steps.length) {
         const step = q.steps[si++];
         const first = si === 1;
+        /* ew10, opt-in: the sketch state of a step is set when the step
+           OPENS (her page turned for this step, these triangles lit), before
+           the step is brought in, so its scroll is measured on it.
+           `sketchAfter` stays the after-answer version. Without the key the
+           sketch is never touched here. */
+        /* `openAfter` (ms) waits first, so what the step before just added
+           (ew10: the joins) is seen before the sketch turns; a later step
+           that opens in the meantime wins (gen). The new sketch fades in
+           (opacity, .ewe-swap); the svg's size never changes, so nothing
+           below it moves. */
+        if (step.sketchOpen) {
+          const my = ++gen, state = step.sketchOpen;
+          const swap = () => { if (my !== gen || !fig.isConnected) return; fig.innerHTML = sketchSvg(state); if (fig.firstElementChild) fig.firstElementChild.classList.add("ewe-swap"); };
+          if (step.openAfter) setTimeout(swap, step.openAfter); else swap();
+        }
         const stepBox = el("div", "ewe-step");
         steps.appendChild(stepBox);
         /* phone folds (her ruling 2026-10-02): a build step is filled while
@@ -422,7 +441,9 @@ function bringBuild(node, fig) {
 function mountGiven(host, step, where) {
   const g = step.given;
   if (!g || !!g.first !== (where === "first")) return;
-  const box = el("div", "ewe-given", givenHtml(g.line));
+  /* ew10, opt-in: a given with no line is its sentence alone (step 1's
+     "Konstruksie: Trek hoogtelyn h en k in Δ PST.") */
+  const box = el("div", "ewe-given", g.line ? givenHtml(g.line) : "");
   if (g.text) box.appendChild(el("p", "ewe-given-tx", glue(g.text)));
   host.appendChild(box);
 }
@@ -457,7 +478,11 @@ function mountBuild(host, step, onDone) {
   /* ew9 fix round, opt-in: `doneNames` ({ first: { t, k }, k2 }) draws the
      finished name build like the card, "Δ ADE ||| Δ ABC", each name in
      its colour and the filled letters together (kit simDoneHtml) */
+  /* ew10, opt-in: `done` ({ strike, then }) draws the finished area build
+     as on her page, the ½ and the height struck through, then "=" and the
+     ratio that is left (kit doneLineHtml) */
   const lineOf = f => (step.doneNames ? simDoneHtml(step.doneNames.first, step.doneNames.k2, f)
+    : step.done ? doneLineHtml(step.frame, f, step.done)
     : step.frame ? frameHtml(step.frame, f) : ratioHtml(f));
   /* ew7, opt-in: a build step with an okLine says its takeaway under the
      finished line (a "²" in it drawn by sqText). Without the key the ✓ line
@@ -513,6 +538,14 @@ function mountBuild(host, step, onDone) {
 
 function hintHtml(step, why, r) {
   const h = step.hints;
+  /* ew10 (the height and statement markers): one plain sentence per wrong
+     reason, "{chip}" filled with the chip the marker named; a hint that is
+     an ARRAY carries stacked fractions in its sentence (richHtml, the one
+     drawer: "die vraag vra PS/SQ = PT/TR") */
+  if (step.spec && (step.spec.mode === "height" || step.spec.mode === "state")) {
+    const x = h[why] || h.pattern;
+    return Array.isArray(x) ? richHtml(x) : esc(x.replace("{chip}", (r && r.chip) || ""));
+  }
   /* ew6 (the exact marker): one plain sentence per wrong reason, the
      reasons named by the question data */
   if (step.spec && step.spec.mode === "exact") return esc(h[why] || h.pattern);
@@ -642,7 +675,13 @@ function writeCard(q, fill) {
   const card = el("div", "ewe-write");
   card.appendChild(el("div", "ewe-write-tag", "✍️ " + UI.writeTag));
   const body = el("div", "ewe-write-body");
+  /* ew10, opt-in: the sketch once, upright, every triangle lit, above her
+     page (three small turned sketches beside ②, ③ and ④ do not fit a
+     375 px phone: measured by tools/ewe-phone-check.py) */
+  if (q.write.sketch) card.appendChild(el("div", "ewe-write-fig", sketchSvg(q.write.sketch)));
   if (q.write.text) body.appendChild(el("p", "ewe-write-text", esc(q.write.text)));
+  /* ew10, opt-in: her boekie page "formele bewys", ① to ⑤ */
+  else if (q.write.proof) body.innerHTML = proofCardHtml(q.write.proof);
   /* ew3, opt-in: her three-fraction area chain, the ½ and ⊥h struck through */
   else if (q.write.area) body.innerHTML = areaLineHtml(q.write.area, q.write.reason);
   /* ew4, opt-in: the same chain for a shared angle, the ½ and sin struck
@@ -694,7 +733,8 @@ function renderEnd(app, host, round, r) {
       <div class="ewe-write ewe-takeaway">
         <div class="ewe-write-tag">${UI.remember}</div>
         <p class="ewe-write-text">${sqText(esc(tk.text))}</p>
-        <div class="ewe-write-body">${tk.cards ? tk.cards.map(w => `<div class="ewe-tk-card">${w.names ? namesCardHtml(w.names) : fracsCardHtml(w)}</div>`).join("")
+        <div class="ewe-write-body">${tk.proof ? proofCardHtml(tk.proof)
+          : tk.cards ? tk.cards.map(w => `<div class="ewe-tk-card">${w.names ? namesCardHtml(w.names) : fracsCardHtml(w)}</div>`).join("")
           : tk.trap ? trapLineHtml(tk.trap) : tk.cross ? crossLineHtml(tk.cross) : tk.sine ? sineLineHtml(tk.sine, tk.reason) : tk.area ? areaLineHtml(tk.area, tk.reason)
           : (tk.sim ? simLineHtml(tk.sim, tk.simReason) : "") + writtenLineHtml(tk.fill, tk.reason)}</div>
       </div>

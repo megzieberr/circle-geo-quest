@@ -1,5 +1,5 @@
 /* ============================================================
-   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew9)
+   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew10)
    ------------------------------------------------------------
    Three things, each ONE copy for the whole feature:
 
@@ -387,6 +387,81 @@ export function frameHtml(frame, fill) {
   return chainHtml(frameUnits(frame, c => (c === SLOT ? `<span class="ewpad-in">${esc(fill[i++] ?? "")}</span>` : fxCell(c))));
 }
 
+/* ew10, opt-in: a height's letter in its colour (h orange, k blue, as on
+   the sketch), anywhere a finished line or the card writes it */
+const HT_COLOURED = new Set(["h", "k"]);
+const htHtml = v => (HT_COLOURED.has(v) ? `<span class="ewf-ht ewf-ht-${v}">${v}</span>` : esc(v));
+
+/* ew10, opt-in: the finished area build of the proof, as on her page: the
+   frame with its boxes filled, the ½ and THE height struck through (her
+   purple strokes, a span inside the one drawer), then "=" and what is left
+   (done.then, frame entries without boxes):
+     Opp Δ PST     ½ · PS · h     PS
+     --------- = ------------ = --
+     Opp Δ QST     ½ · SQ · h     SQ
+   done = { strike: ["½", "h"], then: [{ n: ["PS"], d: ["SQ"] }] }. The
+   chain breaks only before an "=" (chainHtml). */
+export function doneLineHtml(frame, fill, done) {
+  let i = 0;
+  const strike = new Set(done.strike || []);
+  const cell = c => {
+    if (c === SLOT) { const v = fill[i++] ?? ""; const h = `<span class="ewpad-in">${htHtml(v)}</span>`; return strike.has(v) ? `<span class="ewf-x">${h}</span>` : h; }
+    const t = c && typeof c === "object" ? c.t : c;
+    return strike.has(t) ? `<span class="ewf-x">${fxCell(c)}</span>` : fxCell(c);
+  };
+  return chainHtml([...frameUnits(frame, cell), ...(done.then ? ["=", ...frameUnits(done.then, fxCell)] : [])]);
+}
+
+/* ew10, opt-in: the question's "Gegee / Bewys" line above the sketch, the
+   statement as two stacked fractions (the one drawer). Q3 writes the exam's
+   own sentence instead: `pre` "Bewys die stelling wat meld dat".
+   lead = { given: "ST ∥ QR", bewys: ["PS", "SQ", "PT", "TR"], pre } */
+const NBSP = " ";
+const nbPar = t => esc(t).replace(/(\S) ∥ (\S)/g, `$1${NBSP}∥${NBSP}$2`);
+function stateHtml([a, b, c, d]) { return chainHtml([fracHtml(esc(a), esc(b)), "=", fracHtml(esc(c), esc(d))]); }
+export function bewysHtml(lead) {
+  const g = lead.given ? `<span class="ewb-g"><span class="ewb-w">Gegee:</span> ${nbPar(lead.given)}</span>` : "";
+  const w = lead.pre ? `<span class="ewb-tx">${esc(lead.pre)}</span>` : `<span class="ewb-w">Bewys:</span>`;
+  return `<div class="ewb">${g}<span class="ewb-b">${w} ${stateHtml(lead.bewys)}</span></div>`;
+}
+
+/* ew10, opt-in: the "Só skryf jy dit" card, her boekie page "formele bewys",
+   ① to ⑤, every triangle name on its colour (the same three as the sketch),
+   the ½ and the height struck through, the reasons in brackets:
+     Gegee: ST ∥ QR      Bewys: PS/SQ = PT/TR
+     ① Konstruksie: Trek hoogtelyn h en k in Δ PST. Verbind RS en QT.
+     ② Opp Δ PST / Opp Δ QST = ½ · PS · h / ½ · SQ · h = PS / SQ
+     ③ Opp Δ PST / Opp Δ STR = ½ · PT · k / ½ · TR · k = PT / TR
+     ④ Opp Δ QST = Opp Δ STR   (dies. basis en dies. ⊥h, ST ∥ QR)
+        [proof 2: ∴ Opp Δ PQT = Opp Δ PSR   (albei is Δ PST plus …)]
+     ⑤ Opp Δ PST / Opp Δ QST = Opp Δ PST / Opp Δ STR   ∴ PS/SQ = PT/TR
+   Each numbered line is its own block: a chain breaks only before an "=",
+   a reason moves down whole, "∴" and its statement move down together.
+   p = { given, bewys, kon, areas: [{ tris: [{ t, tint }, { t, tint }],
+         bases: [b1, b2], h }, …], eq: { tris, reason }, sum: { tris,
+         reason }?, fin: { fr: [[n, d], [n, d]] (name cells), so } } */
+export function proofCardHtml(p) {
+  const opp = c => tintHtml(`Opp${NBSP}Δ${NBSP}${esc(c.t)}`, c.tint);
+  const x = v => `<span class="ewf-x">${v}</span>`;
+  const rs = r => (r ? `<span class="ewl-rs">(${nbPar(r)})</span>` : "");
+  const ln = (no, body) => `<div class="ewp-ln"><span class="ewp-no">${no}</span><div class="ewp-bd">${body}</div></div>`;
+  const out = [`<div class="ewp-gb">${bewysHtml({ given: p.given, bewys: p.bewys })}</div>`];
+  out.push(ln("①", `<p class="ewp-tx"><span class="ewp-kw">Konstruksie:</span> ${nbPar(p.kon)}</p>`));
+  p.areas.forEach((a, i) => {
+    const [b1, b2] = a.bases.map(esc), H = x(htHtml(a.h));
+    out.push(ln(i ? "③" : "②", `<div class="ewl ewp-l">${chainHtml([
+      fracHtml(opp(a.tris[0]), opp(a.tris[1])), "=",
+      fracHtml([x("½"), b1, H], [x("½"), b2, H]), "=",
+      fracHtml(b1, b2)])}</div>`));
+  });
+  const eqLine = (e, so) => `<div class="ewl ewp-l">${so ? `<span class="ewp-so">∴</span>` : ""}${chainHtml([opp(e.tris[0]), "=", opp(e.tris[1])])}${rs(e.reason)}</div>`;
+  out.push(ln("④", eqLine(p.eq) + (p.sum ? eqLine(p.sum, true) : "")));
+  const [[n1, d1], [n2, d2]] = p.fin.fr;
+  out.push(ln("⑤", `<div class="ewl ewp-l">${chainHtml([fracHtml(opp(n1), opp(d1)), "=", fracHtml(opp(n2), opp(d2))])}`
+    + `<span class="ewp-fin"><span class="ewp-so">∴</span>${stateHtml(p.fin.so)}</span></div>`));
+  return `<div class="ewp">${out.join("")}</div>`;
+}
+
 /* ---------------- 2 · the fill-the-boxes pad ----------------
    frame   the skeleton, left to right. An entry is:
              "="                         the equals sign (a break point)
@@ -560,8 +635,40 @@ export function shuffle(xs) {
      boxClear true: a point label keeps its BOX (not just its centre) clear
              of the lines, the ∥ arrows, the marks, the arcs and the other
              labels, and no corner of it may sit inside the `outside` Δ or a
-             tint (her rule: labels OUTSIDE the triangle) */
+             tint (her rule: labels OUTSIDE the triangle)
+   ew10, OPT-IN (left out, nothing changes):
+     turn    { flat: ["P", "Q"], up: "T" }   the whole sketch drawn TURNED,
+             computed from the coordinates so the line flat[0]–flat[1] lies
+             flat (horizontal) with the point `up` above it (her page turned
+             for each step of the proof). The picture turns, the LETTERS STAY
+             UPRIGHT: the points are rotated, then fitted and labelled as
+             always. A plain redraw, no animation. The svg carries
+             data-turn (the angle, degrees)
+     fitAll  [null, { flat, up }, …]   every view of the question (null =
+             upright): the sketch is drawn at the scale that fits ALL of
+             them, so the triangle keeps its size from view to view
+     ghost   { X: {x, y} }   points that tints and outlines may use but that
+             are never drawn, labelled or fitted (where QT meets RS)
+     heights [{ from: "T", foot: {x, y}, along: "S", label: "h", tone: "h",
+             fresh }]   a height from its vertex to its computed foot, dashed
+             in its colour (h orange, k blue), a right-angle box at the foot
+             between the height and the side towards `along` (ew7's box), and
+             its letter beside it, placed clear of every line, mark and label.
+             `fresh`: the three fade in (the construction draws itself)
+     outlines [{ pts: ["P","S","T"], tone: "g" }]   a lit triangle's outline
+             in its colour, set just INSIDE its sides, so two lit triangles
+             that share a side both show theirs
+     tints   an entry may carry `tint` "g" / "p" / "y" (her green, pink and
+             yellow) and `stripe: ["p", "y"]`: that polygon filled with
+             stripes of the two colours (where two lit triangles overlap,
+             never a muddy mix of two see-through tints)
+     sideArcs `tone` "g" / "p" / "y": the arc in that triangle's colour */
 const W = 320, H = 232, MARGIN = 24, LAB_R = 14;
+/* ew10: the right-angle box of a height, the inset of an outline, the
+   stripes' own ids (one pattern per svg) */
+const OL_IN = 3;
+const lerpP = (p, q, f) => ({ x: p.x + f * (q.x - p.x), y: p.y + f * (q.y - p.y) });
+let STRIPE_N = 0;
 const ARC_R = 17, STAR_D = 15, STAR_R = 5.5, RA_B = 9, EQ_R = 15;
 const N = v => Math.round(v * 10) / 10;
 
@@ -787,7 +894,8 @@ function fitArcs(spec, names, x0, x1, y0, y1) {
   const m = { l: MARGIN + e, r: MARGIN + e, t: MARGIN + e, b: MARGIN + e };
   let res = null;
   for (let it = 0; it < 16; it++) {
-    const s = Math.min((W - m.l - m.r) / (x1 - x0 || 1), (H - m.t - m.b) / (y1 - y0 || 1));
+    /* ew10, opt-in: the scale that fits every view of the question (fitAll) */
+    const s = Math.min((W - m.l - m.r) / (x1 - x0 || 1), (H - m.t - m.b) / (y1 - y0 || 1), spec._cap || Infinity);
     const ox = m.l + (W - m.l - m.r - s * (x1 - x0)) / 2, oy = m.t + (H - m.t - m.b - s * (y1 - y0)) / 2;
     const P = {};
     names.forEach(k => { P[k] = { x: ox + (spec.pts[k].x - x0) * s, y: oy + (spec.pts[k].y - y0) * s }; });
@@ -807,7 +915,41 @@ function fitArcs(spec, names, x0, x1, y0, y1) {
   return res;
 }
 
+/* ew10: the angle that lays the line flat[0]–flat[1] flat with `up` above
+   it (screen y down: above = a smaller y), and a point turned by it */
+function turnAngle(pts, o) {
+  const a = pts[o.flat[0]], b = pts[o.flat[1]];
+  let th = -Math.atan2(b.y - a.y, b.x - a.x);
+  const ry = p => p.x * Math.sin(th) + p.y * Math.cos(th);
+  if (ry(pts[o.up]) > ry(a)) th += Math.PI;
+  return th;
+}
+const turnPt = (p, th) => ({ x: p.x * Math.cos(th) - p.y * Math.sin(th), y: p.x * Math.sin(th) + p.y * Math.cos(th) });
+/* ew10, opt-in (spec.turn): the same sketch with every coordinate turned
+   (the points, the heights' feet, the ghost points); then drawn as always,
+   so the letters are placed upright on the turned figure */
+function turnedSpec(spec) {
+  const th = turnAngle(spec.pts, spec.turn);
+  const map = o => Object.fromEntries(Object.entries(o).map(([k, p]) => [k, turnPt(p, th)]));
+  const { turn, ...rest } = spec;
+  return { ...rest, pts: map(spec.pts), _raw: spec._raw || spec.pts, _deg: th * 180 / Math.PI,
+    ...(spec.ghost ? { ghost: map(spec.ghost) } : {}),
+    ...(spec.heights ? { heights: spec.heights.map(h => ({ ...h, foot: turnPt(h.foot, th) })) } : {}) };
+}
+/* ew10, opt-in (spec.fitAll): the largest scale at which EVERY view of the
+   question fits the canvas with the usual margins */
+function fitCap(spec) {
+  const raw = spec._raw || spec.pts, ks = Object.keys(raw), m = MARGIN + (spec.edge || 0);
+  return Math.min(...spec.fitAll.map(o => {
+    const th = o ? turnAngle(raw, o) : 0, q = ks.map(k => turnPt(raw[k], th));
+    const w = Math.max(...q.map(p => p.x)) - Math.min(...q.map(p => p.x)), h = Math.max(...q.map(p => p.y)) - Math.min(...q.map(p => p.y));
+    return Math.min((W - 2 * m) / (w || 1), (H - 2 * m) / (h || 1));
+  }));
+}
+
 export function sketchSvg(spec) {
+  if (spec.turn) return sketchSvg(turnedSpec(spec));
+  if (spec.fitAll && spec._cap == null) spec = { ...spec, _cap: fitCap(spec) };
   const names = Object.keys(spec.pts);
   const xs = names.map(k => spec.pts[k].x), ys = names.map(k => spec.pts[k].y);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
@@ -816,18 +958,30 @@ export function sketchSvg(spec) {
      for them (fitArcs below). Without spec.sideArcs: the fit as always. */
   if (spec.sideArcs) ({ s, ox, oy, P, G: arcs } = fitArcs(spec, names, x0, x1, y0, y1));
   else {
-    s = Math.min((W - 2 * MARGIN) / (x1 - x0 || 1), (H - 2 * MARGIN) / (y1 - y0 || 1));
+    s = Math.min((W - 2 * MARGIN) / (x1 - x0 || 1), (H - 2 * MARGIN) / (y1 - y0 || 1), spec._cap || Infinity);
     ox = (W - s * (x1 - x0)) / 2; oy = (H - s * (y1 - y0)) / 2;
     P = {};
     names.forEach(k => { P[k] = { x: ox + (spec.pts[k].x - x0) * s, y: oy + (spec.pts[k].y - y0) * s }; });
   }
+  /* ew10, opt-in: a raw coordinate (a ghost point, a height's foot) on the canvas */
+  const toC = p => ({ x: ox + (p.x - x0) * s, y: oy + (p.y - y0) * s });
+  for (const [k, g] of Object.entries(spec.ghost || {})) P[k] = toC(g);
 
-  let out = "";
+  let out = "", defs = "";
   /* a tint entry: ["A","B","C"] takes its tint from its place (ew3), or
      (ew4, opt-in) { pts, tint } names it */
   const tintPts = t => (Array.isArray(t) ? t : t.pts);
   (spec.tints || []).forEach((t, i) => {
     const k = Array.isArray(t) ? i + 1 : t.tint;
+    /* ew10, opt-in (`stripe`): the overlap of two lit triangles, stripes of
+       their two colours (a pattern of this svg's own, its id unique) */
+    if (!Array.isArray(t) && t.stripe) {
+      const id = `ewe-stp-${++STRIPE_N}`, [a, b] = t.stripe;
+      defs += `<pattern id="${id}" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)">`
+            + `<rect class="ewe-stp ewe-stp-${a}" width="3.5" height="7"/><rect class="ewe-stp ewe-stp-${b}" x="3.5" width="3.5" height="7"/></pattern>`;
+      out += `<polygon class="ewe-tint ewe-tint-stripe" fill="url(#${id})" data-stripe="${a}${b}" points="${t.pts.map(k => `${N(P[k].x)},${N(P[k].y)}`).join(" ")}"/>`;
+      return;
+    }
     /* ew9, opt-in (`hole`): the Δ inside is cut out of this tint (even-odd
        fill, the outline closed back to its first corner before the hole's),
        so the smaller Δ drawn on top keeps ITS OWN colour, not a blend of
@@ -845,9 +999,30 @@ export function sketchSvg(spec) {
      over their own line (the two cut sides, so the eye sees the pieces lie
      on two lines). The same segments as drawn lines, so no label moves. */
   (spec.thick || []).forEach(([a, b]) => { out += `<line class="ewe-thick" x1="${N(P[a].x)}" y1="${N(P[a].y)}" x2="${N(P[b].x)}" y2="${N(P[b].y)}"/>`; });
+  /* ew10, opt-in: each lit triangle's outline in its colour, OL_IN inside
+     its sides (each side's line moved in, the corners where they meet), so
+     two lit triangles that share a side both show their colour along it.
+     Its sides join what a height's letter keeps away from. */
+  const olSegs = [];
+  (spec.outlines || []).forEach(o => {
+    const V = o.pts.map(k => P[k]), n = V.length;
+    const c = { x: V.reduce((a, p) => a + p.x, 0) / n, y: V.reduce((a, p) => a + p.y, 0) / n };
+    const off = V.map((p, i) => { const q = V[(i + 1) % n], L = Math.hypot(q.x - p.x, q.y - p.y) || 1;
+      let nx = -(q.y - p.y) / L, ny = (q.x - p.x) / L;
+      if ((c.x - p.x) * nx + (c.y - p.y) * ny < 0) { nx = -nx; ny = -ny; }
+      return { p: { x: p.x + OL_IN * nx, y: p.y + OL_IN * ny }, d: { x: q.x - p.x, y: q.y - p.y } }; });
+    const meet = (e, f) => { const den = e.d.x * f.d.y - e.d.y * f.d.x, u = ((f.p.x - e.p.x) * f.d.y - (f.p.y - e.p.y) * f.d.x) / den;
+      return { x: e.p.x + u * e.d.x, y: e.p.y + u * e.d.y }; };
+    const I = off.map((e, i) => meet(off[(i + n - 1) % n], e));
+    I.forEach((p, i) => olSegs.push([p, I[(i + 1) % n]]));
+    out += `<polygon class="ewe-tol ewe-tol-${o.tone}" data-tri="${o.pts.join("")}" points="${I.map(p => `${N(p.x)},${N(p.y)}`).join(" ")}"/>`;
+  });
 
   /* ∥ chevrons, one per ∥ line, same look as engine.js's "p1" mark */
   const marks = [];
+  /* ew10: the chevrons' own points (their tips and arm middles), for the
+     heights' letters, which keep clear of the whole chevron */
+  const chevPts = [];
   (spec.par || []).forEach(([a, b]) => {
     const A = P[a], B = P[b];
     const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
@@ -855,6 +1030,8 @@ export function sketchSvg(spec) {
     const ux = (B.x - A.x) / L, uy = (B.y - A.y) / L, nx = -uy, ny = ux, w = 5, h = 5;
     out += `<path class="mk ewe-par" fill="none" d="M ${N(mx - ux * w + nx * h)} ${N(my - uy * w + ny * h)} L ${N(mx + ux * w * 0.4)} ${N(my + uy * w * 0.4)} L ${N(mx - ux * w - nx * h)} ${N(my - uy * w - ny * h)}"/>`;
     marks.push({ x: mx, y: my });
+    const c1 = { x: mx - ux * w + nx * h, y: my - uy * w + ny * h }, c2 = { x: mx + ux * w * 0.4, y: my + uy * w * 0.4 }, c3 = { x: mx - ux * w - nx * h, y: my - uy * w - ny * h };
+    [0, 0.25, 0.5, 0.75, 1].forEach(f => { chevPts.push(lerpP(c1, c2, f), lerpP(c2, c3, f)); });
   });
 
   /* ew3: the dotted ⊥h and its right-angle box. Both join the obstacles the
@@ -870,15 +1047,35 @@ export function sketchSvg(spec) {
     hSeg = [A, F];
     marks.push({ x: F.x + (vx + ux) * b / 2, y: F.y + (vy + uy) * b / 2 });
   }
-  const obst = hSeg ? segs.concat([hSeg]) : segs;
+  /* ew10: the heights of the proof (spec.heights), each dashed in its own
+     colour from its vertex to its computed foot, with ew7's right-angle box
+     at the foot (between the height and the side towards `along`). The
+     heights join the lines the labels keep away from, each box the discs. */
+  const hts = [];
+  const discs = [];
+  (spec.heights || []).forEach(ht => {
+    const A = P[ht.from], F = toC(ht.foot), Bp = P[ht.along], fr = ht.fresh ? " is-fresh" : "";
+    out += `<line class="ln ewe-ht ewe-ht-${ht.tone}${fr}" x1="${N(A.x)}" y1="${N(A.y)}" x2="${N(F.x)}" y2="${N(F.y)}"/>`;
+    const unit = Q => { const dx = Q.x - F.x, dy = Q.y - F.y, L = Math.hypot(dx, dy) || 1; return { x: dx / L, y: dy / L }; };
+    const u = unit(A), w = unit(Bp), b = RA_B;
+    const p1 = { x: F.x + u.x * b, y: F.y + u.y * b }, p3 = { x: F.x + w.x * b, y: F.y + w.y * b };
+    const p2 = { x: p1.x + w.x * b, y: p1.y + w.y * b };
+    out += `<path class="mk ewe-rt ewe-rt-${ht.tone}${fr}" d="M ${N(p1.x)} ${N(p1.y)} L ${N(p2.x)} ${N(p2.y)} L ${N(p3.x)} ${N(p3.y)}"/>`;
+    [p1, p2, p3, { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }, { x: (p2.x + p3.x) / 2, y: (p2.y + p3.y) / 2 }]
+      .forEach(q => discs.push({ x: q.x, y: q.y, r: 1.5 }));
+    discs.push({ x: (F.x + p2.x) / 2, y: (F.y + p2.y) / 2, r: b / 2 });
+    hts.push({ A, F, ht });
+  });
+  let obst = hSeg ? segs.concat([hSeg]) : segs;
+  if (hts.length) obst = obst.concat(hts.map(h => [h.A, h.F]));
 
   /* ew4: the shared angle. The arc runs inside the angle (the smaller turn
      from one ray to the other); the star sits on the line that halves the
      angle, on the far side of the corner, so it is clear of both rays. Both
      join the obstacles the labels keep away from, as round discs: the arc
      as a string of points along it, the star as one disc, ALWAYS (drawn or
-     not), so the labels do not jump when the star appears. */
-  const discs = [];
+     not), so the labels do not jump when the star appears. (`discs` is
+     declared with ew10's heights above.) */
   if (spec.angle) {
     const V = P[spec.angle.at];
     const unit = k => { const dx = P[k].x - V.x, dy = P[k].y - V.y, L = Math.hypot(dx, dy) || 1; return { x: dx / L, y: dy / L }; };
@@ -1079,6 +1276,40 @@ export function sketchSvg(spec) {
     labels.push({ k: "⊥h", ...best, cls: "pl ewe-hl" });
   }
 
+  /* ew10: each height's letter (h, k) beside its own height, somewhere
+     along it and on either side, keeping its BOX clear of every line (both
+     heights too), the outlines, the marks and boxes, the arcs and every point
+     label; close to its own height and its middle, all else equal. The two
+     letters are placed TOGETHER (the pair whose worse clearance, and their
+     gap, is largest), so the first never takes the only room the second
+     had. They sit inside the small Δ, where the heights are. */
+  const cands = hts.map(({ A, F, ht }) => {
+    const L = Math.hypot(A.x - F.x, A.y - F.y) || 1, ux = (A.x - F.x) / L, uy = (A.y - F.y) / L, nx = -uy, ny = ux;
+    const cs = [];
+    for (let t = 0.15; t < 0.86; t += 0.05) for (const side of [1, -1]) for (let off = 8; off <= 24; off += 2) {
+      const lx = F.x + t * (A.x - F.x) + side * off * nx, ly = F.y + t * (A.y - F.y) + side * off * ny;
+      const bx = labBoxAt(ht.label, lx, ly);
+      let score = Infinity;
+      obst.concat(olSegs).forEach(([a, b]) => { score = Math.min(score, segBoxDist(a, b, bx)); });
+      marks.forEach(m => { score = Math.min(score, ptBoxDist(m, bx) - 4); });
+      discs.forEach(m => { score = Math.min(score, ptBoxDist(m, bx) - m.r); });
+      chevPts.forEach(m => { score = Math.min(score, ptBoxDist(m, bx) - 1.5); });
+      placed.forEach(q => { score = Math.min(score, boxGap(q.box || labBoxAt("", q.x, q.y), bx) - 2); });
+      score = Math.min(score, bx.x0 - 2, W - 2 - bx.x1, bx.y0 - 2, H - 2 - bx.y1);
+      cs.push({ x: lx, y: ly, bx, score, pen: 0.04 * off + 0.5 * Math.abs(t - 0.5) });
+    }
+    return cs;
+  });
+  let pick = cands.map(cs => cs.reduce((a, c) => (c.score - c.pen > a.score - a.pen ? c : a)));
+  if (cands.length === 2) {
+    let bestV = -Infinity;
+    for (const a of cands[0]) for (const b of cands[1]) {
+      const v = Math.min(a.score, b.score, boxGap(a.bx, b.bx) - 2) - a.pen - b.pen;
+      if (v > bestV) { bestV = v; pick = [a, b]; }
+    }
+  }
+  hts.forEach(({ ht }, i) => labels.push({ k: ht.label, x: pick[i].x, y: pick[i].y, cls: `pl ewe-hl ewe-hl-${ht.tone}${ht.fresh ? " is-fresh" : ""}` }));
+
   names.forEach(k => { out += `<circle cx="${N(P[k].x)}" cy="${N(P[k].y)}" r="2.6" fill="#2b2f4a"/>`; });
   labels.forEach(l => { out += `<text class="${l.cls || "pl"}" x="${N(l.x)}" y="${N(l.y)}">${esc(l.k)}</text>`; });
   /* ew6: the arc labels come AFTER the point labels, so the i-th point
@@ -1086,5 +1317,8 @@ export function sketchSvg(spec) {
   (arcs || []).forEach(g => {
     if (g.a.label && !g.a.hidden) out += `<text class="pl ewe-al ewe-al-${g.level}" x="${N(g.lab.x)}" y="${N(g.lab.y)}">${esc(g.a.label)}</text>`;
   });
-  return `<svg class="diag ewe-sketch" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">${out}</svg>`;
+  /* ew10, opt-in: a turned sketch says by how much (data-turn, degrees);
+     the stripes' patterns go first. Neither exists without ew10's keys. */
+  const turnAttr = spec._deg != null ? ` data-turn="${N(spec._deg)}"` : "";
+  return `<svg class="diag ewe-sketch" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet"${turnAttr}>${defs ? `<defs>${defs}</defs>` : ""}${out}</svg>`;
 }

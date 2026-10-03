@@ -1257,3 +1257,64 @@ svg.diag .mk.ewe-eqa{stroke:#7048e8; stroke-width:2;}
 .ewpad-disp.is-mid .ewpad-run{display:inline-flex; align-items:center;}
 .ewpad-in + .ewpad-fx.ewpad-tight{padding-left:0; margin-left:-.06em;}
 .ewn-done{white-space:nowrap; font-weight:700;}
+/* ew10 "Die bewys" (opt-in classes, written only by its data). Her three
+   colours, FIXED through the whole proof, on the sketch and behind the
+   triangle names: the top small Δ green, the Δ of the first area step pink,
+   of the second yellow. A whole Δ of proof 2 (green + pink, green + yellow)
+   carries both on its name. The heights by LETTER: h orange, k blue, dashed,
+   each with its right-angle box and its letter in its colour. A lit Δ's
+   outline sits just inside its sides in its colour's dark twin. Where two
+   lit triangles overlap: stripes of both colours, never a muddy mix. The
+   construction draws itself: the heights fade in (opacity, no transform). */
+.ewtint-g{background:#c9f0d1;}
+.ewtint-p{background:#ffcfe3;}
+.ewtint-y{background:#ffef9e;}
+.ewtint-gp{background:linear-gradient(90deg,#c9f0d1 0 50%,#ffcfe3 50% 100%);}
+.ewtint-gy{background:linear-gradient(90deg,#c9f0d1 0 50%,#ffef9e 50% 100%);}
+svg.diag .ewe-tint-g{fill:#40c057; fill-opacity:.32;}
+svg.diag .ewe-tint-p{fill:#ff5fa2; fill-opacity:.3;}
+svg.diag .ewe-tint-y{fill:#ffd400; fill-opacity:.38;}
+svg.diag .ewe-stp{stroke:none;}
+svg.diag .ewe-stp-p{fill:#ff5fa2; fill-opacity:.3;}
+svg.diag .ewe-stp-y{fill:#ffd400; fill-opacity:.38;}
+svg.diag .ewe-tol{fill:none; stroke-width:2; stroke-linejoin:round; stroke-opacity:.9;}
+svg.diag .ewe-tol-g{stroke:#2f9e44;}
+svg.diag .ewe-tol-p{stroke:#d6336c;}
+svg.diag .ewe-tol-y{stroke:#e0a100;}
+svg.diag .ln.ewe-ht{stroke-width:2.2; stroke-dasharray:6 4; stroke-linecap:butt;}
+svg.diag .ln.ewe-ht-h,svg.diag .mk.ewe-rt-h{stroke:#f76707;}
+svg.diag .ln.ewe-ht-k,svg.diag .mk.ewe-rt-k{stroke:#1c7ed6;}
+svg.diag .pl.ewe-hl-h{fill:#e8590c;}
+svg.diag .pl.ewe-hl-k{fill:#1c7ed6;}
+svg.diag .mk.ewe-sarc.ewe-sarc-kg{stroke:#2f9e44;}
+svg.diag .mk.ewe-sarc.ewe-sarc-kp{stroke:#d6336c;}
+svg.diag .mk.ewe-sarc.ewe-sarc-ky{stroke:#e0a100;}
+@keyframes eweFadeIn{from{opacity:0} to{opacity:1}}
+svg.diag .is-fresh{animation:eweFadeIn .8s ease-out .3s both;}
+@media (prefers-reduced-motion: reduce){svg.diag .is-fresh{animation:none;}}
+.ewf-ht-h{color:#e8590c;}
+.ewf-ht-k{color:#1c7ed6;}
+/* the "Gegee / Bewys" line above the sketch: the statement stacked, the
+   line moves down whole before the statement if the phone is too narrow */
+.ewe-bewys{margin:0 0 6px;}
+.ewb{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:4px 18px; font-size:1.05rem; font-weight:700;}
+.ewb-g{white-space:nowrap;}
+.ewb-w{color:var(--ink-soft); font-weight:700;}
+.ewb-b{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; column-gap:.35em; row-gap:4px; max-width:100%;}
+.ewb-tx{text-align:center; font-weight:600;}
+/* her boekie page on the card, ① to ⑤, left-aligned, the block in the card */
+.ewe-write-fig{margin:0 0 6px;}
+.ewp{display:flex; flex-direction:column; gap:10px; text-align:left;}
+.ewp-gb .ewb{justify-content:flex-start; font-size:1rem;}
+.ewp-ln{display:grid; grid-template-columns:1.5em minmax(0,1fr); column-gap:4px; align-items:start;}
+.ewp-no{font-weight:800; font-size:1.1rem; line-height:1.9; color:var(--accent);}
+.ewp-bd{min-width:0; display:flex; flex-direction:column; gap:6px;}
+.ewp .ewl{justify-content:flex-start; font-size:1.05rem; gap:6px 10px;}
+.ewp .ewq{justify-content:flex-start;}
+.ewp-tx{margin:0; font-size:.95rem; font-weight:600; line-height:1.45; padding-top:.2em;}
+.ewp-kw{font-weight:800;}
+.ewp-so{padding-right:.3em; font-weight:800;}
+.ewp-fin{display:inline-flex; align-items:center; white-space:nowrap;}
+/* a sketch state set when a step opens fades in (js/ewe.js, opacity only) */
+.q-diagram svg.ewe-swap{animation:eweFadeIn .4s ease-out both;}
+@media (prefers-reduced-motion: reduce){.q-diagram svg.ewe-swap{animation:none;}}

@@ -27,6 +27,12 @@
      · sharedAngleSide() ew9: her p.55 figure, two similar triangles that
                       share an angle AND a side, built to scale (see below).
      · markName()     ew9: Δ ADE ||| Δ ☐☐☐, the corners in matching order.
+     · proofFigure()  ew10: the proof of the theorem, her figure: the cut
+                      triangle, the two heights inside the small Δ, the two
+                      joins (see below).
+     · markHeight()   ew10: ½ · ☐ · ☐ over ½ · ☐ · ☐, a base and THE height
+                      in each product (see below).
+     · markState()    ew10: ∴ ☐/☐ = ☐/☐, exactly the statement asked.
      · markRatio()    the ratio marker. It decides "is this fill of
                       ☐/☐ = ☐/☐ right?" from the SHAPE of the fill
                       only: which cut side each chip lies on, and where
@@ -143,9 +149,12 @@ export function segLength(tri, name) {
    (ew7, opt-in) are the rewrite of a product line and go to markProd and
    markCross; spec.mode "exact" (ew6, opt-in) is a fill of NUMBERS with one
    right order and goes to markExact; spec.mode "name" (ew9, opt-in) is a
-   triangle's three corners and goes to markName. Without a mode, nothing
-   here changes. */
+   triangle's three corners and goes to markName; spec.mode "height" and
+   "state" (ew10, opt-in) are the proof's area build and its last line and
+   go to markHeight and markState. Without a mode, nothing here changes. */
 export function markRatio(fill, spec) {
+  if (spec && spec.mode === "height") return markHeight(fill, spec);
+  if (spec && spec.mode === "state") return markState(fill, spec);
   if (spec && spec.mode === "name") return markName(fill, spec);
   if (spec && spec.mode === "exact") return markExact(fill, spec);
   if (spec && spec.mode === "area") return markArea(fill, spec);
@@ -725,4 +734,173 @@ export function markName(fill, spec) {
   if (new Set(fill).size < fill.length) return { ok: false, why: "repeat" };
   if (first.every((k, i) => spec.map[k] === fill[i])) return { ok: true, why: "ok" };
   return { ok: false, why: "order" };
+}
+
+/* ======================= ew10: the proof =======================
+   "Die bewys": the proof of the theorem, her way (her boekie page "formele
+   bewys" and her exam page). Δ PQR, S on PQ, T on PR, ST ∥ QR. Konstruksie:
+   the height from T onto PQ and the height from S onto PR, both INSIDE
+   Δ PST; then QT and RS joined. Then
+     Opp Δ PST / Opp Δ QST = ½ · PS · h / ½ · SQ · h = PS / SQ
+     Opp Δ PST / Opp Δ STR = ½ · PT · k / ½ · TR · k = PT / TR
+     Opp Δ QST = Opp Δ STR           (dies. basis en dies. ⊥h, ST ∥ QR)
+   so PS / SQ = PT / TR. Her page turns for each step so the learner SEES
+   the one height: the sketch is drawn turned (js/ewe-kit.js `turn`). */
+
+/* ---------------- her figure ----------------
+   corner  P, the corner the cut line is nearest to
+   ends    [Q, R]
+   cuts    [S, T]: S on PQ, T on PR, ST ∥ QR (cutTriangle, the same t)
+   xy      screen coordinates (y down) of P, Q and R, any scale
+   t       PS / PQ = PT / PR; never (near) one half, so PS and SQ differ
+   hts     the LETTERS of the two heights: [the one from T onto PQ, the one
+           from S onto PR]. Her boekie: ["h", "k"]. Her exam page names them
+           the other way round ("Trek h ⊥ op AN en k ⊥ AM"): ["k", "h"]
+   tris    optional triangle spellings by role, as her page writes them:
+             small PST, left QST, right STR, wholeL PQT, wholeR PSR, big PQR
+   spell   optional side spellings (e.g. ["MC"]) where the default would say
+           otherwise. Default: corner first (PS, PT, PQ, PR), the pieces in
+           order (SQ, TR), ST, QR, and the joins QT, RS
+
+   COMPUTED, never placed by eye: the cut points (cutTriangle), the FEET of
+   the two heights (the projections of T on PQ and of S on PR), and X, where
+   QT meets RS (the corner of the small Δ that Δ QST and Δ STR share, for
+   the overlap of their tints). It throws unless each foot lies well INSIDE
+   its piece of Δ PST ("hoogtelyn in Δ PST": strictly between P and S, and
+   between P and T, never at an end), so Δ PST must be acute.
+
+   seg      every side and join by its spelling: { from, to } (the height
+            marker and the oracle read them)
+   ratioSeg cutTriangle's seg (lines and positions), for markState's "true
+            but not what was asked" test (markRatio)
+   heights  by letter: { from, onto: [the side's ends], on: [the three points
+            on that line], foot, piece: [the ends of the piece it lands in] }
+   tri      the triangle names by role; corners[name] its three letters
+   turns    the three turned views of her page: flatL (PQ flat, T above),
+            flatR (PR flat, S above), par (ST and QR flat, P at the bottom)
+   sketch   the bare figure (the Δ, ST, the ∥ arrows), every label outside
+            Δ PQR, X as the ghost point "_x" (never drawn, never labelled;
+            the underscore keeps it apart from any point's letter)
+   hSpec    the two heights as js/ewe-kit.js draws them: { from, foot,
+            along (the piece end on the side with more room, for the
+            right-angle box), label, tone }
+   joins    [[Q, T], [R, S]] */
+export function proofFigure({ corner, ends, cuts, xy, t, hts = ["h", "k"], tris = {}, spell = [] }) {
+  if (!(t > 0.2 && t < 0.8) || Math.abs(t - 0.5) < 0.04) throw new Error("proofFigure: t must be well inside (0, 1) and not one half");
+  const base = cutTriangle({ corner, ends, cuts, xy, t });
+  const P = corner, [Q, R] = ends, [S, T] = cuts, pts = base.pts;
+  const proj = (X, A, B) => { const bx = pts[B].x - pts[A].x, by = pts[B].y - pts[A].y;
+    const u = ((pts[X].x - pts[A].x) * bx + (pts[X].y - pts[A].y) * by) / (bx * bx + by * by);
+    return { u, foot: lerp(pts[A], pts[B], u) }; };
+  /* the foot of T on PQ, measured along PS (0 at P, 1 at S); of S on PR along PT */
+  const f1 = proj(T, P, S), f2 = proj(S, P, T);
+  for (const [f, w] of [[f1, `T on P${S}`], [f2, `S on P${T}`]])
+    if (!(f.u > 0.12 && f.u < 0.88)) throw new Error(`proofFigure: the foot of the height from ${w} must lie well inside it (u = ${f.u.toFixed(3)})`);
+  /* X: QT meets RS */
+  const q = pts[Q], tt = pts[T], r = pts[R], s = pts[S];
+  const d1 = { x: tt.x - q.x, y: tt.y - q.y }, d2 = { x: s.x - r.x, y: s.y - r.y };
+  const den = d1.x * d2.y - d1.y * d2.x;
+  const lam = ((r.x - q.x) * d2.y - (r.y - q.y) * d2.x) / den;
+  const X = { x: q.x + lam * d1.x, y: q.y + lam * d1.y };
+  const nm = (A, B) => (spell.includes(B + A) ? B + A : A + B);
+  const names = { ...base.names, QT: nm(Q, T), RS: nm(R, S) };
+  const seg = {};
+  for (const [role, [a, b]] of Object.entries({ AD: [P, S], DB: [S, Q], AB: [P, Q], AE: [P, T], EC: [T, R], AC: [P, R], DE: [S, T], BC: [Q, R], QT: [Q, T], RS: [R, S] }))
+    seg[names[role]] = { from: a, to: b };
+  const [hT, hS] = hts;
+  const heights = {
+    [hT]: { from: T, onto: [P, Q], on: [P, S, Q], foot: f1.foot, piece: [P, S] },
+    [hS]: { from: S, onto: [P, R], on: [P, T, R], foot: f2.foot, piece: [P, T] },
+  };
+  const tri = { small: P + S + T, left: Q + S + T, right: S + T + R, wholeL: P + Q + T, wholeR: P + S + R, big: P + Q + R, ...tris };
+  const corners = Object.fromEntries(Object.values(tri).map(n => [n, [...n]]));
+  /* the right-angle box goes towards the piece end with more room */
+  const along = (f, A, B) => (dist(f, pts[A]) > dist(f, pts[B]) ? A : B);
+  const hSpec = [
+    { from: T, foot: f1.foot, along: along(f1.foot, P, S), label: hT, tone: hT },
+    { from: S, foot: f2.foot, along: along(f2.foot, P, T), label: hS, tone: hS },
+  ];
+  return {
+    corner: P, ends, cuts, t, pts, seg, ratioSeg: base.seg, names, heights, tri, corners, X,
+    turns: { flatL: { flat: [P, Q], up: T }, flatR: { flat: [P, R], up: S }, par: { flat: [S, T], up: Q } },
+    hSpec,
+    joins: [[Q, T], [R, S]],
+    sketch: { ...base.sketch, outside: [P, Q, R], ghost: { _x: X } },
+  };
+}
+
+/* ---------------- the height marker (ew10, spec.mode "height") ----------------
+   fill  the four chips in box order: [top1, top2, bot1, bot2], read as
+         ½ · top1 · top2 over ½ · bot1 · bot2
+   spec  { mode: "height", seg, heights, flat: ["P", "Q"], line: ["P", "S", "Q"],
+           tris: ["PST", "QST"], H: "h" }
+         seg and heights from proofFigure; flat = the line that lies flat in
+         this step's turned sketch, line = the points on it; tris = the two
+         named Δe, top first; H = THE height of this step (the one that
+         stands on the flat line; her exam figure names it k)
+
+   RIGHT when each product is one BASE and the height H, either order inside
+   the product, the top product with the base of the first named Δ and the
+   bottom product with the second's. A base is a segment on the flat line
+   whose two ends are both corners of that Δ.
+
+   WRONG, with a reason the screen turns into a hint; `chip` names the chip
+   for the hints that say which one:
+     "empty" / "unknown"   as always
+     "height"   the OTHER height (k when the bases lie on PQ)
+     "off"      a segment that is not on the flat line (PT or TR)
+     "pattern"  a product that is not one base and H (two bases, H twice)
+     "repeat"   the same base on top and below
+     "order"    the two right products, swapped
+     "wrongbase" a segment on the flat line that is not the base of its Δ
+                (SQ for Δ PQT: Δ PQT stands on the whole PQ)
+   Shape only, never a length: tools/check-ewe-marker.mjs proves every fill
+   against areas measured (shoelace) from the coordinates. */
+export function markHeight(fill, spec) {
+  if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
+  const isH = x => !!spec.heights[x], isS = x => !!spec.seg[x];
+  if (fill.some(x => !isH(x) && !isS(x))) return { ok: false, why: "unknown" };
+  const wrongH = fill.find(x => isH(x) && x !== spec.H);
+  if (wrongH) return { ok: false, why: "height", chip: wrongH };
+  const onFlat = x => isS(x) && spec.line.includes(spec.seg[x].from) && spec.line.includes(spec.seg[x].to);
+  const off = fill.find(x => isS(x) && !onFlat(x));
+  if (off) return { ok: false, why: "off", chip: off };
+  const baseIn = pr => (pr.filter(x => x === spec.H).length === 1 && pr.filter(onFlat).length === 1 ? pr.find(onFlat) : null);
+  const bt = baseIn(fill.slice(0, 2)), bb = baseIn(fill.slice(2));
+  if (!bt || !bb) return { ok: false, why: "pattern" };
+  if (bt === bb) return { ok: false, why: "repeat", chip: bt };
+  const baseOf = (b, T) => [spec.seg[b].from, spec.seg[b].to].every(c => T.includes(c));
+  const [T1, T2] = spec.tris;
+  if (baseOf(bt, T1) && baseOf(bb, T2)) return { ok: true, why: "ok" };
+  if (baseOf(bt, T2) && baseOf(bb, T1)) return { ok: false, why: "order" };
+  /* every other case holds a segment on the flat line that is the base of
+     NEITHER named Δ (one base each, and a base twice is "repeat"): name it */
+  return { ok: false, why: "wrongbase", chip: [bt, bb].find(b => !baseOf(b, T1) && !baseOf(b, T2)) };
+}
+
+/* ---------------- the statement marker (ew10, spec.mode "state") ----------------
+   fill  the four chips in box order: ∴ fill[0]/fill[1] = fill[2]/fill[3]
+   spec  { mode: "state", expect: ["PS", "SQ", "PT", "TR"], seg, chips }
+         expect = the statement the question asks to prove; seg =
+         proofFigure's ratioSeg (lines and positions, for markRatio)
+
+   RIGHT when the fill is EXACTLY the statement asked: the two fractions as
+   written, in either order around the "=" (PT/TR = PS/SQ says the same).
+   WRONG, with a reason for the hint:
+     "empty" / "unknown"   as always
+     "repeat"   a chip used twice
+     "form"     a TRUE ratio of the figure (markRatio: flipped, with the
+                wholes, across), but not the one asked: "Skryf presies wat
+                jy moet bewys" (her exam asks for one statement)
+     "pattern"  anything else
+   Shape only: tools/check-ewe-marker.mjs proves "form" against lengths. */
+export function markState(fill, spec) {
+  const w = spec.expect;
+  if (!Array.isArray(fill) || fill.length !== 4 || fill.some(x => !x)) return { ok: false, why: "empty" };
+  if (spec.chips && fill.some(x => !spec.chips.includes(x))) return { ok: false, why: "unknown" };
+  const [a, b, c, d] = fill;
+  if ((a === w[0] && b === w[1] && c === w[2] && d === w[3]) || (a === w[2] && b === w[3] && c === w[0] && d === w[1])) return { ok: true, why: "ok" };
+  if (new Set(fill).size < 4) return { ok: false, why: "repeat" };
+  if (markRatio(fill, { seg: spec.seg }).ok) return { ok: false, why: "form" };
+  return { ok: false, why: "pattern" };
 }
