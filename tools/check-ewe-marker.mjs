@@ -42,7 +42,7 @@
    or a product over a product) as a number against the shoelace area
    ratio: exactly one may be true, and it must be the marked one.
 
-   ew6 (the product line becomes two fractions) at the very end: every
+   ew7 (the product line becomes two fractions) at the very end: every
    given line proved TRUE in its own figure first, every figure generic
    (only the six identities of a right Δ with its height), then every fill
    of every build step (☐ · ☐ = ☐ · ☐ and ☐/☐ = ☐/☐) through the product
@@ -56,7 +56,7 @@ import { round as round2, TRIANGLES as TRIANGLES2 } from "../js/rounds/ewe2-met-
 import { round as round3, SKETCHES as SKETCHES3 } from "../js/rounds/ewe3-deel-n-sy.js";
 import { round as round4, SKETCHES as SKETCHES4 } from "../js/rounds/ewe4-deel-n-hoek.js";
 import { round as round5, SKETCHES as SKETCHES5 } from "../js/rounds/ewe5-watter-een.js";
-import { round as round6, SKETCHES as SKETCHES6 } from "../js/rounds/ewe6-vreemde-formaat.js";
+import { round as round7, SKETCHES as SKETCHES7 } from "../js/rounds/ewe7-vreemde-formaat.js";
 
 const REL = 1e-9;             // "equal" for lengths that are equal by construction
 const GAP = 1e-3;             // anything closer than this that is NOT forced is an accident
@@ -695,8 +695,8 @@ for (const r of rows5) {
 }
 
 
-/* ======================= ew6 =======================
-   The ew6 ORACLE, written from the round's rule, not from the markers. It
+/* ======================= ew7 =======================
+   The ew7 ORACLE, written from the round's rule, not from the markers. It
    reads only the COORDINATES the figure is drawn from and the given line
    the learner READS (q.given, the line in the intro):
      the figure  the angle at the right-angle vertex is 90° and the height
@@ -725,20 +725,20 @@ for (const r of rows5) {
                  disagreements. Every reason the marker gives has its own
                  hint (or is "pattern"). The shown answer is right, and the
                  card's pairs are the line. */
-const IDENT6 = [[["AD", "AD"], ["BD", "DC"]], [["AB", "AB"], ["BD", "BC"]], [["AC", "AC"], ["DC", "BC"]],
+const IDENT7 = [[["AD", "AD"], ["BD", "DC"]], [["AB", "AB"], ["BD", "BC"]], [["AC", "AC"], ["DC", "BC"]],
                 [["AB", "AC"], ["AD", "BC"]], [["AB", "AD"], ["BD", "AC"]], [["AC", "AD"], ["DC", "AB"]]];
 const pk = p => p.slice().sort().join("·");
 const identKey = (p, q) => [pk(p), pk(q)].sort().join("=");
-const IDENT6_KEYS = new Set(IDENT6.map(([p, q]) => identKey(p, q)));
-const ROLES6 = ["AB", "AC", "AD", "BD", "DC", "BC"];
-const HINTS6 = { prod: ["twice", "mixed", "decoy"], cross: ["once", "same", "repeat", "decoy"] };
-const rows6 = [];
-const fig6 = [];
-for (const q of round6.eweQuestions) {
-  const S = SKETCHES6[q.id];
+const IDENT7_KEYS = new Set(IDENT7.map(([p, q]) => identKey(p, q)));
+const ROLES7 = ["AB", "AC", "AD", "BD", "DC", "BC"];
+const HINTS7 = { prod: ["twice", "mixed", "decoy"], cross: ["once", "same", "repeat", "decoy"] };
+const rows7 = [];
+const fig7 = [];
+for (const q of round7.eweQuestions) {
+  const S = SKETCHES7[q.id];
   const P = S.pts;
   const len = c => { const g = S.seg[c]; return g ? dist(P[g.from], P[g.to]) : NaN; };
-  const roleLen = Object.fromEntries(ROLES6.map(r => [r, len(S.names[r])]));
+  const roleLen = Object.fromEntries(ROLES7.map(r => [r, len(S.names[r])]));
 
   /* 0 · the figure: the right angle and the height, measured */
   const A = S.right, [B, C] = S.ends, D = S.foot;
@@ -768,19 +768,19 @@ for (const q of round6.eweQuestions) {
 
   /* 2 · generic */
   let minLenGap = Infinity, minProdGap = Infinity, idents = 0;
-  for (let i = 0; i < ROLES6.length; i++) for (let j = i + 1; j < ROLES6.length; j++) {
-    const a = roleLen[ROLES6[i]], b = roleLen[ROLES6[j]], gap = Math.abs(a - b) / Math.max(a, b);
+  for (let i = 0; i < ROLES7.length; i++) for (let j = i + 1; j < ROLES7.length; j++) {
+    const a = roleLen[ROLES7[i]], b = roleLen[ROLES7[j]], gap = Math.abs(a - b) / Math.max(a, b);
     minLenGap = Math.min(minLenGap, gap);
-    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${S.names[ROLES6[i]]} and ${S.names[ROLES6[j]]} are (almost) equal`); }
+    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${S.names[ROLES7[i]]} and ${S.names[ROLES7[j]]} are (almost) equal`); }
   }
-  const prods6 = [];
-  for (let i = 0; i < ROLES6.length; i++) for (let j = i; j < ROLES6.length; j++) prods6.push([[ROLES6[i], ROLES6[j]], roleLen[ROLES6[i]] * roleLen[ROLES6[j]]]);
-  for (let i = 0; i < prods6.length; i++) for (let j = i + 1; j < prods6.length; j++) {
-    const gap = Math.abs(prods6[i][1] - prods6[j][1]) / Math.max(prods6[i][1], prods6[j][1]);
-    const ident = IDENT6_KEYS.has(identKey(prods6[i][0], prods6[j][0]));
-    if (ident) { if (gap < REL) idents++; else { problems++; console.error(`✗ ${q.id}: the identity ${prods6[i][0].join("·")} = ${prods6[j][0].join("·")} does not hold (${gap})`); } continue; }
+  const prods7 = [];
+  for (let i = 0; i < ROLES7.length; i++) for (let j = i; j < ROLES7.length; j++) prods7.push([[ROLES7[i], ROLES7[j]], roleLen[ROLES7[i]] * roleLen[ROLES7[j]]]);
+  for (let i = 0; i < prods7.length; i++) for (let j = i + 1; j < prods7.length; j++) {
+    const gap = Math.abs(prods7[i][1] - prods7[j][1]) / Math.max(prods7[i][1], prods7[j][1]);
+    const ident = IDENT7_KEYS.has(identKey(prods7[i][0], prods7[j][0]));
+    if (ident) { if (gap < REL) idents++; else { problems++; console.error(`✗ ${q.id}: the identity ${prods7[i][0].join("·")} = ${prods7[j][0].join("·")} does not hold (${gap})`); } continue; }
     minProdGap = Math.min(minProdGap, gap);
-    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${prods6[i][0].join("·")} and ${prods6[j][0].join("·")} are accidentally (almost) equal, move the foot`); }
+    if (gap < GAP) { problems++; console.error(`✗ ${q.id}: ${prods7[i][0].join("·")} and ${prods7[j][0].join("·")} are accidentally (almost) equal, move the foot`); }
   }
 
   /* 3 · the chips: the line's letters, one spelling each, plus ONE decoy */
@@ -797,7 +797,7 @@ for (const q of round6.eweQuestions) {
     }
   }
   if (JSON.stringify(q.write.cross.pairs) !== JSON.stringify(pairs) || q.write.cross.fill.join() !== steps[steps.length - 1].answer.join()) { problems++; console.error(`✗ ${q.id}: the card is not the line, or its fill is not the last step's answer`); }
-  fig6.push({ q: q.id, line: shown, lineRel, lineTrue, cosA, cosH, t: S.t, minLenGap, minProdGap, idents, decoy: q.given.decoy, boxes });
+  fig7.push({ q: q.id, line: shown, lineRel, lineTrue, cosA, cosH, t: S.t, minLenGap, minProdGap, idents, decoy: q.given.decoy, boxes });
 
   /* 4 · every fill of every build step */
   steps.forEach((step, si) => {
@@ -830,23 +830,23 @@ for (const q of round6.eweQuestions) {
     const extra = Object.keys(step.hints || {}).filter(k => k !== "pattern" && !why[k]);
     if (extra.length) { problems++; console.error(`✗ ${q.id} step ${si + 1}: hints ${extra} never fire`); }
     problems += disagree;
-    rows6.push({ q: q.id, step: si + 1, mode, chips: c.length, tried, accepted, rejected, disagree, why });
+    rows7.push({ q: q.id, step: si + 1, mode, chips: c.length, tried, accepted, rejected, disagree, why });
   });
 }
 
-console.log("\new6 (the product line: prod mode ☐ · ☐ = ☐ · ☐, cross mode ☐/☐ = ☐/☐; lengths from the coordinates)");
+console.log("\new7 (the product line: prod mode ☐ · ☐ = ☐ · ☐, cross mode ☐/☐ = ☐/☐; lengths from the coordinates)");
 console.log("question  given line          true (rel)   right angle cos   ⊥ cos      t      smallest length gap  smallest non-identity product gap  identities  decoy");
-for (const f of fig6) {
+for (const f of fig7) {
   console.log(`${f.q.padEnd(9)} ${f.line.padEnd(19)} ${(f.lineTrue ? "yes" : "NO").padEnd(4)} ${f.lineRel.toExponential(1).padStart(7)}  ${f.cosA.toExponential(1).padStart(15)}  ${f.cosH.toExponential(1).padStart(8)}  ${f.t.toFixed(2)}  ${(100 * f.minLenGap).toFixed(2).padStart(18)}%  ${(100 * f.minProdGap).toFixed(2).padStart(31)}%  ${String(f.idents).padStart(10)}  ${f.decoy}`);
 }
 console.log("question  step  mode   chips  fills tried  accepted  rejected  disagreements");
-let T6 = 0, A6 = 0, R6 = 0, D6 = 0;
-for (const r of rows6) {
-  T6 += r.tried; A6 += r.accepted; R6 += r.rejected; D6 += r.disagree;
+let T7 = 0, A7 = 0, R7 = 0, D7 = 0;
+for (const r of rows7) {
+  T7 += r.tried; A7 += r.accepted; R7 += r.rejected; D7 += r.disagree;
   console.log(`${r.q.padEnd(9)} ${String(r.step).padStart(4)}  ${r.mode.padEnd(5)}  ${String(r.chips).padStart(5)}  ${String(r.tried).padStart(11)}  ${String(r.accepted).padStart(8)}  ${String(r.rejected).padStart(8)}  ${String(r.disagree).padStart(13)}`);
   console.log(`          rejected because: ${Object.entries(r.why).filter(([k]) => k !== "ok").map(([k, v]) => `${k} ${v}`).join(", ")}`);
 }
-console.log(`TOTAL                   ${String(T6).padStart(11)}  ${String(A6).padStart(8)}  ${String(R6).padStart(8)}  ${String(D6).padStart(13)}`);
+console.log(`TOTAL                   ${String(T7).padStart(11)}  ${String(A7).padStart(8)}  ${String(R7).padStart(8)}  ${String(D7).padStart(13)}`);
 
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew6), every ew5 question has exactly one true leftover, the marked one, and every ew6 line is true in its own generic figure.");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, and every ew7 line is true in its own generic figure.");

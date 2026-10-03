@@ -1,5 +1,5 @@
 /* ============================================================
-   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew6)
+   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew5 and ew7)
    ------------------------------------------------------------
    Three things, each ONE copy for the whole feature:
 
@@ -37,7 +37,7 @@
    3 · THE SKETCH   sketchSvg()
        A to-scale triangle sketch with ∥ arrows (ew3, opt-in: tinted
        triangles and a dotted ⊥h with its right-angle box; ew4, opt-in: the
-       arc of a shared angle and her star beside it; ew6, opt-in: right-angle
+       arc of a shared angle and her star beside it; ew7, opt-in: right-angle
        boxes at named corners, labels kept outside a named Δ), drawn with the same
        svg.diag classes as the circle engine (js/engine.js) so it looks
        like the rest of the app. Labels are PLACED, not typed: each one
@@ -69,7 +69,7 @@ export function prodHtml(factors) {
    unit is inline-flex) a bare <sup> would become its own flex item and be
    centred on the line, not raised (measured by tools/ewe-phone-check.py) */
 export function sqHtml(x) { return `<span class="ewf-sqw">${x}<sup class="ewf-sq">2</sup></span>`; }
-/* ew6, opt-in by content: a "²" in a plain sentence (an intro, a hint, a
+/* ew7, opt-in by content: a "²" in a plain sentence (an intro, a hint, a
    tip) becomes the SAME raised 2 as sqHtml draws, so a square reads one way
    on the whole screen. Escaped HTML in, HTML out. Text without a "²" (every
    string of ew1 to ew5) comes back unchanged. */
@@ -161,7 +161,7 @@ export function sineLineHtml(sine, reason) {
   return `<div class="ewl ewl-sine">${chain}`
        + (reason ? `<span class="ewl-rs">(${esc(reason)})</span>` : "") + `</div>`;
 }
-/* ew6: the rewrite of a product line, as she writes it under the exam's
+/* ew7: the rewrite of a product line, as she writes it under the exam's
    "Bewys dat …", three lines under each other, left-aligned:
      AD² = BD · DC
      AD · AD = BD · DC
@@ -347,7 +347,7 @@ export function shuffle(xs) {
              moves when it appears.
      labBox  true: each point label keeps its BOX clear of its own dot on
              every slant (boxRadius below), not just its centre 14 away
-   ew6, OPT-IN (left out, nothing changes):
+   ew7, OPT-IN (left out, nothing changes):
      right   [{ at: "A", arms: ["B", "C"] }, …]   a right-angle box at `at`,
              a small square inside the angle, its two sides laid along the
              two arms (computed from the arms, never drawn by eye). Its
@@ -458,7 +458,7 @@ export function sketchSvg(spec) {
     }
   }
 
-  /* ew6: a right-angle box at each named corner, inside the angle, its two
+  /* ew7: a right-angle box at each named corner, inside the angle, its two
      sides along the two arms. Its corners, the middles of its sides and its
      centre join the discs the labels keep away from. */
   (spec.right || []).forEach(({ at, arms }) => {
@@ -482,7 +482,7 @@ export function sketchSvg(spec) {
      Only sketches with tints carry the rule, so ew1 and ew2 keep the layouts
      she approved. */
   const tintPolys = (spec.tints || []).map(t => tintPts(t).map(k => P[k]));
-  /* ew6, opt-in: the same rule for a Δ without a tint (spec.outside) */
+  /* ew7, opt-in: the same rule for a Δ without a tint (spec.outside) */
   if (spec.outside) tintPolys.push(spec.outside.map(k => P[k]));
   const inTri = (x, y, [a, b, c]) => {
     const s1 = (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);

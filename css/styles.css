@@ -1127,7 +1127,7 @@ svg.diag .ewe-star{fill:#1c7ed6; stroke:#1864ab; stroke-width:.8; stroke-linejoi
    is measured on the folded page. A finished pick step's other options are
    [hidden], which .ewe-q already turns into display:none. */
 .ewe-intro[role=button]{cursor:pointer; border-radius:6px; -webkit-tap-highlight-color:transparent;}
-/* ew6 "Vreemde formaat": the right-angle boxes of the exam figure (ink, not
+/* ew7 "Vreemde formaat": the right-angle boxes of the exam figure (ink, not
    the red of the ⊥h code); the card's two or three lines under each other,
    left-aligned as on the exam page, the block centred in the card; a build
    step's takeaway line under its finished line. */

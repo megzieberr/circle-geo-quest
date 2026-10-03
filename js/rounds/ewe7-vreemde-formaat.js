@@ -1,7 +1,7 @@
 /* ============================================================
-   ew6 · "Vreemde formaat"   (Eweredigheid, group g9)
+   ew7 · "Vreemde formaat"   (Eweredigheid, group g9)
    ------------------------------------------------------------
-   The sixth Gr12 Eweredigheid mini round (EWEREDIGHEID-PLAN.md,
+   The Gr12 Eweredigheid round after "Die trapesium" (EWEREDIGHEID-PLAN.md,
    kept local). AFRIKAANS ONLY, exactly like ew1 to ew5: every
    learner-facing string is plain Afrikaans; `title` and `blurb` carry
    the same Afrikaans twice (see the note in ewe1-watter-sye.js).
@@ -152,7 +152,7 @@ const S6 = rightAltitude({ right: "T", ends: ["U", "S"], foot: "V", t: 0.72, sid
   xy: { U: { x: 320, y: 60 }, S: { x: 20, y: 150 } } });
 
 export const round = {
-  id: "ew6",
+  id: "ew7",
   kind: "ewe",
   accent: "#c2255c",
   title: { en: "Vreemde formaat", af: "Vreemde formaat" },
@@ -164,21 +164,21 @@ export const round = {
     get cross() { return round.eweQuestions[0].write.cross; },
   },
   eweQuestions: [
-    question("ew6q1", S1, { line: [["AD", "AD"], ["BD", "DC"]], decoy: "AC",
+    question("ew7q1", S1, { line: [["AD", "AD"], ["BD", "DC"]], decoy: "AC",
       intro: "Bewys dat AD² = BD · DC. So staan dit in die eksamen. Dit lyk vreemd, maar dit is net 'n verhouding wat gekruismaal is. Skryf dit terug as twee breuke, dan sien jy watter sye jy nodig het. 'n Kwadraat is dieselfde sy twee keer." }),
-    question("ew6q2", S2, { line: [["AB", "AB"], ["BD", "BC"]], decoy: "AD",
+    question("ew7q2", S2, { line: [["AB", "AB"], ["BD", "BC"]], decoy: "AD",
       intro: "Bewys dat PQ² = QS · QR. Hierdie keer is die kwadraat nie die hoogte nie, maar die sy PQ." }),
-    question("ew6q3", S3, { line: [["AB", "AC"], ["AD", "BC"]], decoy: "BD",
+    question("ew7q3", S3, { line: [["AB", "AC"], ["AD", "BC"]], decoy: "BD",
       intro: "Bewys dat KL · KM = KN · LM. Hier is daar geen kwadraat nie, net twee produkte." }),
-    question("ew6q4", S4, { line: [["AD", "AD"], ["BD", "DC"]], decoy: "AC",
+    question("ew7q4", S4, { line: [["AD", "AD"], ["BD", "DC"]], decoy: "AC",
       intro: "Bewys dat FH² = EH · HG. Die skets is gedraai, maar die reël bly dieselfde." }),
-    question("ew6q5", S5, { line: [["AB", "AC"], ["AD", "BC"]], decoy: "DC",
+    question("ew7q5", S5, { line: [["AB", "AC"], ["AD", "BC"]], decoy: "DC",
       intro: "Bewys dat WX · WY = WZ · XY. Die Δ staan onderstebo, en weer is daar geen kwadraat nie." }),
-    question("ew6q6", S6, { line: [["AB", "AB"], ["BD", "BC"]], decoy: "AD",
+    question("ew7q6", S6, { line: [["AB", "AB"], ["BD", "BC"]], decoy: "AD",
       intro: "Bewys dat TU² = UV · US. Lees die lyn mooi: die kwadraat is die sy TU." }),
   ],
 };
 
 /* for tools/check-ewe-marker.mjs: the figure behind each question, so the
    oracle can measure real lengths from the very coordinates drawn */
-export const SKETCHES = { ew6q1: S1, ew6q2: S2, ew6q3: S3, ew6q4: S4, ew6q5: S5, ew6q6: S6 };
+export const SKETCHES = { ew7q1: S1, ew7q2: S2, ew7q3: S3, ew7q4: S4, ew7q5: S5, ew7q6: S6 };

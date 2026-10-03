@@ -15,11 +15,11 @@
      · sharedAngle()  ew4: two triangles that share ONE ANGLE, a cut
                       line that is never ∥ (see below).
      · markSine()     ew4: the four-box product marker (see below).
-     · rightAltitude() ew6: a right-angled Δ with the height from the
+     · rightAltitude() ew7: a right-angled Δ with the height from the
                       right angle onto the hypotenuse, the right angle
                       COMPUTED (see below).
-     · markProd()     ew6: ☐ · ☐ = ☐ · ☐, a square written out (see below).
-     · markCross()    ew6: the product line as two fractions (see below).
+     · markProd()     ew7: ☐ · ☐ = ☐ · ☐, a square written out (see below).
+     · markCross()    ew7: the product line as two fractions (see below).
      · markRatio()    the ratio marker. It decides "is this fill of
                       ☐/☐ = ☐/☐ right?" from the SHAPE of the fill
                       only: which cut side each chip lies on, and where
@@ -128,7 +128,7 @@ export function segLength(tri, name) {
    markSimilar below. spec.mode "area" (ew3, opt-in) is a TWO-box fill and
    goes to markArea at the very top; spec.mode "sine" (ew4, opt-in) is a
    four-box PRODUCT fill and goes to markSine; spec.mode "prod" and "cross"
-   (ew6, opt-in) are the rewrite of a product line and go to markProd and
+   (ew7, opt-in) are the rewrite of a product line and go to markProd and
    markCross. Without a mode, nothing here changes. */
 export function markRatio(fill, spec) {
   if (spec && spec.mode === "area") return markArea(fill, spec);
@@ -426,7 +426,7 @@ export function markSine(fill, spec) {
   return { ok: false, why: "pattern" };
 }
 
-/* ======================= ew6: a strange format =======================
+/* ======================= ew7: a strange format =======================
    The exam says "Bewys dat AD² = BD · DC". That line is a ratio that was
    cross-multiplied. Her habit (Metode-nota): write the square as a side
    times itself, AD · AD = BD · DC, then as two fractions AD/BD = DC/AD,
@@ -495,7 +495,7 @@ export function rightAltitude({ right, ends, foot, xy, t, side, spell = [] }) {
 const pairKey = p => p.slice().sort().join("·");
 const sqOf = pairs => { const s = pairs.find(p => p[0] === p[1]); return s ? s[0] : null; };
 
-/* ---------------- the product marker (ew6, spec.mode "prod") ----------------
+/* ---------------- the product marker (ew7, spec.mode "prod") ----------------
    fill  the four chip names in box order: [x1, x2, y1, y2], read as
          x1 · x2 = y1 · y2
    spec  { mode: "prod", pairs: [[L1, L2], [R1, R2]], chips }   (pairs = the
@@ -537,7 +537,7 @@ export function markProd(fill, spec) {
   return { ok: false, why: "pattern" };
 }
 
-/* ---------------- the cross marker (ew6, spec.mode "cross") ----------------
+/* ---------------- the cross marker (ew7, spec.mode "cross") ----------------
    fill  the four chip names in box order: [a, b, c, d], read as a/b = c/d
    spec  { mode: "cross", pairs, chips }   (as markProd)
 

@@ -47,7 +47,7 @@ import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtm
    ew3 adds "Opp Δ ABC" and a product "½ · basis · ⊥h": each stays one
    unit too (neither appears in ew1 or ew2). ew4 adds "sin Â": the sine
    and its angle stay together (no prompt or intro of ew1 to ew3 has one).
-   ew6 adds "AD²": the "²" becomes the drawer's raised 2 (sqText), the same
+   ew7 adds "AD²": the "²" becomes the drawer's raised 2 (sqText), the same
    one the card draws (no intro or prompt of ew1 to ew5 has a "²"). */
 const glue = t => sqText(esc(t).replace(/(\S) ∥ (\S)/g, "$1\u00A0∥\u00A0$2").replace(/Δ (\S)/g, "Δ\u00A0$1")
   .replace(/Opp Δ/g, "Opp\u00A0Δ").replace(/ · /g, "\u00A0·\u00A0").replace(/\bsin /g, "sin\u00A0"));
@@ -430,7 +430,7 @@ function mountBuild(host, step, onDone) {
      step.frame: the four boxes and ratioHtml, exactly as before. */
   const frame = step.frame || [{ n: [SLOT], d: [SLOT] }, "=", { n: [SLOT], d: [SLOT] }];
   const lineOf = f => (step.frame ? frameHtml(step.frame, f) : ratioHtml(f));
-  /* ew6, opt-in: a build step with an okLine says its takeaway under the
+  /* ew7, opt-in: a build step with an okLine says its takeaway under the
      finished line (a "²" in it drawn by sqText). Without the key the ✓ line
      is the finished line alone, as before. */
   const okHtml = step.okLine ? `<div class="ewe-okline">${sqText(esc(step.okLine))}</div>` : "";
@@ -486,7 +486,7 @@ function hintHtml(step, why, r) {
   /* ew4 (the product marker): the same, and "{chip}" in a hint becomes the
      very chip the marker named (the third side they used: DE or BC) */
   if (step.spec && step.spec.mode === "sine") return esc((h[why] || h.pattern).replace("{chip}", (r && r.chip) || ""));
-  /* ew6 (the product and cross markers): one plain sentence per wrong
+  /* ew7 (the product and cross markers): one plain sentence per wrong
      reason, "{chip}" filled with the decoy the marker named, a "²" drawn
      by sqText. The pattern hint carries a TEMPLATE in words: a product
      line (kind "prod") or two stacked fractions (kind "frac"). */
@@ -599,7 +599,7 @@ function writeCard(q, fill) {
   /* ew4, opt-in: the same chain for a shared angle, the ½ and sin struck
      through, the products inside the last fraction */
   else if (q.write.sine) body.innerHTML = sineLineHtml(q.write.sine, q.write.reason);
-  /* ew6, opt-in: the product line rewritten, the last line the fractions
+  /* ew7, opt-in: the product line rewritten, the last line the fractions
      the learner built (their fill) */
   else if (q.write.cross) body.innerHTML = crossLineHtml({ ...q.write.cross, fill: fill || q.write.cross.fill });
   /* ew2, opt-in: TWO lines as on the exam page, the similar triangles
