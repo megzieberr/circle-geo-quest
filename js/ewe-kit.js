@@ -1,5 +1,5 @@
 /* ============================================================
-   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew7)
+   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew8)
    ------------------------------------------------------------
    Three things, each ONE copy for the whole feature:
 
@@ -76,11 +76,16 @@ export function sqHtml(x) { return `<span class="ewf-sqw">${x}<sup class="ewf-sq
 export function sqText(html) { return String(html).replace(/²/g, '<sup class="ewf-sq">2</sup>'); }
 
 /* THE one fraction. num/den are trusted HTML (already escaped by the
-   caller, or built by this file). */
-export function fracHtml(num, den) {
-  return `<span class="ewf"><span class="ewf-n">${part(num)}</span>`
+   caller, or built by this file).
+   ew8, OPT-IN: tone = [k, j] colours the numerator in colour k and the
+   denominator in colour j (her notes: every top in one colour, every
+   bottom in another; .ewf-k1, .ewf-k2). The bar stays ink. Left out, the
+   fraction is exactly as before, letter for letter. */
+export function fracHtml(num, den, tone) {
+  const [kn, kd] = Array.isArray(tone) ? tone.map(k => ` ewf-k${k}`) : ["", ""];
+  return `<span class="ewf"><span class="ewf-n${kn}">${part(num)}</span>`
        + `<span class="ewf-bar" aria-hidden="true"></span>`
-       + `<span class="ewf-d">${part(den)}</span></span>`;
+       + `<span class="ewf-d${kd}">${part(den)}</span></span>`;
 }
 
 /* An equation: two units, and the "=" travels WITH the right-hand side,
@@ -278,9 +283,22 @@ function fxCell(c) {
   if (c && typeof c === "object") return `<span class="ewpad-fx ewtint ewtint-${c.tint}">${esc(c.t)}</span>`;
   return `<span class="ewpad-fx">${esc(c)}</span>`;
 }
+/* ew8, opt-in: a fraction unit with `tone` ([1, 2]) is drawn coloured, top
+   and bottom (fracHtml's tone); without the key, as before */
 function frameUnits(frame, cell) {
   return frame.map(u => (u === "=" ? "=" : Array.isArray(u) ? `<span class="ewpad-run">${u.map(cell).join("")}</span>`
-                                                            : fracHtml(u.n.map(cell).join(""), u.d.map(cell).join(""))));
+                                                            : fracHtml(u.n.map(cell).join(""), u.d.map(cell).join(""), u.tone)));
+}
+
+/* ew8, opt-in: the written line with ANY number of fractions (her sketch 3
+   has three: AD/AB = AE/AC = DE/BC), each a plain stacked fraction, the
+   chain breaking only before an "=", the reason in brackets moving down
+   whole. With two fractions it is writtenLineHtml's line, letter for
+   letter. pairs = [["AD", "AB"], ["AE", "AC"], …] */
+export function fracsLineHtml(pairs, reason) {
+  const units = pairs.flatMap(([a, b], i) => [...(i ? ["="] : []), fracHtml(esc(a), esc(b))]);
+  return `<div class="ewl">${chainHtml(units)}`
+       + (reason ? `<span class="ewl-rs">(${esc(reason)})</span>` : "") + `</div>`;
 }
 
 /* ew5, opt-in: ONE stacked fraction drawn from frame cells (text, ½, a
@@ -428,7 +446,17 @@ export function shuffle(xs) {
              the label obstacles) without drawing it, so it can appear
              later without moving anything
      tints   an entry may have FOUR corners (the trapezium); the label rule
-             tests it as a polygon */
+             tests it as a polygon
+   ew8, OPT-IN (left out, nothing changes):
+     sideArcs entries may carry `tone` (1 or 2: the arc in the colour of
+             its place in the fractions, top or bottom) and `away` (["B",
+             "C"]: bulge away from those points, for an arc over a ∥ line)
+     arcNest true: a whole side's arc is nested outside the piece arc it
+             shares a point with (nestH above)
+     thick   [["A","B"], …]   those sides drawn thick
+     edge    extra margin (sketch units) on every side of the fit with arcs
+     labGap  extra room (sketch units) every point label keeps from the
+             lines, the ∥ arrows and the arcs */
 const W = 320, H = 232, MARGIN = 24, LAB_R = 14;
 const ARC_R = 17, STAR_D = 15, STAR_R = 5.5, RA_B = 9;
 const N = v => Math.round(v * 10) / 10;
@@ -485,7 +513,11 @@ function arcGeo(spec, P) {
     const F = P[a.from], T = P[a.to], L = Math.hypot(T.x - F.x, T.y - F.y) || 1;
     const ux = (T.x - F.x) / L, uy = (T.y - F.y) / L;
     let nx = -uy, ny = ux;
-    if (((F.x + T.x) / 2 - cx) * nx + ((F.y + T.y) / 2 - cy) * ny < 0) { nx = -nx; ny = -ny; }
+    /* ew8, opt-in: `away: ["B", "C"]` bulges the arc away from the middle of
+       those points (an arc over the ∥ line DE bulges away from BC, as on her
+       page); without it, away from the centre as before */
+    const [rx, ry] = a.away ? [a.away.reduce((s, k) => s + P[k].x, 0) / a.away.length, a.away.reduce((s, k) => s + P[k].y, 0) / a.away.length] : [cx, cy];
+    if (((F.x + T.x) / 2 - rx) * nx + ((F.y + T.y) / 2 - ry) * ny < 0) { nx = -nx; ny = -ny; }
     const w = AL_CW * String(a.label || "").length;
     return { a, F, L, ux, uy, nx, ny, w, ext: Math.abs(nx) * w / 2 + Math.abs(ny) * AL_HH, level: a.level === 2 ? 2 : 1, h: SARC_H1 };
   });
@@ -509,6 +541,7 @@ function arcGeo(spec, P) {
     else if (clear(hi) < SARC_GAP) lo = hi;
     for (let it = 0; it < 40 && hi - lo > 0.05; it++) { const m = (lo + hi) / 2; if (clear(m) >= SARC_GAP) hi = m; else lo = m; }
     g.h = hi;
+    if (spec.arcNest) g.h = nestH(g, G, g.h);
     /* its label, outside the bow on the bow's own radius at `u` */
     const C = circ(g, g.h);
     const labAt = u => {
@@ -538,18 +571,68 @@ function arcGeo(spec, P) {
     }
     g.lab = { x: best.x, y: best.y };
   });
-  G.forEach(g => {
-    /* a circular bow of chord L and sag h (h never more than L/2) */
-    g.pts = [];
-    const R = (g.L * g.L / 4 + g.h * g.h) / (2 * g.h), k = g.level === 2 ? 48 : 30;
-    for (let i = 0; i <= k; i++) { const u = i / k, d = g.L * (u - 0.5); g.pts.push(at(g, u, Math.sqrt(Math.max(0, R * R - d * d)) - (R - g.h))); }
-  });
+  G.forEach(g => { g.pts = bowPts(g, g.h); });
   return G;
+}
+/* a circular bow of chord L and sag h (h never more than L/2), as points */
+function bowPts(g, h) {
+  const pts = [];
+  const R = (g.L * g.L / 4 + h * h) / (2 * h), k = g.level === 2 ? 48 : 30;
+  for (let i = 0; i <= k; i++) {
+    const u = i / k, d = g.L * (u - 0.5), n = Math.sqrt(Math.max(0, R * R - d * d)) - (R - h);
+    pts.push({ x: g.F.x + u * g.L * g.ux + n * g.nx, y: g.F.y + u * g.L * g.uy + n * g.ny });
+  }
+  return pts;
+}
+/* ew8, opt-in (spec.arcNest): her nested arcs. A whole side's arc (level 2)
+   that shares a point with a piece's arc on the same side and the same
+   side of it (AB over AD, both from A) bows out until the two arcs are
+   NEST_GAP apart everywhere outside the corner zone (NEST_END around the
+   shared point, where two arcs from one point must meet). Two arcs from
+   the same point so get different heights, the smaller inside. The search
+   only ever raises h (a higher bow on the same chord lies above the lower
+   one everywhere), never past SARC_MAX of the chord. */
+const NEST_END = 15, NEST_GAP = 5;
+function nestH(g, G, h0) {
+  const T = { x: g.F.x + g.L * g.ux, y: g.F.y + g.L * g.uy };
+  const same = (p, q) => Math.hypot(p.x - q.x, p.y - q.y) < 1e-6;
+  const onSide = p => { const a = (p.x - g.F.x) * g.ux + (p.y - g.F.y) * g.uy, n = (p.x - g.F.x) * g.nx + (p.y - g.F.y) * g.ny; return Math.abs(n) < 1e-6 && a > -1e-6 && a < g.L + 1e-6; };
+  const inner = G.filter(i => i !== g && i.level === 1 && i.nx * g.nx + i.ny * g.ny > 0.999
+    && onSide(i.F) && onSide({ x: i.F.x + i.L * i.ux, y: i.F.y + i.L * i.uy }));
+  if (!inner.length) return h0;
+  /* distances to the other arc as a polyline (point to segment), not point
+     to point: two sampled bows close together would otherwise read wider
+     than they are */
+  const toPoly = (q, pts) => { let m = Infinity; for (let k = 1; k < pts.length; k++) m = Math.min(m, segDist(q.x, q.y, pts[k - 1], pts[k])); return m; };
+  const parts = inner.map(i => {
+    const iT = { x: i.F.x + i.L * i.ux, y: i.F.y + i.L * i.uy };
+    const shared = [g.F, T].filter(p => same(p, i.F) || same(p, iT));
+    const far = q => shared.every(s => Math.hypot(q.x - s.x, q.y - s.y) >= NEST_END);
+    const all = bowPts(i, i.h);
+    return { all, pts: all.filter(far), far };
+  });
+  const gap = h => {
+    const mine = bowPts(g, h);
+    let m = Infinity;
+    parts.forEach(({ all, pts, far }) => {
+      mine.filter(far).forEach(q => { m = Math.min(m, toPoly(q, all)); });
+      pts.forEach(q => { m = Math.min(m, toPoly(q, mine)); });
+    });
+    return m;
+  };
+  let lo = h0, hi = Math.max(h0, SARC_MAX * g.L);
+  if (gap(lo) >= NEST_GAP) return lo;
+  if (gap(hi) < NEST_GAP) return hi;
+  for (let it = 0; it < 40 && hi - lo > 0.05; it++) { const m = (lo + hi) / 2; if (gap(m) >= NEST_GAP) hi = m; else lo = m; }
+  return hi;
 }
 /* the fit with room for the arcs: start from the usual margins and widen
    the side an arc or its label pokes out of, until everything is inside */
 function fitArcs(spec, names, x0, x1, y0, y1) {
-  const m = { l: MARGIN, r: MARGIN, t: MARGIN, b: MARGIN };
+  /* ew8, opt-in: `edge` adds that much to every margin, so a point label
+     at a corner near the canvas edge still has room outside the Δ */
+  const e = spec.edge || 0;
+  const m = { l: MARGIN + e, r: MARGIN + e, t: MARGIN + e, b: MARGIN + e };
   let res = null;
   for (let it = 0; it < 16; it++) {
     const s = Math.min((W - m.l - m.r) / (x1 - x0 || 1), (H - m.t - m.b) / (y1 - y0 || 1));
@@ -597,6 +680,10 @@ export function sketchSvg(spec) {
   });
   const segs = spec.lines.map(([a, b]) => [P[a], P[b]]);
   segs.forEach(([a, b]) => { out += `<line class="ln" x1="${N(a.x)}" y1="${N(a.y)}" x2="${N(b.x)}" y2="${N(b.y)}"/>`; });
+  /* ew8, opt-in: `thick: [["A","B"], ["A","C"]]` draws those sides thick
+     over their own line (the two cut sides, so the eye sees the pieces lie
+     on two lines). The same segments as drawn lines, so no label moves. */
+  (spec.thick || []).forEach(([a, b]) => { out += `<line class="ewe-thick" x1="${N(P[a].x)}" y1="${N(P[a].y)}" x2="${N(P[b].x)}" y2="${N(P[b].y)}"/>`; });
 
   /* ∥ chevrons, one per ∥ line, same look as engine.js's "p1" mark */
   const marks = [];
@@ -679,7 +766,9 @@ export function sketchSvg(spec) {
   (arcs || []).forEach(g => {
     g.pts.forEach(q => discs.push({ x: q.x, y: q.y, r: 1.5 }));
     if (g.a.label) discs.push({ x: g.lab.x, y: g.lab.y, r: Math.hypot(g.w / 2, AL_HH) + 1 });
-    if (!g.a.hidden) out += `<path class="mk ewe-sarc ewe-sarc-${g.level}" d="${g.pts.map((q, i) => `${i ? "L" : "M"} ${N(q.x)} ${N(q.y)}`).join(" ")}"/>`;
+    /* ew8, opt-in: `tone` 1 or 2 colours the arc by its place in the
+       fractions (top or bottom), .ewe-sarc-k1 / -k2 */
+    if (!g.a.hidden) out += `<path class="mk ewe-sarc ewe-sarc-${g.level}${g.a.tone ? ` ewe-sarc-k${g.a.tone}` : ""}" d="${g.pts.map((q, i) => `${i ? "L" : "M"} ${N(q.x)} ${N(q.y)}`).join(" ")}"/>`;
   });
 
   /* labels: for each point try 36 directions and keep the one whose label
@@ -711,6 +800,10 @@ export function sketchSvg(spec) {
   };
   const placed = [];
   const labels = [];
+  /* ew8, opt-in: `labGap` keeps every point label that much further from
+     the lines, the ∥ arrows and the arcs (a cut side may be drawn thick
+     later, and her arcs crowd the corners); 0 = as before */
+  const lg = spec.labGap || 0;
   names.forEach(k => {
     const p = P[k];
     let best = null, bestScore = -Infinity;
@@ -720,9 +813,9 @@ export function sketchSvg(spec) {
       const r = spec.labBox ? boxRadius(Math.cos(ang), Math.sin(ang)) : LAB_R;
       const lx = p.x + r * Math.cos(ang), ly = p.y + r * Math.sin(ang);
       let score = Infinity;
-      obst.forEach(([a, b]) => { score = Math.min(score, segDist(lx, ly, a, b)); });
-      marks.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - 4); });
-      discs.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - m.r); });
+      obst.forEach(([a, b]) => { score = Math.min(score, segDist(lx, ly, a, b) - lg); });
+      marks.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - 4 - lg); });
+      discs.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - m.r - lg); });
       placed.forEach(q => { score = Math.min(score, Math.hypot(lx - q.x, ly - q.y) - 8); });
       score = Math.min(score, lx - 7, W - 7 - lx, ly - 8, H - 8 - ly);
       /* inside a tinted Δ is never allowed (see tintPolys above) */

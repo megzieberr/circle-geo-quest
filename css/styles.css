@@ -1199,3 +1199,18 @@ svg.diag .pl.ewe-al-2{fill:#1971c2;}
 .ewl-ts-op{padding:0 .3em;}
 .ewl-trap-so{display:flex; align-items:center; max-width:100%; font-size:1.2rem; font-weight:700;}
 .ewl-ts-so{padding-right:.35em;}
+/* ew8 "Driehoeke of sye?" (opt-in classes, written only by its data). Her
+   colours: every top in one colour, every bottom in another, the same two
+   on the fractions (the one drawer's tone, .ewf-k1 / -k2) and on the arcs
+   over their sides (.ewe-sarc-k1 / -k2); the bar stays ink. The cut sides
+   drawn thick once "sye in verhouding" is right. The two buttons side by
+   side, a little less padding than Ja / Nee so the sketch, the fractions
+   and both buttons share a small phone screen. The end screen's two
+   example lines with air between them. */
+.ewf-k1{color:#1971c2;}
+.ewf-k2{color:#d9480f;}
+svg.diag .mk.ewe-sarc.ewe-sarc-k1{stroke:#1971c2;}
+svg.diag .mk.ewe-sarc.ewe-sarc-k2{stroke:#d9480f;}
+svg.diag .ewe-thick{stroke:#2b2f4a; stroke-width:5; stroke-linecap:round;}
+.ewe-opts.ewe-pair .opt{font-size:1.02rem; padding:10px 8px; line-height:1.2;}
+.ewe-tk-card + .ewe-tk-card{margin-top:12px;}

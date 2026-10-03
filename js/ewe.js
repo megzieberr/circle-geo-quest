@@ -40,7 +40,7 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, fracsLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
 
 /* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
    "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts).
@@ -546,12 +546,16 @@ function mountPick(host, step, onDone) {
     eqHtml(fracHtml(half[0], half[1]), fracHtml(half[2], '<span class="ewslot is-next"></span>')))
     : lead ? el("div", "ewpad-disp ewe-show ewe-lead", eqHtml(cellFracHtml(lead), '<span class="ewslot is-next"></span>')) : null;
   if (show) host.appendChild(show);
-  const yesno = step.layout === "yesno";
+  /* ew8, opt-in: layout "pair" is two wide buttons side by side, in the
+     order the data gives (her two words, never shuffled), like Ja / Nee,
+     with the class .ewe-pair for their own spacing. */
+  const pair = step.layout === "pair";
+  const yesno = step.layout === "yesno" || pair;
   /* ew5, opt-in: `grid: 2` sets the options in a 2 x 2 grid (one stacked
      fraction per cell), so the sketch keeps its room on a small phone.
      Without the key the options stack as before. */
   const grid = !yesno && step.grid === 2;
-  const opts = el("div", "q-options ewe-opts" + (yesno ? " yesno" : "") + (grid ? " grid2 ewe-grid" : ""));
+  const opts = el("div", "q-options ewe-opts" + (yesno ? " yesno" : "") + (pair ? " ewe-pair" : "") + (grid ? " grid2 ewe-grid" : ""));
   const hint = el("div", "dp-hint ewe-hint"); hint.hidden = true;
   const fb = el("div", "dp-feedback ewe-fb"); fb.hidden = true;
   /* Ja / Nee keep their natural order; the reasons are shuffled so the
@@ -628,6 +632,9 @@ function writeCard(q, fill) {
   /* ew6, opt-in: her trapezium page, part (c) and, after a full chain, the
      two lines above it */
   else if (q.write.trap) body.innerHTML = trapLineHtml(q.write.trap);
+  /* ew8, opt-in: the fractions as shown, any number of them (her sketch 3
+     has three), under ew2's similarity line when there is one */
+  else if (q.write.fracs) body.innerHTML = fracsCardHtml(q.write);
   /* ew2, opt-in: TWO lines as on the exam page, the similar triangles
      first, then the ratio. A step with no build (ew2 Q4) brings its own
      fill. ew1 has neither, so its card is unchanged. */
@@ -636,6 +643,11 @@ function writeCard(q, fill) {
   card.appendChild(body);
   if (q.write.tip) card.appendChild(el("p", "ewe-write-tip", sqText(esc(q.write.tip))));
   return card;
+}
+/* ew8: ew2's card (the similar triangles, then the fractions with their
+   reason) or ew1's (the fractions with theirs), for any number of fractions */
+function fracsCardHtml(w) {
+  return (w.sim ? simLineHtml(w.sim, w.simReason) : "") + fracsLineHtml(w.fracs, w.reason);
 }
 
 /* ---------------- the end of a round ----------------
@@ -657,7 +669,8 @@ function renderEnd(app, host, round, r) {
       <div class="ewe-write ewe-takeaway">
         <div class="ewe-write-tag">${UI.remember}</div>
         <p class="ewe-write-text">${sqText(esc(tk.text))}</p>
-        <div class="ewe-write-body">${tk.trap ? trapLineHtml(tk.trap) : tk.cross ? crossLineHtml(tk.cross) : tk.sine ? sineLineHtml(tk.sine, tk.reason) : tk.area ? areaLineHtml(tk.area, tk.reason)
+        <div class="ewe-write-body">${tk.cards ? tk.cards.map(w => `<div class="ewe-tk-card">${fracsCardHtml(w)}</div>`).join("")
+          : tk.trap ? trapLineHtml(tk.trap) : tk.cross ? crossLineHtml(tk.cross) : tk.sine ? sineLineHtml(tk.sine, tk.reason) : tk.area ? areaLineHtml(tk.area, tk.reason)
           : (tk.sim ? simLineHtml(tk.sim, tk.simReason) : "") + writtenLineHtml(tk.fill, tk.reason)}</div>
       </div>
       <div class="result-actions"></div>
