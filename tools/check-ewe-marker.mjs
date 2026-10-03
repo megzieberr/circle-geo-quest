@@ -1245,6 +1245,12 @@ for (const q of round9.eweQuestions) {
     lit = `colour 1 ${w1.join(", ")} → Δ ${right[0]} ${ok1 ? "ok" : "NOT"}; colour 2 ${w2.join(", ")} → Δ ${right[1]} ${ok2 ? "ok" : "NOT"}`;
     if (!ok1) err.push(`colour 1 lights ${JSON.stringify(lit1)}, want ${w1} (sides of Δ ${T1.join("")}), pick 1 marks ${right[0]}`);
     if (!ok2) err.push(`colour 2 lights ${JSON.stringify(lit2)}, want ${w2} (sides of Δ ${T2.join("")}), pick 2 marks ${right[1]}`);
+    /* her ruling 3 Oct 15:58: until the name build the second Δ is SHOWN
+       scrambled (pick 2's option, the name with the fractions), never in an
+       order that would be right: the same letters, not similar as written */
+    const shown = q.tris.shown || "", shownSim = simOf(written1, shown);
+    if (key(shown) !== key(T2.join("")) || shown === written2 || right[1] !== shown || (shownSim != null && shownSim < REL))
+      err.push(`the second Δ is shown as ${shown}: not a scrambled (wrong) order of Δ ${written2}, or pick 2 does not show it`);
     /* every wrong pick option carries a hint, and only one is right */
     picks.forEach((st, i) => { if (st.options.filter(o => o.correct).length !== 1 || st.options.some(o => !o.correct && !o.hint)) err.push(`pick ${i + 1}: not exactly one right option, or a wrong one without a hint`); });
     /* 6 · every fill of the name build */

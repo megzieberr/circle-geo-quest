@@ -128,8 +128,14 @@ const three = ([x, y, z]) => `${x},${NB}${y}${NB}en${NB}${z}`;
             writes it above the fractions. The line under the sketch holds
             only the fractions, so the sketch, the fractions and the step
             share a small phone screen
-   labOut   as ew8: one point's label a little further out, if needed */
-function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pairsOk, intro, exam, labOut }) {
+   labOut   as ew8: one point's label a little further out, if needed
+   show2    HER RULING 3 Oct 15:58 ("you are already giving the learners the
+            answers... deliberately scramble the letters so they actually have
+            to go check"): until the name build, the second Δ is SHOWN in a
+            scrambled order (the pick option, its ✓ line, the name with the
+            fractions); only the build, its ✓ line and the card write it in
+            the matching order. The marker proves show2 is never a right order. */
+function triQ(id, { kind, fig, fracs, form, tri1, tri2, show2, decoy, arcs, order, pairsOk, intro, exam, labOut }) {
   const [[a, b], [c, d]] = fracs;
   /* the lit pairs: colour 1 the first Δ's two sides, colour 2 the second's */
   const pair1 = form === "across" ? [a, c] : [a, b];
@@ -154,21 +160,23 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
   const after2 = { ...base, sideArcs: side(true), tints: bigFirst ? [{ ...t1, hole: [...tri2] }, t2] : [{ ...t2, hole: [...tri1] }, t1] };
 
   /* the given fractions: lit, then named (pre: the exam line, card only) */
-  const N1 = { t: tri1, k: 1 }, N2 = { t: tri2, k: 2 };
-  const line = (lit1, lit2, nm1, nm2, pre) => {
+  const N1 = { t: tri1, k: 1 }, N2 = { t: tri2, k: 2 }, S2 = { t: show2, k: 2 };
+  /* n2: the second name as shown on this line (scrambled before the build,
+     matching on the card) */
+  const line = (lit1, lit2, nm1, nm2, pre, n2 = S2) => {
     if (form === "across") return {
       ...(pre && exam ? { pre: exam } : {}),
       fracs: [{ n: a, d: b, tone: [lit1 ? 1 : 0, lit2 ? 2 : 0] }, { n: c, d: d, tone: [lit1 ? 1 : 0, lit2 ? 2 : 0] }],
-      side: { top: { ...N1, show: nm1 }, bot: { ...N2, show: nm2 } },
+      side: { top: { ...N1, show: nm1 }, bot: { ...n2, show: nm2 } },
     };
     return {
       ...(pre && exam ? { pre: exam } : {}), under: true,
       fracs: [{ n: a, d: b, tone: lit1 ? [1, 1] : [0, 0], ...(nm1 ? { name: N1 } : {}) },
-              { n: c, d: d, tone: lit2 ? [2, 2] : [0, 0], ...(nm2 ? { name: N2 } : {}) }],
+              { n: c, d: d, tone: lit2 ? [2, 2] : [0, 0], ...(nm2 ? { name: n2 } : {}) }],
     };
   };
 
-  const shapes = [`Δ ${tri1}`, `Δ ${tri2}`, decoy];
+  const shapes = [`Δ ${tri1}`, `Δ ${show2}`, decoy];
   /* the three names in ONE row (layout "row", shuffled); step 2 is read
      off the sketch, so it is brought in like a build step (keepSketch) */
   const pick = (k, prompt, tri, okLine, after, lineAfter) => ({
@@ -185,7 +193,7 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
     pick(1, `Hierdie twee sye, ${pair1[0]} en ${pair1[1]}, deel die letter ${s1}. Van watter Δ is hulle sye?`,
       tri1, `${pair1[0]} en ${pair1[1]} is sye van Δ ${tri1}.`, after1, line(true, true, true, false)),
     pick(2, `Nou ${pair2[0]} en ${pair2[1]}: hulle deel die letter ${s2}. Van watter Δ?`,
-      tri2, `${pair2[0]} en ${pair2[1]} is sye van Δ ${tri2}.`, after2, line(true, true, true, true)),
+      show2, `${pair2[0]} en ${pair2[1]} is sye van Δ ${show2}.`, after2, line(true, true, true, true)),
     {
       type: "build", role: "name",
       prompt: "Skryf die tweede naam in dieselfde volgorde.",
@@ -204,7 +212,7 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
       okLine: tail(nb(pairsOk)),
     },
   ];
-  const fin = line(true, true, true, true, true);
+  const fin = line(true, true, true, true, true, N2);
   return {
     id, intro: tail(glueIntro(intro)), sketch: start,
     fracLine: line(true, false, false, false),
@@ -212,7 +220,7 @@ function triQ(id, { kind, fig, fracs, form, tri1, tri2, decoy, arcs, order, pair
     write: { names: { line: fin, sim: [N1, N2] }, tip: tail(nb(CARD_TIP)) },
     /* for the tools */
     kind: "driehoeke", sketchKind: kind, form,
-    tris: { first: tri1, second: tri2, map, pair1, pair2, decoy, shapes },
+    tris: { first: tri1, second: tri2, shown: show2, map, pair1, pair2, decoy, shapes },
     sketches: { start, after1, after2 },
     fig: { pts: fig.pts, lines: fig.sketch.lines, fracs, ...(exam ? { exam: [exam.sq, ...exam.prod] } : {}) },
   };
@@ -264,12 +272,12 @@ const T1 = cutTriangle({ corner: "A", ends: ["B", "C"], cuts: ["D", "E"], t: 0.4
   xy: { A: { x: 150, y: 20 }, B: { x: 35, y: 205 }, C: { x: 292, y: 198 } } });
 const Q1 = triQ("ew9q1", {
   kind: "A", fig: T1, form: "across",
-  fracs: [["AD", "AB"], ["DE", "BC"]], tri1: "ADE", tri2: "ABC", decoy: "trapesium DBCE",
+  fracs: [["AD", "AB"], ["DE", "BC"]], tri1: "ADE", tri2: "ABC", show2: "ACB", decoy: "trapesium DBCE",
   arcs: [{ from: "A", to: "D", k: 1 }, { from: "D", to: "E", k: 1, away: ["B", "C"] },
          { from: "A", to: "B", k: 2, level: 2 }, { from: "B", to: "C", k: 2, away: ["D", "E"] }],
   order: "AD staan saam met AB: A pas by A, en D pas by B. Skryf die letters in daardie volgorde.",
   pairsOk: "A pas by A, D by B en E by C.",
-  intro: "In Δ ABC lê D op AB en E op AC, met DE ∥ BC. Lees die twee Δe uit die breuke af.",
+  intro: "D lê op AB en E op AC, met DE ∥ BC. Lees die twee Δe uit die breuke af.",
 });
 
 /* Q2 · kind A, K on top leaning; SIDES: KN/NL = KT/TM */
@@ -286,7 +294,7 @@ const B3 = sharedAngleSide({ shared: "R", far: "P", apex: "Q", cut: "S",
   xy: { P: { x: 20, y: 200 }, R: { x: 300, y: 200 }, Q: { x: 210, y: 40 } } });
 const Q3 = triQ("ew9q3", {
   kind: "B", fig: B3, form: "within", exam: B3.exam,
-  fracs: [["QR", "RS"], ["RP", "QR"]], tri1: "QRS", tri2: "PRQ", decoy: "Δ PQS",
+  fracs: [["QR", "RS"], ["RP", "QR"]], tri1: "QRS", tri2: "PRQ", show2: "PQR", decoy: "Δ PQS",
   arcs: [{ from: "Q", to: "R", k: 1 }, { from: "R", to: "S", k: 1 },
          { from: "R", to: "P", k: 2, level: 2 }, { from: "Q", to: "R", k: 2, level: 2 }],
   order: `QR staan saam met RP, en RS saam met QR. ${hat("R")} is in albei Δe, dus staan R op dieselfde plek in albei name.`,
@@ -299,12 +307,12 @@ const T4 = cutTriangle({ corner: "F", ends: ["G", "H"], cuts: ["J", "K"], t: 0.4
   xy: { F: { x: 305, y: 118 }, G: { x: 35, y: 25 }, H: { x: 60, y: 212 } } });
 const Q4 = triQ("ew9q4", {
   kind: "A", fig: T4, form: "within",
-  fracs: [["JK", "FK"], ["GH", "FH"]], tri1: "FJK", tri2: "FGH", decoy: "trapesium JGHK",
+  fracs: [["JK", "FK"], ["GH", "FH"]], tri1: "FJK", tri2: "FGH", show2: "FHG", decoy: "trapesium JGHK",
   arcs: [{ from: "J", to: "K", k: 1, away: ["G", "H"] }, { from: "F", to: "K", k: 1 },
          { from: "G", to: "H", k: 2, away: ["J", "K"] }, { from: "F", to: "H", k: 2, level: 2 }],
   order: "FK staan saam met FH: F pas by F, en K pas by H. Skryf die letters in daardie volgorde.",
   pairsOk: "F pas by F, J by G en K by H.",
-  intro: "Die Δ is gedraai: F wys na regs. In Δ FGH lê J op FG en K op FH, met JK ∥ GH.",
+  intro: "Die Δ is gedraai: F wys na regs. J lê op FG en K op FH, met JK ∥ GH.",
 });
 
 /* Q5 · kind B turned, fresh letters: Δ TUW, V on UW, TV joined; TU² = UV · UW */
@@ -312,7 +320,7 @@ const B5 = sharedAngleSide({ shared: "U", far: "W", apex: "T", cut: "V",
   xy: { T: { x: 90, y: 30 }, U: { x: 290, y: 30 }, W: { x: 40, y: 210 } } });
 const Q5 = triQ("ew9q5", {
   kind: "B", fig: B5, form: "within", exam: B5.exam,
-  fracs: [["TU", "UV"], ["UW", "TU"]], tri1: "TUV", tri2: "WUT", decoy: "Δ WTV",
+  fracs: [["TU", "UV"], ["UW", "TU"]], tri1: "TUV", tri2: "WUT", show2: "TUW", decoy: "Δ WTV",
   arcs: [{ from: "T", to: "U", k: 1 }, { from: "U", to: "V", k: 1 },
          { from: "U", to: "W", k: 2, level: 2 }, { from: "T", to: "U", k: 2, level: 2 }],
   order: `TU staan saam met UW, en UV saam met TU. ${hat("U")} is in albei Δe, dus staan U op dieselfde plek in albei name.`,

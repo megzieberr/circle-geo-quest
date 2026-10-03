@@ -2597,7 +2597,8 @@ try:
                     right = next(o for o in st["options"] if o["correct"])
                     check9(f"{tag}: '{r0['prompt']}', the three shapes in ONE row ({' · '.join(r0['texts'])}; {r0['w']} px wide, {r0['h']} px high), nothing clipped",
                            sorted(r0["texts"]) == shapes and r0["vis"] == r0["texts"] and r0["row"] and r0["oneRow"] and r0["inside"] and r0["clipped"] == 0 and r0["prompt"] == st["prompt"])
-                    want_right = f"Δ {q['tris']['first'] if k == 1 else q['tris']['second']}"
+                    # her ruling 3 Oct 15:58: the second Δ is SHOWN scrambled until the name build
+                    want_right = f"Δ {q['tris']['first'] if k == 1 else q['tris']['shown']}"
                     check9(f"{tag}: the right option is '{want_right}'", right["text"] == want_right)
                     ends9(".ewe-step:last-child .ewe-prompt", P, f"step {k} prompt")
                     measure(page, f"{tag}: options")
@@ -2605,7 +2606,7 @@ try:
                         click_btn(page, ".ewe-step:last-child .ewe-opt", o["text"])
                         measure(page, f"{tag}: wrong pick {wi + 1}")
                         r1 = page.evaluate(ROW9_JS, k)
-                        letters = list(q["tris"]["first"] if k == 1 else q["tris"]["second"])
+                        letters = list(q["tris"]["first"] if k == 1 else q["tris"]["shown"])
                         check9(f"{tag}: the wrong pick '{o['text']}' turns red, the others stay, and the hint names the letters {', '.join(letters)}",
                                o["text"] in r1["red"] and len(r1["vis"]) == 3 and o["hint"] in hint_text() and o["hint"] == f"Soek die Δ met AL DRIE letters: {letters[0]}, {letters[1]} en {letters[2]}.")
                         a1 = page.evaluate(ARCS9_JS, arg)
@@ -2637,7 +2638,7 @@ try:
                            got_t == want_t and got_arcs == want_arcs and moved == 0 and not l2["collisions"] and not a2["collisions"]
                            and all(f.startswith("rgb") for f in a2["tintFill"]))
                     g2 = page.evaluate(NAMES9_JS, ".ewe-qline")
-                    want_n = ([f"Δ {T1}:k1"] + ([f"Δ {T2}:k2"] if k == 2 else []))
+                    want_n = ([f"Δ {T1}:k1"] + ([f"Δ {q['tris']['shown']}:k2"] if k == 2 else []))
                     where = "under its fraction" if q["form"] == "within" else "beside the tops ('bo:')" if k == 1 else "beside the tops and the bottoms ('bo:', 'onder:')"
                     under_ok = all(f["underIn"] and (f["underCentre"] is None or f["underCentre"] <= 1) for f in g2["fr"])
                     check9(f"{tag}: the given line now names Δ {T1 if k == 1 else T2} {where} ({', '.join(names9(g2))}); colour 2 on {' '.join(tok9(g2, 2))}; still one row, inside 375 px, nothing hanging below the line",
