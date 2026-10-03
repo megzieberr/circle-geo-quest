@@ -49,6 +49,13 @@
    and cross markers against products of lengths measured from the
    coordinates.
 
+   ew6 (the trapezium: the big Δ minus the small Δ) last of all: its own
+   oracle measures the small Δ, the big Δ and the trapezium with the
+   shoelace formula from the coordinates, proves the small over the big is
+   the question's fraction and the trapezium is big minus small, then
+   tries EVERY fill of every build step against "the numbers are the
+   lowest-terms parts, in the asked order".
+
    Run: node tools/check-ewe-marker.mjs        (exit 1 on any disagreement) */
 import { markRatio, segLength, dist } from "../js/ewe-core.js";
 import { round, TRIANGLES } from "../js/rounds/ewe1-watter-sye.js";
@@ -56,6 +63,7 @@ import { round as round2, TRIANGLES as TRIANGLES2 } from "../js/rounds/ewe2-met-
 import { round as round3, SKETCHES as SKETCHES3 } from "../js/rounds/ewe3-deel-n-sy.js";
 import { round as round4, SKETCHES as SKETCHES4 } from "../js/rounds/ewe4-deel-n-hoek.js";
 import { round as round5, SKETCHES as SKETCHES5 } from "../js/rounds/ewe5-watter-een.js";
+import { round as round6, SKETCHES as SKETCHES6 } from "../js/rounds/ewe6-die-trapesium.js";
 import { round as round7, SKETCHES as SKETCHES7 } from "../js/rounds/ewe7-vreemde-formaat.js";
 
 const REL = 1e-9;             // "equal" for lengths that are equal by construction
@@ -848,5 +856,120 @@ for (const r of rows7) {
 }
 console.log(`TOTAL                   ${String(T7).padStart(11)}  ${String(A7).padStart(8)}  ${String(R7).padStart(8)}  ${String(D7).padStart(13)}`);
 
+/* ======================= ew6 =======================
+   The ew6 ORACLE, written from the round's rule, not from the marker. It
+   reads only the COORDINATES (SKETCHES6: the corner, the two ends, the two
+   cut points and their positions), the question's statement (q.given: the
+   ratio the learner is told; q.ask: which two parts the question asks, top
+   first) and the chips:
+     the figure  D on AB and E on AC (strictly between), DE ∥ BC, measured
+     the areas   shoelace: small Δ = ADE, big Δ = ABC, trapezium = DBCE
+                 (a four-corner polygon, its own shoelace, not big − small)
+                 small / big = the question's fraction (rel 1e-9): from a
+                 side ratio a : b it is (a/(a+b))², from AD : AB = a : b it
+                 is (a/b)², a given area ratio is itself
+                 trapezium = big − small (rel 1e-9)
+     the parts   lowest terms, by search: AD / AB = p / q from the measured
+                 lengths (AE / AC must be the same), small / big = s / g
+                 from the measured areas, the trapezium g − s; never a 1 as
+                 a k-number; every arc label on the sketch is its piece's
+                 parts and "k" ("k" alone for one part, never "1k")
+     every fill  of every build step, chips^boxes:
+                   "side" step  AD/AB = ☐/☐        right = [p, q]
+                   "prod" step  = ☐ · ☐ / ☐ · ☐    right = [p, p, q, q]
+                   "sub"  step  ☐k − ☐k = ☐k       right = [g, s, g − s]
+                   "ask"  step  the asked ratio     right = the asked parts
+                 against markRatio (mode "exact" → markExact, which never
+                 reads a length), 0 disagreements; every reason the marker
+                 gives has its own hint, every hint fires, the shown answer
+                 is right. The pick step's right option is "big − small",
+                 named from the figure's own corners. */
+const polyArea = pts => Math.abs(pts.reduce((a, p, i) => { const q = pts[(i + 1) % pts.length]; return a + p.x * q.y - q.x * p.y; }, 0)) / 2;
+const lowest = r => { for (let q = 1; q <= 60; q++) { const p = Math.round(r * q); if (p > 0 && Math.abs(p / q - r) <= 1e-9 * Math.max(1, r)) return [p, q]; } return null; };
+const plain6 = s => String(s).replace(/ /g, " ");
+const rows6 = [], fig6 = [];
+for (const q of round6.eweQuestions) {
+  const F = SKETCHES6[q.id], P = F.pts;
+  const A = F.corner, [B, C] = F.ends, [D, E] = F.cuts;
+  /* 0 · the figure */
+  const onAB = lineDist(P[A], P[B], P[D]) < 1e-9 && onSegment(P[A], P[B], P[D]);
+  const onAC = lineDist(P[A], P[C], P[E]) < 1e-9 && onSegment(P[A], P[C], P[E]);
+  const de = vec(P[D], P[E]), bc = vec(P[B], P[C]);
+  const parSin = Math.abs(de.x * bc.y - de.y * bc.x) / (Math.hypot(de.x, de.y) * Math.hypot(bc.x, bc.y));
+  if (!onAB || !onAC || parSin > 1e-9) { problems++; console.error(`✗ ${q.id}: ${D} not on ${A}${B}, ${E} not on ${A}${C}, or ${D}${E} not ∥ ${B}${C} (sin ${parSin})`); }
+  /* 1 · the areas, shoelace */
+  const small = polyArea([P[A], P[D], P[E]]), big = polyArea([P[A], P[B], P[C]]), trap = polyArea([P[D], P[B], P[C], P[E]]);
+  const g = q.given;
+  const want = g.kind === "side" ? (g.a / (g.a + g.b)) ** 2 : g.kind === "whole" ? (g.a / g.b) ** 2 : g.small / g.big;
+  const ratioRel = Math.abs(small / big - want) / want, trapRel = Math.abs(trap - (big - small)) / trap;
+  if (!(ratioRel < REL)) { problems++; console.error(`✗ ${q.id}: small/big ${small / big} is not the question's ${want}`); }
+  if (!(trapRel < REL)) { problems++; console.error(`✗ ${q.id}: the trapezium ${trap} is not big − small ${big - small}`); }
+  /* 2 · the parts, lowest terms */
+  const len = (X, Y) => dist(P[X], P[Y]);
+  const [p, qq] = lowest(len(A, D) / len(A, B)) || [NaN, NaN];
+  const sideAC = lowest(len(A, E) / len(A, C));
+  if (!sideAC || sideAC[0] !== p || sideAC[1] !== qq) { problems++; console.error(`✗ ${q.id}: ${A}${E}/${A}${C} is not ${A}${D}/${A}${B}`); }
+  const [s, gg] = lowest(small / big) || [NaN, NaN];
+  const t = gg - s;
+  const part = { small: s, big: gg, trap: t };
+  if (s === 1 || t === 1 || gg === 1) { problems++; console.error(`✗ ${q.id}: a 1 as a k-number (${s}, ${gg}, ${t})`); }
+  if (Math.abs(trap / big - t / gg) > 1e-9) { problems++; console.error(`✗ ${q.id}: the trapezium is not ${t} parts of ${gg}`); }
+  const kl = n => (n === 1 ? "k" : `${n}k`);
+  const arcs = (F.sketch.sideArcs || []).map(a => `${a.from}${a.to}:${a.label}`);
+  const wantArcs = g.kind === "side" ? [`${A}${D}:${kl(p)}`, `${D}${B}:${kl(qq - p)}`, `${A}${B}:${kl(qq)}`]
+                 : g.kind === "whole" ? [`${A}${D}:${kl(p)}`, `${A}${B}:${kl(qq)}`] : [];
+  if (arcs.join() !== wantArcs.join() || arcs.some(a => /:1k$/.test(a))) { problems++; console.error(`✗ ${q.id}: arcs ${arcs}, want ${wantArcs}`); }
+  /* the pick step: "big − small", named from the figure */
+  const pick = q.steps.find(st => st.type === "pick");
+  const right = pick && pick.options.find(o => o.correct);
+  const pickOk = !!right && right.is === "big-small" && plain6(right.text) === `Opp Δ ${A}${B}${C} − Opp Δ ${A}${D}${E}`
+              && plain6(pick.prompt).includes(`${D}${B}${C}${E}`) && pick.options.filter(o => o.correct).length === 1;
+  if (!pickOk) { problems++; console.error(`✗ ${q.id}: the pick step's right option is not Opp Δ ${A}${B}${C} − Opp Δ ${A}${D}${E}`); }
+  fig6.push({ q: q.id, given: g.kind === "area" ? `area ${g.small} : ${g.big}` : `${g.kind} ${g.a} : ${g.b}`, ratioRel, trapRel, side: `${p}/${qq}`, parts: `${s}, ${gg}, ${t}`,
+              ask: q.ask.join("/"), arcs: arcs.map(a => a.split(":")[1]).join(" ") || "none" });
+  /* 3 · every fill of every build step */
+  q.steps.forEach((step, si) => {
+    if (step.type !== "build") return;
+    const c = step.chips;
+    const right6 = { side: [p, qq], prod: [p, p, qq, qq], sub: [gg, s, t], ask: q.ask.map(k => part[k]) }[step.role];
+    if (!right6) { problems++; console.error(`✗ ${q.id} step ${si + 1}: unknown role ${step.role}`); return; }
+    const want6 = right6.map(String);
+    const slots = step.frame.flatMap(u => (u === "=" ? [] : Array.isArray(u) ? u : [...u.n, ...u.d])).filter(x => x === "☐").length;
+    if (slots !== want6.length || new Set(c).size !== c.length || want6.some(x => !c.includes(x))) { problems++; console.error(`✗ ${q.id} step ${si + 1}: ${slots} boxes / chips ${c} cannot hold ${want6}`); }
+    let tried = 0, accepted = 0, rejected = 0, disagree = 0;
+    const why = {};
+    const fills = [[]];
+    for (let k = 0; k < slots; k++) { const next = []; for (const f of fills) for (const x of c) next.push([...f, x]); fills.splice(0, fills.length, ...next); }
+    for (const fill of fills) {
+      tried++;
+      const oracle = fill.every((x, i) => x === want6[i]);
+      const verdict = markRatio(fill, step.spec);
+      why[verdict.why] = (why[verdict.why] || 0) + 1;
+      if (verdict.ok) accepted++; else rejected++;
+      if (verdict.ok !== oracle) { disagree++; if (disagree <= 5) console.error(`✗ ${q.id} step ${si + 1} (${step.role}): ${fill}  marker ${verdict.ok} (${verdict.why}), oracle ${oracle}`); }
+      if (!verdict.ok && verdict.why !== "pattern" && !(step.hints && step.hints[verdict.why])) { problems++; console.error(`✗ ${q.id} step ${si + 1}: the marker says "${verdict.why}" and the step has no hint for it`); }
+    }
+    if (!markRatio(step.answer, step.spec).ok) { problems++; console.error(`✗ ${q.id} step ${si + 1}: its own shown answer is marked wrong`); }
+    const extra = Object.keys(step.hints || {}).filter(k => k !== "pattern" && !why[k]);
+    if (extra.length) { problems++; console.error(`✗ ${q.id} step ${si + 1}: hints ${extra} never fire`); }
+    if (!(step.hints && step.hints.pattern) && why.pattern) { problems++; console.error(`✗ ${q.id} step ${si + 1}: no pattern hint`); }
+    problems += disagree;
+    rows6.push({ q: q.id, step: si + 1, role: step.role, chips: c.length, tried, accepted, rejected, disagree, why });
+  });
+}
+console.log("\new6 (the trapezium: areas by shoelace from the coordinates; every fill of every build step)");
+console.log("question  given         small/big rel  trap rel   AD/AB  parts (small, big, trap)  asked       arcs");
+for (const f of fig6) {
+  console.log(`${f.q.padEnd(9)} ${f.given.padEnd(13)} ${f.ratioRel.toExponential(1).padStart(13)}  ${f.trapRel.toExponential(1).padStart(8)}  ${f.side.padStart(5)}  ${f.parts.padEnd(24)}  ${f.ask.padEnd(10)}  ${f.arcs}`);
+}
+console.log("question  step  role  chips  fills tried  accepted  rejected  disagreements");
+let T6 = 0, A6 = 0, R6 = 0, D6 = 0;
+for (const r of rows6) {
+  T6 += r.tried; A6 += r.accepted; R6 += r.rejected; D6 += r.disagree;
+  console.log(`${r.q.padEnd(9)} ${String(r.step).padStart(4)}  ${r.role.padEnd(4)}  ${String(r.chips).padStart(5)}  ${String(r.tried).padStart(11)}  ${String(r.accepted).padStart(8)}  ${String(r.rejected).padStart(8)}  ${String(r.disagree).padStart(13)}`);
+  console.log(`          rejected because: ${Object.entries(r.why).filter(([k]) => k !== "ok").map(([k, v]) => `${k} ${v}`).join(", ")}`);
+}
+console.log(`TOTAL                   ${String(T6).padStart(11)}  ${String(A6).padStart(8)}  ${String(R6).padStart(8)}  ${String(D6).padStart(13)}`);
+
 if (problems) { console.error(`\n✗ ${problems} problem(s).`); process.exit(1); }
-console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, and every ew7 line is true in its own generic figure.");
+console.log("\n✓ the marker agrees with the length oracle on every fill (ew1, ew2, ew3, ew4 and ew7), every ew5 question has exactly one true leftover, the marked one, every ew7 line is true in its own generic figure, and every ew6 fill agrees with the shoelace areas.");
