@@ -1214,3 +1214,37 @@ svg.diag .mk.ewe-sarc.ewe-sarc-k2{stroke:#d9480f;}
 svg.diag .ewe-thick{stroke:#2b2f4a; stroke-width:5; stroke-linecap:round;}
 .ewe-opts.ewe-pair .opt{font-size:1.02rem; padding:10px 8px; line-height:1.2;}
 .ewe-tk-card + .ewe-tk-card{margin-top:12px;}
+/* ew9 "Lees dit af" (opt-in classes, written only by its data). A colour
+   per Δ (her p.49 and p.55): the lit sides, the arcs over them, the tint
+   and the name all in ONE colour, colour 1 blue and colour 2 orange (the
+   ew8 tones). A name UNDER its fraction (rule 24) hangs below it without
+   taking part in its height, so the "=" still meets the bar; the line keeps
+   the room for it from the start. In the across form the two names stand
+   beside the last fraction, level with the tops and the bottoms (a grid
+   with the drawer's own rows, no bar). The equal-angle marks of her p.55
+   figure: one violet arc each. Three single-letter boxes keep a little air. */
+svg.diag .ewe-tint-k1{fill:#1971c2; fill-opacity:.16;}
+svg.diag .ewe-tint-k2{fill:#d9480f; fill-opacity:.14;}
+svg.diag .mk.ewe-eqa{stroke:#7048e8; stroke-width:2;}
+.ewf-nm{position:relative; display:inline-flex;}
+.ewf-under{position:absolute; top:100%; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:.82em; line-height:1.2; padding-top:.2em;}
+.ewn{display:flex; flex-direction:column; align-items:center; gap:6px;}
+.ewn-ln{max-width:100%;}
+.ewn-under .ewn-ln{padding-bottom:1.25em;}
+.ewn-under .ewq{row-gap:1.6em;}
+.ewn-pre{max-width:100%;}
+.ewn-sd{display:inline-grid; grid-template-rows:auto auto auto; justify-items:start; line-height:1.15; margin-left:.7em; vertical-align:middle; white-space:nowrap;}
+.ewn-sd-t{padding-bottom:.08em;}
+.ewn-sd-gap{height:2px;}
+.ewn-sd-b{padding-top:.08em;}
+.ewn-sd-w{color:var(--ink-soft); font-weight:600;}
+.ewn-sd .is-off{visibility:hidden;}
+.ewe-qline{margin:0 0 6px;}
+.ewn-card{display:flex; flex-direction:column; align-items:center; gap:10px; font-size:1.2rem; font-weight:700;}
+.ewn-card .ewl-sim{margin-bottom:0;}
+.ewpad-run .ewslot + .ewslot{margin-left:4px;}
+/* ew9: the three triangle names in one row (layout "row"), and the one-row
+   name frame with less height (compact) */
+.ewe-opts.ewe-row{gap:8px;}
+.ewe-opts.ewe-row .opt{padding:8px 4px; font-size:1rem; line-height:1.2;}
+.ewpad-disp.is-compact{min-height:0; padding:10px 8px;}

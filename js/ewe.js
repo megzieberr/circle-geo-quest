@@ -40,7 +40,7 @@ import { getSession } from "./session.js";
 import { submitRoundReliable } from "./sync.js";
 import { el, clear, mount } from "./ui.js";
 import { markRatio, SLOT } from "./ewe-core.js";
-import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, fracsLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle } from "./ewe-kit.js";
+import { esc, fracHtml, eqHtml, prodHtml, ratioHtml, writtenLineHtml, simLineHtml, areaLineHtml, sineLineHtml, crossLineHtml, trapLineHtml, fracsLineHtml, richHtml, givenHtml, sqText, frameHtml, cellFracHtml, mountFillPad, sketchSvg, shuffle, namesLineHtml, namesCardHtml } from "./ewe-kit.js";
 
 /* foreman review 2026-09-29: a statement like "MN ∥ DH" or a name like
    "Δ DHT" never breaks over two lines (no-break spaces, intro and prompts).
@@ -224,6 +224,13 @@ export function renderEweRound(app, host, params) {
     const fig = el("div", "q-diagram");
     fig.innerHTML = sketchSvg(q.sketch);
     box.appendChild(fig);
+    /* ew9, opt-in: the question's GIVEN fractions, right under the sketch
+       for the whole question (lit and named step by step, js/ewe-kit.js
+       namesLineHtml), so the sketch and the fractions are read together.
+       A step's `fracLineAfter` redraws it once that step is right, as
+       `sketchAfter` redraws the sketch. Without q.fracLine nothing is added. */
+    const fracLine = q.fracLine ? el("div", "ewe-given ewe-qline", namesLineHtml(q.fracLine)) : null;
+    if (fracLine) box.appendChild(fracLine);
     const steps = el("div", "ewe-steps");
     box.appendChild(steps);
     qHost.appendChild(box);
@@ -254,6 +261,8 @@ export function renderEweRound(app, host, params) {
              shared angle), and it stays for the rest of the question.
              Without the key the sketch is never touched. */
           if (step.sketchAfter) fig.innerHTML = sketchSvg(step.sketchAfter);
+          /* ew9, opt-in: the given fractions light up / get their names */
+          if (step.fracLineAfter && fracLine) fracLine.innerHTML = namesLineHtml(step.fracLineAfter);
           /* phone folds: step 1 is right, so the intro folds to one line,
              BEFORE the next step is brought in (its scroll is measured on
              the folded page). A one-step question never folds: nothing
@@ -455,6 +464,7 @@ function mountBuild(host, step, onDone) {
   const pad = mountFillPad(padHost, {
     frame, chips: step.chips,
     fixed: step.fixed,          // ew2: a chip already in the first box (opt-in)
+    compact: step.compact,      // ew9: a one-row frame keeps less height (opt-in)
     /* foreman review 2026-09-29: "Nog nie" is about the fill that was
        checked. Once they change a box it no longer describes what is on
        the screen, so it goes. The hint stays: it is still the help. */
@@ -501,6 +511,9 @@ function hintHtml(step, why, r) {
   /* ew6 (the exact marker): one plain sentence per wrong reason, the
      reasons named by the question data */
   if (step.spec && step.spec.mode === "exact") return esc(h[why] || h.pattern);
+  /* ew9 (the name marker): one plain sentence per wrong reason (order,
+     repeat), keyed by the reason itself */
+  if (step.spec && step.spec.mode === "name") return esc(h[why] || h.pattern);
   /* ew3 (the area marker): one plain sentence per wrong reason (crossed,
      shared, repeat, order, pattern), keyed by the reason itself */
   if (step.spec && step.spec.mode === "area") return esc(h[why] || h.pattern);
@@ -549,18 +562,22 @@ function mountPick(host, step, onDone) {
   /* ew8, opt-in: layout "pair" is two wide buttons side by side, in the
      order the data gives (her two words, never shuffled), like Ja / Nee,
      with the class .ewe-pair for their own spacing. */
-  const pair = step.layout === "pair";
+  /* ew9, opt-in: layout "row" is three short buttons in ONE row (the
+     triangle names), shuffled like any reasons, with the same spacing as
+     "pair" (.ewe-pair) and its own (.ewe-row) */
+  const row = step.layout === "row";
+  const pair = step.layout === "pair" || row;
   const yesno = step.layout === "yesno" || pair;
   /* ew5, opt-in: `grid: 2` sets the options in a 2 x 2 grid (one stacked
      fraction per cell), so the sketch keeps its room on a small phone.
      Without the key the options stack as before. */
   const grid = !yesno && step.grid === 2;
-  const opts = el("div", "q-options ewe-opts" + (yesno ? " yesno" : "") + (pair ? " ewe-pair" : "") + (grid ? " grid2 ewe-grid" : ""));
+  const opts = el("div", "q-options ewe-opts" + (yesno ? " yesno" : "") + (pair ? " ewe-pair" : "") + (row ? " ewe-row" : "") + (grid ? " grid2 ewe-grid" : ""));
   const hint = el("div", "dp-hint ewe-hint"); hint.hidden = true;
   const fb = el("div", "dp-feedback ewe-fb"); fb.hidden = true;
   /* Ja / Nee keep their natural order; the reasons are shuffled so the
      right one is never "the top one" */
-  const list = yesno ? step.options.slice() : shuffle(step.options);
+  const list = yesno && !row ? step.options.slice() : shuffle(step.options);
   let wrong = 0, over = false;
   list.forEach(o => {
     /* an option with a `fill` is drawn as the stacked fraction it makes
@@ -632,6 +649,9 @@ function writeCard(q, fill) {
   /* ew6, opt-in: her trapezium page, part (c) and, after a full chain, the
      two lines above it */
   else if (q.write.trap) body.innerHTML = trapLineHtml(q.write.trap);
+  /* ew9, opt-in: the fractions with each Δ's name in its colour, then the
+     two names in matching order */
+  else if (q.write.names) body.innerHTML = namesCardHtml(q.write.names);
   /* ew8, opt-in: the fractions as shown, any number of them (her sketch 3
      has three), under ew2's similarity line when there is one */
   else if (q.write.fracs) body.innerHTML = fracsCardHtml(q.write);
@@ -669,7 +689,7 @@ function renderEnd(app, host, round, r) {
       <div class="ewe-write ewe-takeaway">
         <div class="ewe-write-tag">${UI.remember}</div>
         <p class="ewe-write-text">${sqText(esc(tk.text))}</p>
-        <div class="ewe-write-body">${tk.cards ? tk.cards.map(w => `<div class="ewe-tk-card">${fracsCardHtml(w)}</div>`).join("")
+        <div class="ewe-write-body">${tk.cards ? tk.cards.map(w => `<div class="ewe-tk-card">${w.names ? namesCardHtml(w.names) : fracsCardHtml(w)}</div>`).join("")
           : tk.trap ? trapLineHtml(tk.trap) : tk.cross ? crossLineHtml(tk.cross) : tk.sine ? sineLineHtml(tk.sine, tk.reason) : tk.area ? areaLineHtml(tk.area, tk.reason)
           : (tk.sim ? simLineHtml(tk.sim, tk.simReason) : "") + writtenLineHtml(tk.fill, tk.reason)}</div>
       </div>

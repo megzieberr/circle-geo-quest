@@ -22,6 +22,11 @@
      · markCross()    ew7: the product line as two fractions (see below).
      · markExact()    ew6: a fill of numbers with ONE right order, the
                       wrong reasons named by the question data (see below).
+                      ew9, opt-in: `free` ranges whose order does not
+                      matter (the reason line's two ∥ lines).
+     · sharedAngleSide() ew9: her p.55 figure, two similar triangles that
+                      share an angle AND a side, built to scale (see below).
+     · markName()     ew9: Δ ADE ||| Δ ☐☐☐, the corners in matching order.
      · markRatio()    the ratio marker. It decides "is this fill of
                       ☐/☐ = ☐/☐ right?" from the SHAPE of the fill
                       only: which cut side each chip lies on, and where
@@ -38,6 +43,11 @@
 /* the frame entry that means "a box to be filled" (same glyph Blipwork's
    tokenpad uses, so a frame reads the same in both apps) */
 export const SLOT = "☐";
+/* ew9, opt-in: a frame entry that is a break point WITHOUT a sign, for a
+   frame with no "=" that is too wide for one phone line (the reason line
+   `lyn ∥ een sy v. Δ ☐, ☐ ∥ ☐`): the frame may wrap there, never inside
+   a unit. No frame of ew1 to ew8 has one. */
+export const BRK = "⏎brk";
 
 export const lerp = (P, Q, t) => ({ x: P.x + t * (Q.x - P.x), y: P.y + t * (Q.y - P.y) });
 export const dist = (P, Q) => Math.hypot(P.x - Q.x, P.y - Q.y);
@@ -132,8 +142,11 @@ export function segLength(tri, name) {
    four-box PRODUCT fill and goes to markSine; spec.mode "prod" and "cross"
    (ew7, opt-in) are the rewrite of a product line and go to markProd and
    markCross; spec.mode "exact" (ew6, opt-in) is a fill of NUMBERS with one
-   right order and goes to markExact. Without a mode, nothing here changes. */
+   right order and goes to markExact; spec.mode "name" (ew9, opt-in) is a
+   triangle's three corners and goes to markName. Without a mode, nothing
+   here changes. */
 export function markRatio(fill, spec) {
+  if (spec && spec.mode === "name") return markName(fill, spec);
   if (spec && spec.mode === "exact") return markExact(fill, spec);
   if (spec && spec.mode === "area") return markArea(fill, spec);
   if (spec && spec.mode === "sine") return markSine(fill, spec);
@@ -600,16 +613,116 @@ export function markCross(fill, spec) {
      "empty"    a box is still empty
      "unknown"  a chip that is not in the bank (caller bug)
    Pure, no lengths: tools/check-ewe-marker.mjs proves every fill of every
-   ew6 step against areas measured (shoelace) from the coordinates. */
+   ew6 step against areas measured (shoelace) from the coordinates.
+
+   ew9, OPT-IN: `free: [[1, 3]]` lists box ranges [from, to) whose ORDER
+   does not matter: the reason line `lyn ∥ een sy v. Δ ☐, ☐ ∥ ☐` has one
+   fixed chip (the Δ), then an order-free pair (DE ∥ BC = BC ∥ DE). A fill
+   is then also right when every range holds the same chips as `expect`
+   in any order and every box outside the ranges matches. Without `free`,
+   nothing changes. */
 export function markExact(fill, spec) {
   const want = spec.expect;
   if (!Array.isArray(fill) || fill.length !== want.length || fill.some(x => !x)) return { ok: false, why: "empty" };
   if (spec.chips && fill.some(x => !spec.chips.includes(x))) return { ok: false, why: "unknown" };
   if (fill.every((x, i) => x === want[i])) return { ok: true, why: "ok" };
+  if (spec.free) {
+    const norm = f => { const g = f.slice(); for (const [a, b] of spec.free) g.splice(a, b - a, ...g.slice(a, b).sort()); return g; };
+    const f = norm(fill), w = norm(want);
+    if (f.every((x, i) => x === w[i])) return { ok: true, why: "ok" };
+  }
   for (const r of spec.why || []) {
     const part = fill.slice(r.from ?? 0, r.to ?? fill.length);
     if (r.has && r.has.every(c => part.includes(c))) return { ok: false, why: r.why };
     if (r.is && r.is.length === part.length && r.is.every((c, i) => part[i] === c)) return { ok: false, why: r.why };
   }
   return { ok: false, why: "pattern" };
+}
+
+/* ======================= ew9: read it off =======================
+   "Lees dit af": the fractions are given, the learner reads the two
+   triangles off them (her rule 24: the two sides that share a letter are
+   sides of one Δ, its name under its fraction, a colour per Δ) and writes
+   the two names in matching order. Her p.55 kind is a figure of its own. */
+
+/* ---------------- her p.55 figure (kind B) ----------------
+   Δ PQR, S on PR, QS joined, so that Δ QRS ||| Δ PRQ: the two triangles
+   share the angle R̂ AND the side QR.
+     shared  the corner of the shared angle ("R")
+     far     the far end of the side S lies on ("P")
+     apex    the third corner ("Q"); QS is joined
+     cut     the point on the side shared–far ("S")
+     xy      screen coordinates (y down) of shared, far and apex, any scale
+     spell   optional side spellings, e.g. ["RQ"], where the default would
+             say otherwise. Default: apex–shared (QR), shared–cut (RS),
+             shared–far (RP), far–apex (PQ), apex–cut (QS), cut–far (SP)
+
+   TO SCALE: S is placed at RS = QR² / RP from R (so RS / RP = QR² / RP²),
+   which makes RQ̂S = P̂ EXACTLY (Δ QRS and Δ PRQ share R̂, and
+   QR / RS = RP / QR). It throws unless QR < RP, and unless S sits well
+   inside PR (never on an end, never on its middle). Those two equal angles
+   get the same small arc mark (`eqAngles`), R̂ her star (ew4's, no arc of
+   its own, so the arc marks only ever mean "equal"). NO right angle and no
+   height (her 3 Oct ruling, kept: DBE does not work with it).
+
+   names   the generic roles → this figure's spelling (QR → "QR", …)
+   small   the Δ apex–shared–cut, spelt in that order ("QRS")
+   big     the Δ far–shared–apex, spelt in that order ("PRQ")
+   other   the third Δ in the figure, far–apex–cut ("PQS"), a decoy
+   map     the correspondence small → big, corner by corner:
+           apex → far, shared → shared, cut → apex ({ Q: "P", R: "R", S: "Q" })
+   exam    the exam line QR² = RS · RP: { sq: "QR", prod: ["RS", "RP"] } */
+export function sharedAngleSide({ shared, far, apex, cut, xy, spell = [] }) {
+  const R = shared, P = far, Q = apex, S = cut;
+  const pR = xy[R], pP = xy[P], pQ = xy[Q];
+  const qr = dist(pQ, pR), rp = dist(pR, pP);
+  if (!(qr < rp)) throw new Error("sharedAngleSide: QR must be shorter than RP");
+  const s = (qr / rp) ** 2;                         // RS / RP
+  if (!(s > 0.15 && s < 0.85) || Math.abs(s - 0.5) < 0.05) throw new Error("sharedAngleSide: S must sit well inside PR, never on its middle");
+  const pS = lerp(pR, pP, s);
+  const pts = { [P]: pP, [Q]: pQ, [R]: pR, [S]: pS };
+  const nm = (X, Y) => (spell.includes(Y + X) ? Y + X : X + Y);
+  const names = { QR: nm(Q, R), RS: nm(R, S), RP: nm(R, P), PQ: nm(P, Q), QS: nm(Q, S), SP: nm(S, P) };
+  return {
+    shared: R, far: P, apex: Q, cut: S, pts, names,
+    small: Q + R + S, big: P + R + Q, other: P + Q + S,
+    map: { [Q]: P, [R]: R, [S]: Q },
+    exam: { sq: names.QR, prod: [names.RS, names.RP] },
+    sketch: {
+      pts,
+      lines: [[P, Q], [Q, R], [R, P], [Q, S]],
+      par: [],
+      eqAngles: [{ at: Q, rays: [R, S] }, { at: P, rays: [R, Q] }],
+      angle: { at: R, rays: [Q, P], star: true, arc: false },
+      outside: [P, Q, R],
+      labBox: true,
+    },
+  };
+}
+
+/* ---------------- the name marker (ew9, spec.mode "name") ----------------
+   fill  the three corner letters in box order: Δ ADE ||| Δ ☐☐☐
+   spec  { mode: "name", first: "ADE", map: { A: "A", D: "B", E: "C" }, chips }
+         first = the name already written, map = the correspondence, corner
+         by corner (from the fractions: AD pairs with AB, so A → A, D → B)
+
+   RIGHT when box i holds the corner that matches the i-th corner of
+   `first`: the ONE order that turns the second name the same way as the
+   first (her ruling 29 Sep: corner order matters in a triangle's name).
+
+   WRONG, with a reason for the hint:
+     "empty"    a box is still empty
+     "unknown"  a chip that is not in the bank (caller bug)
+     "repeat"   a corner used twice ("Elke hoekpunt kom een keer")
+     "order"    the three corners, in the wrong order
+   It reads only letters, never a length: tools/check-ewe-marker.mjs proves
+   all 27 fills of every name build against side ratios measured from the
+   coordinates. */
+export function markName(fill, spec) {
+  const first = [...spec.first];
+  if (!Array.isArray(fill) || fill.length !== first.length || fill.some(x => !x)) return { ok: false, why: "empty" };
+  if (spec.chips && fill.some(x => !spec.chips.includes(x))) return { ok: false, why: "unknown" };
+  if (new Set(fill).size < fill.length) return { ok: false, why: "repeat" };
+  if (first.every((k, i) => spec.map[k] === fill[i])) return { ok: true, why: "ok" };
+  return { ok: false, why: "order" };
 }

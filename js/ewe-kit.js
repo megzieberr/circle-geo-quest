@@ -1,5 +1,5 @@
 /* ============================================================
-   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew8)
+   EWEREDIGHEID KIT  (the shared DOM pieces for rounds ew1 to ew9)
    ------------------------------------------------------------
    Three things, each ONE copy for the whole feature:
 
@@ -45,7 +45,7 @@
 
    All learner-facing text in here is Afrikaans only (her ruling).
    ============================================================ */
-import { SLOT } from "./ewe-core.js";
+import { SLOT, BRK } from "./ewe-core.js";
 import { el } from "./ui.js";
 
 export function esc(t) {
@@ -80,12 +80,19 @@ export function sqText(html) { return String(html).replace(/²/g, '<sup class="e
    ew8, OPT-IN: tone = [k, j] colours the numerator in colour k and the
    denominator in colour j (her notes: every top in one colour, every
    bottom in another; .ewf-k1, .ewf-k2). The bar stays ink. Left out, the
-   fraction is exactly as before, letter for letter. */
-export function fracHtml(num, den, tone) {
-  const [kn, kd] = Array.isArray(tone) ? tone.map(k => ` ewf-k${k}`) : ["", ""];
-  return `<span class="ewf"><span class="ewf-n${kn}">${part(num)}</span>`
-       + `<span class="ewf-bar" aria-hidden="true"></span>`
-       + `<span class="ewf-d${kd}">${part(den)}</span></span>`;
+   fraction is exactly as before, letter for letter.
+   ew9, OPT-IN: a 0 (or null) in `tone` leaves that half in ink (only the
+   lit sides are coloured); `under` (trusted HTML) is a triangle's name
+   UNDER the fraction (her rule 24: "onder elke breuk skryf sy die
+   driehoek waaruit dit kom"). The name hangs below the fraction without
+   taking part in its height, so the "=" beside it still meets the bar.
+   Left out, nothing changes. */
+export function fracHtml(num, den, tone, under) {
+  const [kn, kd] = Array.isArray(tone) ? tone.map(k => (k ? ` ewf-k${k}` : "")) : ["", ""];
+  const f = `<span class="ewf"><span class="ewf-n${kn}">${part(num)}</span>`
+          + `<span class="ewf-bar" aria-hidden="true"></span>`
+          + `<span class="ewf-d${kd}">${part(den)}</span></span>`;
+  return under == null ? f : `<span class="ewf-nm">${f}<span class="ewf-under">${under}</span></span>`;
 }
 
 /* An equation: two units, and the "=" travels WITH the right-hand side,
@@ -265,6 +272,8 @@ function tintHtml(html, k) { return `<span class="ewtint ewtint-${k}">${html}</s
 function chainHtml(units) {
   let html = "", open = false;
   units.forEach((u, k) => {
+    /* ew9, opt-in: BRK closes the unit, so the line may wrap there */
+    if (u === BRK) { if (open) html += "</span>"; open = false; return; }
     if (u === "=") { if (open) html += "</span>"; html += `<span class="ewq-u"><span class="ewq-eq">=</span>`; open = true; return; }
     if (!open) { html += `<span class="ewq-u">`; open = true; }
     html += u;
@@ -277,8 +286,10 @@ function chainHtml(units) {
 /* a frame's text cell: plain text, or (ew3, opt-in) { t, tint } for a word
    in a triangle's tint, e.g. { t: "Opp Δ ABC", tint: 1 }, or (ew4, opt-in)
    { t: "sin Â", hat: true } for a word with an angle hat (room under the
-   bar, see .ewf-hat) */
+   bar, see .ewf-hat), or (ew9, opt-in) { t, tone: 1 } for a triangle's
+   name in its colour (the given name in Δ ADE ||| Δ ☐☐☐) */
 function fxCell(c) {
+  if (c && typeof c === "object" && c.tone) return `<span class="ewpad-fx ewf-k${c.tone}">${esc(c.t)}</span>`;
   if (c && typeof c === "object" && c.hat) return `<span class="ewpad-fx ewf-hat">${esc(c.t)}</span>`;
   if (c && typeof c === "object") return `<span class="ewpad-fx ewtint ewtint-${c.tint}">${esc(c.t)}</span>`;
   return `<span class="ewpad-fx">${esc(c)}</span>`;
@@ -286,7 +297,7 @@ function fxCell(c) {
 /* ew8, opt-in: a fraction unit with `tone` ([1, 2]) is drawn coloured, top
    and bottom (fracHtml's tone); without the key, as before */
 function frameUnits(frame, cell) {
-  return frame.map(u => (u === "=" ? "=" : Array.isArray(u) ? `<span class="ewpad-run">${u.map(cell).join("")}</span>`
+  return frame.map(u => (u === "=" || u === BRK ? u : Array.isArray(u) ? `<span class="ewpad-run">${u.map(cell).join("")}</span>`
                                                             : fracHtml(u.n.map(cell).join(""), u.d.map(cell).join(""), u.tone)));
 }
 
@@ -299,6 +310,51 @@ export function fracsLineHtml(pairs, reason) {
   const units = pairs.flatMap(([a, b], i) => [...(i ? ["="] : []), fracHtml(esc(a), esc(b))]);
   return `<div class="ewl">${chainHtml(units)}`
        + (reason ? `<span class="ewl-rs">(${esc(reason)})</span>` : "") + `</div>`;
+}
+
+/* ew9, opt-in: the GIVEN fractions of "Lees dit af", lit and named as on
+   her pages (rule 24 and the Metode-nota of p.49 and p.55: the two
+   triangles in two colours, each name with its own sides).
+   line = {
+     pre:   { sq: "QR", prod: ["RS", "RP"] }   the exam line above (her p.55
+            kind: QR² = RS · RP, the 2 a real superscript, the product
+            joined by the drawer's dot), optional
+     fracs: [{ n, d, tone: [kn, kd], name: { t, k } }, …]   each fraction,
+            its lit halves in colour kn / kd (0 = ink), and (WITHIN form,
+            QR/RS = RP/QR: each fraction is one Δ) the name UNDER it, in
+            its colour, once that Δ is found
+     under: true    the room under the fractions for those names, kept from
+            the start, so nothing below moves when a name appears
+     side:  { top: { t, k, show }, bot: { t, k, show } }   (ACROSS form,
+            AD/AB = DE/BC: the tops are one Δ, the bottoms the other, so no
+            single fraction belongs to a Δ) the two names BESIDE the last
+            fraction, "bo:" level with the tops and "onder:" level with the
+            bottoms (her p.53: read the tops together, the bottoms
+            together). A name not found yet keeps its room, unseen.
+   }
+   The fractions are the one drawer; the chain breaks only before an "=".
+   Every name is "Δ" + its letters with a no-break space. */
+export function namesLineHtml(line) {
+  const nm = x => `<span class="ewf-k${x.k}">Δ ${esc(x.t)}</span>`;
+  const units = line.fracs.flatMap((f, i) => [...(i ? ["="] : []),
+    fracHtml(esc(f.n), esc(f.d), f.tone || null, f.name ? nm(f.name) : null)]);
+  if (line.side) {
+    const row = (cls, w, x) => `<span class="${cls}${x.show ? "" : " is-off"}"><span class="ewn-sd-w">${w}</span> ${nm(x)}</span>`;
+    units[units.length - 1] += `<span class="ewn-sd">${row("ewn-sd-t", "bo:", line.side.top)}<span class="ewn-sd-gap" aria-hidden="true"></span>${row("ewn-sd-b", "onder:", line.side.bot)}</span>`;
+  }
+  const pre = line.pre ? `<div class="ewn-pre">${eqHtml(sqHtml(esc(line.pre.sq)), prodHtml(line.pre.prod.map(esc)))}</div>` : "";
+  return `<div class="ewn${line.under ? " ewn-under" : ""}">${pre}<div class="ewn-ln">${chainHtml(units)}</div></div>`;
+}
+/* ew9, opt-in: the two similar triangles, each name in its colour:
+   "Δ ADE ||| Δ ABC". One unit, never broken. names = [{ t, k }, { t, k }] */
+export function simNamesHtml(names) {
+  const [a, b] = names.map(x => `<span class="ewf-k${x.k}">Δ ${esc(x.t)}</span>`);
+  return `<div class="ewl ewl-sim ewn-sim"><span class="ewl-tx">${a} ||| ${b}</span></div>`;
+}
+/* ew9, opt-in: the card of a triangles question: the fractions with both
+   names (namesLineHtml), then the two names in matching order */
+export function namesCardHtml(w) {
+  return `<div class="ewn-card">${namesLineHtml(w.line)}${simNamesHtml(w.sim)}</div>`;
 }
 
 /* ew5, opt-in: ONE stacked fraction drawn from frame cells (text, ½, a
@@ -331,9 +387,12 @@ export function frameHtml(frame, fill) {
            ["JK"]. They cannot be deleted, the glow starts on the first
            EMPTY box, and they are part of the fill handed to onSubmit.
            Left out, the pad behaves exactly as before.
+   compact OPT-IN (ew9): a one-row frame (Δ ADE ||| Δ ☐☐☐) keeps less
+           height (.ewpad-disp.is-compact), so the given fractions under
+           the sketch and the frame share a small phone screen.
 
    returns { fill, clear, setFill, lock } */
-export function mountFillPad(host, { frame, chips, onSubmit, onEdit, fixed }) {
+export function mountFillPad(host, { frame, chips, onSubmit, onEdit, fixed, compact }) {
   if (new Set(chips).size !== chips.length) throw new Error("mountFillPad: two chips read the same");
   const nSlots = frame.reduce((k, u) => k + cellsOf(u).filter(c => c === SLOT).length, 0);
   const given = Array.isArray(fixed) ? fixed.slice() : [];
@@ -342,7 +401,7 @@ export function mountFillPad(host, { frame, chips, onSubmit, onEdit, fixed }) {
   let locked = false;
 
   const wrap = el("div", "ewpad");
-  const disp = el("div", "ewpad-disp");
+  const disp = el("div", "ewpad-disp" + (compact ? " is-compact" : ""));
   wrap.appendChild(disp);
 
   function paint() {
@@ -394,7 +453,7 @@ export function mountFillPad(host, { frame, chips, onSubmit, onEdit, fixed }) {
     node: wrap,
   };
 }
-function cellsOf(u) { return u === "=" ? [] : Array.isArray(u) ? u : [...u.n, ...u.d]; }
+function cellsOf(u) { return u === "=" || u === BRK ? [] : Array.isArray(u) ? u : [...u.n, ...u.d]; }
 
 /* Fisher–Yates. Chip order is shuffled per question so the answer is never
    "click them left to right". */
@@ -461,9 +520,24 @@ export function shuffle(xs) {
      thick   [["A","B"], …]   those sides drawn thick
      edge    extra margin (sketch units) on every side of the fit with arcs
      labGap  extra room (sketch units) every point label keeps from the
-             lines, the ∥ arrows and the arcs */
+             lines, the ∥ arrows and the arcs
+   ew9, OPT-IN (left out, nothing changes):
+     eqAngles [{ at: "Q", rays: ["R", "S"] }, …]   two (or more) angles
+             marked EQUAL: the same small arc inside each (EQ_R), the
+             class .ewe-eqa. Each joins the discs the labels keep away from
+     angle   `arc: false`: her star without the arc at that corner, so in a
+             sketch with eqAngles an arc only ever means "equal"
+     tints   an entry's `tint` may be "k1" / "k2": the tint in the colour of
+             the lit sides (her p.49 and p.55: a colour per Δ)
+     arcNest `keepHidden: true` (with `lab`): a hidden whole-side bow is
+             raised for the label under it as if it were drawn, so the
+             sketch before and after it appears is the same, label for label
+     boxClear true: a point label keeps its BOX (not just its centre) clear
+             of the lines, the ∥ arrows, the marks, the arcs and the other
+             labels, and no corner of it may sit inside the `outside` Δ or a
+             tint (her rule: labels OUTSIDE the triangle) */
 const W = 320, H = 232, MARGIN = 24, LAB_R = 14;
-const ARC_R = 17, STAR_D = 15, STAR_R = 5.5, RA_B = 9;
+const ARC_R = 17, STAR_D = 15, STAR_R = 5.5, RA_B = 9, EQ_R = 15;
 const N = v => Math.round(v * 10) / 10;
 
 /* ew4, opt-in (spec.labBox): how far a label sits from its own point,
@@ -489,6 +563,28 @@ function segDist(px, py, a, b) {
   let t = L2 ? ((px - a.x) * dx + (py - a.y) * dy) / L2 : 0;
   t = Math.max(0, Math.min(1, t));
   return Math.hypot(px - (a.x + t * dx), py - (a.y + t * dy));
+}
+
+/* ew9, opt-in (spec.boxClear): a point label's box around its centre, its
+   half-width by the letter (W and M are wide), and the distances from it.
+   Only sketches that ask for it use these; nothing else changes. */
+const labBoxAt = (k, x, y) => { const hw = /[WM]/.test(k) ? 7.2 : 5.7; return { x0: x - hw, x1: x + hw, y0: y - LAB_UP, y1: y + LAB_DN }; };
+const ptBoxDist = (q, r) => Math.hypot(Math.max(0, r.x0 - q.x, q.x - r.x1), Math.max(0, r.y0 - q.y, q.y - r.y1));
+const boxPts = r => [{ x: r.x0, y: r.y0 }, { x: r.x1, y: r.y0 }, { x: r.x0, y: r.y1 }, { x: r.x1, y: r.y1 }, { x: (r.x0 + r.x1) / 2, y: (r.y0 + r.y1) / 2 }];
+const boxGap = (a, b) => Math.hypot(Math.max(0, a.x0 - b.x1, b.x0 - a.x1), Math.max(0, a.y0 - b.y1, b.y0 - a.y1));
+function segBoxDist(a, b, r) {
+  /* 0 when the segment crosses the box (Liang–Barsky), else the nearest of
+     its ends to the box and of the box's corners to it */
+  const dx = b.x - a.x, dy = b.y - a.y;
+  let t0 = 0, t1 = 1, hit = true;
+  for (const [p, q] of [[-dx, a.x - r.x0], [dx, r.x1 - a.x], [-dy, a.y - r.y0], [dy, r.y1 - a.y]]) {
+    if (p === 0) { if (q < 0) { hit = false; break; } continue; }
+    const t = q / p;
+    if (p < 0) { if (t > t1) { hit = false; break; } if (t > t0) t0 = t; }
+    else { if (t < t0) { hit = false; break; } if (t < t1) t1 = t; }
+  }
+  if (hit && t0 <= t1) return 0;
+  return Math.min(ptBoxDist(a, r), ptBoxDist(b, r), ...boxPts(r).slice(0, 4).map(c => segDist(c.x, c.y, a, b)));
 }
 
 /* ---------------- ew6, opt-in: the side arcs (spec.sideArcs) ----------------
@@ -753,8 +849,11 @@ export function sketchSvg(spec) {
     let da = Math.atan2(u2.y, u2.x) - a1;
     while (da > Math.PI) da -= 2 * Math.PI;
     while (da < -Math.PI) da += 2 * Math.PI;
-    out += `<path class="mk ewe-arc" d="M ${N(V.x + ARC_R * u1.x)} ${N(V.y + ARC_R * u1.y)} A ${ARC_R} ${ARC_R} 0 0 ${da > 0 ? 1 : 0} ${N(V.x + ARC_R * u2.x)} ${N(V.y + ARC_R * u2.y)}"/>`;
-    for (let i = 0; i <= 10; i++) { const a = a1 + da * i / 10; discs.push({ x: V.x + ARC_R * Math.cos(a), y: V.y + ARC_R * Math.sin(a), r: 1.5 }); }
+    /* ew9, opt-in: `arc: false` draws the star alone */
+    if (spec.angle.arc !== false) {
+      out += `<path class="mk ewe-arc" d="M ${N(V.x + ARC_R * u1.x)} ${N(V.y + ARC_R * u1.y)} A ${ARC_R} ${ARC_R} 0 0 ${da > 0 ? 1 : 0} ${N(V.x + ARC_R * u2.x)} ${N(V.y + ARC_R * u2.y)}"/>`;
+      for (let i = 0; i <= 10; i++) { const a = a1 + da * i / 10; discs.push({ x: V.x + ARC_R * Math.cos(a), y: V.y + ARC_R * Math.sin(a), r: 1.5 }); }
+    }
     let bx = -(u1.x + u2.x), by = -(u1.y + u2.y);
     const bl = Math.hypot(bx, by) || 1;
     bx /= bl; by /= bl;
@@ -769,6 +868,22 @@ export function sketchSvg(spec) {
       out += `<polygon class="ewe-star" points="${pts.join(" ")}"/>`;
     }
   }
+
+  /* ew9: the equal-angle marks. The same small arc, radius EQ_R, inside
+     each named angle (the smaller turn from one ray to the other), so the
+     eye pairs RQ̂S with P̂. Each arc joins the discs the labels keep away
+     from, as a string of points along it. */
+  (spec.eqAngles || []).forEach(({ at, rays }) => {
+    const V = P[at];
+    const unit = k => { const dx = P[k].x - V.x, dy = P[k].y - V.y, L = Math.hypot(dx, dy) || 1; return { x: dx / L, y: dy / L }; };
+    const u1 = unit(rays[0]), u2 = unit(rays[1]);
+    const a1 = Math.atan2(u1.y, u1.x);
+    let da = Math.atan2(u2.y, u2.x) - a1;
+    while (da > Math.PI) da -= 2 * Math.PI;
+    while (da < -Math.PI) da += 2 * Math.PI;
+    out += `<path class="mk ewe-eqa" d="M ${N(V.x + EQ_R * u1.x)} ${N(V.y + EQ_R * u1.y)} A ${EQ_R} ${EQ_R} 0 0 ${da > 0 ? 1 : 0} ${N(V.x + EQ_R * u2.x)} ${N(V.y + EQ_R * u2.y)}"/>`;
+    for (let i = 0; i <= 10; i++) { const a = a1 + da * i / 10; discs.push({ x: V.x + EQ_R * Math.cos(a), y: V.y + EQ_R * Math.sin(a), r: 1.5 }); }
+  });
 
   /* ew7: a right-angle box at each named corner, inside the angle, its two
      sides along the two arms. Its corners, the middles of its sides and its
@@ -842,18 +957,32 @@ export function sketchSvg(spec) {
       const r = (spec.labBox ? boxRadius(Math.cos(ang), Math.sin(ang)) : LAB_R) + ((spec.labOut && spec.labOut[k]) || 0);
       const lx = p.x + r * Math.cos(ang), ly = p.y + r * Math.sin(ang);
       let score = Infinity;
-      obst.forEach(([a, b]) => { score = Math.min(score, segDist(lx, ly, a, b) - lg); });
-      marks.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - 4 - lg); });
-      discs.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - m.r - lg); });
-      placed.forEach(q => { score = Math.min(score, Math.hypot(lx - q.x, ly - q.y) - 8); });
+      if (spec.boxClear) {
+        /* ew9, opt-in: every distance is taken from the label's BOX, not its
+           centre (a letter is taller than it is wide: measured from the
+           centre, a label under a side could still reach over the side's
+           line, and so into the Δ) */
+        const bx = labBoxAt(k, lx, ly);
+        obst.forEach(([a, b]) => { score = Math.min(score, segBoxDist(a, b, bx) - lg); });
+        marks.forEach(m => { score = Math.min(score, ptBoxDist(m, bx) - 4 - lg); });
+        discs.forEach(m => { score = Math.min(score, ptBoxDist(m, bx) - m.r - lg); });
+        placed.forEach(q => { score = Math.min(score, boxGap(q.box, bx) - 2); });
+      } else {
+        obst.forEach(([a, b]) => { score = Math.min(score, segDist(lx, ly, a, b) - lg); });
+        marks.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - 4 - lg); });
+        discs.forEach(m => { score = Math.min(score, Math.hypot(lx - m.x, ly - m.y) - m.r - lg); });
+        placed.forEach(q => { score = Math.min(score, Math.hypot(lx - q.x, ly - q.y) - 8); });
+      }
       score = Math.min(score, lx - 7, W - 7 - lx, ly - 8, H - 8 - ly);
-      /* inside a tinted Δ is never allowed (see tintPolys above) */
-      if (tintPolys.some(t => (t.length === 3 ? inTri(lx, ly, t) : inPoly(lx, ly, t)))) score -= 1000;
+      /* inside a tinted Δ is never allowed (see tintPolys above); ew9,
+         opt-in (boxClear): not even a corner of the label's box */
+      const probe = spec.boxClear ? boxPts(labBoxAt(k, lx, ly)) : [{ x: lx, y: ly }];
+      if (tintPolys.some(t => probe.some(q => (t.length === 3 ? inTri(q.x, q.y, t) : inPoly(q.x, q.y, t))))) score -= 1000;
       /* a small pull towards "outside the figure", only to break ties */
       score += 0.6 * Math.cos(ang - out0);
       if (score > bestScore) { bestScore = score; best = { x: lx, y: ly }; }
     }
-    placed.push(best);
+    placed.push(spec.boxClear ? { ...best, box: labBoxAt(k, best.x, best.y) } : best);
     labels.push({ k, ...best });
   });
   /* ew8, opt-in (spec.arcNest as an object with `lab`): the whole side's bow
@@ -866,7 +995,10 @@ export function sketchSvg(spec) {
     const need = spec.arcNest.lab, lift = { ...(spec._lift || {}) };
     let more = false;
     arcs.forEach((g, i) => {
-      if (g.level !== 2 || g.a.hidden) return;
+      /* ew9, opt-in (arcNest.keepHidden): a HIDDEN bow is raised too, so it
+         already stands where it will be drawn and no label moves when it
+         appears (her colour 2 arcs, shown after step 1) */
+      if (g.level !== 2 || (g.a.hidden && !spec.arcNest.keepHidden)) return;
       /* only the labels of the points strictly inside this side (its cut point) */
       const inside = l => { const p = P[l.k], a = (p.x - g.F.x) * g.ux + (p.y - g.F.y) * g.uy, n = (p.x - g.F.x) * g.nx + (p.y - g.F.y) * g.ny;
         return Math.abs(n) < 1e-6 && a > 1 && a < g.L - 1; };
